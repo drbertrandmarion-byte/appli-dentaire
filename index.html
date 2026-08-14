@@ -1,0 +1,659 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aide au diagnostic endodontique</title>
+<style>
+  :root{
+    --teal-900:#0b3b39;
+    --teal-700:#0d6e64;
+    --teal-600:#0f9488;
+    --teal-500:#14b8a6;
+    --teal-100:#e6f7f5;
+    --ink:#1c2b2a;
+    --muted:#5c6f6d;
+    --bg:#f4f8f7;
+    --card:#ffffff;
+    --border:#dfe9e7;
+    --shadow:0 2px 10px rgba(15,60,55,0.08);
+    --normal:#0f9488;
+    --pulpaire:#2563eb;
+    --periapical:#d97706;
+    --cellulite:#dc2626;
+    --urgence:#7c1d1d;
+    --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.5;
+  }
+  .wrap{
+    max-width:760px;
+    margin:0 auto;
+    padding:24px 16px 64px;
+  }
+  header.app-header{
+    text-align:center;
+    padding:20px 8px 8px;
+  }
+  header.app-header h1{
+    font-size:1.5rem;
+    margin:0 0 6px;
+    color:var(--teal-900);
+  }
+  header.app-header p{
+    margin:0;
+    color:var(--muted);
+    font-size:0.95rem;
+  }
+  .disclaimer{
+    background:var(--teal-100);
+    border:1px solid var(--teal-500);
+    border-radius:10px;
+    padding:10px 14px;
+    font-size:0.82rem;
+    color:var(--teal-900);
+    margin:16px 0 8px;
+  }
+  .card{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    padding:20px;
+    margin-top:16px;
+  }
+  .intro-card{
+    text-align:center;
+  }
+  .intro-card ul{
+    text-align:left;
+    color:var(--muted);
+    font-size:0.92rem;
+    margin:14px 0;
+  }
+  button{
+    font-family:inherit;
+    cursor:pointer;
+    border:none;
+  }
+  .btn-primary{
+    background:var(--teal-600);
+    color:#fff;
+    font-size:1rem;
+    font-weight:600;
+    padding:12px 22px;
+    border-radius:10px;
+    transition:background .15s ease;
+  }
+  .btn-primary:hover{background:var(--teal-700);}
+  .btn-secondary{
+    background:transparent;
+    color:var(--teal-700);
+    border:1px solid var(--teal-500);
+    font-size:0.9rem;
+    font-weight:600;
+    padding:9px 16px;
+    border-radius:10px;
+    margin-top:8px;
+  }
+  .btn-secondary:hover{background:var(--teal-100);}
+
+  /* Progress trail (accordion of answered steps) */
+  .step-history{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    margin-top:16px;
+  }
+  .step-done{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px 14px;
+    font-size:0.86rem;
+  }
+  .step-done .check{
+    flex:0 0 auto;
+    width:20px;height:20px;
+    border-radius:50%;
+    background:var(--teal-500);
+    color:#fff;
+    display:flex;align-items:center;justify-content:center;
+    font-size:0.7rem;
+    margin-top:2px;
+  }
+  .step-done .content{flex:1;}
+  .step-done .q{color:var(--muted);}
+  .step-done .a{font-weight:600;color:var(--teal-900);}
+
+  .question-card{
+    border-left:4px solid var(--teal-600);
+  }
+  .question-card .qnum{
+    font-size:0.78rem;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--teal-600);
+    font-weight:700;
+    margin-bottom:6px;
+  }
+  .question-card h2{
+    font-size:1.08rem;
+    margin:0 0 16px;
+    color:var(--ink);
+  }
+  .options{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .options button{
+    flex:1 1 120px;
+    background:var(--teal-100);
+    color:var(--teal-900);
+    font-weight:700;
+    font-size:1rem;
+    padding:14px 10px;
+    border-radius:10px;
+    border:1px solid var(--teal-500);
+    transition:background .15s ease, transform .05s ease;
+  }
+  .options button:hover{background:var(--teal-500);color:#fff;}
+  .options button:active{transform:scale(0.98);}
+
+  .back-row{
+    margin-top:14px;
+  }
+
+  /* Result card */
+  .result-card{
+    border-left:4px solid var(--normal);
+  }
+  .result-card.cat-normal{border-left-color:var(--normal);}
+  .result-card.cat-pulpaire{border-left-color:var(--pulpaire);}
+  .result-card.cat-periapical{border-left-color:var(--periapical);}
+  .result-card.cat-cellulite{border-left-color:var(--cellulite);}
+  .result-card.cat-urgence{border-left-color:var(--urgence);}
+
+  .badge{
+    display:inline-block;
+    font-size:0.72rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    padding:4px 10px;
+    border-radius:999px;
+    color:#fff;
+    margin-bottom:10px;
+  }
+  .badge.cat-normal{background:var(--normal);}
+  .badge.cat-pulpaire{background:var(--pulpaire);}
+  .badge.cat-periapical{background:var(--periapical);}
+  .badge.cat-cellulite{background:var(--cellulite);}
+  .badge.cat-urgence{background:var(--urgence);}
+
+  .result-card h2{
+    margin:0 0 10px;
+    font-size:1.4rem;
+    color:var(--ink);
+  }
+  .result-card .def{
+    color:var(--muted);
+    font-size:0.95rem;
+    margin-bottom:14px;
+  }
+  .result-card h3{
+    font-size:0.85rem;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:var(--teal-700);
+    margin:16px 0 6px;
+  }
+  .result-card ul{
+    margin:0;
+    padding-left:20px;
+    font-size:0.93rem;
+  }
+  .result-card ul li{margin-bottom:4px;}
+  .orientation-box{
+    background:var(--teal-100);
+    border-radius:10px;
+    padding:12px 14px;
+    font-size:0.9rem;
+    margin-top:8px;
+  }
+  .result-actions{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-top:20px;
+  }
+
+  footer{
+    text-align:center;
+    color:var(--muted);
+    font-size:0.78rem;
+    margin-top:32px;
+  }
+
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="app-header">
+    <h1>Aide au diagnostic endodontique</h1>
+    <p>Outil pédagogique pas-à-pas pour les étudiants en chirurgie dentaire</p>
+  </header>
+
+  <div class="disclaimer">
+    Cet outil est un support pédagogique d'entraînement au raisonnement clinique en endodontie.
+    Il ne remplace ni un examen clinique complet, ni l'avis d'un enseignant.
+  </div>
+
+  <!-- Intro screen -->
+  <div class="card intro-card" id="intro-card">
+    <p>Répondez aux questions les unes après les autres. Chaque réponse affine le diagnostic parmi :</p>
+    <ul>
+      <li>Dent saine</li>
+      <li>Hyperhémie pulpaire</li>
+      <li>Pulpite réversible</li>
+      <li>Pulpite aiguë irréversible</li>
+      <li>Parodontite apicale aiguë</li>
+      <li>Abcès apical aigu</li>
+      <li>Abcès apical chronique</li>
+      <li>Cellulite séreuse</li>
+      <li>Cellulite suppurée</li>
+      <li>Cellulite diffuse</li>
+    </ul>
+    <button class="btn-primary" id="start-btn">Commencer le diagnostic</button>
+  </div>
+
+  <!-- Question flow -->
+  <div id="flow-area" class="hidden">
+    <div class="step-history" id="step-history"></div>
+    <div class="card question-card hidden" id="question-card">
+      <div class="qnum" id="qnum"></div>
+      <h2 id="question-text"></h2>
+      <div class="options" id="options"></div>
+    </div>
+    <div class="back-row hidden" id="back-row">
+      <button class="btn-secondary" id="back-btn">← Revenir à la question précédente</button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="card result-card hidden" id="result-card">
+    <span class="badge" id="result-badge"></span>
+    <h2 id="result-title"></h2>
+    <div class="def" id="result-def"></div>
+    <h3>Signes cliniques évocateurs</h3>
+    <ul id="result-signs"></ul>
+    <h3>Orientation</h3>
+    <div class="orientation-box" id="result-orientation"></div>
+    <div class="result-actions">
+      <button class="btn-secondary" id="review-btn">Revoir le parcours</button>
+      <button class="btn-primary" id="restart-btn">Recommencer</button>
+    </div>
+  </div>
+
+  <footer>
+    Outil pédagogique — Spécialité Endodontie · Chirurgie dentaire
+  </footer>
+
+</div>
+
+<script>
+(function(){
+
+  // ---------- Decision tree ----------
+  var nodes = {
+    q_asymptomatic: {
+      text: "La dent est-elle totalement asymptomatique : aucune douleur spontanée ni provoquée, tests de vitalité pulpaire normaux, examen clinique et radiographique sans anomalie ?",
+      options: [
+        {label:"Oui", next:"r_saine"},
+        {label:"Non", next:"q_swelling"}
+      ]
+    },
+    q_swelling: {
+      text: "Observez-vous une tuméfaction (gonflement) des tissus mous en regard de la dent causale ?",
+      options: [
+        {label:"Oui", next:"q_diffuse"},
+        {label:"Non", next:"q_spontaneous"}
+      ]
+    },
+    q_spontaneous: {
+      text: "La douleur est-elle spontanée, c'est-à-dire apparaît-elle sans qu'aucun stimulus ne soit appliqué sur la dent ?",
+      options: [
+        {label:"Oui", next:"q_irreversible_signs"},
+        {label:"Non", next:"q_provoked"}
+      ]
+    },
+    q_provoked: {
+      text: "La douleur apparaît-elle uniquement lors d'un stimulus thermique (froid, chaud) ou sucré ?",
+      options: [
+        {label:"Oui", next:"q_duration"},
+        {label:"Non", next:"q_percussion"}
+      ]
+    },
+    q_duration: {
+      text: "Une fois le stimulus retiré, la douleur persiste-t-elle encore quelques secondes (jusqu'à environ une minute) avant de disparaître ?",
+      options: [
+        {label:"Non, elle disparaît immédiatement", next:"r_hyperhemie"},
+        {label:"Oui, elle persiste puis cède", next:"r_reversible"}
+      ]
+    },
+    q_irreversible_signs: {
+      text: "Cette douleur spontanée est-elle intense, pulsatile ou lancinante, exacerbée par le chaud, à prédominance nocturne, mal localisée par le patient, et persiste-t-elle longtemps après un éventuel stimulus ?",
+      options: [
+        {label:"Oui", next:"r_irreversible"},
+        {label:"Non", next:"q_percussion"}
+      ]
+    },
+    q_percussion: {
+      text: "La dent est-elle douloureuse à la percussion axiale et/ou perçue par le patient comme « plus haute » (sensation de surocclusion) ?",
+      options: [
+        {label:"Oui", next:"q_mobility"},
+        {label:"Non", next:"q_fistula"}
+      ]
+    },
+    q_mobility: {
+      text: "La dent présente-t-elle en plus une mobilité augmentée, une vive douleur à la palpation apicale, et/ou des signes évidents d'infection (pulpe nécrosée, début de tuméfaction) ?",
+      options: [
+        {label:"Non", next:"r_parodontite"},
+        {label:"Oui", next:"r_abces_aigu"}
+      ]
+    },
+    q_fistula: {
+      text: "Existe-t-il une fistule (petit bouton sur la gencive, avec ou sans écoulement purulent), la dent étant par ailleurs peu ou pas douloureuse ?",
+      options: [
+        {label:"Oui", next:"r_abces_chronique"},
+        {label:"Non", next:"r_indetermine"}
+      ]
+    },
+    q_diffuse: {
+      text: "La tuméfaction est-elle diffuse, indurée (« ligneuse »), s'étendant rapidement, avec des signes généraux marqués (fièvre élevée, trismus serré, dysphagie, altération importante de l'état général) ?",
+      options: [
+        {label:"Oui", next:"r_cellulite_diffuse"},
+        {label:"Non", next:"q_fluctuation"}
+      ]
+    },
+    q_fluctuation: {
+      text: "À la palpation, la tuméfaction est-elle fluctuante (molle, rénitente, témoin d'une collection purulente), avec une peau ou muqueuse rouge, tendue et luisante, et une douleur pulsatile bien localisée ?",
+      options: [
+        {label:"Oui", next:"r_cellulite_suppuree"},
+        {label:"Non", next:"r_cellulite_sereuse"}
+      ]
+    },
+
+    // ---------- Results ----------
+    r_saine: {
+      result:true, category:"normal", title:"Dent saine",
+      def:"Aucun processus pathologique pulpaire ou périapical.",
+      signs:[
+        "Pas de douleur spontanée ni provoquée",
+        "Tests de vitalité pulpaire normaux",
+        "Pas de sensibilité à la percussion ou à la palpation",
+        "Ligament desmodontal radiologiquement normal"
+      ],
+      orientation:"Aucun traitement endodontique nécessaire."
+    },
+    r_hyperhemie: {
+      result:true, category:"pulpaire", title:"Hyperhémie pulpaire",
+      def:"Réaction pulpaire congestive, réversible et transitoire, sans inflammation pulpaire vraie.",
+      signs:[
+        "Sensibilité vive mais fugace au froid",
+        "Disparition immédiate de la douleur à l'arrêt du stimulus",
+        "Pas de douleur spontanée",
+        "Percussion non douloureuse, dent vitale"
+      ],
+      orientation:"Éliminer le facteur causal (carie, restauration défectueuse) ; pulpe conservable, simple surveillance."
+    },
+    r_reversible: {
+      result:true, category:"pulpaire", title:"Pulpite réversible",
+      def:"Inflammation pulpaire légère à modérée, réversible si la cause est traitée à temps.",
+      signs:[
+        "Douleur provoquée par le froid ou le sucré, vive mais brève",
+        "Persiste quelques secondes à environ une minute après l'arrêt du stimulus, puis cède",
+        "Pas de douleur spontanée ni nocturne",
+        "Percussion non douloureuse, dent vitale"
+      ],
+      orientation:"Traiter la cause (éviction carieuse, obturation étanche). Pas de traitement endodontique si la cause est supprimée rapidement."
+    },
+    r_irreversible: {
+      result:true, category:"pulpaire", title:"Pulpite aiguë irréversible",
+      def:"Inflammation pulpaire sévère, ne pouvant régresser, évoluant vers la nécrose pulpaire.",
+      signs:[
+        "Douleur spontanée, intense, pulsatile ou lancinante",
+        "Exacerbée par le chaud, parfois calmée transitoirement par le froid",
+        "Douleur irradiante, mal localisée par le patient",
+        "Recrudescence nocturne, persiste longtemps après le stimulus",
+        "Percussion souvent non significative, dent encore vitale aux tests"
+      ],
+      orientation:"Traitement endodontique en urgence (biopulpectomie)."
+    },
+    r_parodontite: {
+      result:true, category:"periapical", title:"Parodontite apicale aiguë",
+      def:"Inflammation aiguë du ligament parodontal apical, d'origine traumatique/occlusale ou infectieuse débutante.",
+      signs:[
+        "Douleur à la percussion axiale, bien localisée",
+        "Sensation de « dent longue » / surocclusion",
+        "Pas de tuméfaction, pas de mobilité significative",
+        "Vitalité pulpaire variable selon la cause (vitale si trauma, nécrosée si infection débutante)"
+      ],
+      orientation:"Rechercher la cause (trauma occlusal ou nécrose pulpaire) et traiter en conséquence (meulage ± traitement endodontique)."
+    },
+    r_abces_aigu: {
+      result:true, category:"periapical", title:"Abcès apical aigu",
+      def:"Infection aiguë d'origine pulpaire avec collection purulente périapicale débutante, avant fistulisation.",
+      signs:[
+        "Douleur intense, spontanée, exacerbée par la percussion et la palpation apicale",
+        "Dent mobile, sensation d'extrusion",
+        "Pulpe nécrosée (tests de vitalité négatifs)",
+        "Tuméfaction débutante possible, éventuels signes généraux (fébricule, malaise)"
+      ],
+      orientation:"Urgence : drainage (ouverture de la chambre pulpaire), traitement endodontique, antibiothérapie si signes généraux."
+    },
+    r_abces_chronique: {
+      result:true, category:"periapical", title:"Abcès apical chronique",
+      def:"Infection chronique d'origine pulpaire, drainée en continu par une fistule, généralement peu symptomatique.",
+      signs:[
+        "Pulpe nécrosée",
+        "Fistule (parulie) avec ou sans écoulement purulent",
+        "Douleur faible ou absente",
+        "Image radioclaire périapicale souvent présente"
+      ],
+      orientation:"Traitement endodontique pour éliminer l'infection canalaire ; la fistule se résorbe après un traitement adéquat."
+    },
+    r_cellulite_sereuse: {
+      result:true, category:"cellulite", title:"Cellulite séreuse",
+      def:"Premier stade de diffusion de l'infection dans les tissus mous péri-maxillaires, sans collection purulente franche.",
+      signs:[
+        "Tuméfaction diffuse, ferme, pâteuse (« en pâte »)",
+        "Peau/muqueuse de couleur normale ou légèrement rosée",
+        "Douleur modérée, pas de fluctuation à la palpation",
+        "Signes généraux discrets ou absents"
+      ],
+      orientation:"Traiter la cause dentaire (drainage endodontique), antibiothérapie, surveillance rapprochée de l'évolution."
+    },
+    r_cellulite_suppuree: {
+      result:true, category:"cellulite", title:"Cellulite suppurée (collectée)",
+      def:"Stade de collection purulente localisée dans les tissus mous.",
+      signs:[
+        "Tuméfaction fluctuante à la palpation",
+        "Peau/muqueuse rouge, tendue et luisante",
+        "Douleur intense, pulsatile, bien localisée",
+        "Possible fièvre et chaleur locale"
+      ],
+      orientation:"Urgence : incision-drainage de la collection, traitement de la cause dentaire, antibiothérapie."
+    },
+    r_cellulite_diffuse: {
+      result:true, category:"urgence", title:"Cellulite diffuse",
+      def:"Forme grave et extensive de l'infection, à progression rapide dans plusieurs espaces celluleux, sans tendance à la collection.",
+      signs:[
+        "Tuméfaction dure (« ligneuse »/bois), extension rapide",
+        "Peau tendue et chaude",
+        "Trismus serré, dysphagie",
+        "Fièvre élevée, altération sévère de l'état général",
+        "Risque d'atteinte des voies aériennes (angine de Ludwig)"
+      ],
+      orientation:"URGENCE VITALE : hospitalisation, drainage chirurgical large, antibiothérapie IV, surveillance des voies aériennes."
+    },
+    r_indetermine: {
+      result:true, category:"periapical", title:"Diagnostic non déterminé",
+      def:"Les réponses fournies ne correspondent pas à un tableau clinique typique parmi les diagnostics proposés.",
+      signs:[
+        "Revérifiez chaque réponse en reprenant l'examen clinique (interrogatoire, tests de vitalité, percussion, palpation)",
+        "Envisagez une cause non endodontique (parodontale, traumatique, autre)"
+      ],
+      orientation:"Rapprochez-vous de votre enseignant pour discuter du cas clinique."
+    }
+  };
+
+  var START = "q_asymptomatic";
+
+  // ---------- State ----------
+  var history = []; // {nodeId, question, answerLabel, next}
+  var currentNode = START;
+
+  // ---------- DOM refs ----------
+  var introCard = document.getElementById('intro-card');
+  var flowArea = document.getElementById('flow-area');
+  var stepHistoryEl = document.getElementById('step-history');
+  var questionCard = document.getElementById('question-card');
+  var qnumEl = document.getElementById('qnum');
+  var questionTextEl = document.getElementById('question-text');
+  var optionsEl = document.getElementById('options');
+  var backRow = document.getElementById('back-row');
+  var resultCard = document.getElementById('result-card');
+
+  document.getElementById('start-btn').addEventListener('click', function(){
+    introCard.classList.add('hidden');
+    flowArea.classList.remove('hidden');
+    renderQuestion();
+  });
+
+  document.getElementById('back-btn').addEventListener('click', function(){
+    if(history.length === 0) return;
+    var last = history.pop();
+    currentNode = last.nodeId;
+    renderHistory();
+    renderQuestion();
+  });
+
+  document.getElementById('restart-btn').addEventListener('click', resetApp);
+
+  document.getElementById('review-btn').addEventListener('click', function(){
+    resultCard.classList.add('hidden');
+    flowArea.classList.remove('hidden');
+  });
+
+  function resetApp(){
+    history = [];
+    currentNode = START;
+    resultCard.classList.add('hidden');
+    introCard.classList.remove('hidden');
+    flowArea.classList.add('hidden');
+    stepHistoryEl.innerHTML = '';
+  }
+
+  function renderHistory(){
+    stepHistoryEl.innerHTML = '';
+    history.forEach(function(step){
+      var div = document.createElement('div');
+      div.className = 'step-done';
+      div.innerHTML =
+        '<div class="check">✓</div>' +
+        '<div class="content">' +
+          '<div class="q">' + step.question + '</div>' +
+          '<div class="a">' + step.answerLabel + '</div>' +
+        '</div>';
+      stepHistoryEl.appendChild(div);
+    });
+  }
+
+  function renderQuestion(){
+    var node = nodes[currentNode];
+
+    if(node.result){
+      showResult(node);
+      return;
+    }
+
+    questionCard.classList.remove('hidden');
+    qnumEl.textContent = 'Question ' + (history.length + 1);
+    questionTextEl.textContent = node.text;
+    optionsEl.innerHTML = '';
+
+    node.options.forEach(function(opt){
+      var btn = document.createElement('button');
+      btn.textContent = opt.label;
+      btn.addEventListener('click', function(){
+        history.push({
+          nodeId: currentNode,
+          question: node.text,
+          answerLabel: opt.label,
+          next: opt.next
+        });
+        currentNode = opt.next;
+        renderHistory();
+        renderQuestion();
+      });
+      optionsEl.appendChild(btn);
+    });
+
+    backRow.classList.toggle('hidden', history.length === 0);
+
+    questionCard.scrollIntoView({behavior:'smooth', block:'center'});
+  }
+
+  function showResult(node){
+    flowArea.classList.add('hidden');
+    resultCard.classList.remove('hidden');
+    resultCard.className = 'card result-card cat-' + node.category;
+
+    var badge = document.getElementById('result-badge');
+    badge.className = 'badge cat-' + node.category;
+    badge.textContent = categoryLabel(node.category);
+
+    document.getElementById('result-title').textContent = node.title;
+    document.getElementById('result-def').textContent = node.def;
+
+    var signsEl = document.getElementById('result-signs');
+    signsEl.innerHTML = '';
+    node.signs.forEach(function(s){
+      var li = document.createElement('li');
+      li.textContent = s;
+      signsEl.appendChild(li);
+    });
+
+    document.getElementById('result-orientation').textContent = node.orientation;
+
+    resultCard.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function categoryLabel(cat){
+    switch(cat){
+      case 'normal': return 'Physiologique';
+      case 'pulpaire': return 'Pathologie pulpaire';
+      case 'periapical': return 'Pathologie périapicale';
+      case 'cellulite': return 'Cellulite';
+      case 'urgence': return 'Urgence vitale';
+      default: return '';
+    }
+  }
+
+})();
+</script>
+</body>
+</html>
