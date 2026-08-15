@@ -469,7 +469,18 @@
   .score-row .details .guess{color:var(--muted); font-size:0.8rem; margin-top:2px;}
 
   /* Fiche récapitulative (imprimable) */
-  .recap-sheet{margin-top:24px;}
+  .recap-sheet{
+    margin-top:24px;
+    border-top:2px solid var(--pdf);
+    padding-top:20px;
+  }
+  .recap-actions{
+    display:flex;
+    justify-content:center;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:16px;
+  }
   .recap-sheet h1{
     font-size:1.25rem;
     text-align:center;
@@ -663,7 +674,7 @@
 
   <div class="pdf-block">
     <button class="btn-pdf" id="recap-btn" type="button">📄 Téléchargement PDF récapitulatif</button>
-    <div class="pdf-hint">Ouvre la boîte d'impression : choisissez « Enregistrer au format PDF » puis Enregistrer.</div>
+    <div class="pdf-hint">Affiche la fiche complète en bas de page, avec un bouton pour l'imprimer ou l'enregistrer en PDF.</div>
   </div>
 
   <footer>
@@ -671,6 +682,10 @@
   </footer>
 
   <div id="recap-sheet" class="recap-sheet hidden">
+    <div class="recap-actions">
+      <button class="btn-primary" id="recap-print-btn" type="button">🖨️ Imprimer / Enregistrer en PDF</button>
+      <button class="btn-secondary" id="recap-close-btn" type="button">✕ Fermer</button>
+    </div>
     <h1>Fiche récapitulative — Diagnostic endodontique</h1>
     <div class="recap-grid" id="recap-grid"></div>
   </div>
@@ -1327,7 +1342,9 @@
   document.getElementById('quiz-restart-btn').addEventListener('click', function(){ startQuizSession(quizLength); });
   document.getElementById('quiz-home-btn').addEventListener('click', goHome);
   document.getElementById('result-home-btn').addEventListener('click', goHome);
-  document.getElementById('recap-btn').addEventListener('click', downloadRecap);
+  document.getElementById('recap-btn').addEventListener('click', showRecapSheet);
+  document.getElementById('recap-print-btn').addEventListener('click', printRecap);
+  document.getElementById('recap-close-btn').addEventListener('click', hideRecapSheet);
   document.getElementById('ask-btn').addEventListener('click', askQuestion);
   document.getElementById('guess-btn').addEventListener('click', submitGuess);
 
@@ -1614,8 +1631,18 @@
     recapBuilt = true;
   }
 
-  function downloadRecap(){
+  function showRecapSheet(){
     buildRecapSheet();
+    var sheet = document.getElementById('recap-sheet');
+    sheet.classList.remove('hidden');
+    sheet.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function hideRecapSheet(){
+    document.getElementById('recap-sheet').classList.add('hidden');
+  }
+
+  function printRecap(){
     document.body.classList.add('printing-recap');
     window.print();
   }
