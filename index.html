@@ -420,6 +420,12 @@
     text-transform:uppercase;
     letter-spacing:.03em;
   }
+  .score-joke{
+    margin:10px 0 0;
+    font-size:0.95rem;
+    font-style:italic;
+    color:var(--teal-900);
+  }
   .score-recap{
     display:flex;
     flex-direction:column;
@@ -636,6 +642,7 @@
     <div class="score-display">
       <div class="score-number" id="score-number">0 / 5</div>
       <div class="score-label">Score de la série</div>
+      <p class="score-joke" id="score-joke"></p>
     </div>
     <div class="score-recap" id="score-recap"></div>
     <div class="result-actions">
@@ -1522,6 +1529,28 @@
     resultCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
+  var SCORE_JOKES_5 = [
+    "Même la petite souris fait mieux.",
+    "Une dent de sagesse... mais pas encore sortie.",
+    "Brossage insuffisant, mais ça commence à mousser.",
+    "Ça prend racine.",
+    "Presque prêt pour le fauteuil.",
+    "Le monde est sauvé... ou presque !"
+  ];
+  var SCORE_JOKES_10 = [
+    "Même la petite souris fait mieux.",
+    "Un fluor providentiel n'aurait pas été de trop.",
+    "Une dent de sagesse... mais pas encore sortie.",
+    "Le fil dentaire attendra un peu.",
+    "Brossage insuffisant, mais ça commence à mousser.",
+    "Bain de bouche recommandé avant la suite.",
+    "Ça prend racine.",
+    "Le détartrage porte ses fruits.",
+    "Presque prêt pour le fauteuil.",
+    "Un sourire qui inspire déjà confiance.",
+    "Le monde est sauvé... ou presque !"
+  ];
+
   function showQuizScore(){
     resultCard.classList.add('hidden');
     sessionArea.classList.add('hidden');
@@ -1529,6 +1558,8 @@
 
     var scoreCount = quizResults.filter(function(r){ return r.correct; }).length;
     document.getElementById('score-number').textContent = scoreCount + ' / ' + quizLength;
+    var jokes = quizLength === 10 ? SCORE_JOKES_10 : SCORE_JOKES_5;
+    document.getElementById('score-joke').textContent = jokes[scoreCount] || '';
 
     var recapEl = document.getElementById('score-recap');
     recapEl.innerHTML = '';
