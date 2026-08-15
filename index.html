@@ -269,13 +269,31 @@
     font-size:0.93rem;
   }
   .result-card ul li{margin-bottom:4px;}
-  .orientation-box{
-    background:var(--teal-100);
+  .treatment-boxes{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    margin-top:8px;
+  }
+  .treatment-box{
     border-radius:10px;
     padding:12px 14px;
     font-size:0.9rem;
-    margin-top:8px;
   }
+  .treatment-box h4{
+    margin:0 0 4px;
+    font-size:0.78rem;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+  .treatment-box.urgence{
+    background:rgba(217,119,6,0.12);
+  }
+  .treatment-box.urgence h4{color:var(--periapical);}
+  .treatment-box.final{
+    background:var(--teal-100);
+  }
+  .treatment-box.final h4{color:var(--teal-700);}
   .guess-recap{
     font-size:0.9rem;
     color:var(--muted);
@@ -437,8 +455,16 @@
 
     <h3>Signes cliniques évocateurs</h3>
     <ul id="result-signs"></ul>
-    <h3>Orientation</h3>
-    <div class="orientation-box" id="result-orientation"></div>
+    <div class="treatment-boxes">
+      <div class="treatment-box urgence">
+        <h4>Traitement d'urgence</h4>
+        <div id="result-urgence"></div>
+      </div>
+      <div class="treatment-box final">
+        <h4>Traitement final à prévoir</h4>
+        <div id="result-final"></div>
+      </div>
+    </div>
     <div class="result-actions">
       <button class="btn-primary" id="restart-btn">Nouvelle session de diagnostic</button>
     </div>
@@ -482,7 +508,8 @@
         "Pas de sensibilité à la percussion ou à la palpation",
         "Ligament desmodontal radiologiquement normal"
       ],
-      orientation:"Aucun traitement endodontique nécessaire.",
+      urgence:"Aucun geste d'urgence nécessaire.",
+      traitementFinal:"Aucun traitement endodontique nécessaire.",
       answers:{froid:"non"},
       quotes:{
         froid:"Non, le froid ne me fait rien du tout.",
@@ -509,7 +536,8 @@
         "Pas de douleur spontanée",
         "Percussion non douloureuse, dent vitale"
       ],
-      orientation:"Soin de la carie causale (obturation). Ce n'est pas une urgence dentaire à proprement parler ; la pulpe reste conservable.",
+      urgence:"Ce n'est pas une urgence dentaire à proprement parler.",
+      traitementFinal:"Soin de la carie causale (obturation) ; la pulpe reste conservable.",
       answers:{froid:"leger"},
       quotes:{
         froid:"Oui, ça pique au froid mais c'est fugace et léger, ça s'arrête dès la fin du stimulus.",
@@ -537,7 +565,8 @@
         "Pas de douleur spontanée ni nocturne",
         "Percussion non douloureuse, dent vitale"
       ],
-      orientation:"Soin de la carie ou reprise du soin défaillant, sur un créneau de soin classique. Ou curetage carieux d'urgence avec coiffage pulpaire (MTA, biocéramique type Biodentine) et restauration en résine composite ou CVI en urgence.",
+      urgence:"Si besoin : curetage carieux d'urgence avec coiffage pulpaire (MTA, biocéramique type Biodentine) et restauration en résine composite ou CVI.",
+      traitementFinal:"Soin de la carie ou reprise du soin défaillant, sur un créneau de soin classique.",
       answers:{froid:"leger", sucre:true},
       quotes:{
         froid:"Oui, mais c'est léger et fugace, ça passe quand j'arrête de manger du froid.",
@@ -565,7 +594,8 @@
         "Douleur pulsatile (« comme un cœur »), à recrudescence nocturne et insomniante",
         "Pas de douleur à la percussion ni à la palpation (pas encore d'atteinte périapicale)"
       ],
-      orientation:"Urgence : pose de la digue obligatoire, avec geste d'urgence en première intention — pulpotomie thérapeutique, pulpotomie d'urgence ou pulpectomie d'urgence.",
+      urgence:"Pose de la digue obligatoire, avec geste d'urgence en première intention — pulpotomie thérapeutique, pulpotomie d'urgence ou pulpectomie d'urgence.",
+      traitementFinal:"Traitement endodontique complet (biopulpectomie) à programmer pour finaliser la désinfection et l'obturation canalaire.",
       answers:{froid:"intense", chaud:true, sucre:true, nocturne:true, pulsation:true},
       quotes:{
         froid:"Oui, très intense, ça se prolonge et irradie jusqu'à l'oreille.",
@@ -593,7 +623,8 @@
         "Gêne à la mastication plutôt qu'une douleur franche",
         "Pas de tuméfaction, pas de signe général"
       ],
-      orientation:"Pose de la digue obligatoire. Meulage de la surocclusion si trauma occlusal ; si la pulpe est nécrosée, pulpectomie d'urgence réalisée dans la même séance de soin.",
+      urgence:"Pose de la digue obligatoire. Meulage de la surocclusion si trauma occlusal ; si la pulpe est nécrosée, pulpectomie d'urgence.",
+      traitementFinal:"Traitement endodontique complet si la pulpe est nécrosée ; simple surveillance si la cause est occlusale et corrigée.",
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true},
       quotes:{
         froid:"Non, le froid ne me fait rien.",
@@ -621,7 +652,8 @@
         "Le froid (glace) apaise la douleur",
         "Pas encore de tuméfaction franche"
       ],
-      orientation:"Urgence : pose de la digue obligatoire, pulpectomie d'urgence pour drainer et lever la pression, puis traitement endodontique complet réalisé dans la même séance de soin.",
+      urgence:"Pose de la digue obligatoire, pulpectomie d'urgence pour drainer et lever la pression.",
+      traitementFinal:"Traitement endodontique complet, si possible dans la même séance ou à la séance suivante.",
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, continue_diffuse:true},
       quotes:{
         froid:"Non, le froid ne me fait rien.",
@@ -650,7 +682,8 @@
         "Petit bouton (fistule/parulie) visible sur la gencive, en regard de l'apex",
         "Image radioclaire périapicale souvent présente"
       ],
-      orientation:"Pose de la digue obligatoire si une pulpectomie d'urgence est réalisée, mais ce n'est pas une urgence vraie ; l'important est de programmer le traitement endodontique complet. Si la dent n'est pas conservable, prévoir l'extraction.",
+      urgence:"Pas une urgence vraie. Une pulpectomie d'urgence (sous digue) est possible mais non systématique.",
+      traitementFinal:"Traitement endodontique complet à programmer ; si la dent n'est pas conservable, prévoir l'extraction.",
       answers:{mastication:true},
       quotes:{
         froid:"Non, le froid ne me fait rien.",
@@ -677,7 +710,8 @@
         "Dent causale très douloureuse à la percussion et à la palpation, sensation de dent longue",
         "Douleur constante, apaisée par le froid ; mastication impossible"
       ],
-      orientation:"Pulpectomie sous digue si la dent est conservable, ou extraction si elle ne l'est pas, associée à une antibiothérapie.",
+      urgence:"Pulpectomie sous digue si la dent est conservable (ou extraction si elle ne l'est pas), associée à une antibiothérapie.",
+      traitementFinal:"Traitement endodontique complet une fois l'épisode infectieux contrôlé.",
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, continue_diffuse:true},
       quotes:{
         froid:"Non, le froid ne me fait rien.",
@@ -705,7 +739,8 @@
         "Douleur constante, apaisée par le froid",
         "Pas de signes généraux marqués (pas de fièvre élevée, pas de trismus)"
       ],
-      orientation:"Pulpectomie sous digue si la dent est conservable, ou extraction, associée à un drainage muqueux et à une antibiothérapie.",
+      urgence:"Pulpectomie sous digue si la dent est conservable (ou extraction), associée à un drainage muqueux et à une antibiothérapie.",
+      traitementFinal:"Traitement endodontique complet une fois la collection résorbée.",
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, continue_diffuse:true},
       quotes:{
         froid:"Non, le froid ne me fait rien.",
@@ -733,7 +768,8 @@
         "Douleur constante, dent causale très algique à la percussion et à la palpation",
         "Risque d'atteinte des voies aériennes (angine de Ludwig)"
       ],
-      orientation:"URGENCE VITALE : la cellulite diffuse impose une référence hospitalière, le plus souvent en service de chirurgie maxillo-faciale, pour drainage chirurgical large sous couverture antibiotique IV et surveillance des voies aériennes.",
+      urgence:"URGENCE VITALE : référer en milieu hospitalier, le plus souvent en service de chirurgie maxillo-faciale, pour drainage chirurgical large sous couverture antibiotique IV et surveillance des voies aériennes.",
+      traitementFinal:"Traitement endodontique (ou extraction) de la dent causale à distance, une fois l'épisode infectieux sévère maîtrisé.",
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, signes_generaux:true, continue_diffuse:true},
       quotes:{
         froid:"Non, le froid ne me fait rien.",
@@ -1039,7 +1075,8 @@
       signsEl.appendChild(li);
     });
 
-    document.getElementById('result-orientation').textContent = actual.orientation;
+    document.getElementById('result-urgence').textContent = actual.urgence;
+    document.getElementById('result-final').textContent = actual.traitementFinal;
 
     resultCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
