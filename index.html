@@ -23,6 +23,8 @@
     --cellulite:#dc2626;
     --urgence:#7c1d1d;
     --mixte:#7c3aed;
+    --pdf:#c2410c;
+    --pdf-dark:#9a3412;
     --ok:#0f9488;
     --ko:#b91c1c;
     --radius:14px;
@@ -392,21 +394,23 @@
     margin-top:32px;
   }
 
-  .link-btn{
-    background:none;
-    border:none;
-    color:var(--teal-700);
-    font-size:0.78rem;
-    text-decoration:underline;
-    cursor:pointer;
-    padding:6px 0 0;
-    font-family:inherit;
+  .pdf-block{
+    text-align:center;
+    margin-top:28px;
   }
-  .link-btn:hover{color:var(--teal-900);}
+  .btn-pdf{
+    background:var(--pdf);
+    color:#fff;
+    font-size:0.95rem;
+    font-weight:600;
+    padding:12px 22px;
+    border-radius:10px;
+    transition:background .15s ease;
+  }
+  .btn-pdf:hover{background:var(--pdf-dark);}
   .pdf-hint{
-    display:inline-block;
-    margin-top:4px;
-    font-size:0.7rem;
+    margin-top:6px;
+    font-size:0.72rem;
     color:var(--muted);
   }
 
@@ -657,12 +661,13 @@
     </div>
   </div>
 
+  <div class="pdf-block">
+    <button class="btn-pdf" id="recap-btn" type="button">📄 Téléchargement PDF récapitulatif</button>
+    <div class="pdf-hint">Ouvre la boîte d'impression : choisissez « Enregistrer au format PDF » puis Enregistrer.</div>
+  </div>
+
   <footer>
     Outil pédagogique — Spécialité Endodontie · Chirurgie dentaire
-    <br>
-    <button class="link-btn" id="recap-btn" type="button">📄 Fiche récapitulative des 11 diagnostics (PDF)</button>
-    <br>
-    <span class="pdf-hint">Ouvre la boîte d'impression : choisissez « Enregistrer au format PDF » puis Enregistrer.</span>
   </footer>
 
   <div id="recap-sheet" class="recap-sheet hidden">
