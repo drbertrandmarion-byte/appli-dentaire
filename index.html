@@ -180,6 +180,7 @@
   .step-done .q{color:var(--muted);}
   .step-done .a{font-style:italic; margin-top:2px;}
   .step-done .a.oui{color:var(--teal-700); font-weight:600;}
+  .step-done .a.intense{color:var(--ko); font-weight:700;}
   .step-done .a.non{color:var(--muted);}
 
   .ask-card, .guess-card{
@@ -454,8 +455,7 @@
 
   // ---------- Les 15 questions que l'étudiant peut choisir de poser ----------
   var QUESTIONS = [
-    {id:"froid_fugace",     text:"Y a-t-il une douleur au froid, fugace (brève, qui disparaît vite) ?"},
-    {id:"froid_irradiant",  text:"Cette douleur au froid est-elle irradiante (elle se diffuse, difficile à localiser précisément) ?"},
+    {id:"froid",            text:"Y a-t-il une douleur au froid ?"},
     {id:"percussion",       text:"Y a-t-il une douleur à la percussion ?"},
     {id:"palpation",        text:"Y a-t-il une douleur à la palpation apicale (vestibulaire, en regard de l'apex) ?"},
     {id:"dent_longue",      text:"Le patient a-t-il une sensation de dent « longue » (plus haute que les autres) ?"},
@@ -483,10 +483,9 @@
         "Ligament desmodontal radiologiquement normal"
       ],
       orientation:"Aucun traitement endodontique nécessaire.",
-      answers:{},
+      answers:{froid:"non"},
       quotes:{
-        froid_fugace:"Non, le froid ne me fait rien du tout.",
-        froid_irradiant:"Non.",
+        froid:"Non, le froid ne me fait rien du tout.",
         percussion:"Non, ça ne me fait pas mal quand on tape dessus.",
         palpation:"Non, je peux appuyer sur la gencive sans problème.",
         dent_longue:"Non, elle est comme d'habitude.",
@@ -511,10 +510,9 @@
         "Percussion non douloureuse, dent vitale"
       ],
       orientation:"Soin de la carie causale (obturation). Ce n'est pas une urgence dentaire à proprement parler ; la pulpe reste conservable.",
-      answers:{froid_fugace:true},
+      answers:{froid:"leger"},
       quotes:{
-        froid_fugace:"Oui, ça pique au froid mais ça part tout de suite.",
-        froid_irradiant:"Non, c'est très localisé sur une seule dent.",
+        froid:"Oui, ça pique au froid mais c'est fugace et léger, ça s'arrête dès la fin du stimulus.",
         percussion:"Non.",
         palpation:"Non.",
         dent_longue:"Non.",
@@ -540,10 +538,9 @@
         "Percussion non douloureuse, dent vitale"
       ],
       orientation:"Soin de la carie ou reprise du soin défaillant, sur un créneau de soin classique. Ou curetage carieux d'urgence avec coiffage pulpaire (MTA, biocéramique type Biodentine) et restauration en résine composite ou CVI en urgence.",
-      answers:{froid_fugace:true, sucre:true},
+      answers:{froid:"leger", sucre:true},
       quotes:{
-        froid_fugace:"Oui mais ça passe quand j'arrête de manger du froid.",
-        froid_irradiant:"Non, je sais exactement quelle dent me fait mal.",
+        froid:"Oui, mais c'est léger et fugace, ça passe quand j'arrête de manger du froid.",
         percussion:"Non.",
         palpation:"Non.",
         dent_longue:"Non.",
@@ -563,16 +560,15 @@
       title:"Pulpite aiguë irréversible", category:"pulpaire",
       def:"Inflammation pulpaire sévère, ne pouvant régresser, évoluant vers la nécrose pulpaire.",
       signs:[
-        "Douleur au froid irradiante, difficile à localiser",
+        "Douleur au froid intense, prolongée, irradiant jusqu'à l'oreille",
         "Douleur au chaud et au sucré, très intense",
         "Douleur pulsatile (« comme un cœur »), à recrudescence nocturne et insomniante",
         "Pas de douleur à la percussion ni à la palpation (pas encore d'atteinte périapicale)"
       ],
       orientation:"Urgence : pose de la digue obligatoire, avec geste d'urgence en première intention — pulpotomie thérapeutique, pulpotomie d'urgence ou pulpectomie d'urgence.",
-      answers:{froid_irradiant:true, chaud:true, sucre:true, nocturne:true, pulsation:true},
+      answers:{froid:"intense", chaud:true, sucre:true, nocturne:true, pulsation:true},
       quotes:{
-        froid_fugace:"Non, pas fugace, ça reste longtemps.",
-        froid_irradiant:"Oui, très intense.",
+        froid:"Oui, très intense, ça se prolonge et irradie jusqu'à l'oreille.",
         percussion:"Non.",
         palpation:"Non.",
         dent_longue:"Non.",
@@ -600,8 +596,7 @@
       orientation:"Pose de la digue obligatoire. Meulage de la surocclusion si trauma occlusal ; si la pulpe est nécrosée, pulpectomie d'urgence réalisée dans la même séance de soin.",
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true},
       quotes:{
-        froid_fugace:"Non.",
-        froid_irradiant:"Non.",
+        froid:"Non, le froid ne me fait rien.",
         percussion:"Oui, dès qu'on touche c'est affreux.",
         palpation:"Oui, je peux difficilement toucher ma gencive à gauche.",
         dent_longue:"Oui, on dirait qu'elle a poussé dans la nuit.",
@@ -629,8 +624,7 @@
       orientation:"Urgence : pose de la digue obligatoire, pulpectomie d'urgence pour drainer et lever la pression, puis traitement endodontique complet réalisé dans la même séance de soin.",
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, continue_diffuse:true},
       quotes:{
-        froid_fugace:"Non.",
-        froid_irradiant:"Non.",
+        froid:"Non, le froid ne me fait rien.",
         percussion:"Oui, dès qu'on touche c'est affreux.",
         palpation:"Oui, je ne peux plus toucher la zone.",
         dent_longue:"Oui, on dirait que la dent a poussé.",
@@ -659,8 +653,7 @@
       orientation:"Pose de la digue obligatoire si une pulpectomie d'urgence est réalisée, mais ce n'est pas une urgence vraie ; l'important est de programmer le traitement endodontique complet. Si la dent n'est pas conservable, prévoir l'extraction.",
       answers:{mastication:true},
       quotes:{
-        froid_fugace:"Non.",
-        froid_irradiant:"Non.",
+        froid:"Non, le froid ne me fait rien.",
         percussion:"Non, c'est un peu sensible quand on tape dessus, mais ce n'est pas vraiment douloureux.",
         palpation:"Non, c'est juste légèrement gênant, et j'ai remarqué comme un petit bouton qui ressort sur ma gencive.",
         dent_longue:"Non.",
@@ -687,8 +680,7 @@
       orientation:"Pulpectomie sous digue si la dent est conservable, ou extraction si elle ne l'est pas, associée à une antibiothérapie.",
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, continue_diffuse:true},
       quotes:{
-        froid_fugace:"Non.",
-        froid_irradiant:"Non.",
+        froid:"Non, le froid ne me fait rien.",
         percussion:"Oui, je ne peux pas toucher ma dent sans douleur.",
         palpation:"Oui, je ne peux pas toucher ma gencive.",
         dent_longue:"Oui, comme si elle avait poussé.",
@@ -716,8 +708,7 @@
       orientation:"Pulpectomie sous digue si la dent est conservable, ou extraction, associée à un drainage muqueux et à une antibiothérapie.",
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, continue_diffuse:true},
       quotes:{
-        froid_fugace:"Non.",
-        froid_irradiant:"Non.",
+        froid:"Non, le froid ne me fait rien.",
         percussion:"Oui, je ne peux pas toucher ma dent sans douleur.",
         palpation:"Oui, je ne peux pas toucher ma gencive.",
         dent_longue:"Oui, comme si elle avait poussé.",
@@ -745,8 +736,7 @@
       orientation:"URGENCE VITALE : la cellulite diffuse impose une référence hospitalière, le plus souvent en service de chirurgie maxillo-faciale, pour drainage chirurgical large sous couverture antibiotique IV et surveillance des voies aériennes.",
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, signes_generaux:true, continue_diffuse:true},
       quotes:{
-        froid_fugace:"Non.",
-        froid_irradiant:"Non.",
+        froid:"Non, le froid ne me fait rien.",
         percussion:"Oui, je ne peux pas toucher ma dent sans douleur.",
         palpation:"Oui, je ne peux pas toucher ma gencive.",
         dent_longue:"Oui, comme si elle avait poussé.",
@@ -973,8 +963,19 @@
     if(!qid) return;
 
     var question = QUESTIONS.filter(function(q){ return q.id === qid; })[0];
-    var isYes = !!DIAGNOSES[caseId].answers[qid];
-    var quote = DIAGNOSES[caseId].quotes[qid] || (isYes ? 'Oui.' : 'Non.');
+    var diag = DIAGNOSES[caseId];
+    var quote = diag.quotes[qid];
+    var cssClass;
+
+    if(qid === 'froid'){
+      var level = diag.answers.froid || 'non';
+      cssClass = level === 'non' ? 'non' : (level === 'intense' ? 'oui intense' : 'oui');
+      if(!quote){ quote = level === 'non' ? 'Non.' : 'Oui.'; }
+    } else {
+      var isYes = !!diag.answers[qid];
+      cssClass = isYes ? 'oui' : 'non';
+      if(!quote){ quote = isYes ? 'Oui.' : 'Non.'; }
+    }
 
     askedIds.push(qid);
 
@@ -985,7 +986,7 @@
       '<div class="idx">' + askedIds.length + '</div>' +
       '<div class="content">' +
         '<div class="q">' + question.text + '</div>' +
-        '<div class="a ' + (isYes ? 'oui' : 'non') + '">« ' + quote + ' »</div>' +
+        '<div class="a ' + cssClass + '">« ' + quote + ' »</div>' +
       '</div>';
     stepHistoryEl.appendChild(div);
 
