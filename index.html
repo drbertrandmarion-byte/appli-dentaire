@@ -33,6 +33,9 @@
     --mixte:#7c3aed;
     --pdf:#c2410c;
     --pdf-dark:#9a3412;
+    --logo-navy:#182849;
+    --logo-blue:#3f66d8;
+    --logo-orange:#e8532e;
     --ok:#0f9488;
     --ko:#b91c1c;
     --radius:14px;
@@ -55,15 +58,26 @@
     padding:20px 8px 8px;
   }
   header.app-header h1{
-    font-size:1.5rem;
-    margin:0 0 6px;
-    color:var(--teal-900);
+    font-size:2rem;
+    font-weight:800;
+    margin:0;
+    letter-spacing:-0.01em;
   }
+  header.app-header h1 .logo-navy{color:var(--logo-navy);}
+  header.app-header h1 .logo-blue{color:var(--logo-blue);}
   header.app-header h1 .logo-o{
     width:auto;
-    height:1.55em;
-    vertical-align:-0.42em;
+    height:0.86em;
+    vertical-align:-0.16em;
     display:inline-block;
+    margin:0 0.02em;
+  }
+  .logo-tagline{
+    margin:4px 0 10px;
+    font-size:0.72rem;
+    font-weight:700;
+    letter-spacing:.18em;
+    color:var(--logo-navy);
   }
   header.app-header p{
     margin:0;
@@ -562,15 +576,12 @@
 <div class="wrap">
 
   <header class="app-header">
-    <h1>End<svg class="logo-o" viewBox="95 8 110 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="o (coupe de molaire)">
-      <path d="M103,92 L103,52 Q102,24 126,20 Q140,17 150,27 Q160,17 174,20 Q198,24 197,52 L197,92 Z" fill="#f7f3e7" stroke="#b98a5e" stroke-width="2.2"/>
-      <path d="M114,92 L114,56 Q113,35 132,31 Q141,29 150,36 Q159,29 168,31 Q187,35 186,56 L186,92 Z" fill="#ecdcb8"/>
-      <path d="M130,96 L150,96 L127,232 Q118,247 109,232 Z" fill="#ecdcb8" stroke="#b98a5e" stroke-width="2.2"/>
-      <path d="M150,96 L170,96 L191,232 Q182,247 173,232 Z" fill="#ecdcb8" stroke="#b98a5e" stroke-width="2.2"/>
-      <path d="M138,92 L138,64 Q138,56 150,56 Q162,56 162,64 L162,92 Z" fill="#c23b3b"/>
-      <path d="M141,96 L149,96 L122,228 L116,228 Z" fill="#c23b3b"/>
-      <path d="M151,96 L159,96 L184,228 L178,228 Z" fill="#c23b3b"/>
-    </svg>Diag</h1>
+    <h1><span class="logo-navy">End</span><svg class="logo-o" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="o (dent stylisée)">
+      <circle cx="50" cy="50" r="46" fill="none" stroke="#182849" stroke-width="5"/>
+      <path d="M35,32 Q38,22 46,26 Q50,30 54,26 Q62,22 65,32 Q70,40 66,52 Q66,60 64,70 Q62,80 58,84 Q55,87 54,80 Q53,68 50,62 Q47,68 46,80 Q45,87 42,84 Q38,80 36,70 Q34,60 34,52 Q30,40 35,32 Z" fill="none" stroke="#182849" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M45,29 Q50,35 55,29 M50,33 L50,63" fill="none" stroke="#e8532e" stroke-width="4.5" stroke-linecap="round"/>
+    </svg><span class="logo-blue">Diag</span></h1>
+    <div class="logo-tagline">DIAGNOSTIC EN ENDODONTIE</div>
     <p>Simulation de cas clinique pour les étudiants en chirurgie dentaire</p>
   </header>
 
