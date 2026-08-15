@@ -1189,16 +1189,16 @@
     // os alvéolaire
     parts.push('<rect x="95" y="108" width="130" height="192" fill="#ecd9ab" stroke="#cbb583" stroke-width="1.5"/>');
 
-    // couronne : émail, dentine
-    parts.push('<path d="M118,92 L118,48 Q118,16 150,16 Q182,16 182,48 L182,92 Z" fill="#f7f3e7" stroke="#c9c2ac" stroke-width="1.5"/>');
-    parts.push('<path d="M128,92 L128,52 Q128,30 150,30 Q172,30 172,52 L172,92 Z" fill="#ecdcb8"/>');
+    // couronne de molaire : plus large, table occlusale à deux cuspides (émail, dentine)
+    parts.push('<path d="M103,92 L103,52 Q102,24 126,20 Q140,17 150,27 Q160,17 174,20 Q198,24 197,52 L197,92 Z" fill="#f7f3e7" stroke="#c9c2ac" stroke-width="1.5"/>');
+    parts.push('<path d="M114,92 L114,56 Q113,35 132,31 Q141,29 150,36 Q159,29 168,31 Q187,35 186,56 L186,92 Z" fill="#ecdcb8"/>');
 
     // chambre pulpaire divisée : moitié vivante (gauche) / moitié nécrosée (droite)
     parts.push('<path d="M138,92 L138,64 Q138,56 150,56 L150,92 Z" fill="' + cfg.pulp + '"/>');
     parts.push('<path d="M150,92 L150,56 Q162,56 162,64 L162,92 Z" fill="' + cfg.pulp2 + '"/>');
 
-    // grosse carie
-    parts.push('<path d="M130,18 Q150,8 170,18 L160,72 Q150,84 140,72 Z" fill="#33241a"/>');
+    // grosse carie, dans le sillon occlusal central
+    parts.push('<path d="M134,26 Q150,19 166,26 L158,74 Q150,86 142,74 Z" fill="#33241a"/>');
 
     // deux racines divergentes
     parts.push('<path d="M130,96 L150,96 L127,232 Q118,247 109,232 Z" fill="#ecdcb8" stroke="#c9c2ac" stroke-width="1.5"/>');
@@ -1213,7 +1213,7 @@
     parts.push('<path d="M150,96 L172,96 L189,235 Q182,250 175,235 Z" fill="none" stroke="#b97a5a" stroke-width="1.5" opacity="0.8"/>');
 
     // gencive
-    parts.push('<path d="M112,90 Q150,108 188,90 L188,102 Q150,122 112,102 Z" fill="#e6a3ab" stroke="#c97e8a" stroke-width="1"/>');
+    parts.push('<path d="M100,90 Q150,110 200,90 L200,104 Q150,126 100,104 Z" fill="#e6a3ab" stroke="#c97e8a" stroke-width="1"/>');
 
     parts.push('</svg>');
     return parts.join('');
