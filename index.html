@@ -178,8 +178,8 @@
   }
   .step-done .content{flex:1;}
   .step-done .q{color:var(--muted);}
-  .step-done .a{font-weight:700;}
-  .step-done .a.oui{color:var(--teal-700);}
+  .step-done .a{font-style:italic; margin-top:2px;}
+  .step-done .a.oui{color:var(--teal-700); font-weight:600;}
   .step-done .a.non{color:var(--muted);}
 
   .ask-card, .guess-card{
@@ -417,7 +417,24 @@
         "Ligament desmodontal radiologiquement normal"
       ],
       orientation:"Aucun traitement endodontique nécessaire.",
-      answers:{}
+      answers:{},
+      quotes:{
+        froid_fugace:"Non, le froid ne me fait rien du tout.",
+        froid_irradiant:"Non.",
+        percussion:"Non, ça ne me fait pas mal quand on tape dessus.",
+        palpation:"Non, je peux appuyer sur la gencive sans problème.",
+        dent_longue:"Non, elle est comme d'habitude.",
+        chaud:"Non, le chaud ne me fait rien.",
+        sucre:"Non, je peux manger sucré sans souci.",
+        mastication:"Non, je mâche normalement des deux côtés.",
+        froid_apaise:"Non, je n'ai pas mal, je n'ai pas besoin de ça.",
+        gonflement:"Non, mon visage est normal.",
+        godet:"Non.",
+        signes_generaux:"Non, je me sens bien, pas de fièvre.",
+        nocturne:"Non, je dors très bien.",
+        pulsation:"Non, je ne sens rien battre dans la dent.",
+        continue_diffuse:"Non, je n'ai aucune douleur."
+      }
     },
     hyperhemie: {
       title:"Hyperhémie pulpaire", category:"pulpaire",
@@ -428,7 +445,24 @@
         "Percussion non douloureuse, dent vitale"
       ],
       orientation:"Éliminer le facteur causal (carie, restauration défectueuse) ; pulpe conservable, simple surveillance.",
-      answers:{froid_fugace:true}
+      answers:{froid_fugace:true},
+      quotes:{
+        froid_fugace:"Oui, ça pique au froid mais ça part tout de suite.",
+        froid_irradiant:"Non, c'est très localisé sur une seule dent.",
+        percussion:"Non.",
+        palpation:"Non.",
+        dent_longue:"Non.",
+        chaud:"Non, le chaud ne me fait rien.",
+        sucre:"Non, le sucré ne me fait rien.",
+        mastication:"Non, je mâche normalement.",
+        froid_apaise:"Non, ça ne s'applique pas, je n'ai pas mal au chaud.",
+        gonflement:"Non.",
+        godet:"Non.",
+        signes_generaux:"Non.",
+        nocturne:"Non, je dors bien.",
+        pulsation:"Non.",
+        continue_diffuse:"Non, ce n'est pas constant du tout."
+      }
     },
     reversible: {
       title:"Pulpite réversible", category:"pulpaire",
@@ -440,7 +474,24 @@
         "Percussion non douloureuse, dent vitale"
       ],
       orientation:"Traiter la cause (éviction carieuse, obturation étanche). Pas de traitement endodontique si la cause est supprimée rapidement.",
-      answers:{froid_fugace:true, sucre:true}
+      answers:{froid_fugace:true, sucre:true},
+      quotes:{
+        froid_fugace:"Oui mais ça passe quand j'arrête de manger du froid.",
+        froid_irradiant:"Non, je sais exactement quelle dent me fait mal.",
+        percussion:"Non.",
+        palpation:"Non.",
+        dent_longue:"Non.",
+        chaud:"Non, le chaud ne me fait rien.",
+        sucre:"Oui, je ne peux plus manger de bonbons.",
+        mastication:"Non, je mâche normalement.",
+        froid_apaise:"Non, ça ne s'applique pas.",
+        gonflement:"Non.",
+        godet:"Non.",
+        signes_generaux:"Non.",
+        nocturne:"Non, je dors bien.",
+        pulsation:"Non, ce n'est pas une pulsation.",
+        continue_diffuse:"Non, ça ne dure que quelques secondes."
+      }
     },
     irreversible: {
       title:"Pulpite aiguë irréversible", category:"pulpaire",
@@ -452,7 +503,24 @@
         "Pas de douleur à la percussion ni à la palpation (pas encore d'atteinte périapicale)"
       ],
       orientation:"Traitement endodontique en urgence (biopulpectomie).",
-      answers:{froid_irradiant:true, chaud:true, sucre:true, nocturne:true, pulsation:true}
+      answers:{froid_irradiant:true, chaud:true, sucre:true, nocturne:true, pulsation:true},
+      quotes:{
+        froid_fugace:"Non, pas fugace, ça reste longtemps.",
+        froid_irradiant:"Oui, très intense.",
+        percussion:"Non.",
+        palpation:"Non.",
+        dent_longue:"Non.",
+        chaud:"Oui, très intense.",
+        sucre:"Oui, aussi très intense.",
+        mastication:"Non, ce n'est pas en mangeant que j'ai mal.",
+        froid_apaise:"Non, le froid ne calme rien.",
+        gonflement:"Non.",
+        godet:"Non.",
+        signes_generaux:"Non.",
+        nocturne:"Oui, complètement insomniante.",
+        pulsation:"Oui, comme un cœur.",
+        continue_diffuse:"Non, elle est plutôt pulsatile que continue."
+      }
     },
     parodontite: {
       title:"Parodontite apicale aiguë", category:"periapical",
@@ -464,7 +532,24 @@
         "Pas de tuméfaction, pas de signe général"
       ],
       orientation:"Rechercher la cause (trauma occlusal ou nécrose pulpaire) et traiter en conséquence (meulage ± traitement endodontique).",
-      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true}
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true},
+      quotes:{
+        froid_fugace:"Non.",
+        froid_irradiant:"Non.",
+        percussion:"Oui, dès qu'on touche c'est affreux.",
+        palpation:"Oui, je peux difficilement toucher ma gencive à gauche.",
+        dent_longue:"Oui, on dirait qu'elle a poussé dans la nuit.",
+        chaud:"Non.",
+        sucre:"Non.",
+        mastication:"Oui, mais plutôt une gêne qu'une douleur.",
+        froid_apaise:"Non, je n'ai pas ce genre de douleur.",
+        gonflement:"Non, pas de gonflement.",
+        godet:"Non.",
+        signes_generaux:"Non.",
+        nocturne:"Non.",
+        pulsation:"Non.",
+        continue_diffuse:"Non."
+      }
     },
     abces_aigu: {
       title:"Abcès apical aigu", category:"periapical",
@@ -476,7 +561,24 @@
         "Pas encore de tuméfaction franche"
       ],
       orientation:"Urgence : drainage (ouverture de la chambre pulpaire), traitement endodontique, antibiothérapie si signes généraux.",
-      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, continue_diffuse:true}
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, continue_diffuse:true},
+      quotes:{
+        froid_fugace:"Non.",
+        froid_irradiant:"Non.",
+        percussion:"Oui, dès qu'on touche c'est affreux.",
+        palpation:"Oui, je ne peux plus toucher la zone.",
+        dent_longue:"Oui, on dirait que la dent a poussé.",
+        chaud:"Non.",
+        sucre:"Non.",
+        mastication:"Oui, je ne peux plus manger dessus.",
+        froid_apaise:"Oui, je mets des packs de glace dessus.",
+        gonflement:"Non, pas encore de gonflement.",
+        godet:"Non.",
+        signes_generaux:"Non.",
+        nocturne:"Non.",
+        pulsation:"Non.",
+        continue_diffuse:"Oui, c'est tout le temps intense et lancinant."
+      }
     },
     abces_chronique: {
       title:"Abcès apical chronique", category:"periapical",
@@ -487,7 +589,24 @@
         "Fistule (parulie) et image radioclaire périapicale souvent présentes"
       ],
       orientation:"Traitement endodontique pour éliminer l'infection canalaire ; la fistule se résorbe après un traitement adéquat.",
-      answers:{mastication:true}
+      answers:{mastication:true},
+      quotes:{
+        froid_fugace:"Non.",
+        froid_irradiant:"Non.",
+        percussion:"Non.",
+        palpation:"Non.",
+        dent_longue:"Non.",
+        chaud:"Non.",
+        sucre:"Non.",
+        mastication:"Oui, très gênant mais pas handicapant.",
+        froid_apaise:"Non.",
+        gonflement:"Non.",
+        godet:"Non.",
+        signes_generaux:"Non.",
+        nocturne:"Non.",
+        pulsation:"Non.",
+        continue_diffuse:"Non."
+      }
     },
     cellulite_sereuse: {
       title:"Cellulite séreuse", category:"cellulite",
@@ -498,7 +617,24 @@
         "Douleur constante, apaisée par le froid ; mastication impossible"
       ],
       orientation:"Traiter la cause dentaire (drainage endodontique), antibiothérapie, surveillance rapprochée de l'évolution.",
-      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, continue_diffuse:true}
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, continue_diffuse:true},
+      quotes:{
+        froid_fugace:"Non.",
+        froid_irradiant:"Non.",
+        percussion:"Oui, je ne peux pas toucher ma dent sans douleur.",
+        palpation:"Oui, je ne peux pas toucher ma gencive.",
+        dent_longue:"Oui, comme si elle avait poussé.",
+        chaud:"Non.",
+        sucre:"Non.",
+        mastication:"Oui, impossible de manger dessus.",
+        froid_apaise:"Oui, je mets des packs de glace.",
+        gonflement:"Oui, j'ai le visage déformé.",
+        godet:"Non.",
+        signes_generaux:"Non.",
+        nocturne:"Non.",
+        pulsation:"Non.",
+        continue_diffuse:"Oui, elle est constante."
+      }
     },
     cellulite_suppuree: {
       title:"Cellulite suppurée (collectée)", category:"cellulite",
@@ -510,7 +646,24 @@
         "Pas de signes généraux marqués (pas de fièvre élevée, pas de trismus)"
       ],
       orientation:"Urgence : incision-drainage de la collection, traitement de la cause dentaire, antibiothérapie.",
-      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, continue_diffuse:true}
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, continue_diffuse:true},
+      quotes:{
+        froid_fugace:"Non.",
+        froid_irradiant:"Non.",
+        percussion:"Oui, je ne peux pas toucher ma dent sans douleur.",
+        palpation:"Oui, je ne peux pas toucher ma gencive.",
+        dent_longue:"Oui, comme si elle avait poussé.",
+        chaud:"Non.",
+        sucre:"Non.",
+        mastication:"Oui, impossible de manger dessus.",
+        froid_apaise:"Oui, je mets des packs de glace.",
+        gonflement:"Oui, j'ai le visage avec une collection fluctuante.",
+        godet:"Oui.",
+        signes_generaux:"Non.",
+        nocturne:"Non.",
+        pulsation:"Non.",
+        continue_diffuse:"Oui, elle est constante."
+      }
     },
     cellulite_diffuse: {
       title:"Cellulite diffuse", category:"urgence",
@@ -522,7 +675,24 @@
         "Risque d'atteinte des voies aériennes (angine de Ludwig)"
       ],
       orientation:"URGENCE VITALE : hospitalisation, drainage chirurgical large, antibiothérapie IV, surveillance des voies aériennes.",
-      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, signes_generaux:true, continue_diffuse:true}
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, signes_generaux:true, continue_diffuse:true},
+      quotes:{
+        froid_fugace:"Non.",
+        froid_irradiant:"Non.",
+        percussion:"Oui, je ne peux pas toucher ma dent sans douleur.",
+        palpation:"Oui, je ne peux pas toucher ma gencive.",
+        dent_longue:"Oui, comme si elle avait poussé.",
+        chaud:"Non.",
+        sucre:"Non.",
+        mastication:"Oui, impossible de manger dessus.",
+        froid_apaise:"Oui, je mets des packs de glace.",
+        gonflement:"Oui, j'ai le visage avec une collection fluctuante.",
+        godet:"Oui, avec un gonflement et un œdème qui s'étendent vers le cou et le haut du corps.",
+        signes_generaux:"Oui, je suis à 39°C, j'ai du mal à manger et à respirer, je n'arrive plus à ouvrir la bouche.",
+        nocturne:"Non.",
+        pulsation:"Non.",
+        continue_diffuse:"Oui, elle est constante."
+      }
     }
   };
 
@@ -614,6 +784,7 @@
 
     var question = QUESTIONS.filter(function(q){ return q.id === qid; })[0];
     var isYes = !!DIAGNOSES[caseId].answers[qid];
+    var quote = DIAGNOSES[caseId].quotes[qid] || (isYes ? 'Oui.' : 'Non.');
 
     askedIds.push(qid);
 
@@ -624,7 +795,7 @@
       '<div class="idx">' + askedIds.length + '</div>' +
       '<div class="content">' +
         '<div class="q">' + question.text + '</div>' +
-        '<div class="a ' + (isYes ? 'oui' : 'non') + '">' + (isYes ? 'Oui' : 'Non') + '</div>' +
+        '<div class="a ' + (isYes ? 'oui' : 'non') + '">« ' + quote + ' »</div>' +
       '</div>';
     stepHistoryEl.appendChild(div);
 
