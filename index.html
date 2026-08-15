@@ -316,83 +316,132 @@
 <script>
 (function(){
 
-  // ---------- Decision tree ----------
+  // ---------- Decision tree (basé sur les 15 questions fournies) ----------
   var nodes = {
-    q_asymptomatic: {
-      text: "La dent est-elle totalement asymptomatique : aucune douleur spontanée ni provoquée, tests de vitalité pulpaire normaux, examen clinique et radiographique sans anomalie ?",
+    // 10. Gonflement de la face — point d'entrée
+    q_gonflement: {
+      text: "Y a-t-il un gonflement (tuméfaction) de la face ?",
       options: [
-        {label:"Oui", next:"r_saine"},
-        {label:"Non", next:"q_swelling"}
+        {label:"Oui", next:"q_signes_generaux"},
+        {label:"Non", next:"q_froid_fugace"}
       ]
     },
-    q_swelling: {
-      text: "Observez-vous une tuméfaction (gonflement) des tissus mous en regard de la dent causale ?",
+
+    // --- Branche cellulite (gonflement = oui) ---
+    // 12. Fièvre / dysphagie / difficulté respiratoire / trismus serré
+    q_signes_generaux: {
+      text: "Y a-t-il de la fièvre, et/ou une dysphagie, et/ou une difficulté respiratoire, et/ou un trismus serré ?",
       options: [
-        {label:"Oui", next:"q_diffuse"},
-        {label:"Non", next:"q_spontaneous"}
+        {label:"Oui", next:"r_cellulite_diffuse"},
+        {label:"Non", next:"q_godet"}
       ]
     },
-    q_spontaneous: {
-      text: "La douleur est-elle spontanée, c'est-à-dire apparaît-elle sans qu'aucun stimulus ne soit appliqué sur la dent ?",
+    // 11. Signe de reflux (godet) sur la tuméfaction
+    q_godet: {
+      text: "Sur la tuméfaction, y a-t-il un signe de reflux (godet) : la dépression persiste-t-elle après une pression du doigt ?",
       options: [
-        {label:"Oui", next:"q_irreversible_signs"},
-        {label:"Non", next:"q_provoked"}
+        {label:"Oui", next:"r_cellulite_sereuse"},
+        {label:"Non", next:"r_cellulite_suppuree"}
       ]
     },
-    q_provoked: {
-      text: "La douleur apparaît-elle uniquement lors d'un stimulus thermique (froid, chaud) ou sucré ?",
+
+    // --- Branche pulpaire (gonflement = non) ---
+    // 1. Douleur au froid fugace
+    q_froid_fugace: {
+      text: "Y a-t-il une douleur au froid, fugace (brève, qui disparaît vite) ?",
       options: [
-        {label:"Oui", next:"q_duration"},
+        {label:"Oui", next:"q_froid_irradiant"},
+        {label:"Non", next:"q_chaud"}
+      ]
+    },
+    // 2. Douleur au froid irradiante
+    q_froid_irradiant: {
+      text: "Cette douleur au froid est-elle irradiante (elle se diffuse, difficile à localiser précisément) ?",
+      options: [
+        {label:"Oui", next:"r_irreversible"},
+        {label:"Non", next:"q_sucre"}
+      ]
+    },
+    // 7. Douleur au sucré
+    q_sucre: {
+      text: "Y a-t-il une douleur au sucré ?",
+      options: [
+        {label:"Oui", next:"r_reversible"},
+        {label:"Non", next:"r_hyperhemie"}
+      ]
+    },
+    // 6. Douleur au chaud
+    q_chaud: {
+      text: "Y a-t-il une douleur au chaud ?",
+      options: [
+        {label:"Oui", next:"q_froid_apaise"},
+        {label:"Non", next:"q_continue_diffuse"}
+      ]
+    },
+    // 9. Le froid apaise-t-il la douleur ?
+    q_froid_apaise: {
+      text: "Est-ce que le froid apaise la douleur ?",
+      options: [
+        {label:"Oui", next:"r_irreversible"},
+        {label:"Non", next:"q_continue_diffuse"}
+      ]
+    },
+    // 15. Douleur continue et diffuse
+    q_continue_diffuse: {
+      text: "La douleur est-elle plutôt continue et diffuse (spontanée, difficile à localiser) ?",
+      options: [
+        {label:"Oui", next:"q_nocturne"},
         {label:"Non", next:"q_percussion"}
       ]
     },
-    q_duration: {
-      text: "Une fois le stimulus retiré, la douleur persiste-t-elle encore quelques secondes (jusqu'à environ une minute) avant de disparaître ?",
+    // 13. Douleur qui s'intensifie la nuit
+    q_nocturne: {
+      text: "La douleur s'intensifie-t-elle la nuit ?",
       options: [
-        {label:"Non, elle disparaît immédiatement", next:"r_hyperhemie"},
-        {label:"Oui, elle persiste puis cède", next:"r_reversible"}
+        {label:"Oui", next:"r_irreversible"},
+        {label:"Non", next:"q_pulsation"}
       ]
     },
-    q_irreversible_signs: {
-      text: "Cette douleur spontanée est-elle intense, pulsatile ou lancinante, exacerbée par le chaud, à prédominance nocturne, mal localisée par le patient, et persiste-t-elle longtemps après un éventuel stimulus ?",
+    // 14. Douleur pulsatile
+    q_pulsation: {
+      text: "La douleur est-elle semblable à une pulsation dans la dent ?",
       options: [
         {label:"Oui", next:"r_irreversible"},
         {label:"Non", next:"q_percussion"}
       ]
     },
+
+    // --- Branche périapicale (pas de signe pulpaire net) ---
+    // 3. Douleur à la percussion
     q_percussion: {
-      text: "La dent est-elle douloureuse à la percussion axiale et/ou perçue par le patient comme « plus haute » (sensation de surocclusion) ?",
+      text: "Y a-t-il une douleur à la percussion ?",
       options: [
-        {label:"Oui", next:"q_mobility"},
-        {label:"Non", next:"q_fistula"}
+        {label:"Oui", next:"q_dent_longue"},
+        {label:"Non", next:"q_mastication"}
       ]
     },
-    q_mobility: {
-      text: "La dent présente-t-elle en plus une mobilité augmentée, une vive douleur à la palpation apicale, et/ou des signes évidents d'infection (pulpe nécrosée, début de tuméfaction) ?",
+    // 5. Sensation de dent "longue"
+    q_dent_longue: {
+      text: "Le patient a-t-il une sensation de dent « longue » (plus haute que les autres) ?",
       options: [
-        {label:"Non", next:"r_parodontite"},
-        {label:"Oui", next:"r_abces_aigu"}
+        {label:"Oui", next:"q_palpation"},
+        {label:"Non", next:"q_palpation"}
       ]
     },
-    q_fistula: {
-      text: "Existe-t-il une fistule (petit bouton sur la gencive, avec ou sans écoulement purulent), la dent étant par ailleurs peu ou pas douloureuse ?",
+    // 4. Douleur à la palpation apicale
+    q_palpation: {
+      text: "Y a-t-il une douleur à la palpation apicale (vestibulaire, en regard de l'apex) ?",
+      options: [
+        {label:"Oui", next:"r_abces_aigu"},
+        {label:"Non", next:"r_parodontite"}
+      ]
+    },
+    // 8. Douleur à la mastication
+    q_mastication: {
+      text: "Y a-t-il une douleur à la mastication ?",
       options: [
         {label:"Oui", next:"r_abces_chronique"},
-        {label:"Non", next:"r_indetermine"}
-      ]
-    },
-    q_diffuse: {
-      text: "La tuméfaction est-elle diffuse, indurée (« ligneuse »), s'étendant rapidement, avec des signes généraux marqués (fièvre élevée, trismus serré, dysphagie, altération importante de l'état général) ?",
-      options: [
-        {label:"Oui", next:"r_cellulite_diffuse"},
-        {label:"Non", next:"q_fluctuation"}
-      ]
-    },
-    q_fluctuation: {
-      text: "À la palpation, la tuméfaction est-elle fluctuante (molle, rénitente, témoin d'une collection purulente), avec une peau ou muqueuse rouge, tendue et luisante, et une douleur pulsatile bien localisée ?",
-      options: [
-        {label:"Oui", next:"r_cellulite_suppuree"},
-        {label:"Non", next:"r_cellulite_sereuse"}
+        {label:"Non", next:"r_saine"}
       ]
     },
 
@@ -509,18 +558,9 @@
       ],
       orientation:"URGENCE VITALE : hospitalisation, drainage chirurgical large, antibiothérapie IV, surveillance des voies aériennes."
     },
-    r_indetermine: {
-      result:true, category:"periapical", title:"Diagnostic non déterminé",
-      def:"Les réponses fournies ne correspondent pas à un tableau clinique typique parmi les diagnostics proposés.",
-      signs:[
-        "Revérifiez chaque réponse en reprenant l'examen clinique (interrogatoire, tests de vitalité, percussion, palpation)",
-        "Envisagez une cause non endodontique (parodontale, traumatique, autre)"
-      ],
-      orientation:"Rapprochez-vous de votre enseignant pour discuter du cas clinique."
-    }
   };
 
-  var START = "q_asymptomatic";
+  var START = "q_gonflement";
 
   // ---------- State ----------
   var history = []; // {nodeId, question, answerLabel, next}
