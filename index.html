@@ -22,6 +22,8 @@
     --periapical:#d97706;
     --cellulite:#dc2626;
     --urgence:#7c1d1d;
+    --ok:#0f9488;
+    --ko:#b91c1c;
     --radius:14px;
   }
   *{box-sizing:border-box;}
@@ -76,7 +78,9 @@
     color:var(--muted);
     font-size:0.92rem;
     margin:14px 0;
+    columns:2;
   }
+  .intro-card ul li{ break-inside:avoid; }
   button{
     font-family:inherit;
     cursor:pointer;
@@ -92,6 +96,7 @@
     transition:background .15s ease;
   }
   .btn-primary:hover{background:var(--teal-700);}
+  .btn-primary:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;}
   .btn-secondary{
     background:transparent;
     color:var(--teal-700);
@@ -100,11 +105,42 @@
     font-weight:600;
     padding:9px 16px;
     border-radius:10px;
-    margin-top:8px;
   }
   .btn-secondary:hover{background:var(--teal-100);}
 
-  /* Progress trail (accordion of answered steps) */
+  select{
+    font-family:inherit;
+    font-size:0.95rem;
+    color:var(--ink);
+    background:var(--card);
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:11px 12px;
+    flex:1 1 260px;
+  }
+  select:focus, button:focus-visible{
+    outline:2px solid var(--teal-600);
+    outline-offset:2px;
+  }
+
+  .session-meta{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:0.8rem;
+    color:var(--muted);
+  }
+  .counter-badge{
+    display:inline-block;
+    background:var(--teal-100);
+    color:var(--teal-700);
+    font-weight:700;
+    padding:4px 10px;
+    border-radius:999px;
+    font-variant-numeric:tabular-nums;
+  }
+
+  /* History of asked questions */
   .history-label{
     font-size:0.78rem;
     text-transform:uppercase;
@@ -129,60 +165,60 @@
     padding:10px 14px;
     font-size:0.86rem;
   }
-  .step-done .check{
+  .step-done .idx{
     flex:0 0 auto;
-    width:20px;height:20px;
+    width:22px;height:22px;
     border-radius:50%;
     background:var(--teal-500);
     color:#fff;
     display:flex;align-items:center;justify-content:center;
-    font-size:0.7rem;
-    margin-top:2px;
+    font-size:0.72rem;
+    font-weight:700;
+    margin-top:1px;
   }
   .step-done .content{flex:1;}
   .step-done .q{color:var(--muted);}
-  .step-done .a{font-weight:600;color:var(--teal-900);}
+  .step-done .a{font-weight:700;}
+  .step-done .a.oui{color:var(--teal-700);}
+  .step-done .a.non{color:var(--muted);}
 
-  .question-card{
+  .ask-card, .guess-card{
     border-left:4px solid var(--teal-600);
   }
-  .question-card .qnum{
-    font-size:0.78rem;
-    text-transform:uppercase;
-    letter-spacing:.04em;
-    color:var(--teal-600);
-    font-weight:700;
-    margin-bottom:6px;
-  }
-  .question-card h2{
-    font-size:1.08rem;
-    margin:0 0 16px;
+  .ask-card h2, .guess-card h2{
+    font-size:1.02rem;
+    margin:0 0 14px;
     color:var(--ink);
   }
-  .options{
+  .ask-row{
     display:flex;
-    gap:12px;
+    gap:10px;
     flex-wrap:wrap;
   }
-  .options button{
-    flex:1 1 120px;
-    background:var(--teal-100);
-    color:var(--teal-900);
-    font-weight:700;
-    font-size:1rem;
-    padding:14px 10px;
-    border-radius:10px;
-    border:1px solid var(--teal-500);
-    transition:background .15s ease, transform .05s ease;
+  .all-asked-msg{
+    color:var(--muted);
+    font-size:0.9rem;
+    margin:0;
   }
-  .options button:hover{background:var(--teal-500);color:#fff;}
-  .options button:active{transform:scale(0.98);}
-
-  .back-row{
-    margin-top:14px;
+  .guess-card{
+    border-left-color:var(--teal-700);
   }
 
   /* Result card */
+  .verdict{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-weight:700;
+    font-size:1.05rem;
+    padding:12px 16px;
+    border-radius:10px;
+    margin-bottom:16px;
+  }
+  .verdict.ok{background:rgba(15,148,136,0.12);color:var(--ok);}
+  .verdict.ko{background:rgba(185,28,28,0.1);color:var(--ko);}
+  .verdict .icon{font-size:1.2rem;}
+
   .result-card{
     border-left:4px solid var(--normal);
   }
@@ -239,6 +275,11 @@
     font-size:0.9rem;
     margin-top:8px;
   }
+  .guess-recap{
+    font-size:0.9rem;
+    color:var(--muted);
+    margin-bottom:4px;
+  }
   .result-actions{
     display:flex;
     gap:10px;
@@ -254,6 +295,10 @@
   }
 
   .hidden{display:none;}
+
+  @media (max-width:480px){
+    .intro-card ul{columns:1;}
+  }
 </style>
 </head>
 <body>
@@ -261,7 +306,7 @@
 
   <header class="app-header">
     <h1>Aide au diagnostic endodontique</h1>
-    <p>Outil pédagogique pas-à-pas pour les étudiants en chirurgie dentaire</p>
+    <p>Simulation de cas clinique pour les étudiants en chirurgie dentaire</p>
   </header>
 
   <div class="disclaimer">
@@ -271,7 +316,7 @@
 
   <!-- Intro screen -->
   <div class="card intro-card" id="intro-card">
-    <p>Répondez aux questions les unes après les autres. Chaque réponse affine le diagnostic parmi :</p>
+    <p>Au lancement d'une session, l'application choisit en secret un cas parmi les 10 diagnostics suivants :</p>
     <ul>
       <li>Dent saine</li>
       <li>Hyperhémie pulpaire</li>
@@ -284,25 +329,42 @@
       <li>Cellulite suppurée</li>
       <li>Cellulite diffuse</li>
     </ul>
-    <button class="btn-primary" id="start-btn">Commencer le diagnostic</button>
+    <p>À vous de choisir, une par une, les questions à poser à ce « patient virtuel » pour identifier le diagnostic, puis de le proposer.</p>
+    <button class="btn-primary" id="start-btn">Lancer une session de diagnostic</button>
   </div>
 
-  <!-- Question flow -->
-  <div id="flow-area" class="hidden">
-    <div class="history-label hidden" id="history-label">Questions déjà répondues</div>
-    <div class="step-history" id="step-history"></div>
-    <div class="card question-card hidden" id="question-card">
-      <div class="qnum" id="qnum"></div>
-      <h2 id="question-text"></h2>
-      <div class="options" id="options"></div>
+  <!-- Session -->
+  <div id="session-area" class="hidden">
+    <div class="session-meta">
+      <span>Questions posées</span>
+      <span class="counter-badge" id="questions-counter">0 / 15</span>
     </div>
-    <div class="back-row hidden" id="back-row">
-      <button class="btn-secondary" id="back-btn">← Revenir à la question précédente</button>
+
+    <div class="history-label hidden" id="history-label">Questions posées et réponses</div>
+    <div class="step-history" id="step-history"></div>
+
+    <div class="card ask-card" id="ask-card">
+      <h2>Poser une question</h2>
+      <div class="ask-row">
+        <select id="question-select"></select>
+        <button class="btn-primary" id="ask-btn">Poser la question</button>
+      </div>
+      <p class="all-asked-msg hidden" id="all-asked-msg">Toutes les questions disponibles ont été posées.</p>
+    </div>
+
+    <div class="card guess-card" id="guess-card">
+      <h2>Proposer un diagnostic</h2>
+      <div class="ask-row">
+        <select id="diagnosis-select"></select>
+        <button class="btn-primary" id="guess-btn">Valider mon diagnostic</button>
+      </div>
     </div>
   </div>
 
   <!-- Result -->
   <div class="card result-card hidden" id="result-card">
+    <div class="verdict" id="verdict"></div>
+    <div class="guess-recap" id="guess-recap"></div>
     <span class="badge" id="result-badge"></span>
     <h2 id="result-title"></h2>
     <div class="def" id="result-def"></div>
@@ -311,8 +373,7 @@
     <h3>Orientation</h3>
     <div class="orientation-box" id="result-orientation"></div>
     <div class="result-actions">
-      <button class="btn-secondary" id="review-btn">← Revenir à la question précédente</button>
-      <button class="btn-primary" id="restart-btn">Recommencer</button>
+      <button class="btn-primary" id="restart-btn">Nouvelle session de diagnostic</button>
     </div>
   </div>
 
@@ -325,138 +386,29 @@
 <script>
 (function(){
 
-  // ---------- Decision tree (basé sur les 15 questions fournies) ----------
-  var nodes = {
-    // 10. Gonflement de la face — point d'entrée
-    q_gonflement: {
-      text: "Y a-t-il un gonflement (tuméfaction) de la face ?",
-      options: [
-        {label:"Oui", next:"q_signes_generaux"},
-        {label:"Non", next:"q_froid_fugace"}
-      ]
-    },
+  // ---------- Les 15 questions que l'étudiant peut choisir de poser ----------
+  var QUESTIONS = [
+    {id:"froid_fugace",     text:"Y a-t-il une douleur au froid, fugace (brève, qui disparaît vite) ?"},
+    {id:"froid_irradiant",  text:"Cette douleur au froid est-elle irradiante (elle se diffuse, difficile à localiser précisément) ?"},
+    {id:"percussion",       text:"Y a-t-il une douleur à la percussion ?"},
+    {id:"palpation",        text:"Y a-t-il une douleur à la palpation apicale (vestibulaire, en regard de l'apex) ?"},
+    {id:"dent_longue",      text:"Le patient a-t-il une sensation de dent « longue » (plus haute que les autres) ?"},
+    {id:"chaud",            text:"Y a-t-il une douleur au chaud ?"},
+    {id:"sucre",            text:"Y a-t-il une douleur au sucré ?"},
+    {id:"mastication",      text:"Y a-t-il une douleur à la mastication ?"},
+    {id:"froid_apaise",     text:"Est-ce que le froid apaise la douleur ?"},
+    {id:"gonflement",       text:"Y a-t-il un gonflement (tuméfaction) de la face ?"},
+    {id:"godet",            text:"Sur la tuméfaction, y a-t-il un signe de reflux (godet) : la dépression persiste-t-elle après une pression du doigt ?"},
+    {id:"signes_generaux",  text:"Y a-t-il de la fièvre, et/ou une dysphagie, et/ou une difficulté respiratoire, et/ou un trismus serré ?"},
+    {id:"nocturne",         text:"La douleur s'intensifie-t-elle la nuit ?"},
+    {id:"pulsation",        text:"La douleur est-elle semblable à une pulsation dans la dent ?"},
+    {id:"continue_diffuse", text:"La douleur est-elle plutôt continue et diffuse (spontanée, difficile à localiser) ?"}
+  ];
 
-    // --- Branche cellulite (gonflement = oui) ---
-    // 12. Fièvre / dysphagie / difficulté respiratoire / trismus serré
-    q_signes_generaux: {
-      text: "Y a-t-il de la fièvre, et/ou une dysphagie, et/ou une difficulté respiratoire, et/ou un trismus serré ?",
-      options: [
-        {label:"Oui", next:"r_cellulite_diffuse"},
-        {label:"Non", next:"q_godet"}
-      ]
-    },
-    // 11. Signe de reflux (godet) sur la tuméfaction
-    q_godet: {
-      text: "Sur la tuméfaction, y a-t-il un signe de reflux (godet) : la dépression persiste-t-elle après une pression du doigt ?",
-      options: [
-        {label:"Oui", next:"r_cellulite_sereuse"},
-        {label:"Non", next:"r_cellulite_suppuree"}
-      ]
-    },
-
-    // --- Branche pulpaire (gonflement = non) ---
-    // 1. Douleur au froid fugace
-    q_froid_fugace: {
-      text: "Y a-t-il une douleur au froid, fugace (brève, qui disparaît vite) ?",
-      options: [
-        {label:"Oui", next:"q_froid_irradiant"},
-        {label:"Non", next:"q_chaud"}
-      ]
-    },
-    // 2. Douleur au froid irradiante
-    q_froid_irradiant: {
-      text: "Cette douleur au froid est-elle irradiante (elle se diffuse, difficile à localiser précisément) ?",
-      options: [
-        {label:"Oui", next:"r_irreversible"},
-        {label:"Non", next:"q_sucre"}
-      ]
-    },
-    // 7. Douleur au sucré
-    q_sucre: {
-      text: "Y a-t-il une douleur au sucré ?",
-      options: [
-        {label:"Oui", next:"r_reversible"},
-        {label:"Non", next:"r_hyperhemie"}
-      ]
-    },
-    // 6. Douleur au chaud
-    q_chaud: {
-      text: "Y a-t-il une douleur au chaud ?",
-      options: [
-        {label:"Oui", next:"q_froid_apaise"},
-        {label:"Non", next:"q_continue_diffuse"}
-      ]
-    },
-    // 9. Le froid apaise-t-il la douleur ?
-    q_froid_apaise: {
-      text: "Est-ce que le froid apaise la douleur ?",
-      options: [
-        {label:"Oui", next:"r_irreversible"},
-        {label:"Non", next:"q_continue_diffuse"}
-      ]
-    },
-    // 15. Douleur continue et diffuse
-    q_continue_diffuse: {
-      text: "La douleur est-elle plutôt continue et diffuse (spontanée, difficile à localiser) ?",
-      options: [
-        {label:"Oui", next:"q_nocturne"},
-        {label:"Non", next:"q_percussion"}
-      ]
-    },
-    // 13. Douleur qui s'intensifie la nuit
-    q_nocturne: {
-      text: "La douleur s'intensifie-t-elle la nuit ?",
-      options: [
-        {label:"Oui", next:"r_irreversible"},
-        {label:"Non", next:"q_pulsation"}
-      ]
-    },
-    // 14. Douleur pulsatile
-    q_pulsation: {
-      text: "La douleur est-elle semblable à une pulsation dans la dent ?",
-      options: [
-        {label:"Oui", next:"r_irreversible"},
-        {label:"Non", next:"q_percussion"}
-      ]
-    },
-
-    // --- Branche périapicale (pas de signe pulpaire net) ---
-    // 3. Douleur à la percussion
-    q_percussion: {
-      text: "Y a-t-il une douleur à la percussion ?",
-      options: [
-        {label:"Oui", next:"q_dent_longue"},
-        {label:"Non", next:"q_mastication"}
-      ]
-    },
-    // 5. Sensation de dent "longue"
-    q_dent_longue: {
-      text: "Le patient a-t-il une sensation de dent « longue » (plus haute que les autres) ?",
-      options: [
-        {label:"Oui", next:"q_palpation"},
-        {label:"Non", next:"q_palpation"}
-      ]
-    },
-    // 4. Douleur à la palpation apicale
-    q_palpation: {
-      text: "Y a-t-il une douleur à la palpation apicale (vestibulaire, en regard de l'apex) ?",
-      options: [
-        {label:"Oui", next:"r_abces_aigu"},
-        {label:"Non", next:"r_parodontite"}
-      ]
-    },
-    // 8. Douleur à la mastication
-    q_mastication: {
-      text: "Y a-t-il une douleur à la mastication ?",
-      options: [
-        {label:"Oui", next:"r_abces_chronique"},
-        {label:"Non", next:"r_saine"}
-      ]
-    },
-
-    // ---------- Results ----------
-    r_saine: {
-      result:true, category:"normal", title:"Dent saine",
+  // ---------- Les 10 diagnostics et leur profil de réponses (true = Oui, false = Non) ----------
+  var DIAGNOSES = {
+    saine: {
+      title:"Dent saine", category:"normal",
       def:"Aucun processus pathologique pulpaire ou périapical.",
       signs:[
         "Pas de douleur spontanée ni provoquée",
@@ -464,233 +416,256 @@
         "Pas de sensibilité à la percussion ou à la palpation",
         "Ligament desmodontal radiologiquement normal"
       ],
-      orientation:"Aucun traitement endodontique nécessaire."
+      orientation:"Aucun traitement endodontique nécessaire.",
+      answers:{}
     },
-    r_hyperhemie: {
-      result:true, category:"pulpaire", title:"Hyperhémie pulpaire",
+    hyperhemie: {
+      title:"Hyperhémie pulpaire", category:"pulpaire",
       def:"Réaction pulpaire congestive, réversible et transitoire, sans inflammation pulpaire vraie.",
       signs:[
-        "Sensibilité vive mais fugace au froid",
-        "Disparition immédiate de la douleur à l'arrêt du stimulus",
+        "Sensibilité vive mais fugace au froid, qui disparaît dès l'arrêt du stimulus",
         "Pas de douleur spontanée",
         "Percussion non douloureuse, dent vitale"
       ],
-      orientation:"Éliminer le facteur causal (carie, restauration défectueuse) ; pulpe conservable, simple surveillance."
+      orientation:"Éliminer le facteur causal (carie, restauration défectueuse) ; pulpe conservable, simple surveillance.",
+      answers:{froid_fugace:true}
     },
-    r_reversible: {
-      result:true, category:"pulpaire", title:"Pulpite réversible",
+    reversible: {
+      title:"Pulpite réversible", category:"pulpaire",
       def:"Inflammation pulpaire légère à modérée, réversible si la cause est traitée à temps.",
       signs:[
-        "Douleur provoquée par le froid ou le sucré, vive mais brève",
-        "Persiste quelques secondes à environ une minute après l'arrêt du stimulus, puis cède",
+        "Douleur provoquée par le froid et le sucré, vive mais brève",
         "Pas de douleur spontanée ni nocturne",
         "Percussion non douloureuse, dent vitale"
       ],
-      orientation:"Traiter la cause (éviction carieuse, obturation étanche). Pas de traitement endodontique si la cause est supprimée rapidement."
+      orientation:"Traiter la cause (éviction carieuse, obturation étanche). Pas de traitement endodontique si la cause est supprimée rapidement.",
+      answers:{froid_fugace:true, sucre:true}
     },
-    r_irreversible: {
-      result:true, category:"pulpaire", title:"Pulpite aiguë irréversible",
+    irreversible: {
+      title:"Pulpite aiguë irréversible", category:"pulpaire",
       def:"Inflammation pulpaire sévère, ne pouvant régresser, évoluant vers la nécrose pulpaire.",
       signs:[
-        "Douleur spontanée, intense, pulsatile ou lancinante",
-        "Exacerbée par le chaud, parfois calmée transitoirement par le froid",
-        "Douleur irradiante, mal localisée par le patient",
-        "Recrudescence nocturne, persiste longtemps après le stimulus",
-        "Percussion souvent non significative, dent encore vitale aux tests"
+        "Douleur spontanée, intense, pulsatile ou lancinante, continue et mal localisée",
+        "Provoquée/exacerbée par le chaud, parfois calmée par le froid",
+        "Recrudescence nocturne",
+        "Percussion non significative, dent encore vitale aux tests"
       ],
-      orientation:"Traitement endodontique en urgence (biopulpectomie)."
+      orientation:"Traitement endodontique en urgence (biopulpectomie).",
+      answers:{froid_fugace:true, froid_irradiant:true, chaud:true, sucre:true, froid_apaise:true, nocturne:true, pulsation:true, continue_diffuse:true}
     },
-    r_parodontite: {
-      result:true, category:"periapical", title:"Parodontite apicale aiguë",
+    parodontite: {
+      title:"Parodontite apicale aiguë", category:"periapical",
       def:"Inflammation aiguë du ligament parodontal apical, d'origine traumatique/occlusale ou infectieuse débutante.",
       signs:[
         "Douleur à la percussion axiale, bien localisée",
-        "Sensation de « dent longue » / surocclusion",
-        "Pas de tuméfaction, pas de mobilité significative",
-        "Vitalité pulpaire variable selon la cause (vitale si trauma, nécrosée si infection débutante)"
+        "Sensation de « dent longue » / surocclusion, douleur à la mastication",
+        "Pas de tuméfaction, palpation apicale non douloureuse (pas encore de collection)"
       ],
-      orientation:"Rechercher la cause (trauma occlusal ou nécrose pulpaire) et traiter en conséquence (meulage ± traitement endodontique)."
+      orientation:"Rechercher la cause (trauma occlusal ou nécrose pulpaire) et traiter en conséquence (meulage ± traitement endodontique).",
+      answers:{percussion:true, dent_longue:true, mastication:true}
     },
-    r_abces_aigu: {
-      result:true, category:"periapical", title:"Abcès apical aigu",
+    abces_aigu: {
+      title:"Abcès apical aigu", category:"periapical",
       def:"Infection aiguë d'origine pulpaire avec collection purulente périapicale débutante, avant fistulisation.",
       signs:[
-        "Douleur intense, spontanée, exacerbée par la percussion et la palpation apicale",
-        "Dent mobile, sensation d'extrusion",
-        "Pulpe nécrosée (tests de vitalité négatifs)",
-        "Tuméfaction débutante possible, éventuels signes généraux (fébricule, malaise)"
+        "Douleur intense à la percussion et à la palpation apicale",
+        "Sensation de dent longue, douleur vive à la mastication",
+        "Douleur pulsatile, pulpe nécrosée",
+        "Pas encore de tuméfaction franche"
       ],
-      orientation:"Urgence : drainage (ouverture de la chambre pulpaire), traitement endodontique, antibiothérapie si signes généraux."
+      orientation:"Urgence : drainage (ouverture de la chambre pulpaire), traitement endodontique, antibiothérapie si signes généraux.",
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, pulsation:true}
     },
-    r_abces_chronique: {
-      result:true, category:"periapical", title:"Abcès apical chronique",
+    abces_chronique: {
+      title:"Abcès apical chronique", category:"periapical",
       def:"Infection chronique d'origine pulpaire, drainée en continu par une fistule, généralement peu symptomatique.",
       signs:[
-        "Pulpe nécrosée",
-        "Fistule (parulie) avec ou sans écoulement purulent",
-        "Douleur faible ou absente",
-        "Image radioclaire périapicale souvent présente"
+        "Pulpe nécrosée, symptomatologie discrète",
+        "Gêne légère à la mastication, mais percussion et palpation non douloureuses",
+        "Fistule (parulie) et image radioclaire périapicale souvent présentes"
       ],
-      orientation:"Traitement endodontique pour éliminer l'infection canalaire ; la fistule se résorbe après un traitement adéquat."
+      orientation:"Traitement endodontique pour éliminer l'infection canalaire ; la fistule se résorbe après un traitement adéquat.",
+      answers:{mastication:true}
     },
-    r_cellulite_sereuse: {
-      result:true, category:"cellulite", title:"Cellulite séreuse",
+    cellulite_sereuse: {
+      title:"Cellulite séreuse", category:"cellulite",
       def:"Premier stade de diffusion de l'infection dans les tissus mous péri-maxillaires, sans collection purulente franche.",
       signs:[
         "Tuméfaction diffuse, ferme, pâteuse (« en pâte »)",
-        "Peau/muqueuse de couleur normale ou légèrement rosée",
-        "Douleur modérée, pas de fluctuation à la palpation",
-        "Signes généraux discrets ou absents"
+        "Signe du godet positif (la dépression persiste à la pression)",
+        "Pas de signes généraux marqués"
       ],
-      orientation:"Traiter la cause dentaire (drainage endodontique), antibiothérapie, surveillance rapprochée de l'évolution."
+      orientation:"Traiter la cause dentaire (drainage endodontique), antibiothérapie, surveillance rapprochée de l'évolution.",
+      answers:{gonflement:true, godet:true}
     },
-    r_cellulite_suppuree: {
-      result:true, category:"cellulite", title:"Cellulite suppurée (collectée)",
+    cellulite_suppuree: {
+      title:"Cellulite suppurée (collectée)", category:"cellulite",
       def:"Stade de collection purulente localisée dans les tissus mous.",
       signs:[
-        "Tuméfaction fluctuante à la palpation",
-        "Peau/muqueuse rouge, tendue et luisante",
+        "Tuméfaction fluctuante, sans signe du godet",
         "Douleur intense, pulsatile, bien localisée",
-        "Possible fièvre et chaleur locale"
+        "Pas de signes généraux marqués"
       ],
-      orientation:"Urgence : incision-drainage de la collection, traitement de la cause dentaire, antibiothérapie."
+      orientation:"Urgence : incision-drainage de la collection, traitement de la cause dentaire, antibiothérapie.",
+      answers:{gonflement:true, pulsation:true}
     },
-    r_cellulite_diffuse: {
-      result:true, category:"urgence", title:"Cellulite diffuse",
+    cellulite_diffuse: {
+      title:"Cellulite diffuse", category:"urgence",
       def:"Forme grave et extensive de l'infection, à progression rapide dans plusieurs espaces celluleux, sans tendance à la collection.",
       signs:[
-        "Tuméfaction dure (« ligneuse »/bois), extension rapide",
-        "Peau tendue et chaude",
-        "Trismus serré, dysphagie",
-        "Fièvre élevée, altération sévère de l'état général",
+        "Tuméfaction dure (« ligneuse »/bois), extension rapide, douleur diffuse",
+        "Fièvre, dysphagie, difficulté respiratoire et/ou trismus serré",
         "Risque d'atteinte des voies aériennes (angine de Ludwig)"
       ],
-      orientation:"URGENCE VITALE : hospitalisation, drainage chirurgical large, antibiothérapie IV, surveillance des voies aériennes."
-    },
+      orientation:"URGENCE VITALE : hospitalisation, drainage chirurgical large, antibiothérapie IV, surveillance des voies aériennes.",
+      answers:{gonflement:true, signes_generaux:true, continue_diffuse:true}
+    }
   };
 
-  var START = "q_gonflement";
+  var DIAGNOSIS_ORDER = ["saine","hyperhemie","reversible","irreversible","parodontite","abces_aigu","abces_chronique","cellulite_sereuse","cellulite_suppuree","cellulite_diffuse"];
 
   // ---------- State ----------
-  var history = []; // {nodeId, question, answerLabel, next}
-  var currentNode = START;
+  var caseId = null;
+  var askedIds = []; // question ids asked this session, in order
 
   // ---------- DOM refs ----------
   var introCard = document.getElementById('intro-card');
-  var flowArea = document.getElementById('flow-area');
+  var sessionArea = document.getElementById('session-area');
   var stepHistoryEl = document.getElementById('step-history');
-  var questionCard = document.getElementById('question-card');
-  var qnumEl = document.getElementById('qnum');
-  var questionTextEl = document.getElementById('question-text');
-  var optionsEl = document.getElementById('options');
-  var backRow = document.getElementById('back-row');
+  var historyLabel = document.getElementById('history-label');
+  var counterEl = document.getElementById('questions-counter');
+  var questionSelect = document.getElementById('question-select');
+  var diagnosisSelect = document.getElementById('diagnosis-select');
+  var askCard = document.getElementById('ask-card');
+  var allAskedMsg = document.getElementById('all-asked-msg');
   var resultCard = document.getElementById('result-card');
 
-  document.getElementById('start-btn').addEventListener('click', function(){
-    introCard.classList.add('hidden');
-    flowArea.classList.remove('hidden');
-    renderQuestion();
+  // populate diagnosis dropdown once (static list)
+  var placeholder = document.createElement('option');
+  placeholder.value = '';
+  placeholder.textContent = '-- Choisir un diagnostic --';
+  diagnosisSelect.appendChild(placeholder);
+  DIAGNOSIS_ORDER.forEach(function(id){
+    var opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = DIAGNOSES[id].title;
+    diagnosisSelect.appendChild(opt);
   });
 
-  document.getElementById('back-btn').addEventListener('click', goBack);
-  document.getElementById('review-btn').addEventListener('click', goBack);
+  document.getElementById('start-btn').addEventListener('click', startSession);
+  document.getElementById('restart-btn').addEventListener('click', startSession);
+  document.getElementById('ask-btn').addEventListener('click', askQuestion);
+  document.getElementById('guess-btn').addEventListener('click', submitGuess);
 
-  document.getElementById('restart-btn').addEventListener('click', resetApp);
+  function startSession(){
+    caseId = DIAGNOSIS_ORDER[Math.floor(Math.random() * DIAGNOSIS_ORDER.length)];
+    askedIds = [];
 
-  function goBack(){
-    if(history.length === 0) return;
-    var last = history.pop();
-    currentNode = last.nodeId;
+    introCard.classList.add('hidden');
     resultCard.classList.add('hidden');
-    renderHistory();
-    renderQuestion();
-  }
+    sessionArea.classList.remove('hidden');
 
-  function resetApp(){
-    history = [];
-    currentNode = START;
-    resultCard.classList.add('hidden');
-    introCard.classList.remove('hidden');
-    flowArea.classList.add('hidden');
+    diagnosisSelect.value = '';
     stepHistoryEl.innerHTML = '';
-    document.getElementById('history-label').classList.add('hidden');
+    historyLabel.classList.add('hidden');
+
+    renderCounter();
+    renderQuestionSelect();
+
+    sessionArea.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
-  function renderHistory(){
-    document.getElementById('history-label').classList.toggle('hidden', history.length === 0);
-    stepHistoryEl.innerHTML = '';
-    history.forEach(function(step){
-      var div = document.createElement('div');
-      div.className = 'step-done';
-      div.innerHTML =
-        '<div class="check">✓</div>' +
-        '<div class="content">' +
-          '<div class="q">' + step.question + '</div>' +
-          '<div class="a">' + step.answerLabel + '</div>' +
-        '</div>';
-      stepHistoryEl.appendChild(div);
-    });
+  function renderCounter(){
+    counterEl.textContent = askedIds.length + ' / ' + QUESTIONS.length;
   }
 
-  function renderQuestion(){
-    var node = nodes[currentNode];
+  function renderQuestionSelect(){
+    var remaining = QUESTIONS.filter(function(q){ return askedIds.indexOf(q.id) === -1; });
 
-    if(node.result){
-      showResult(node);
+    questionSelect.innerHTML = '';
+    if(remaining.length === 0){
+      askCard.querySelector('.ask-row').classList.add('hidden');
+      allAskedMsg.classList.remove('hidden');
       return;
     }
+    askCard.querySelector('.ask-row').classList.remove('hidden');
+    allAskedMsg.classList.add('hidden');
 
-    resultCard.classList.add('hidden');
-    flowArea.classList.remove('hidden');
-    questionCard.classList.remove('hidden');
-    qnumEl.textContent = 'Question ' + (history.length + 1);
-    questionTextEl.textContent = node.text;
-    optionsEl.innerHTML = '';
+    var placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = '-- Choisir une question --';
+    questionSelect.appendChild(placeholder);
 
-    node.options.forEach(function(opt){
-      var btn = document.createElement('button');
-      btn.textContent = opt.label;
-      btn.addEventListener('click', function(){
-        history.push({
-          nodeId: currentNode,
-          question: node.text,
-          answerLabel: opt.label,
-          next: opt.next
-        });
-        currentNode = opt.next;
-        renderHistory();
-        renderQuestion();
-      });
-      optionsEl.appendChild(btn);
+    remaining.forEach(function(q){
+      var opt = document.createElement('option');
+      opt.value = q.id;
+      opt.textContent = q.text;
+      questionSelect.appendChild(opt);
     });
-
-    backRow.classList.toggle('hidden', history.length === 0);
-
-    questionCard.scrollIntoView({behavior:'smooth', block:'center'});
   }
 
-  function showResult(node){
-    questionCard.classList.add('hidden');
-    backRow.classList.add('hidden');
+  function askQuestion(){
+    var qid = questionSelect.value;
+    if(!qid) return;
+
+    var question = QUESTIONS.filter(function(q){ return q.id === qid; })[0];
+    var isYes = !!DIAGNOSES[caseId].answers[qid];
+
+    askedIds.push(qid);
+
+    historyLabel.classList.remove('hidden');
+    var div = document.createElement('div');
+    div.className = 'step-done';
+    div.innerHTML =
+      '<div class="idx">' + askedIds.length + '</div>' +
+      '<div class="content">' +
+        '<div class="q">' + question.text + '</div>' +
+        '<div class="a ' + (isYes ? 'oui' : 'non') + '">' + (isYes ? 'Oui' : 'Non') + '</div>' +
+      '</div>';
+    stepHistoryEl.appendChild(div);
+
+    renderCounter();
+    renderQuestionSelect();
+  }
+
+  function submitGuess(){
+    var guessId = diagnosisSelect.value;
+    if(!guessId) return;
+
+    var correct = guessId === caseId;
+    var actual = DIAGNOSES[caseId];
+
+    sessionArea.classList.add('hidden');
     resultCard.classList.remove('hidden');
-    resultCard.className = 'card result-card cat-' + node.category;
+    resultCard.className = 'card result-card cat-' + actual.category;
+
+    var verdict = document.getElementById('verdict');
+    verdict.className = 'verdict ' + (correct ? 'ok' : 'ko');
+    verdict.innerHTML = correct
+      ? '<span class="icon">✓</span> Bonne réponse !'
+      : '<span class="icon">✗</span> Ce n\'est pas le bon diagnostic.';
+
+    var recap = document.getElementById('guess-recap');
+    recap.textContent = correct
+      ? 'Trouvé en ' + askedIds.length + ' question' + (askedIds.length > 1 ? 's' : '') + '.'
+      : 'Votre proposition : « ' + DIAGNOSES[guessId].title + ' » — le diagnostic réel était :';
 
     var badge = document.getElementById('result-badge');
-    badge.className = 'badge cat-' + node.category;
-    badge.textContent = categoryLabel(node.category);
+    badge.className = 'badge cat-' + actual.category;
+    badge.textContent = categoryLabel(actual.category);
 
-    document.getElementById('result-title').textContent = node.title;
-    document.getElementById('result-def').textContent = node.def;
+    document.getElementById('result-title').textContent = actual.title;
+    document.getElementById('result-def').textContent = actual.def;
 
     var signsEl = document.getElementById('result-signs');
     signsEl.innerHTML = '';
-    node.signs.forEach(function(s){
+    actual.signs.forEach(function(s){
       var li = document.createElement('li');
       li.textContent = s;
       signsEl.appendChild(li);
     });
 
-    document.getElementById('result-orientation').textContent = node.orientation;
+    document.getElementById('result-orientation').textContent = actual.orientation;
 
     resultCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
