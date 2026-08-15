@@ -332,7 +332,6 @@
   .sw-dentin{background:#ecdcb8;}
   .sw-bone{background:#ecd9ab; border:1px solid #cbb583;}
   .sw-gum{background:#e6a3ab;}
-  .sw-swelling{background:#e0806e;}
   .result-actions{
     display:flex;
     gap:10px;
@@ -431,7 +430,7 @@
         <span><i class="sw" id="sw-pulp"></i><span id="pulp-legend-label">Pulpe / nerf</span></span>
         <span><i class="sw sw-bone"></i>Os alvéolaire</span>
         <span><i class="sw sw-gum"></i>Gencive</span>
-        <span><i class="sw sw-swelling"></i>Tissus mous / tuméfaction</span>
+        <span><i class="sw" id="sw-swelling"></i><span id="swelling-legend-label">Tissus mous / tuméfaction</span></span>
       </div>
     </div>
 
@@ -771,43 +770,53 @@
   var DIAGRAMS = {
     saine: {
       caries:"none", pulp:"#e8a3a3", pulpLabel:"Pulpe / nerf (saine)", periapical:"none", fistula:false, swelling:"none",
+      swellColor:"#f5e3e3", swellLabel:"Tissus mous (normaux)",
       caption:"Dent intacte : émail et dentine sans carie, pulpe saine, ligament et os alvéolaire normaux."
     },
     hyperhemie: {
       caries:"tiny", pulp:"#e0808a", pulpLabel:"Pulpe / nerf (congestionnée)", periapical:"none", fistula:false, swelling:"none",
+      swellColor:"#f5e3e3", swellLabel:"Tissus mous (normaux)",
       caption:"Toute petite carie superficielle de l'émail ; la pulpe reste vivante mais congestionnée."
     },
     reversible: {
       caries:"medium", pulp:"#d97a6a", pulpLabel:"Pulpe / nerf (inflammation légère)", periapical:"none", fistula:false, swelling:"none",
+      swellColor:"#f5e3e3", swellLabel:"Tissus mous (normaux)",
       caption:"Carie ayant atteint la dentine, proche de la pulpe sans l'exposer ; inflammation pulpaire légère et réversible."
     },
     irreversible: {
       caries:"large", pulp:"#b8283a", pulpLabel:"Pulpe / nerf (inflammation sévère)", periapical:"none", fistula:false, swelling:"none",
+      swellColor:"#f5e3e3", swellLabel:"Tissus mous (normaux)",
       caption:"Carie profonde exposant la pulpe ; inflammation pulpaire sévère, irréversible, dent encore vivante."
     },
     parodontite: {
       caries:"large", pulp:"#5a4a42", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"widened", fistula:false, swelling:"none",
+      swellColor:"#f5e3e3", swellLabel:"Tissus mous (normaux)",
       caption:"Pulpe nécrosée ; ligament parodontal apical élargi et inflammatoire, sans collection ni tuméfaction."
     },
     abces_aigu: {
       caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"diffuse", fistula:false, swelling:"none",
+      swellColor:"#f5e3e3", swellLabel:"Tissus mous (normaux)",
       caption:"Pulpe nécrosée ; infection périapicale aiguë diffuse, avant la formation d'une collection ou d'une fistule."
     },
     abces_chronique: {
       caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"defined", fistula:true, swelling:"none",
+      swellColor:"#f5e3e3", swellLabel:"Tissus mous (normaux)",
       caption:"Pulpe nécrosée ; lésion périapicale chronique drainée par une fistule (le petit bouton sur la gencive)."
     },
     cellulite_sereuse: {
       caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"defined", fistula:false, swelling:"diffuse",
-      caption:"Infection périapicale qui diffuse dans les tissus mous : tuméfaction œdémateuse, pâteuse, du visage."
+      swellColor:"#e89892", swellLabel:"Tuméfaction œdémateuse (légèrement rouge)",
+      caption:"Infection périapicale qui diffuse dans les tissus mous : joue légèrement gonflée et légèrement rouge, sans collection franche."
     },
     cellulite_suppuree: {
       caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"defined", fistula:false, swelling:"collected",
-      caption:"Infection périapicale avec collection purulente localisée et fluctuante dans les tissus mous du visage."
+      swellColor:"#d85a4c", swellLabel:"Tuméfaction rouge + collection purulente",
+      caption:"Infection périapicale avec collection purulente : joue plus gonflée et plus rouge, avec une zone de collection jaunâtre bien délimitée."
     },
     cellulite_diffuse: {
       caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"defined", fistula:false, swelling:"severe",
-      caption:"Infection périapicale extensive : tuméfaction indurée, diffusion rapide dans les tissus mous vers le cou."
+      swellColor:"#9c1710", swellLabel:"Tuméfaction très gonflée, très rouge (indurée)",
+      caption:"Infection périapicale extensive : joue très gonflée et très rouge, diffusion rapide vers le cou et le haut du corps (flèche)."
     }
   };
 
@@ -818,19 +827,20 @@
 
     // --- tissus mous / peau (dessinés en premier, derrière l'os) ---
     var skin;
-    if(cfg.swelling === "severe"){ skin = "M60,10 Q-15,150 5,320"; }
-    else if(cfg.swelling === "collected"){ skin = "M60,20 Q14,150 30,300"; }
-    else if(cfg.swelling === "diffuse"){ skin = "M60,20 Q20,160 35,300"; }
+    if(cfg.swelling === "severe"){ skin = "M55,10 Q-25,150 -8,320"; }
+    else if(cfg.swelling === "collected"){ skin = "M60,20 Q8,150 22,300"; }
+    else if(cfg.swelling === "diffuse"){ skin = "M60,20 Q34,160 42,300"; }
     else { skin = "M60,20 Q64,160 60,300"; }
 
-    var tissueFill = "#f5e3e3", tissueOpacity = "0.55";
-    if(cfg.swelling === "diffuse" || cfg.swelling === "collected"){ tissueFill = "#e88b86"; tissueOpacity = "0.75"; }
-    if(cfg.swelling === "severe"){ tissueFill = "#b85c4a"; tissueOpacity = "0.9"; }
-
-    parts.push('<path d="' + skin + ' L95,320 L95,10 Z" fill="' + tissueFill + '" opacity="' + tissueOpacity + '"/>');
+    parts.push('<path d="' + skin + ' L95,320 L95,10 Z" fill="' + cfg.swellColor + '" opacity="0.85"/>');
 
     if(cfg.swelling === "collected"){
-      parts.push('<ellipse cx="42" cy="175" rx="20" ry="24" fill="#eeda78" stroke="#c9a93a" stroke-width="1.5"/>');
+      parts.push('<ellipse cx="34" cy="175" rx="20" ry="24" fill="#eeda78" stroke="#c9a93a" stroke-width="1.5"/>');
+    }
+
+    if(cfg.swelling === "severe"){
+      parts.push('<line x1="18" y1="246" x2="12" y2="304" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>');
+      parts.push('<path d="M12,318 L1,294 L23,294 Z" fill="#ffffff"/>');
     }
 
     // --- os alvéolaire ---
@@ -1017,6 +1027,8 @@
     document.getElementById('diagram-caption').textContent = diagram.caption;
     document.getElementById('sw-pulp').style.background = diagram.pulp;
     document.getElementById('pulp-legend-label').textContent = diagram.pulpLabel;
+    document.getElementById('sw-swelling').style.background = diagram.swellColor;
+    document.getElementById('swelling-legend-label').textContent = diagram.swellLabel;
 
     var signsEl = document.getElementById('result-signs');
     signsEl.innerHTML = '';
