@@ -81,6 +81,14 @@
     columns:2;
   }
   .intro-card ul li{ break-inside:avoid; }
+  .mode-buttons{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:10px;
+    margin-top:16px;
+  }
+  .mode-buttons .btn-primary{flex:1 1 220px;}
   button{
     font-family:inherit;
     cursor:pointer;
@@ -138,6 +146,10 @@
     padding:4px 10px;
     border-radius:999px;
     font-variant-numeric:tabular-nums;
+  }
+  .quiz-badge{
+    background:rgba(217,119,6,0.15);
+    color:var(--periapical);
   }
 
   /* History of asked questions */
@@ -365,10 +377,128 @@
     margin-top:32px;
   }
 
+  .link-btn{
+    background:none;
+    border:none;
+    color:var(--teal-700);
+    font-size:0.78rem;
+    text-decoration:underline;
+    cursor:pointer;
+    padding:6px 0 0;
+    font-family:inherit;
+  }
+  .link-btn:hover{color:var(--teal-900);}
+
+  /* Quiz score card */
+  .quiz-score-card{text-align:center;}
+  .score-display{margin-bottom:6px;}
+  .score-number{
+    font-size:2.6rem;
+    font-weight:800;
+    color:var(--teal-700);
+    font-variant-numeric:tabular-nums;
+    line-height:1.1;
+  }
+  .score-label{
+    color:var(--muted);
+    font-size:0.8rem;
+    text-transform:uppercase;
+    letter-spacing:.03em;
+  }
+  .score-recap{
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    text-align:left;
+    margin:18px 0 4px;
+  }
+  .score-row{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    padding:10px 14px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    font-size:0.86rem;
+  }
+  .score-row .mark{
+    flex:0 0 auto;
+    width:22px;height:22px;
+    border-radius:50%;
+    display:flex;align-items:center;justify-content:center;
+    font-weight:700;
+    font-size:0.78rem;
+    color:#fff;
+    margin-top:1px;
+  }
+  .score-row .mark.ok{background:var(--ok);}
+  .score-row .mark.ko{background:var(--ko);}
+  .score-row .details{flex:1;}
+  .score-row .details .real{font-weight:600;}
+  .score-row .details .guess{color:var(--muted); font-size:0.8rem; margin-top:2px;}
+
+  /* Fiche récapitulative (imprimable) */
+  .recap-sheet{margin-top:24px;}
+  .recap-sheet h1{
+    font-size:1.25rem;
+    text-align:center;
+    color:var(--teal-900);
+    margin-bottom:16px;
+  }
+  .recap-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+  }
+  .recap-card{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px;
+    break-inside:avoid;
+    page-break-inside:avoid;
+  }
+  .recap-card h3{
+    font-size:0.92rem;
+    margin:4px 0 8px;
+    color:var(--ink);
+  }
+  .recap-card .recap-diagram{
+    width:110px;
+    margin:0 auto 8px;
+  }
+  .recap-card .recap-diagram svg{display:block; width:100%; height:auto;}
+  .recap-card ul{
+    margin:6px 0;
+    padding-left:16px;
+    font-size:0.74rem;
+    color:var(--ink);
+  }
+  .recap-card ul li{margin-bottom:2px;}
+  .recap-card .recap-tx{
+    font-size:0.74rem;
+    margin-top:6px;
+  }
+  .recap-card .recap-tx b{
+    display:block;
+    font-size:0.66rem;
+    text-transform:uppercase;
+    letter-spacing:.02em;
+    color:var(--muted);
+    margin-top:5px;
+  }
+
   .hidden{display:none;}
 
   @media (max-width:480px){
     .intro-card ul{columns:1;}
+    .recap-grid{grid-template-columns:1fr;}
+  }
+
+  @media print{
+    body.printing-recap .wrap > *:not(#recap-sheet){display:none !important;}
+    body.printing-recap #recap-sheet{display:block !important; margin-top:0;}
+    body.printing-recap{background:#fff;}
+    .recap-card{box-shadow:none;}
   }
 </style>
 </head>
@@ -401,14 +531,18 @@
       <li>Cellulite diffuse</li>
     </ul>
     <p>À vous de choisir, une par une, les questions à poser à ce « patient virtuel » pour identifier le diagnostic, puis de le proposer.</p>
-    <button class="btn-primary" id="start-btn">Lancer une session de diagnostic</button>
+    <div class="mode-buttons">
+      <button class="btn-primary" id="start-single-btn">Session individuelle (1 cas)</button>
+      <button class="btn-primary" id="start-quiz-btn">Série de 5 cas notée</button>
+    </div>
   </div>
 
   <!-- Session -->
   <div id="session-area" class="hidden">
     <div class="session-meta">
+      <span class="counter-badge quiz-badge hidden" id="quiz-progress"></span>
       <span>Questions posées</span>
-      <span class="counter-badge" id="questions-counter">0 / 15</span>
+      <span class="counter-badge" id="questions-counter">0 / 14</span>
     </div>
 
     <div class="history-label hidden" id="history-label">Questions posées et réponses</div>
@@ -466,13 +600,34 @@
       </div>
     </div>
     <div class="result-actions">
-      <button class="btn-primary" id="restart-btn">Nouvelle session de diagnostic</button>
+      <button class="btn-primary" id="next-action-btn">Nouvelle session de diagnostic</button>
+      <button class="btn-secondary" id="result-home-btn">Retour à l'accueil</button>
+    </div>
+  </div>
+
+  <!-- Score de la série de 5 -->
+  <div class="card quiz-score-card hidden" id="quiz-score-card">
+    <div class="score-display">
+      <div class="score-number" id="score-number">0 / 5</div>
+      <div class="score-label">Score de la série</div>
+    </div>
+    <div class="score-recap" id="score-recap"></div>
+    <div class="result-actions">
+      <button class="btn-primary" id="quiz-restart-btn">Recommencer une série de 5</button>
+      <button class="btn-secondary" id="quiz-home-btn">Retour à l'accueil</button>
     </div>
   </div>
 
   <footer>
     Outil pédagogique — Spécialité Endodontie · Chirurgie dentaire
+    <br>
+    <button class="link-btn" id="recap-btn" type="button">📄 Fiche récapitulative des 10 diagnostics (PDF)</button>
   </footer>
+
+  <div id="recap-sheet" class="recap-sheet hidden">
+    <h1>Fiche récapitulative — Diagnostic endodontique</h1>
+    <div class="recap-grid" id="recap-grid"></div>
+  </div>
 
 </div>
 
@@ -917,6 +1072,11 @@
   // ---------- State ----------
   var caseId = null;
   var askedIds = []; // question ids asked this session, in order
+  var mode = 'single'; // 'single' | 'quiz'
+  var quizCases = [];
+  var quizIndex = 0;
+  var quizResults = [];
+  var recapBuilt = false;
 
   // ---------- DOM refs ----------
   var introCard = document.getElementById('intro-card');
@@ -924,11 +1084,14 @@
   var stepHistoryEl = document.getElementById('step-history');
   var historyLabel = document.getElementById('history-label');
   var counterEl = document.getElementById('questions-counter');
+  var quizProgressEl = document.getElementById('quiz-progress');
   var questionSelect = document.getElementById('question-select');
   var diagnosisSelect = document.getElementById('diagnosis-select');
   var askCard = document.getElementById('ask-card');
   var allAskedMsg = document.getElementById('all-asked-msg');
   var resultCard = document.getElementById('result-card');
+  var quizScoreCard = document.getElementById('quiz-score-card');
+  var nextActionBtn = document.getElementById('next-action-btn');
 
   // populate diagnosis dropdown once (static list)
   var placeholder = document.createElement('option');
@@ -942,27 +1105,74 @@
     diagnosisSelect.appendChild(opt);
   });
 
-  document.getElementById('start-btn').addEventListener('click', startSession);
-  document.getElementById('restart-btn').addEventListener('click', startSession);
+  document.getElementById('start-single-btn').addEventListener('click', startSingleSession);
+  document.getElementById('start-quiz-btn').addEventListener('click', startQuizSession);
+  document.getElementById('quiz-restart-btn').addEventListener('click', startQuizSession);
+  document.getElementById('quiz-home-btn').addEventListener('click', goHome);
+  document.getElementById('result-home-btn').addEventListener('click', goHome);
+  document.getElementById('recap-btn').addEventListener('click', downloadRecap);
   document.getElementById('ask-btn').addEventListener('click', askQuestion);
   document.getElementById('guess-btn').addEventListener('click', submitGuess);
 
-  function startSession(){
-    caseId = DIAGNOSIS_ORDER[Math.floor(Math.random() * DIAGNOSIS_ORDER.length)];
+  window.addEventListener('afterprint', function(){
+    document.body.classList.remove('printing-recap');
+  });
+
+  function randomCaseId(){
+    return DIAGNOSIS_ORDER[Math.floor(Math.random() * DIAGNOSIS_ORDER.length)];
+  }
+
+  function beginCase(id){
+    caseId = id;
     askedIds = [];
 
     introCard.classList.add('hidden');
     resultCard.classList.add('hidden');
+    quizScoreCard.classList.add('hidden');
     sessionArea.classList.remove('hidden');
 
     diagnosisSelect.value = '';
     stepHistoryEl.innerHTML = '';
     historyLabel.classList.add('hidden');
 
+    if(mode === 'quiz'){
+      quizProgressEl.classList.remove('hidden');
+      quizProgressEl.textContent = 'Cas ' + (quizIndex + 1) + ' / 5';
+    } else {
+      quizProgressEl.classList.add('hidden');
+    }
+
     renderCounter();
     renderQuestionSelect();
 
     sessionArea.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function startSingleSession(){
+    mode = 'single';
+    beginCase(randomCaseId());
+  }
+
+  function startQuizSession(){
+    mode = 'quiz';
+    quizCases = [];
+    for(var i = 0; i < 5; i++){ quizCases.push(randomCaseId()); }
+    quizIndex = 0;
+    quizResults = [];
+    beginCase(quizCases[0]);
+  }
+
+  function nextQuizCase(){
+    quizIndex++;
+    beginCase(quizCases[quizIndex]);
+  }
+
+  function goHome(){
+    quizScoreCard.classList.add('hidden');
+    resultCard.classList.add('hidden');
+    sessionArea.classList.add('hidden');
+    introCard.classList.remove('hidden');
+    introCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
   function renderCounter(){
@@ -1078,7 +1288,75 @@
     document.getElementById('result-urgence').textContent = actual.urgence;
     document.getElementById('result-final').textContent = actual.traitementFinal;
 
+    if(mode === 'quiz'){
+      quizResults.push({caseId:caseId, guessId:guessId, correct:correct, questions:askedIds.length});
+      if(quizIndex < 4){
+        nextActionBtn.textContent = 'Cas suivant (' + (quizIndex + 2) + ' / 5)';
+        nextActionBtn.onclick = nextQuizCase;
+      } else {
+        nextActionBtn.textContent = 'Voir mon score final';
+        nextActionBtn.onclick = showQuizScore;
+      }
+    } else {
+      nextActionBtn.textContent = 'Nouvelle session de diagnostic';
+      nextActionBtn.onclick = startSingleSession;
+    }
+
     resultCard.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function showQuizScore(){
+    resultCard.classList.add('hidden');
+    sessionArea.classList.add('hidden');
+    quizScoreCard.classList.remove('hidden');
+
+    var scoreCount = quizResults.filter(function(r){ return r.correct; }).length;
+    document.getElementById('score-number').textContent = scoreCount + ' / 5';
+
+    var recapEl = document.getElementById('score-recap');
+    recapEl.innerHTML = '';
+    quizResults.forEach(function(r, i){
+      var real = DIAGNOSES[r.caseId];
+      var guess = DIAGNOSES[r.guessId];
+      var row = document.createElement('div');
+      row.className = 'score-row';
+      row.innerHTML =
+        '<div class="mark ' + (r.correct ? 'ok' : 'ko') + '">' + (r.correct ? '✓' : '✗') + '</div>' +
+        '<div class="details">' +
+          '<div class="real">Cas ' + (i + 1) + ' : ' + real.title + '</div>' +
+          '<div class="guess">' + (r.correct ? 'Trouvé' : 'Proposé : « ' + guess.title + ' »') + ' en ' + r.questions + ' question' + (r.questions > 1 ? 's' : '') + '</div>' +
+        '</div>';
+      recapEl.appendChild(row);
+    });
+
+    quizScoreCard.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function buildRecapSheet(){
+    if(recapBuilt) return;
+    var grid = document.getElementById('recap-grid');
+    DIAGNOSIS_ORDER.forEach(function(id){
+      var d = DIAGNOSES[id];
+      var diagram = DIAGRAMS[id];
+      var card = document.createElement('div');
+      card.className = 'recap-card';
+      var signsHtml = d.signs.map(function(s){ return '<li>' + s + '</li>'; }).join('');
+      card.innerHTML =
+        '<span class="badge cat-' + d.category + '">' + categoryLabel(d.category) + '</span>' +
+        '<h3>' + d.title + '</h3>' +
+        '<div class="recap-diagram">' + buildToothSVG(diagram) + '</div>' +
+        '<ul>' + signsHtml + '</ul>' +
+        '<div class="recap-tx"><b>Urgence</b>' + d.urgence + '</div>' +
+        '<div class="recap-tx"><b>Traitement final</b>' + d.traitementFinal + '</div>';
+      grid.appendChild(card);
+    });
+    recapBuilt = true;
+  }
+
+  function downloadRecap(){
+    buildRecapSheet();
+    document.body.classList.add('printing-recap');
+    window.print();
   }
 
   function categoryLabel(cat){
