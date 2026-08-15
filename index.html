@@ -280,6 +280,60 @@
     color:var(--muted);
     margin-bottom:4px;
   }
+
+  .diagram-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    background:#fbf8f3;
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:14px 10px 16px;
+    margin:14px 0 18px;
+  }
+  .diagram-svg{
+    width:100%;
+    max-width:220px;
+  }
+  .diagram-svg svg{
+    display:block;
+    width:100%;
+    height:auto;
+  }
+  .diagram-caption{
+    margin:0;
+    font-size:0.82rem;
+    color:var(--muted);
+    text-align:center;
+    max-width:340px;
+  }
+  .diagram-legend{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:8px 14px;
+    margin-top:4px;
+  }
+  .diagram-legend span{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-size:0.72rem;
+    color:var(--muted);
+  }
+  .diagram-legend .sw{
+    display:inline-block;
+    width:10px;height:10px;
+    border-radius:3px;
+    flex:0 0 auto;
+  }
+  .sw-enamel{background:#f7f3e7; border:1px solid #c9c2ac;}
+  .sw-dentin{background:#ecdcb8;}
+  .sw-pulp{background:#c23b3b;}
+  .sw-bone{background:#ecd9ab; border:1px solid #cbb583;}
+  .sw-gum{background:#e6a3ab;}
+  .sw-swelling{background:#e0806e;}
   .result-actions{
     display:flex;
     gap:10px;
@@ -368,6 +422,20 @@
     <span class="badge" id="result-badge"></span>
     <h2 id="result-title"></h2>
     <div class="def" id="result-def"></div>
+
+    <div class="diagram-wrap">
+      <div class="diagram-svg" id="result-diagram"></div>
+      <p class="diagram-caption" id="diagram-caption"></p>
+      <div class="diagram-legend">
+        <span><i class="sw sw-enamel"></i>Émail</span>
+        <span><i class="sw sw-dentin"></i>Dentine</span>
+        <span><i class="sw sw-pulp"></i>Pulpe / nerf</span>
+        <span><i class="sw sw-bone"></i>Os alvéolaire</span>
+        <span><i class="sw sw-gum"></i>Gencive</span>
+        <span><i class="sw sw-swelling"></i>Tissus mous / tuméfaction</span>
+      </div>
+    </div>
+
     <h3>Signes cliniques évocateurs</h3>
     <ul id="result-signs"></ul>
     <h3>Orientation</h3>
@@ -700,6 +768,117 @@
 
   var DIAGNOSIS_ORDER = ["saine","hyperhemie","reversible","irreversible","parodontite","abces_aigu","abces_chronique","cellulite_sereuse","cellulite_suppuree","cellulite_diffuse"];
 
+  // ---------- Coupes dentaires schématiques (une par diagnostic) ----------
+  var DIAGRAMS = {
+    saine: {
+      caries:"none", pulp:"#e8a3a3", periapical:"none", fistula:false, swelling:"none",
+      caption:"Dent intacte : émail et dentine sans carie, pulpe saine, ligament et os alvéolaire normaux."
+    },
+    hyperhemie: {
+      caries:"tiny", pulp:"#e0808a", periapical:"none", fistula:false, swelling:"none",
+      caption:"Toute petite carie superficielle de l'émail ; la pulpe reste vivante mais congestionnée."
+    },
+    reversible: {
+      caries:"medium", pulp:"#d97a6a", periapical:"none", fistula:false, swelling:"none",
+      caption:"Carie ayant atteint la dentine, proche de la pulpe sans l'exposer ; inflammation pulpaire légère et réversible."
+    },
+    irreversible: {
+      caries:"large", pulp:"#b8283a", periapical:"none", fistula:false, swelling:"none",
+      caption:"Carie profonde exposant la pulpe ; inflammation pulpaire sévère, irréversible, dent encore vivante."
+    },
+    parodontite: {
+      caries:"large", pulp:"#5a4a42", periapical:"widened", fistula:false, swelling:"none",
+      caption:"Pulpe nécrosée ; ligament parodontal apical élargi et inflammatoire, sans collection ni tuméfaction."
+    },
+    abces_aigu: {
+      caries:"large", pulp:"#4a3d36", periapical:"diffuse", fistula:false, swelling:"none",
+      caption:"Pulpe nécrosée ; infection périapicale aiguë diffuse, avant la formation d'une collection ou d'une fistule."
+    },
+    abces_chronique: {
+      caries:"large", pulp:"#4a3d36", periapical:"defined", fistula:true, swelling:"none",
+      caption:"Pulpe nécrosée ; lésion périapicale chronique drainée par une fistule (le petit bouton sur la gencive)."
+    },
+    cellulite_sereuse: {
+      caries:"large", pulp:"#4a3d36", periapical:"defined", fistula:false, swelling:"diffuse",
+      caption:"Infection périapicale qui diffuse dans les tissus mous : tuméfaction œdémateuse, pâteuse, du visage."
+    },
+    cellulite_suppuree: {
+      caries:"large", pulp:"#4a3d36", periapical:"defined", fistula:false, swelling:"collected",
+      caption:"Infection périapicale avec collection purulente localisée et fluctuante dans les tissus mous du visage."
+    },
+    cellulite_diffuse: {
+      caries:"large", pulp:"#4a3d36", periapical:"defined", fistula:false, swelling:"severe",
+      caption:"Infection périapicale extensive : tuméfaction indurée, diffusion rapide dans les tissus mous vers le cou."
+    }
+  };
+
+  function buildToothSVG(cfg){
+    var parts = [];
+    parts.push('<svg viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Coupe dentaire schématique">');
+    parts.push('<rect x="0" y="0" width="240" height="320" rx="12" fill="#fbf8f3"/>');
+
+    // --- tissus mous / peau (dessinés en premier, derrière l'os) ---
+    var skin;
+    if(cfg.swelling === "severe"){ skin = "M60,10 Q-15,150 5,320"; }
+    else if(cfg.swelling === "collected"){ skin = "M60,20 Q14,150 30,300"; }
+    else if(cfg.swelling === "diffuse"){ skin = "M60,20 Q20,160 35,300"; }
+    else { skin = "M60,20 Q64,160 60,300"; }
+
+    var tissueFill = "#f5e3e3", tissueOpacity = "0.55";
+    if(cfg.swelling === "diffuse" || cfg.swelling === "collected"){ tissueFill = "#e88b86"; tissueOpacity = "0.75"; }
+    if(cfg.swelling === "severe"){ tissueFill = "#b85c4a"; tissueOpacity = "0.9"; }
+
+    parts.push('<path d="' + skin + ' L95,320 L95,10 Z" fill="' + tissueFill + '" opacity="' + tissueOpacity + '"/>');
+
+    if(cfg.swelling === "collected"){
+      parts.push('<ellipse cx="42" cy="175" rx="20" ry="24" fill="#eeda78" stroke="#c9a93a" stroke-width="1.5"/>');
+    }
+
+    // --- os alvéolaire ---
+    parts.push('<rect x="95" y="108" width="130" height="192" fill="#ecd9ab" stroke="#cbb583" stroke-width="1.5"/>');
+
+    // --- lésion périapicale (dans l'os, derrière la racine) ---
+    if(cfg.periapical === "widened"){
+      parts.push('<circle cx="150" cy="248" r="9" fill="#e0806e" opacity="0.55"/>');
+    } else if(cfg.periapical === "diffuse"){
+      parts.push('<circle cx="150" cy="248" r="18" fill="#8a7550" opacity="0.3"/>');
+      parts.push('<circle cx="150" cy="248" r="11" fill="#6b5a3d" opacity="0.45"/>');
+    } else if(cfg.periapical === "defined"){
+      parts.push('<circle cx="150" cy="248" r="15" fill="#d9c48a" stroke="#8a7345" stroke-width="1.5"/>');
+    }
+
+    // --- couronne : émail, dentine, pulpe ---
+    parts.push('<path d="M118,92 L118,48 Q118,16 150,16 Q182,16 182,48 L182,92 Z" fill="#f7f3e7" stroke="#c9c2ac" stroke-width="1.5"/>');
+    parts.push('<path d="M128,92 L128,52 Q128,30 150,30 Q172,30 172,52 L172,92 Z" fill="#ecdcb8"/>');
+    parts.push('<path d="M138,92 L138,64 Q138,56 150,56 Q162,56 162,64 L162,92 Z" fill="' + cfg.pulp + '"/>');
+
+    // --- carie ---
+    if(cfg.caries === "tiny"){
+      parts.push('<circle cx="150" cy="30" r="4" fill="#4a3524"/>');
+    } else if(cfg.caries === "medium"){
+      parts.push('<path d="M136,22 Q150,14 164,22 L158,50 Q150,58 142,50 Z" fill="#4a3524"/>');
+    } else if(cfg.caries === "large"){
+      parts.push('<path d="M130,18 Q150,8 170,18 L160,72 Q150,84 140,72 Z" fill="#33241a"/>');
+    }
+
+    // --- racine, canal, ligament ---
+    parts.push('<path d="M130,96 L170,96 L157,234 Q150,248 143,234 Z" fill="#ecdcb8" stroke="#c9c2ac" stroke-width="1.5"/>');
+    parts.push('<path d="M144,96 L156,96 L151,228 L149,228 Z" fill="' + cfg.pulp + '"/>');
+    parts.push('<path d="M128,96 L172,96 L158,236 Q150,252 142,236 Z" fill="none" stroke="#b97a5a" stroke-width="1.5" opacity="0.8"/>');
+
+    // --- gencive ---
+    parts.push('<path d="M112,90 Q150,108 188,90 L188,102 Q150,122 112,102 Z" fill="#e6a3ab" stroke="#c97e8a" stroke-width="1"/>');
+
+    // --- fistule (parulie) ---
+    if(cfg.fistula){
+      parts.push('<path d="M150,246 Q142,190 128,130 Q120,108 114,96" fill="none" stroke="#c99a6a" stroke-width="3" stroke-linecap="round"/>');
+      parts.push('<circle cx="112" cy="94" r="5.5" fill="#e6a3ab" stroke="#b25a68" stroke-width="1.5"/>');
+    }
+
+    parts.push('</svg>');
+    return parts.join('');
+  }
+
   // ---------- State ----------
   var caseId = null;
   var askedIds = []; // question ids asked this session, in order
@@ -833,6 +1012,10 @@
 
     document.getElementById('result-title').textContent = actual.title;
     document.getElementById('result-def').textContent = actual.def;
+
+    var diagram = DIAGRAMS[caseId];
+    document.getElementById('result-diagram').innerHTML = buildToothSVG(diagram);
+    document.getElementById('diagram-caption').textContent = diagram.caption;
 
     var signsEl = document.getElementById('result-signs');
     signsEl.innerHTML = '';
