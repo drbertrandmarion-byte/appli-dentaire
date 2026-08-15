@@ -445,36 +445,37 @@
       title:"Pulpite aiguë irréversible", category:"pulpaire",
       def:"Inflammation pulpaire sévère, ne pouvant régresser, évoluant vers la nécrose pulpaire.",
       signs:[
-        "Douleur spontanée, intense, pulsatile ou lancinante, continue et mal localisée",
-        "Provoquée/exacerbée par le chaud, parfois calmée par le froid",
-        "Recrudescence nocturne",
-        "Percussion non significative, dent encore vitale aux tests"
+        "Douleur au froid irradiante, difficile à localiser",
+        "Douleur au chaud et au sucré, très intense",
+        "Douleur pulsatile (« comme un cœur »), à recrudescence nocturne et insomniante",
+        "Pas de douleur à la percussion ni à la palpation (pas encore d'atteinte périapicale)"
       ],
       orientation:"Traitement endodontique en urgence (biopulpectomie).",
-      answers:{froid_fugace:true, froid_irradiant:true, chaud:true, sucre:true, froid_apaise:true, nocturne:true, pulsation:true, continue_diffuse:true}
+      answers:{froid_irradiant:true, chaud:true, sucre:true, nocturne:true, pulsation:true}
     },
     parodontite: {
       title:"Parodontite apicale aiguë", category:"periapical",
       def:"Inflammation aiguë du ligament parodontal apical, d'origine traumatique/occlusale ou infectieuse débutante.",
       signs:[
-        "Douleur à la percussion axiale, bien localisée",
-        "Sensation de « dent longue » / surocclusion, douleur à la mastication",
-        "Pas de tuméfaction, palpation apicale non douloureuse (pas encore de collection)"
+        "Douleur vive à la percussion et à la palpation apicale",
+        "Sensation de « dent longue », comme si elle avait poussé dans la nuit",
+        "Gêne à la mastication plutôt qu'une douleur franche",
+        "Pas de tuméfaction, pas de signe général"
       ],
       orientation:"Rechercher la cause (trauma occlusal ou nécrose pulpaire) et traiter en conséquence (meulage ± traitement endodontique).",
-      answers:{percussion:true, dent_longue:true, mastication:true}
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true}
     },
     abces_aigu: {
       title:"Abcès apical aigu", category:"periapical",
       def:"Infection aiguë d'origine pulpaire avec collection purulente périapicale débutante, avant fistulisation.",
       signs:[
-        "Douleur intense à la percussion et à la palpation apicale",
-        "Sensation de dent longue, douleur vive à la mastication",
-        "Douleur pulsatile, pulpe nécrosée",
+        "Douleur très intense à la percussion et à la palpation, sensation de dent longue",
+        "Douleur constante, intense et lancinante ; mastication impossible",
+        "Le froid (glace) apaise la douleur",
         "Pas encore de tuméfaction franche"
       ],
       orientation:"Urgence : drainage (ouverture de la chambre pulpaire), traitement endodontique, antibiothérapie si signes généraux.",
-      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, pulsation:true}
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, continue_diffuse:true}
     },
     abces_chronique: {
       title:"Abcès apical chronique", category:"periapical",
@@ -491,34 +492,36 @@
       title:"Cellulite séreuse", category:"cellulite",
       def:"Premier stade de diffusion de l'infection dans les tissus mous péri-maxillaires, sans collection purulente franche.",
       signs:[
-        "Tuméfaction diffuse, ferme, pâteuse (« en pâte »)",
-        "Signe du godet positif (la dépression persiste à la pression)",
-        "Pas de signes généraux marqués"
+        "Tuméfaction du visage, sans signe du godet ni signes généraux marqués",
+        "Dent causale très douloureuse à la percussion et à la palpation, sensation de dent longue",
+        "Douleur constante, apaisée par le froid ; mastication impossible"
       ],
       orientation:"Traiter la cause dentaire (drainage endodontique), antibiothérapie, surveillance rapprochée de l'évolution.",
-      answers:{gonflement:true, godet:true}
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, continue_diffuse:true}
     },
     cellulite_suppuree: {
       title:"Cellulite suppurée (collectée)", category:"cellulite",
       def:"Stade de collection purulente localisée dans les tissus mous.",
       signs:[
-        "Tuméfaction fluctuante, sans signe du godet",
-        "Douleur intense, pulsatile, bien localisée",
-        "Pas de signes généraux marqués"
+        "Tuméfaction avec collection fluctuante (signe du godet positif)",
+        "Dent causale très douloureuse à la percussion et à la palpation",
+        "Douleur constante, apaisée par le froid",
+        "Pas de signes généraux marqués (pas de fièvre élevée, pas de trismus)"
       ],
       orientation:"Urgence : incision-drainage de la collection, traitement de la cause dentaire, antibiothérapie.",
-      answers:{gonflement:true, pulsation:true}
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, continue_diffuse:true}
     },
     cellulite_diffuse: {
       title:"Cellulite diffuse", category:"urgence",
       def:"Forme grave et extensive de l'infection, à progression rapide dans plusieurs espaces celluleux, sans tendance à la collection.",
       signs:[
-        "Tuméfaction dure (« ligneuse »/bois), extension rapide, douleur diffuse",
-        "Fièvre, dysphagie, difficulté respiratoire et/ou trismus serré",
+        "Tuméfaction extensive avec collection, œdème s'étendant vers le cou",
+        "Fièvre élevée (39°C), dysphagie, difficulté respiratoire, trismus serré (impossible d'ouvrir la bouche)",
+        "Douleur constante, dent causale très algique à la percussion et à la palpation",
         "Risque d'atteinte des voies aériennes (angine de Ludwig)"
       ],
       orientation:"URGENCE VITALE : hospitalisation, drainage chirurgical large, antibiothérapie IV, surveillance des voies aériennes.",
-      answers:{gonflement:true, signes_generaux:true, continue_diffuse:true}
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, signes_generaux:true, continue_diffuse:true}
     }
   };
 
