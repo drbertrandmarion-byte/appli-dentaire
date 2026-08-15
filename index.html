@@ -330,7 +330,6 @@
   }
   .sw-enamel{background:#f7f3e7; border:1px solid #c9c2ac;}
   .sw-dentin{background:#ecdcb8;}
-  .sw-pulp{background:#c23b3b;}
   .sw-bone{background:#ecd9ab; border:1px solid #cbb583;}
   .sw-gum{background:#e6a3ab;}
   .sw-swelling{background:#e0806e;}
@@ -429,7 +428,7 @@
       <div class="diagram-legend">
         <span><i class="sw sw-enamel"></i>Émail</span>
         <span><i class="sw sw-dentin"></i>Dentine</span>
-        <span><i class="sw sw-pulp"></i>Pulpe / nerf</span>
+        <span><i class="sw" id="sw-pulp"></i><span id="pulp-legend-label">Pulpe / nerf</span></span>
         <span><i class="sw sw-bone"></i>Os alvéolaire</span>
         <span><i class="sw sw-gum"></i>Gencive</span>
         <span><i class="sw sw-swelling"></i>Tissus mous / tuméfaction</span>
@@ -771,43 +770,43 @@
   // ---------- Coupes dentaires schématiques (une par diagnostic) ----------
   var DIAGRAMS = {
     saine: {
-      caries:"none", pulp:"#e8a3a3", periapical:"none", fistula:false, swelling:"none",
+      caries:"none", pulp:"#e8a3a3", pulpLabel:"Pulpe / nerf (saine)", periapical:"none", fistula:false, swelling:"none",
       caption:"Dent intacte : émail et dentine sans carie, pulpe saine, ligament et os alvéolaire normaux."
     },
     hyperhemie: {
-      caries:"tiny", pulp:"#e0808a", periapical:"none", fistula:false, swelling:"none",
+      caries:"tiny", pulp:"#e0808a", pulpLabel:"Pulpe / nerf (congestionnée)", periapical:"none", fistula:false, swelling:"none",
       caption:"Toute petite carie superficielle de l'émail ; la pulpe reste vivante mais congestionnée."
     },
     reversible: {
-      caries:"medium", pulp:"#d97a6a", periapical:"none", fistula:false, swelling:"none",
+      caries:"medium", pulp:"#d97a6a", pulpLabel:"Pulpe / nerf (inflammation légère)", periapical:"none", fistula:false, swelling:"none",
       caption:"Carie ayant atteint la dentine, proche de la pulpe sans l'exposer ; inflammation pulpaire légère et réversible."
     },
     irreversible: {
-      caries:"large", pulp:"#b8283a", periapical:"none", fistula:false, swelling:"none",
+      caries:"large", pulp:"#b8283a", pulpLabel:"Pulpe / nerf (inflammation sévère)", periapical:"none", fistula:false, swelling:"none",
       caption:"Carie profonde exposant la pulpe ; inflammation pulpaire sévère, irréversible, dent encore vivante."
     },
     parodontite: {
-      caries:"large", pulp:"#5a4a42", periapical:"widened", fistula:false, swelling:"none",
+      caries:"large", pulp:"#5a4a42", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"widened", fistula:false, swelling:"none",
       caption:"Pulpe nécrosée ; ligament parodontal apical élargi et inflammatoire, sans collection ni tuméfaction."
     },
     abces_aigu: {
-      caries:"large", pulp:"#4a3d36", periapical:"diffuse", fistula:false, swelling:"none",
+      caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"diffuse", fistula:false, swelling:"none",
       caption:"Pulpe nécrosée ; infection périapicale aiguë diffuse, avant la formation d'une collection ou d'une fistule."
     },
     abces_chronique: {
-      caries:"large", pulp:"#4a3d36", periapical:"defined", fistula:true, swelling:"none",
+      caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"defined", fistula:true, swelling:"none",
       caption:"Pulpe nécrosée ; lésion périapicale chronique drainée par une fistule (le petit bouton sur la gencive)."
     },
     cellulite_sereuse: {
-      caries:"large", pulp:"#4a3d36", periapical:"defined", fistula:false, swelling:"diffuse",
+      caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"defined", fistula:false, swelling:"diffuse",
       caption:"Infection périapicale qui diffuse dans les tissus mous : tuméfaction œdémateuse, pâteuse, du visage."
     },
     cellulite_suppuree: {
-      caries:"large", pulp:"#4a3d36", periapical:"defined", fistula:false, swelling:"collected",
+      caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"defined", fistula:false, swelling:"collected",
       caption:"Infection périapicale avec collection purulente localisée et fluctuante dans les tissus mous du visage."
     },
     cellulite_diffuse: {
-      caries:"large", pulp:"#4a3d36", periapical:"defined", fistula:false, swelling:"severe",
+      caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"defined", fistula:false, swelling:"severe",
       caption:"Infection périapicale extensive : tuméfaction indurée, diffusion rapide dans les tissus mous vers le cou."
     }
   };
@@ -1016,6 +1015,8 @@
     var diagram = DIAGRAMS[caseId];
     document.getElementById('result-diagram').innerHTML = buildToothSVG(diagram);
     document.getElementById('diagram-caption').textContent = diagram.caption;
+    document.getElementById('sw-pulp').style.background = diagram.pulp;
+    document.getElementById('pulp-legend-label').textContent = diagram.pulpLabel;
 
     var signsEl = document.getElementById('result-signs');
     signsEl.innerHTML = '';
