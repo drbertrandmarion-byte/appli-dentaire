@@ -22,6 +22,7 @@
     --periapical:#d97706;
     --cellulite:#dc2626;
     --urgence:#7c1d1d;
+    --mixte:#7c3aed;
     --ok:#0f9488;
     --ko:#b91c1c;
     --radius:14px;
@@ -240,6 +241,7 @@
   .result-card.cat-periapical{border-left-color:var(--periapical);}
   .result-card.cat-cellulite{border-left-color:var(--cellulite);}
   .result-card.cat-urgence{border-left-color:var(--urgence);}
+  .result-card.cat-mixte{border-left-color:var(--mixte);}
 
   .badge{
     display:inline-block;
@@ -257,6 +259,7 @@
   .badge.cat-periapical{background:var(--periapical);}
   .badge.cat-cellulite{background:var(--cellulite);}
   .badge.cat-urgence{background:var(--urgence);}
+  .badge.cat-mixte{background:var(--mixte);}
 
   .result-card h2{
     margin:0 0 10px;
@@ -517,12 +520,13 @@
 
   <!-- Intro screen -->
   <div class="card intro-card" id="intro-card">
-    <p>Au lancement d'une session, l'application choisit en secret un cas parmi les 10 diagnostics suivants :</p>
+    <p>Au lancement d'une session, l'application choisit en secret un cas parmi les 11 diagnostics suivants :</p>
     <ul>
       <li>Dent saine</li>
       <li>Hyperhémie pulpaire</li>
       <li>Pulpite réversible</li>
       <li>Pulpite aiguë irréversible</li>
+      <li>Syndrome mixte</li>
       <li>Parodontite apicale aiguë</li>
       <li>Abcès apical aigu</li>
       <li>Abcès apical chronique</li>
@@ -581,6 +585,7 @@
         <span><i class="sw sw-enamel"></i>Émail</span>
         <span><i class="sw sw-dentin"></i>Dentine</span>
         <span><i class="sw" id="sw-pulp"></i><span id="pulp-legend-label">Pulpe / nerf</span></span>
+        <span id="pulp-legend-item-2" class="hidden"><i class="sw" id="sw-pulp-2"></i><span id="pulp-legend-label-2"></span></span>
         <span><i class="sw sw-bone"></i>Os alvéolaire</span>
         <span><i class="sw sw-gum"></i>Gencive</span>
         <span><i class="sw" id="sw-swelling"></i><span id="swelling-legend-label">Tissus mous / tuméfaction</span></span>
@@ -621,7 +626,7 @@
   <footer>
     Outil pédagogique — Spécialité Endodontie · Chirurgie dentaire
     <br>
-    <button class="link-btn" id="recap-btn" type="button">📄 Fiche récapitulative des 10 diagnostics (PDF)</button>
+    <button class="link-btn" id="recap-btn" type="button">📄 Fiche récapitulative des 11 diagnostics (PDF)</button>
   </footer>
 
   <div id="recap-sheet" class="recap-sheet hidden">
@@ -653,7 +658,7 @@
     {id:"radio",            text:"Réalisation d'une radiographie rétro-alvéolaire : que montre-t-elle ?", type:"exam"}
   ];
 
-  // ---------- Les 10 diagnostics et leur profil de réponses (true = Oui, false = Non) ----------
+  // ---------- Les 11 diagnostics et leur profil de réponses (true = Oui, false = Non) ----------
   // Variantes possibles de la lecture radiographique pour les diagnostics à pulpe nécrosée
   // avec atteinte périapicale (deux mènent au traitement endodontique, une à l'extraction).
   var RADIO_TEXTS_SEVERE = [
@@ -667,6 +672,18 @@
       {radio: RADIO_TEXTS_SEVERE[1], traitementFinal: finalEndo},
       {radio: RADIO_TEXTS_SEVERE[2], traitementFinal: finalExtraction}
     ];
+  }
+
+  // Variantes pour les diagnostics à pulpe encore excitable, sans atteinte périapicale.
+  var RADIO_TEXTS_NO_APICAL = [
+    "Perte de substance coronaire importante avec atteinte pulpaire, sans image radioclaire péri-apicale.",
+    "Restauration avec perte d'étanchéité et proximité pulpaire, sans image radioclaire péri-apicale.",
+    "Restauration récente avec proximité pulpaire associée, sans image radioclaire péri-apicale."
+  ];
+  function makeRadioVariantsNoApical(finalTreatment){
+    return RADIO_TEXTS_NO_APICAL.map(function(text){
+      return {radio: text, traitementFinal: finalTreatment};
+    });
   }
 
   var DIAGNOSES = {
@@ -771,14 +788,9 @@
       ],
       urgence:"Pose de la digue obligatoire, avec geste d'urgence en première intention — pulpotomie thérapeutique, pulpotomie d'urgence ou pulpectomie d'urgence.",
       traitementFinal:"Traitement endodontique complet (biopulpectomie), ou pulpotomie thérapeutique, pour finaliser la désinfection et l'obturation canalaire.",
-      radioVariants: [
-        {radio:"Perte de substance coronaire importante avec atteinte pulpaire, sans image radioclaire péri-apicale.",
-         traitementFinal:"Traitement endodontique complet (biopulpectomie), ou pulpotomie thérapeutique, pour finaliser la désinfection et l'obturation canalaire."},
-        {radio:"Restauration avec perte d'étanchéité et proximité pulpaire, sans image radioclaire péri-apicale.",
-         traitementFinal:"Traitement endodontique complet (biopulpectomie), ou pulpotomie thérapeutique, pour finaliser la désinfection et l'obturation canalaire."},
-        {radio:"Restauration récente avec proximité pulpaire associée, sans image radioclaire péri-apicale.",
-         traitementFinal:"Traitement endodontique complet (biopulpectomie), ou pulpotomie thérapeutique, pour finaliser la désinfection et l'obturation canalaire."}
-      ],
+      radioVariants: makeRadioVariantsNoApical(
+        "Traitement endodontique complet (biopulpectomie), ou pulpotomie thérapeutique, pour finaliser la désinfection et l'obturation canalaire."
+      ),
       answers:{froid:"intense", chaud:true, sucre:true, nocturne:true, pulsation:true, radio:"coronal"},
       quotes:{
         radio:"Perte de substance coronaire importante avec atteinte pulpaire, sans image radioclaire péri-apicale.",
@@ -796,6 +808,40 @@
         nocturne:"Oui, complètement insomniante.",
         pulsation:"Oui, comme un cœur.",
         continue_diffuse:"Non, elle est plutôt pulsatile que continue."
+      }
+    },
+    syndrome_mixte: {
+      title:"Syndrome mixte", category:"mixte",
+      def:"Dent pluriradiculée à l'état pulpaire mixte : un canal encore vivant et en inflammation aiguë (pulpite irréversible), un autre déjà nécrosé, sans lésion périapicale constituée.",
+      signs:[
+        "Douleur spontanée très intense et irradiante (canal encore vivant et enflammé)",
+        "Douleur à la percussion, palpation apicale non douloureuse",
+        "Sensibilité au chaud, au sucré et à la mastication : présentes mais inconstantes et peu marquées",
+        "Douleur nocturne, pulsatile par moments, parfois lancinante",
+        "Pas de tuméfaction ni de signe général"
+      ],
+      urgence:"Pose de la digue obligatoire. Pulpectomie d'urgence sur l'ensemble des canaux : le canal encore vivant et enflammé comme le canal nécrosé.",
+      traitementFinal:"Traitement endodontique complet de tous les canaux (canal encore vital traité comme une pulpite irréversible, canal nécrosé traité comme un canal infecté).",
+      radioVariants: makeRadioVariantsNoApical(
+        "Traitement endodontique complet de tous les canaux (canal encore vital traité comme une pulpite irréversible, canal nécrosé traité comme un canal infecté)."
+      ),
+      answers:{froid:"intense", percussion:true, dent_longue:true, chaud:true, mastication:true, nocturne:true, pulsation:true, continue_diffuse:true, radio:"coronal"},
+      quotes:{
+        radio:"Perte de substance coronaire importante avec atteinte pulpaire, sans image radioclaire péri-apicale.",
+        froid:"Oui, la douleur est très intense, irradiante.",
+        percussion:"Oui, la dent est douloureuse à la percussion.",
+        palpation:"Non, pas de douleur quand je touche ma gencive.",
+        dent_longue:"Oui, un peu, mais pas de façon très importante.",
+        chaud:"Oui, un peu, mais pas de façon très intense ni tout le temps.",
+        sucre:"Non, pas forcément.",
+        mastication:"Oui, un peu, mais pas toujours.",
+        froid_apaise:"Non.",
+        gonflement:"Non.",
+        godet:"Non.",
+        signes_generaux:"Non.",
+        nocturne:"Oui, ça peut m'empêcher de dormir.",
+        pulsation:"Oui, par moments, ça pulse comme un cœur dans la dent.",
+        continue_diffuse:"Oui, parfois, ça peut être lancinant."
       }
     },
     parodontite: {
@@ -1000,7 +1046,7 @@
     }
   };
 
-  var DIAGNOSIS_ORDER = ["saine","hyperhemie","reversible","irreversible","parodontite","abces_aigu","abces_chronique","cellulite_sereuse","cellulite_suppuree","cellulite_diffuse"];
+  var DIAGNOSIS_ORDER = ["saine","hyperhemie","reversible","irreversible","syndrome_mixte","parodontite","abces_aigu","abces_chronique","cellulite_sereuse","cellulite_suppuree","cellulite_diffuse"];
 
   // ---------- Coupes dentaires schématiques (une par diagnostic) ----------
   var DIAGRAMS = {
@@ -1023,6 +1069,13 @@
       caries:"large", pulp:"#b8283a", pulpLabel:"Pulpe / nerf (inflammation sévère)", periapical:"none", fistula:false, swelling:"none",
       swellColor:"#f5e3e3", swellLabel:"Tissus mous (normaux)",
       caption:"Carie profonde exposant la pulpe ; inflammation pulpaire sévère, irréversible, dent encore vivante."
+    },
+    syndrome_mixte: {
+      dualRoot:true,
+      pulp:"#b8283a", pulpLabel:"Canal vivant, inflammé (pulpite irréversible)",
+      pulp2:"#4a3d36", pulpLabel2:"Canal nécrosé",
+      swellColor:"#f5e3e3", swellLabel:"Tissus mous (normaux)",
+      caption:"Dent à deux racines : un canal encore vivant et enflammé, un canal déjà nécrosé, sans lésion périapicale constituée."
     },
     parodontite: {
       caries:"large", pulp:"#5a4a42", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"widened", fistula:false, swelling:"none",
@@ -1119,6 +1172,48 @@
       parts.push('<path d="M150,246 Q142,190 128,130 Q120,108 114,96" fill="none" stroke="#c99a6a" stroke-width="3" stroke-linecap="round"/>');
       parts.push('<circle cx="112" cy="94" r="5.5" fill="#e6a3ab" stroke="#b25a68" stroke-width="1.5"/>');
     }
+
+    parts.push('</svg>');
+    return parts.join('');
+  }
+
+  // Coupe spéciale pour le syndrome mixte : deux racines, deux états pulpaires différents.
+  function buildMixedRootSVG(cfg){
+    var parts = [];
+    parts.push('<svg viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Coupe dentaire schématique, syndrome mixte, deux racines">');
+    parts.push('<rect x="0" y="0" width="240" height="320" rx="12" fill="#fbf8f3"/>');
+
+    // tissus mous normaux
+    parts.push('<path d="M60,20 Q64,160 60,300 L95,320 L95,10 Z" fill="' + cfg.swellColor + '" opacity="0.85"/>');
+
+    // os alvéolaire
+    parts.push('<rect x="95" y="108" width="130" height="192" fill="#ecd9ab" stroke="#cbb583" stroke-width="1.5"/>');
+
+    // couronne : émail, dentine
+    parts.push('<path d="M118,92 L118,48 Q118,16 150,16 Q182,16 182,48 L182,92 Z" fill="#f7f3e7" stroke="#c9c2ac" stroke-width="1.5"/>');
+    parts.push('<path d="M128,92 L128,52 Q128,30 150,30 Q172,30 172,52 L172,92 Z" fill="#ecdcb8"/>');
+
+    // chambre pulpaire divisée : moitié vivante (gauche) / moitié nécrosée (droite)
+    parts.push('<path d="M138,92 L138,64 Q138,56 150,56 L150,92 Z" fill="' + cfg.pulp + '"/>');
+    parts.push('<path d="M150,92 L150,56 Q162,56 162,64 L162,92 Z" fill="' + cfg.pulp2 + '"/>');
+
+    // grosse carie
+    parts.push('<path d="M130,18 Q150,8 170,18 L160,72 Q150,84 140,72 Z" fill="#33241a"/>');
+
+    // deux racines divergentes
+    parts.push('<path d="M130,96 L150,96 L127,232 Q118,247 109,232 Z" fill="#ecdcb8" stroke="#c9c2ac" stroke-width="1.5"/>');
+    parts.push('<path d="M150,96 L170,96 L191,232 Q182,247 173,232 Z" fill="#ecdcb8" stroke="#c9c2ac" stroke-width="1.5"/>');
+
+    // canaux radiculaires (couleur propre à chaque racine)
+    parts.push('<path d="M141,96 L149,96 L122,228 L116,228 Z" fill="' + cfg.pulp + '"/>');
+    parts.push('<path d="M151,96 L159,96 L184,228 L178,228 Z" fill="' + cfg.pulp2 + '"/>');
+
+    // ligaments parodontaux (normaux, pas de lésion périapicale)
+    parts.push('<path d="M128,96 L150,96 L125,235 Q118,250 111,235 Z" fill="none" stroke="#b97a5a" stroke-width="1.5" opacity="0.8"/>');
+    parts.push('<path d="M150,96 L172,96 L189,235 Q182,250 175,235 Z" fill="none" stroke="#b97a5a" stroke-width="1.5" opacity="0.8"/>');
+
+    // gencive
+    parts.push('<path d="M112,90 Q150,108 188,90 L188,102 Q150,122 112,102 Z" fill="#e6a3ab" stroke="#c97e8a" stroke-width="1"/>');
 
     parts.push('</svg>');
     return parts.join('');
@@ -1338,10 +1433,18 @@
     document.getElementById('result-def').textContent = actual.def;
 
     var diagram = DIAGRAMS[caseId];
-    document.getElementById('result-diagram').innerHTML = buildToothSVG(diagram);
+    document.getElementById('result-diagram').innerHTML = diagram.dualRoot ? buildMixedRootSVG(diagram) : buildToothSVG(diagram);
     document.getElementById('diagram-caption').textContent = diagram.caption;
     document.getElementById('sw-pulp').style.background = diagram.pulp;
     document.getElementById('pulp-legend-label').textContent = diagram.pulpLabel;
+    var pulpItem2 = document.getElementById('pulp-legend-item-2');
+    if(diagram.dualRoot){
+      pulpItem2.classList.remove('hidden');
+      document.getElementById('sw-pulp-2').style.background = diagram.pulp2;
+      document.getElementById('pulp-legend-label-2').textContent = diagram.pulpLabel2;
+    } else {
+      pulpItem2.classList.add('hidden');
+    }
     document.getElementById('sw-swelling').style.background = diagram.swellColor;
     document.getElementById('swelling-legend-label').textContent = diagram.swellLabel;
 
@@ -1412,7 +1515,7 @@
       card.innerHTML =
         '<span class="badge cat-' + d.category + '">' + categoryLabel(d.category) + '</span>' +
         '<h3>' + d.title + '</h3>' +
-        '<div class="recap-diagram">' + buildToothSVG(diagram) + '</div>' +
+        '<div class="recap-diagram">' + (diagram.dualRoot ? buildMixedRootSVG(diagram) : buildToothSVG(diagram)) + '</div>' +
         '<ul>' + signsHtml + '</ul>' +
         '<div class="recap-tx"><b>Urgence</b>' + d.urgence + '</div>' +
         '<div class="recap-tx"><b>Traitement final</b>' + d.traitementFinal + '</div>';
@@ -1434,6 +1537,7 @@
       case 'periapical': return 'Pathologie périapicale';
       case 'cellulite': return 'Cellulite';
       case 'urgence': return 'Urgence vitale';
+      case 'mixte': return 'Pulpo-périapical mixte';
       default: return '';
     }
   }
