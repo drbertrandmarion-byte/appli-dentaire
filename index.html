@@ -542,7 +542,7 @@
     <div class="session-meta">
       <span class="counter-badge quiz-badge hidden" id="quiz-progress"></span>
       <span>Questions posées</span>
-      <span class="counter-badge" id="questions-counter">0 / 14</span>
+      <span class="counter-badge" id="questions-counter">0 / 15</span>
     </div>
 
     <div class="history-label hidden" id="history-label">Questions posées et réponses</div>
@@ -649,7 +649,8 @@
     {id:"signes_generaux",  text:"Y a-t-il de la fièvre, et/ou une dysphagie, et/ou une difficulté respiratoire, et/ou un trismus serré ?"},
     {id:"nocturne",         text:"La douleur s'intensifie-t-elle la nuit ?"},
     {id:"pulsation",        text:"La douleur est-elle semblable à une pulsation dans la dent ?"},
-    {id:"continue_diffuse", text:"La douleur est-elle plutôt continue et diffuse (spontanée, difficile à localiser) ?"}
+    {id:"continue_diffuse", text:"La douleur est-elle plutôt continue et diffuse (spontanée, difficile à localiser) ?"},
+    {id:"radio",            text:"Réalisation d'une radiographie rétro-alvéolaire : que montre-t-elle ?", type:"exam"}
   ];
 
   // ---------- Les 10 diagnostics et leur profil de réponses (true = Oui, false = Non) ----------
@@ -665,8 +666,9 @@
       ],
       urgence:"Aucun geste d'urgence nécessaire.",
       traitementFinal:"Aucun traitement endodontique nécessaire.",
-      answers:{froid:"non"},
+      answers:{froid:"non", radio:"normal"},
       quotes:{
+        radio:"Aucune image pathologique : pas de radioclarté carieuse coronaire, ligament et os périapicaux normaux.",
         froid:"Non, le froid ne me fait rien du tout.",
         percussion:"Non, ça ne me fait pas mal quand on tape dessus.",
         palpation:"Non, je peux appuyer sur la gencive sans problème.",
@@ -693,8 +695,9 @@
       ],
       urgence:"Ce n'est pas une urgence dentaire à proprement parler.",
       traitementFinal:"Soin de la carie causale (obturation) ; la pulpe reste conservable.",
-      answers:{froid:"leger"},
+      answers:{froid:"leger", radio:"coronal"},
       quotes:{
+        radio:"Petite radioclarté carieuse très superficielle, limitée à l'émail, à bonne distance de la pulpe ; pas de radioclarté apicale.",
         froid:"Oui, ça pique au froid mais c'est fugace et léger, ça s'arrête dès la fin du stimulus.",
         percussion:"Non.",
         palpation:"Non.",
@@ -722,8 +725,9 @@
       ],
       urgence:"Si besoin : curetage carieux d'urgence avec coiffage pulpaire (MTA, biocéramique type Biodentine) et restauration en résine composite ou CVI.",
       traitementFinal:"Soin de la carie ou reprise du soin défaillant, sur un créneau de soin classique.",
-      answers:{froid:"leger", sucre:true},
+      answers:{froid:"leger", sucre:true, radio:"coronal"},
       quotes:{
+        radio:"Radioclarté carieuse superficielle, atteignant la dentine mais encore à distance de la pulpe (épaisseur de dentine saine restante) ; pas de radioclarté apicale.",
         froid:"Oui, mais c'est léger et fugace, ça passe quand j'arrête de manger du froid.",
         percussion:"Non.",
         palpation:"Non.",
@@ -751,8 +755,9 @@
       ],
       urgence:"Pose de la digue obligatoire, avec geste d'urgence en première intention — pulpotomie thérapeutique, pulpotomie d'urgence ou pulpectomie d'urgence.",
       traitementFinal:"Traitement endodontique complet (biopulpectomie) à programmer pour finaliser la désinfection et l'obturation canalaire.",
-      answers:{froid:"intense", chaud:true, sucre:true, nocturne:true, pulsation:true},
+      answers:{froid:"intense", chaud:true, sucre:true, nocturne:true, pulsation:true, radio:"coronal"},
       quotes:{
+        radio:"Grosse radioclarté carieuse profonde, proche du nerf voire en continuité avec la chambre pulpaire ; ligament et os périapicaux encore normaux.",
         froid:"Oui, très intense, ça se prolonge et irradie jusqu'à l'oreille.",
         percussion:"Non.",
         palpation:"Non.",
@@ -780,8 +785,9 @@
       ],
       urgence:"Pose de la digue obligatoire. Meulage de la surocclusion si trauma occlusal ; si la pulpe est nécrosée, pulpectomie d'urgence.",
       traitementFinal:"Traitement endodontique complet si la pulpe est nécrosée ; simple surveillance si la cause est occlusale et corrigée.",
-      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true},
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, radio:"periapical"},
       quotes:{
+        radio:"Grosse carie communiquant avec le nerf (pulpe atteinte) ; ligament parodontal apical légèrement élargi, pas de lésion arrondie constituée.",
         froid:"Non, le froid ne me fait rien.",
         percussion:"Oui, dès qu'on touche c'est affreux.",
         palpation:"Oui, je peux difficilement toucher ma gencive à gauche.",
@@ -809,8 +815,9 @@
       ],
       urgence:"Pose de la digue obligatoire, pulpectomie d'urgence pour drainer et lever la pression.",
       traitementFinal:"Traitement endodontique complet, si possible dans la même séance ou à la séance suivante.",
-      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, continue_diffuse:true},
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
+        radio:"Grosse carie communiquant avec le nerf ; discrète radioclarté apicale mal limitée, encore diffuse, sans image arrondie.",
         froid:"Non, le froid ne me fait rien.",
         percussion:"Oui, dès qu'on touche c'est affreux.",
         palpation:"Oui, je ne peux plus toucher la zone.",
@@ -839,8 +846,9 @@
       ],
       urgence:"Pas une urgence vraie. Une pulpectomie d'urgence (sous digue) est possible mais non systématique.",
       traitementFinal:"Traitement endodontique complet à programmer ; si la dent n'est pas conservable, prévoir l'extraction.",
-      answers:{mastication:true},
+      answers:{mastication:true, radio:"periapical"},
       quotes:{
+        radio:"Grosse carie communiquant avec le nerf ; radioclarté apicale bien limitée et arrondie (image de granulome/kyste).",
         froid:"Non, le froid ne me fait rien.",
         percussion:"Non, c'est un peu sensible quand on tape dessus, mais ce n'est pas vraiment douloureux.",
         palpation:"Non, c'est juste légèrement gênant, et j'ai remarqué comme un petit bouton qui ressort sur ma gencive.",
@@ -867,8 +875,9 @@
       ],
       urgence:"Pulpectomie sous digue si la dent est conservable (ou extraction si elle ne l'est pas), associée à une antibiothérapie.",
       traitementFinal:"Traitement endodontique complet une fois l'épisode infectieux contrôlé.",
-      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, continue_diffuse:true},
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
+        radio:"Grosse carie communiquant avec le nerf ; radioclarté apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
         froid:"Non, le froid ne me fait rien.",
         percussion:"Oui, je ne peux pas toucher ma dent sans douleur.",
         palpation:"Oui, je ne peux pas toucher ma gencive.",
@@ -896,8 +905,9 @@
       ],
       urgence:"Pulpectomie sous digue si la dent est conservable (ou extraction), associée à un drainage muqueux et à une antibiothérapie.",
       traitementFinal:"Traitement endodontique complet une fois la collection résorbée.",
-      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, continue_diffuse:true},
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
+        radio:"Grosse carie communiquant avec le nerf ; radioclarté apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
         froid:"Non, le froid ne me fait rien.",
         percussion:"Oui, je ne peux pas toucher ma dent sans douleur.",
         palpation:"Oui, je ne peux pas toucher ma gencive.",
@@ -925,8 +935,9 @@
       ],
       urgence:"URGENCE VITALE : référer en milieu hospitalier, le plus souvent en service de chirurgie maxillo-faciale, pour drainage chirurgical large sous couverture antibiotique IV et surveillance des voies aériennes.",
       traitementFinal:"Traitement endodontique (ou extraction) de la dent causale à distance, une fois l'épisode infectieux sévère maîtrisé.",
-      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, signes_generaux:true, continue_diffuse:true},
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, signes_generaux:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
+        radio:"Grosse carie communiquant avec le nerf ; radioclarté apicale bien limitée, à l'origine de l'infection extensive des tissus mous.",
         froid:"Non, le froid ne me fait rien.",
         percussion:"Oui, je ne peux pas toucher ma dent sans douleur.",
         palpation:"Oui, je ne peux pas toucher ma gencive.",
@@ -1212,15 +1223,23 @@
     var diag = DIAGNOSES[caseId];
     var quote = diag.quotes[qid];
     var cssClass;
+    var answerHtml;
 
     if(qid === 'froid'){
       var level = diag.answers.froid || 'non';
       cssClass = level === 'non' ? 'non' : (level === 'intense' ? 'oui intense' : 'oui');
       if(!quote){ quote = level === 'non' ? 'Non.' : 'Oui.'; }
+      answerHtml = '« ' + quote + ' »';
+    } else if(qid === 'radio'){
+      var radioLevel = diag.answers.radio || 'normal';
+      cssClass = radioLevel === 'normal' ? 'non' : (radioLevel === 'periapical' ? 'oui intense' : 'oui');
+      if(!quote){ quote = 'Pas d\'anomalie visible.'; }
+      answerHtml = '🩻 ' + quote;
     } else {
       var isYes = !!diag.answers[qid];
       cssClass = isYes ? 'oui' : 'non';
       if(!quote){ quote = isYes ? 'Oui.' : 'Non.'; }
+      answerHtml = '« ' + quote + ' »';
     }
 
     askedIds.push(qid);
@@ -1232,7 +1251,7 @@
       '<div class="idx">' + askedIds.length + '</div>' +
       '<div class="content">' +
         '<div class="q">' + question.text + '</div>' +
-        '<div class="a ' + cssClass + '">« ' + quote + ' »</div>' +
+        '<div class="a ' + cssClass + '">' + answerHtml + '</div>' +
       '</div>';
     stepHistoryEl.appendChild(div);
 
