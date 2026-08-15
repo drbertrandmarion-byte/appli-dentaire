@@ -105,11 +105,19 @@
   .btn-secondary:hover{background:var(--teal-100);}
 
   /* Progress trail (accordion of answered steps) */
+  .history-label{
+    font-size:0.78rem;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    font-weight:700;
+    color:var(--teal-600);
+    margin-top:18px;
+  }
   .step-history{
     display:flex;
     flex-direction:column;
     gap:8px;
-    margin-top:16px;
+    margin-top:10px;
   }
   .step-done{
     display:flex;
@@ -281,6 +289,7 @@
 
   <!-- Question flow -->
   <div id="flow-area" class="hidden">
+    <div class="history-label hidden" id="history-label">Questions déjà répondues</div>
     <div class="step-history" id="step-history"></div>
     <div class="card question-card hidden" id="question-card">
       <div class="qnum" id="qnum"></div>
@@ -302,7 +311,7 @@
     <h3>Orientation</h3>
     <div class="orientation-box" id="result-orientation"></div>
     <div class="result-actions">
-      <button class="btn-secondary" id="review-btn">Revoir le parcours</button>
+      <button class="btn-secondary" id="review-btn">← Revenir à la question précédente</button>
       <button class="btn-primary" id="restart-btn">Recommencer</button>
     </div>
   </div>
@@ -583,20 +592,19 @@
     renderQuestion();
   });
 
-  document.getElementById('back-btn').addEventListener('click', function(){
-    if(history.length === 0) return;
-    var last = history.pop();
-    currentNode = last.nodeId;
-    renderHistory();
-    renderQuestion();
-  });
+  document.getElementById('back-btn').addEventListener('click', goBack);
+  document.getElementById('review-btn').addEventListener('click', goBack);
 
   document.getElementById('restart-btn').addEventListener('click', resetApp);
 
-  document.getElementById('review-btn').addEventListener('click', function(){
+  function goBack(){
+    if(history.length === 0) return;
+    var last = history.pop();
+    currentNode = last.nodeId;
     resultCard.classList.add('hidden');
-    flowArea.classList.remove('hidden');
-  });
+    renderHistory();
+    renderQuestion();
+  }
 
   function resetApp(){
     history = [];
@@ -605,9 +613,11 @@
     introCard.classList.remove('hidden');
     flowArea.classList.add('hidden');
     stepHistoryEl.innerHTML = '';
+    document.getElementById('history-label').classList.add('hidden');
   }
 
   function renderHistory(){
+    document.getElementById('history-label').classList.toggle('hidden', history.length === 0);
     stepHistoryEl.innerHTML = '';
     history.forEach(function(step){
       var div = document.createElement('div');
@@ -630,6 +640,8 @@
       return;
     }
 
+    resultCard.classList.add('hidden');
+    flowArea.classList.remove('hidden');
     questionCard.classList.remove('hidden');
     qnumEl.textContent = 'Question ' + (history.length + 1);
     questionTextEl.textContent = node.text;
@@ -658,7 +670,8 @@
   }
 
   function showResult(node){
-    flowArea.classList.add('hidden');
+    questionCard.classList.add('hidden');
+    backRow.classList.add('hidden');
     resultCard.classList.remove('hidden');
     resultCard.className = 'card result-card cat-' + node.category;
 
