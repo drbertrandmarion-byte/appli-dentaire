@@ -558,6 +558,7 @@
     <div class="mode-buttons">
       <button class="btn-primary" id="start-single-btn">Session individuelle (1 cas)</button>
       <button class="btn-primary" id="start-quiz-btn">Série de 5 cas notée</button>
+      <button class="btn-primary" id="start-quiz10-btn">Série de 10 cas notée</button>
     </div>
   </div>
 
@@ -630,7 +631,7 @@
     </div>
   </div>
 
-  <!-- Score de la série de 5 -->
+  <!-- Score de la série -->
   <div class="card quiz-score-card hidden" id="quiz-score-card">
     <div class="score-display">
       <div class="score-number" id="score-number">0 / 5</div>
@@ -638,7 +639,7 @@
     </div>
     <div class="score-recap" id="score-recap"></div>
     <div class="result-actions">
-      <button class="btn-primary" id="quiz-restart-btn">Recommencer une série de 5</button>
+      <button class="btn-primary" id="quiz-restart-btn">Recommencer une série</button>
       <button class="btn-secondary" id="quiz-home-btn">Retour à l'accueil</button>
     </div>
   </div>
@@ -1068,6 +1069,29 @@
 
   var DIAGNOSIS_ORDER = ["saine","hyperhemie","reversible","irreversible","syndrome_mixte","parodontite","abces_aigu","abces_chronique","cellulite_sereuse","cellulite_suppuree","cellulite_diffuse"];
 
+  // Tire n cas au hasard en réduisant (sans l'annuler) la probabilité de répéter
+  // un diagnostic déjà tombé dans la même série : chaque répétition supplémentaire
+  // divise son poids de tirage, les autres diagnostics restent prioritaires
+  // sans que la répétition ne devienne strictement impossible.
+  function generateSeriesCases(n){
+    var counts = {};
+    DIAGNOSIS_ORDER.forEach(function(id){ counts[id] = 0; });
+    var result = [];
+    for(var i = 0; i < n; i++){
+      var weights = DIAGNOSIS_ORDER.map(function(id){ return 1 / (1 + counts[id]); });
+      var total = weights.reduce(function(a, b){ return a + b; }, 0);
+      var r = Math.random() * total;
+      var chosen = DIAGNOSIS_ORDER[DIAGNOSIS_ORDER.length - 1];
+      for(var j = 0; j < DIAGNOSIS_ORDER.length; j++){
+        r -= weights[j];
+        if(r <= 0){ chosen = DIAGNOSIS_ORDER[j]; break; }
+      }
+      counts[chosen]++;
+      result.push(chosen);
+    }
+    return result;
+  }
+
   // ---------- Coupes dentaires schématiques (une par diagnostic) ----------
   var DIAGRAMS = {
     saine: {
@@ -1246,6 +1270,7 @@
   var mode = 'single'; // 'single' | 'quiz'
   var quizCases = [];
   var quizIndex = 0;
+  var quizLength = 5;
   var quizResults = [];
   var recapBuilt = false;
 
@@ -1277,8 +1302,9 @@
   });
 
   document.getElementById('start-single-btn').addEventListener('click', startSingleSession);
-  document.getElementById('start-quiz-btn').addEventListener('click', startQuizSession);
-  document.getElementById('quiz-restart-btn').addEventListener('click', startQuizSession);
+  document.getElementById('start-quiz-btn').addEventListener('click', function(){ startQuizSession(5); });
+  document.getElementById('start-quiz10-btn').addEventListener('click', function(){ startQuizSession(10); });
+  document.getElementById('quiz-restart-btn').addEventListener('click', function(){ startQuizSession(quizLength); });
   document.getElementById('quiz-home-btn').addEventListener('click', goHome);
   document.getElementById('result-home-btn').addEventListener('click', goHome);
   document.getElementById('recap-btn').addEventListener('click', downloadRecap);
@@ -1311,7 +1337,7 @@
 
     if(mode === 'quiz'){
       quizProgressEl.classList.remove('hidden');
-      quizProgressEl.textContent = 'Cas ' + (quizIndex + 1) + ' / 5';
+      quizProgressEl.textContent = 'Cas ' + (quizIndex + 1) + ' / ' + quizLength;
     } else {
       quizProgressEl.classList.add('hidden');
     }
@@ -1327,10 +1353,10 @@
     beginCase(randomCaseId());
   }
 
-  function startQuizSession(){
+  function startQuizSession(n){
     mode = 'quiz';
-    quizCases = [];
-    for(var i = 0; i < 5; i++){ quizCases.push(randomCaseId()); }
+    quizLength = n;
+    quizCases = generateSeriesCases(n);
     quizIndex = 0;
     quizResults = [];
     beginCase(quizCases[0]);
@@ -1481,8 +1507,8 @@
 
     if(mode === 'quiz'){
       quizResults.push({caseId:caseId, guessId:guessId, correct:correct, questions:askedIds.length});
-      if(quizIndex < 4){
-        nextActionBtn.textContent = 'Cas suivant (' + (quizIndex + 2) + ' / 5)';
+      if(quizIndex < quizLength - 1){
+        nextActionBtn.textContent = 'Cas suivant (' + (quizIndex + 2) + ' / ' + quizLength + ')';
         nextActionBtn.onclick = nextQuizCase;
       } else {
         nextActionBtn.textContent = 'Voir mon score final';
@@ -1502,7 +1528,7 @@
     quizScoreCard.classList.remove('hidden');
 
     var scoreCount = quizResults.filter(function(r){ return r.correct; }).length;
-    document.getElementById('score-number').textContent = scoreCount + ' / 5';
+    document.getElementById('score-number').textContent = scoreCount + ' / ' + quizLength;
 
     var recapEl = document.getElementById('score-recap');
     recapEl.innerHTML = '';
