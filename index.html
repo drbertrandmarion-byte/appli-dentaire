@@ -35,6 +35,8 @@
     --pdf-dark:#9a3412;
     --logo-navy:#182849;
     --logo-blue:#3f66d8;
+    --logo-blue-dark:#2c4bb0;
+    --logo-blue-100:#e7ecfb;
     --logo-orange:#e8532e;
     --ok:#0f9488;
     --ko:#b91c1c;
@@ -138,7 +140,7 @@
     border:none;
   }
   .btn-primary{
-    background:var(--teal-600);
+    background:var(--logo-blue);
     color:#fff;
     font-size:1rem;
     font-weight:600;
@@ -146,18 +148,18 @@
     border-radius:10px;
     transition:background .15s ease;
   }
-  .btn-primary:hover{background:var(--teal-700);}
+  .btn-primary:hover{background:var(--logo-blue-dark);}
   .btn-primary:disabled{background:var(--border);color:var(--muted);cursor:not-allowed;}
   .btn-secondary{
     background:transparent;
-    color:var(--teal-700);
-    border:1px solid var(--teal-500);
+    color:var(--logo-blue-dark);
+    border:1px solid var(--logo-blue);
     font-size:0.9rem;
     font-weight:600;
     padding:9px 16px;
     border-radius:10px;
   }
-  .btn-secondary:hover{background:var(--teal-100);}
+  .btn-secondary:hover{background:var(--logo-blue-100);}
 
   select{
     font-family:inherit;
@@ -170,7 +172,7 @@
     flex:1 1 260px;
   }
   select:focus, button:focus-visible{
-    outline:2px solid var(--teal-600);
+    outline:2px solid var(--logo-blue);
     outline-offset:2px;
   }
 
