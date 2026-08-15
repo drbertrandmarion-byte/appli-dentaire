@@ -654,6 +654,21 @@
   ];
 
   // ---------- Les 10 diagnostics et leur profil de réponses (true = Oui, false = Non) ----------
+  // Variantes possibles de la lecture radiographique pour les diagnostics à pulpe nécrosée
+  // avec atteinte périapicale (deux mènent au traitement endodontique, une à l'extraction).
+  var RADIO_TEXTS_SEVERE = [
+    "Perte de substance coronaire importante avec atteinte pulpaire, associée à une image radioclaire volumineuse péri-apicale.",
+    "Restauration avec perte d'étanchéité et proximité pulpaire, associée à une image radioclaire volumineuse péri-apicale.",
+    "Perte de substance coronaire majeure, infra-osseuse, associée à une image radioclaire volumineuse péri-apicale."
+  ];
+  function makeRadioVariants(finalEndo, finalExtraction){
+    return [
+      {radio: RADIO_TEXTS_SEVERE[0], traitementFinal: finalEndo},
+      {radio: RADIO_TEXTS_SEVERE[1], traitementFinal: finalEndo},
+      {radio: RADIO_TEXTS_SEVERE[2], traitementFinal: finalExtraction}
+    ];
+  }
+
   var DIAGNOSES = {
     saine: {
       title:"Dent saine", category:"normal",
@@ -815,6 +830,10 @@
       ],
       urgence:"Pose de la digue obligatoire, pulpectomie d'urgence pour drainer et lever la pression.",
       traitementFinal:"Traitement endodontique complet, si possible dans la même séance ou à la séance suivante.",
+      radioVariants: makeRadioVariants(
+        "Traitement endodontique complet, si possible dans la même séance ou à la séance suivante.",
+        "Extraction de la dent (non conservable), si possible dans la même séance ou à la séance suivante."
+      ),
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante ; zone de radioclarté bien délimitée à l'apex de la racine.",
@@ -846,6 +865,10 @@
       ],
       urgence:"Pas une urgence vraie. Une pulpectomie d'urgence (sous digue) est possible mais non systématique.",
       traitementFinal:"Traitement endodontique complet à programmer ; si la dent n'est pas conservable, prévoir l'extraction.",
+      radioVariants: makeRadioVariants(
+        "Traitement endodontique complet à programmer.",
+        "Extraction de la dent (non conservable)."
+      ),
       answers:{mastication:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante ; radioclarté apicale bien limitée et arrondie (image de granulome/kyste).",
@@ -875,6 +898,10 @@
       ],
       urgence:"Pulpectomie sous digue si la dent est conservable (ou extraction si elle ne l'est pas), associée à une antibiothérapie.",
       traitementFinal:"Traitement endodontique complet une fois l'épisode infectieux contrôlé.",
+      radioVariants: makeRadioVariants(
+        "Traitement endodontique complet une fois l'épisode infectieux contrôlé.",
+        "Extraction de la dent (non conservable), une fois l'épisode infectieux contrôlé."
+      ),
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante, voire destruction massive de la couronne dentaire ; radioclarté apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
@@ -905,6 +932,10 @@
       ],
       urgence:"Pulpectomie sous digue si la dent est conservable (ou extraction), associée à un drainage muqueux et à une antibiothérapie.",
       traitementFinal:"Traitement endodontique complet une fois la collection résorbée.",
+      radioVariants: makeRadioVariants(
+        "Traitement endodontique complet une fois la collection résorbée.",
+        "Extraction de la dent (non conservable), une fois la collection résorbée."
+      ),
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante, voire destruction massive de la couronne dentaire ; radioclarté apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
@@ -935,6 +966,10 @@
       ],
       urgence:"URGENCE VITALE : référer en milieu hospitalier, le plus souvent en service de chirurgie maxillo-faciale, pour drainage chirurgical large sous couverture antibiotique IV et surveillance des voies aériennes.",
       traitementFinal:"Traitement endodontique (ou extraction) de la dent causale à distance, une fois l'épisode infectieux sévère maîtrisé.",
+      radioVariants: makeRadioVariants(
+        "Traitement endodontique de la dent causale à distance, une fois l'épisode infectieux sévère maîtrisé.",
+        "Extraction de la dent causale (non conservable), à distance, une fois l'épisode infectieux sévère maîtrisé."
+      ),
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, signes_generaux:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante, voire destruction massive de la couronne dentaire ; radioclarté apicale bien limitée, à l'origine de l'infection extensive des tissus mous.",
@@ -1082,6 +1117,7 @@
 
   // ---------- State ----------
   var caseId = null;
+  var currentVariant = null; // variante radio/traitement tirée pour le cas en cours (si applicable)
   var askedIds = []; // question ids asked this session, in order
   var mode = 'single'; // 'single' | 'quiz'
   var quizCases = [];
@@ -1136,6 +1172,9 @@
   function beginCase(id){
     caseId = id;
     askedIds = [];
+
+    var variants = DIAGNOSES[id].radioVariants;
+    currentVariant = variants ? variants[Math.floor(Math.random() * variants.length)] : null;
 
     introCard.classList.add('hidden');
     resultCard.classList.add('hidden');
@@ -1233,6 +1272,7 @@
     } else if(qid === 'radio'){
       var radioLevel = diag.answers.radio || 'normal';
       cssClass = radioLevel === 'normal' ? 'non' : (radioLevel === 'periapical' ? 'oui intense' : 'oui');
+      if(currentVariant){ quote = currentVariant.radio; }
       if(!quote){ quote = 'Pas d\'anomalie visible.'; }
       answerHtml = '🩻 ' + quote;
     } else {
@@ -1305,7 +1345,7 @@
     });
 
     document.getElementById('result-urgence').textContent = actual.urgence;
-    document.getElementById('result-final').textContent = actual.traitementFinal;
+    document.getElementById('result-final').textContent = currentVariant ? currentVariant.traitementFinal : actual.traitementFinal;
 
     if(mode === 'quiz'){
       quizResults.push({caseId:caseId, guessId:guessId, correct:correct, questions:askedIds.length});
