@@ -1,13 +1,13 @@
 {
-  "name": "Aide au diagnostic endodontique",
-  "short_name": "Diag. Endo",
+  "name": "EndoDiag",
+  "short_name": "EndoDiag",
   "description": "Simulation de cas cliniques pour l'entraînement au diagnostic endodontique.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#f4f8f7",
-  "theme_color": "#0f9488",
+  "theme_color": "#3f66d8",
   "icons": [
     {
       "src": "icons/icon-192.png",
