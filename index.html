@@ -78,10 +78,22 @@
     text-align:left;
     color:var(--muted);
     font-size:0.92rem;
-    margin:14px 0;
+    margin:6px 0 0;
     columns:2;
   }
   .intro-card ul li{ break-inside:avoid; }
+  .diag-group{
+    margin-top:16px;
+    text-align:left;
+  }
+  .diag-group-title{
+    font-size:0.72rem;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    font-weight:700;
+    color:var(--teal-600);
+    margin:0;
+  }
   .mode-buttons{
     display:flex;
     flex-wrap:wrap;
@@ -521,19 +533,27 @@
   <!-- Intro screen -->
   <div class="card intro-card" id="intro-card">
     <p>Au lancement d'une session, l'application choisit en secret un cas parmi les 11 diagnostics suivants :</p>
-    <ul>
-      <li>Dent saine</li>
-      <li>Hyperhémie pulpaire</li>
-      <li>Pulpite réversible</li>
-      <li>Pulpite aiguë irréversible</li>
-      <li>Syndrome mixte</li>
-      <li>Parodontite apicale aiguë</li>
-      <li>Abcès apical aigu</li>
-      <li>Abcès apical chronique</li>
-      <li>Cellulite séreuse</li>
-      <li>Cellulite suppurée</li>
-      <li>Cellulite diffuse</li>
-    </ul>
+    <div class="diag-group">
+      <h3 class="diag-group-title">Pathologies pulpaires</h3>
+      <ul>
+        <li>Dent saine</li>
+        <li>Hyperhémie pulpaire</li>
+        <li>Pulpite réversible</li>
+        <li>Pulpite aiguë irréversible</li>
+      </ul>
+    </div>
+    <div class="diag-group">
+      <h3 class="diag-group-title">Pathologies périapicales</h3>
+      <ul>
+        <li>Syndrome mixte</li>
+        <li>Parodontite apicale aiguë</li>
+        <li>Abcès apical aigu</li>
+        <li>Abcès apical chronique</li>
+        <li>Cellulite séreuse</li>
+        <li>Cellulite suppurée</li>
+        <li>Cellulite diffuse</li>
+      </ul>
+    </div>
     <p>À vous de choisir, une par une, les questions à poser à ce « patient virtuel » pour identifier le diagnostic, puis de le proposer.</p>
     <div class="mode-buttons">
       <button class="btn-primary" id="start-single-btn">Session individuelle (1 cas)</button>
