@@ -756,6 +756,7 @@
         <span><i class="sw sw-dentin"></i>Dentine</span>
         <span><i class="sw" id="sw-pulp"></i><span id="pulp-legend-label">Pulpe / nerf</span></span>
         <span id="pulp-legend-item-2" class="hidden"><i class="sw" id="sw-pulp-2"></i><span id="pulp-legend-label-2"></span></span>
+        <span id="restoration-legend-item" class="hidden"><i class="sw" id="sw-restoration"></i><span id="restoration-legend-label"></span></span>
         <span><i class="sw sw-bone"></i>Os alvéolaire</span>
         <span><i class="sw sw-gum"></i>Gencive</span>
         <span><i class="sw" id="sw-swelling"></i><span id="swelling-legend-label">Tissus mous / tuméfaction</span></span>
@@ -810,6 +811,7 @@
         <span><i class="sw sw-dentin"></i>Dentine</span>
         <span><i class="sw" id="tx-sw-pulp"></i><span id="tx-pulp-legend-label">Pulpe / nerf</span></span>
         <span id="tx-pulp-legend-item-2" class="hidden"><i class="sw" id="tx-sw-pulp-2"></i><span id="tx-pulp-legend-label-2"></span></span>
+        <span id="tx-restoration-legend-item" class="hidden"><i class="sw" id="tx-sw-restoration"></i><span id="tx-restoration-legend-label"></span></span>
         <span><i class="sw sw-bone"></i>Os alvéolaire</span>
         <span><i class="sw sw-gum"></i>Gencive</span>
         <span><i class="sw" id="tx-sw-swelling"></i><span id="tx-swelling-legend-label">Tissus mous / tuméfaction</span></span>
@@ -1900,6 +1902,17 @@
     }
   };
 
+  // Détecte, à partir du texte radiographique affiché (question "radio" en mode diagnostic, ou boîte
+  // "Radiographie" en mode choix thérapeutique), si un soin (restauration) est mentionné et son état :
+  // infiltré (perte d'étanchéité) -> léger liseré noir autour sur le schéma ; récent -> contour classique.
+  function detectRestoration(radioText){
+    if(!radioText) return null;
+    var t = radioText.toLowerCase();
+    if(t.indexOf('étanchéité') !== -1) return 'infiltrated';
+    if(t.indexOf('restauration récente') !== -1) return 'recent';
+    return null;
+  }
+
   function buildToothSVG(cfg){
     var parts = [];
     parts.push('<svg viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Coupe dentaire schématique">');
@@ -1941,8 +1954,13 @@
     parts.push('<path d="M128,92 L128,52 Q128,30 150,30 Q172,30 172,52 L172,92 Z" fill="#ecdcb8"/>');
     parts.push('<path d="M138,92 L138,64 Q138,56 150,56 Q162,56 162,64 L162,92 Z" fill="' + cfg.pulp + '"/>');
 
-    // --- carie ---
-    if(cfg.caries === "tiny"){
+    // --- carie ou soin (restauration) ---
+    if(cfg.restoration === "infiltrated"){
+      parts.push('<path d="M131,19 Q150,8 169,19 L161,53 Q150,63 139,53 Z" fill="none" stroke="#1a1512" stroke-width="4" opacity="0.6"/>');
+      parts.push('<path d="M136,22 Q150,14 164,22 L158,50 Q150,58 142,50 Z" fill="#c7cdd6" stroke="#6b6f76" stroke-width="1.5"/>');
+    } else if(cfg.restoration === "recent"){
+      parts.push('<path d="M136,22 Q150,14 164,22 L158,50 Q150,58 142,50 Z" fill="#c7cdd6" stroke="#6b6f76" stroke-width="1.5"/>');
+    } else if(cfg.caries === "tiny"){
       parts.push('<circle cx="150" cy="30" r="4" fill="#4a3524"/>');
     } else if(cfg.caries === "medium"){
       parts.push('<path d="M136,22 Q150,14 164,22 L158,50 Q150,58 142,50 Z" fill="#4a3524"/>');
@@ -1988,8 +2006,15 @@
     parts.push('<path d="M138,92 L138,64 Q138,56 150,56 L150,92 Z" fill="' + cfg.pulp + '"/>');
     parts.push('<path d="M150,92 L150,56 Q162,56 162,64 L162,92 Z" fill="' + cfg.pulp2 + '"/>');
 
-    // grosse carie, dans le sillon occlusal central
-    parts.push('<path d="M134,26 Q150,19 166,26 L158,74 Q150,86 142,74 Z" fill="#33241a"/>');
+    // grosse carie, ou soin (restauration), dans le sillon occlusal central
+    if(cfg.restoration === "infiltrated"){
+      parts.push('<path d="M129,23 Q150,13 171,23 L161,77 Q150,89 139,77 Z" fill="none" stroke="#1a1512" stroke-width="4" opacity="0.6"/>');
+      parts.push('<path d="M134,26 Q150,19 166,26 L158,74 Q150,86 142,74 Z" fill="#c7cdd6" stroke="#6b6f76" stroke-width="1.5"/>');
+    } else if(cfg.restoration === "recent"){
+      parts.push('<path d="M134,26 Q150,19 166,26 L158,74 Q150,86 142,74 Z" fill="#c7cdd6" stroke="#6b6f76" stroke-width="1.5"/>');
+    } else {
+      parts.push('<path d="M134,26 Q150,19 166,26 L158,74 Q150,86 142,74 Z" fill="#33241a"/>');
+    }
 
     // deux racines divergentes
     parts.push('<path d="M130,96 L150,96 L127,232 Q118,247 109,232 Z" fill="#ecdcb8" stroke="#c9c2ac" stroke-width="1.5"/>');
@@ -2281,7 +2306,9 @@
     document.getElementById('result-def').textContent = actual.def;
 
     var diagram = DIAGRAMS[caseId];
-    document.getElementById('result-diagram').innerHTML = diagram.dualRoot ? buildMixedRootSVG(diagram) : buildToothSVG(diagram);
+    var restoration = detectRestoration(currentVariant ? currentVariant.radio : actual.quotes.radio);
+    var diagramCfg = restoration ? Object.assign({}, diagram, {restoration: restoration}) : diagram;
+    document.getElementById('result-diagram').innerHTML = diagramCfg.dualRoot ? buildMixedRootSVG(diagramCfg) : buildToothSVG(diagramCfg);
     document.getElementById('diagram-caption').textContent = diagram.caption;
     document.getElementById('sw-pulp').style.background = diagram.pulp;
     document.getElementById('pulp-legend-label').textContent = diagram.pulpLabel;
@@ -2292,6 +2319,14 @@
       document.getElementById('pulp-legend-label-2').textContent = diagram.pulpLabel2;
     } else {
       pulpItem2.classList.add('hidden');
+    }
+    var restorationItem = document.getElementById('restoration-legend-item');
+    if(restoration){
+      restorationItem.classList.remove('hidden');
+      document.getElementById('sw-restoration').style.background = '#c7cdd6';
+      document.getElementById('restoration-legend-label').textContent = restoration === 'infiltrated' ? 'Soin infiltré (liseré noir)' : 'Soin récent';
+    } else {
+      restorationItem.classList.add('hidden');
     }
     document.getElementById('sw-swelling').style.background = diagram.swellColor;
     document.getElementById('swelling-legend-label').textContent = diagram.swellLabel;
@@ -2347,7 +2382,9 @@
     document.getElementById('tx-title').textContent = d.title;
     document.getElementById('tx-def').textContent = txVariant ? txVariant.patientLine : d.def;
 
-    document.getElementById('tx-diagram').innerHTML = diagram.dualRoot ? buildMixedRootSVG(diagram) : buildToothSVG(diagram);
+    var txRestoration = detectRestoration(txVariant && txVariant.radioText ? txVariant.radioText : null);
+    var txDiagramCfg = txRestoration ? Object.assign({}, diagram, {restoration: txRestoration}) : diagram;
+    document.getElementById('tx-diagram').innerHTML = txDiagramCfg.dualRoot ? buildMixedRootSVG(txDiagramCfg) : buildToothSVG(txDiagramCfg);
     document.getElementById('tx-diagram-caption').textContent = diagram.caption;
     document.getElementById('tx-sw-pulp').style.background = diagram.pulp;
     document.getElementById('tx-pulp-legend-label').textContent = diagram.pulpLabel;
@@ -2358,6 +2395,14 @@
       document.getElementById('tx-pulp-legend-label-2').textContent = diagram.pulpLabel2;
     } else {
       pulpItem2.classList.add('hidden');
+    }
+    var txRestorationItem = document.getElementById('tx-restoration-legend-item');
+    if(txRestoration){
+      txRestorationItem.classList.remove('hidden');
+      document.getElementById('tx-sw-restoration').style.background = '#c7cdd6';
+      document.getElementById('tx-restoration-legend-label').textContent = txRestoration === 'infiltrated' ? 'Soin infiltré (liseré noir)' : 'Soin récent';
+    } else {
+      txRestorationItem.classList.add('hidden');
     }
     document.getElementById('tx-sw-swelling').style.background = diagram.swellColor;
     document.getElementById('tx-swelling-legend-label').textContent = diagram.swellLabel;
