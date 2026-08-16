@@ -954,6 +954,10 @@
     "Traitement conservateur : élimination de la cause irritative, protection pulpaire adaptée (coiffage direct/indirect) et restauration coronaire étanche, avec conservation de la vitalité pulpaire"
   ];
 
+  // Constat opératoire générique lorsque l'étudiant choisit directement la pulpectomie totale
+  // (dent à apex mature, temps opératoire suffisant), sans passer par une pulpotomie d'urgence.
+  var TX_ALT_PULPECTOMY_OUTCOME = "Vous ouvrez directement la chambre pulpaire et réalisez une pulpectomie totale de l'ensemble du contenu canalaire, sous digue et irrigation abondante à l'hypochlorite de sodium, avec obturation temporaire en fin de séance.";
+
   // Profil "choix thérapeutique" par diagnostic — première version, à affiner.
   var TX_PROFILE = {
     saine:              {depth:"coronaire",      apical:false, urgence:0, final:0},
@@ -976,6 +980,7 @@
       {
         patientLine: "Lucas, 15 ans, consulte pour une douleur intense et spontanée. Le diagnostic de pulpite aiguë irréversible est posé.",
         urgence1: 9, // Pulpotomie d'urgence
+        altUrgence1: 10, // Pulpectomie d'urgence totale d'emblée, également acceptée
         outcomeText: "Après réalisation de la pulpotomie, on observe une hémostase facile et rapide. Le tissu pulpaire présente un aspect rouge rosé et vivant, avec un saignement faible, facilement contrôlable.",
         needsEscalation: false,
         finalLine: "Quel traitement définitif choisissez-vous ?",
@@ -984,6 +989,7 @@
       {
         patientLine: "Michel, 60 ans, consulte pour une douleur aiguë spontanée compatible avec une pulpite aiguë irréversible.",
         urgence1: 9, // Pulpotomie d'urgence
+        altUrgence1: 10, // Pulpectomie d'urgence totale d'emblée, également acceptée
         outcomeText: "Après la pulpotomie, le saignement canalaire est très abondant et persistant. Malgré plusieurs tentatives, l'hémostase reste difficile, voire impossible à stabiliser.",
         needsEscalation: true,
         escalationLine: "Quelle conduite tenez-vous ?",
@@ -994,6 +1000,7 @@
       {
         patientLine: "Thomas, 32 ans, consulte pour une douleur intense. Le diagnostic de pulpite aiguë irréversible est posé.",
         urgence1: 9, // Pulpotomie d'urgence
+        altUrgence1: 10, // Pulpectomie d'urgence totale d'emblée, également acceptée
         outcomeText: "Une pulpotomie d'urgence est réalisée. Après l'intervention, le saignement est assez important. L'hémostase est difficile à obtenir au niveau des entrées canalaires, mais elle finit par être stabilisée.",
         needsEscalation: false,
         finalLine: "Quel traitement doit être programmé ?",
@@ -1002,6 +1009,7 @@
       {
         patientLine: "Hugo, 18 ans, consulte pour une douleur aiguë spontanée. Le diagnostic de pulpite aiguë irréversible est posé.",
         urgence1: 9, // Pulpotomie d'urgence
+        altUrgence1: 10, // Pulpectomie d'urgence totale d'emblée, également acceptée
         outcomeText: "Après élimination de la pulpe camérale, le saignement est modéré mais rapidement contrôlé. Une hémostase stable est obtenue en quelques minutes.",
         needsEscalation: false,
         finalLine: "Quel traitement définitif choisissez-vous ?",
@@ -1010,6 +1018,7 @@
       {
         patientLine: "Léa, 24 ans, présente une pulpite aiguë irréversible.",
         urgence1: 9, // Pulpotomie d'urgence
+        altUrgence1: 10, // Pulpectomie d'urgence totale d'emblée, également acceptée
         outcomeText: "Après la pulpotomie, le saignement est important. Malgré plusieurs tentatives d'hémostase, les entrées canalaires restent difficiles à stabiliser et le saignement reprend régulièrement.",
         needsEscalation: true,
         escalationLine: "Quelle est la conduite à tenir ?",
@@ -1020,6 +1029,7 @@
       {
         patientLine: "Sophie, 45 ans, consulte pour une douleur caractéristique d'une pulpite aiguë irréversible.",
         urgence1: 9, // Pulpotomie d'urgence
+        altUrgence1: 10, // Pulpectomie d'urgence totale d'emblée, également acceptée
         outcomeText: "Le saignement est modéré mais facilement contrôlable. Les entrées canalaires deviennent rapidement sèches et stables.",
         needsEscalation: false,
         finalLine: "Quel traitement définitif est prévu ?",
@@ -1028,6 +1038,7 @@
       {
         patientLine: "Emma, 27 ans, présente une pulpite aiguë irréversible.",
         urgence1: 9, // Pulpotomie d'urgence
+        altUrgence1: 10, // Pulpectomie d'urgence totale d'emblée, également acceptée
         outcomeText: "Après celle-ci, le saignement est modéré. L'hémostase demande quelques minutes mais devient ensuite complète et stable.",
         needsEscalation: false,
         finalLine: "Quel traitement définitif choisissez-vous ?",
@@ -1036,6 +1047,7 @@
       {
         patientLine: "Jean, 68 ans, consulte pour une pulpite aiguë irréversible.",
         urgence1: 9, // Pulpotomie d'urgence
+        altUrgence1: 10, // Pulpectomie d'urgence totale d'emblée, également acceptée
         outcomeText: "Le saignement est initialement important. Après plusieurs minutes, l'hémostase peut cependant être obtenue et les entrées canalaires sont finalement stabilisées.",
         needsEscalation: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
@@ -1044,6 +1056,7 @@
       {
         patientLine: "Chloé, 21 ans, présente une pulpite aiguë irréversible.",
         urgence1: 9, // Pulpotomie d'urgence
+        altUrgence1: 10, // Pulpectomie d'urgence totale d'emblée, également acceptée
         outcomeText: "Après la pulpotomie, le saignement est très abondant et persistant. Malgré les mesures d'hémostase, il est impossible d'obtenir une stabilisation satisfaisante.",
         needsEscalation: true,
         escalationLine: "Quelle est votre décision ?",
@@ -1054,6 +1067,7 @@
       {
         patientLine: "Mathis, 29 ans, consulte pour une pulpite aiguë irréversible.",
         urgence1: 9, // Pulpotomie d'urgence
+        altUrgence1: 10, // Pulpectomie d'urgence totale d'emblée, également acceptée
         outcomeText: "Le saignement est faible à modéré et l'hémostase est obtenue rapidement et durablement. Les entrées canalaires sont parfaitement stables.",
         needsEscalation: false,
         finalLine: "Quel traitement définitif choisissez-vous ?",
@@ -2358,8 +2372,12 @@
     var html = '';
 
     if(txStepAnswers.urgence1 !== undefined){
-      html += txHistoryRowHtml('Traitement d\'urgence', txStepAnswers.urgence1 === txVariant.urgence1, URGENCE_OPTIONS[txStepAnswers.urgence1]);
-      if(txVariant.outcomeText){
+      var urgence1CorrectDisplay = (txStepAnswers.urgence1 === txVariant.urgence1) ||
+        (txVariant.altUrgence1 !== undefined && txStepAnswers.urgence1 === txVariant.altUrgence1);
+      html += txHistoryRowHtml('Traitement d\'urgence', urgence1CorrectDisplay, URGENCE_OPTIONS[txStepAnswers.urgence1]);
+      if(txStepAnswers.tookAltPath){
+        html += '<div class="treatment-box info"><h4>Constat opératoire</h4><div>' + TX_ALT_PULPECTOMY_OUTCOME + '</div></div>';
+      } else if(txVariant.outcomeText){
         html += '<div class="treatment-box info"><h4>Constat opératoire</h4><div>' + txVariant.outcomeText + '</div></div>';
       }
     }
@@ -2401,7 +2419,12 @@
 
     if(txStage === 'urgence1'){
       txStepAnswers.urgence1 = choice;
-      txStage = txVariant.needsEscalation ? 'urgence2' : 'final';
+      if(txVariant.altUrgence1 !== undefined && choice === txVariant.altUrgence1){
+        txStepAnswers.tookAltPath = true;
+        txStage = 'final';
+      } else {
+        txStage = txVariant.needsEscalation ? 'urgence2' : 'final';
+      }
       renderTxMultistep();
     } else if(txStage === 'urgence2'){
       txStepAnswers.urgence2 = choice;
@@ -2416,9 +2439,13 @@
   function showTxMultistepResult(){
     var d = DIAGNOSES[txCaseId];
     var hasUrgence = txVariant.urgence1 !== undefined;
-    var urgence1Correct = hasUrgence ? (txStepAnswers.urgence1 === txVariant.urgence1) : true;
-    var urgence2Correct = txVariant.needsEscalation ? (txStepAnswers.urgence2 === txVariant.urgence2) : true;
-    var finalCorrect = txStepAnswers.final === txVariant.final;
+    var urgence1Correct = hasUrgence
+      ? ((txStepAnswers.urgence1 === txVariant.urgence1) ||
+         (txVariant.altUrgence1 !== undefined && txStepAnswers.urgence1 === txVariant.altUrgence1))
+      : true;
+    var urgence2Correct = (txVariant.needsEscalation && !txStepAnswers.tookAltPath) ? (txStepAnswers.urgence2 === txVariant.urgence2) : true;
+    var expectedFinal = txStepAnswers.tookAltPath ? 2 : txVariant.final;
+    var finalCorrect = txStepAnswers.final === expectedFinal;
     var allCorrect = urgence1Correct && urgence2Correct && finalCorrect;
 
     txCaseCard.classList.add('hidden');
@@ -2452,12 +2479,14 @@
     }
 
     if(hasUrgence){
-      recapEl.appendChild(row('Traitement d\'urgence', urgence1Correct, URGENCE_OPTIONS[txStepAnswers.urgence1], URGENCE_OPTIONS[txVariant.urgence1]));
+      var urgence1ExpectedText = URGENCE_OPTIONS[txVariant.urgence1] +
+        (txVariant.altUrgence1 !== undefined ? ' (ou : ' + URGENCE_OPTIONS[txVariant.altUrgence1] + ')' : '');
+      recapEl.appendChild(row('Traitement d\'urgence', urgence1Correct, URGENCE_OPTIONS[txStepAnswers.urgence1], urgence1ExpectedText));
     }
-    if(txVariant.needsEscalation){
+    if(txVariant.needsEscalation && !txStepAnswers.tookAltPath){
       recapEl.appendChild(row('Geste d\'urgence complémentaire', urgence2Correct, URGENCE_OPTIONS[txStepAnswers.urgence2], URGENCE_OPTIONS[txVariant.urgence2]));
     }
-    recapEl.appendChild(row('Suite de soin d\'urgence ou traitement final', finalCorrect, FINAL_OPTIONS[txStepAnswers.final], FINAL_OPTIONS[txVariant.final]));
+    recapEl.appendChild(row('Suite de soin d\'urgence ou traitement final', finalCorrect, FINAL_OPTIONS[txStepAnswers.final], FINAL_OPTIONS[expectedFinal]));
 
     txResultCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
