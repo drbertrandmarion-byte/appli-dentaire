@@ -827,7 +827,7 @@
         <select id="tx-urgence-select"></select>
       </div>
       <div class="tx-select-row">
-        <label class="tx-label" for="tx-final-select">Traitement final</label>
+        <label class="tx-label" for="tx-final-select">Suite de soin d'urgence ou traitement final</label>
         <select id="tx-final-select"></select>
       </div>
       <div class="result-actions">
@@ -2040,7 +2040,7 @@
       if(txVariant.finalLine){
         html += '<p class="tx-patient-line">' + txVariant.finalLine + '</p>';
       }
-      html += '<div class="tx-select-row"><label class="tx-label" for="tx-step-select">Traitement final / programmé</label>' +
+      html += '<div class="tx-select-row"><label class="tx-label" for="tx-step-select">Suite de soin d\'urgence ou traitement final</label>' +
         '<select id="tx-step-select">' + txOptionsHtml(FINAL_OPTIONS, '-- Choisir un traitement final --') + '</select></div>' +
         '<div class="result-actions"><button class="btn-primary" id="tx-step-submit-btn">Valider</button></div>';
     }
