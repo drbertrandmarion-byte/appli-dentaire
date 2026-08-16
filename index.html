@@ -624,8 +624,15 @@
     body.printing-recap .wrap > *:not(#recap-sheet){display:none !important;}
     body.printing-recap #recap-sheet{display:block !important; margin-top:0;}
     body.printing-recap{background:#fff;}
+    body.printing-tx-recap .wrap > *:not(#tx-recap-sheet){display:none !important;}
+    body.printing-tx-recap #tx-recap-sheet{display:block !important; margin-top:0;}
+    body.printing-tx-recap{background:#fff;}
     .recap-card{box-shadow:none;}
   }
+
+  .recap-card .recap-variant{margin-top:8px; padding-top:6px; border-top:1px dashed var(--border);}
+  .recap-card .recap-variant:first-child{margin-top:0; padding-top:0; border-top:none;}
+  .recap-card .recap-variant-label{font-size:0.7rem; font-weight:700; color:var(--logo-blue-dark); margin-top:6px;}
 </style>
 </head>
 <body>
@@ -707,6 +714,11 @@
       <button class="btn-secondary back-hub-btn" type="button" data-back>← Changer de mode d'entraînement</button>
       <p>Le diagnostic vous est donné directement, avec le dossier radiographique (profondeur du délabrement coronaire et présence ou non d'une image apicale). À vous de choisir le traitement d'urgence et le traitement final adaptés parmi les propositions.</p>
       <button class="btn-primary" id="start-tx-btn">Commencer un cas</button>
+
+      <div class="pdf-block">
+        <button class="btn-pdf" id="tx-recap-btn" type="button">📄 Téléchargement PDF récapitulatif</button>
+        <div class="pdf-hint">Un cas type par situation rencontrée (et non chaque patient), avec le geste d'urgence et le traitement final attendus.</div>
+      </div>
     </div>
 
   </div>
@@ -868,6 +880,15 @@
     </div>
     <h1>Fiche récapitulative — Diagnostic endodontique</h1>
     <div class="recap-grid" id="recap-grid"></div>
+  </div>
+
+  <div id="tx-recap-sheet" class="recap-sheet hidden">
+    <div class="recap-actions">
+      <button class="btn-primary" id="tx-recap-print-btn" type="button">🖨️ Imprimer / Enregistrer en PDF</button>
+      <button class="btn-secondary" id="tx-recap-close-btn" type="button">✕ Fermer</button>
+    </div>
+    <h1>Fiche récapitulative — Choix thérapeutique</h1>
+    <div class="recap-grid" id="tx-recap-grid"></div>
   </div>
 
 </div>
@@ -1421,6 +1442,39 @@
         urgence1: 10
       }
     ]
+  };
+
+  // Fiche récapitulative du mode "choix thérapeutique" : pas tous les cas nommés, seulement les
+  // différentes situations thérapeutiques distinctes rencontrées pour chaque diagnostic.
+  var TX_RECAP_TYPES = {
+    saine:              [ {condition:null, urgence1:0, final:0} ],
+    hyperhemie:         [ {condition:null, urgence1:0, final:1} ],
+    reversible:         [ {condition:null, urgence1:1, final:1} ],
+    irreversible: [
+      {condition:"Hémostase facile, patient jeune", urgence1:2, final:null},
+      {condition:"Hémostase difficile mais stabilisée, patient de plus de 30 ans", urgence1:3, final:2},
+      {condition:"Hémostase impossible à stabiliser", urgence1:4, final:2}
+    ],
+    syndrome_mixte:     [ {condition:null, urgence1:4, final:2} ],
+    necrose:            [ {condition:null, urgence1:0, final:2} ],
+    parodontite:        [ {condition:null, urgence1:4, final:2} ],
+    abces_aigu: [
+      {condition:"Dent conservable", urgence1:5, final:2},
+      {condition:"Délabrement infra-osseux, dent non conservable", urgence1:7, final:null}
+    ],
+    abces_chronique: [
+      {condition:"Dent conservable", urgence1:6, final:2},
+      {condition:"Délabrement infra-osseux, dent non conservable", urgence1:7, final:null}
+    ],
+    cellulite_sereuse: [
+      {condition:"Dent conservable", urgence1:11, final:2},
+      {condition:"Délabrement infra-osseux, dent non conservable", urgence1:12, final:null}
+    ],
+    cellulite_suppuree: [
+      {condition:"Dent conservable", urgence1:8, final:2},
+      {condition:"Délabrement infra-osseux, dent non conservable", urgence1:9, final:null}
+    ],
+    cellulite_diffuse:  [ {condition:null, urgence1:10, final:null} ]
   };
 
   var DIAGNOSES = {
@@ -2050,6 +2104,7 @@
   var quizLength = 5;
   var quizResults = [];
   var recapBuilt = false;
+  var txRecapBuilt = false;
   var txCaseId = null;
   var txVariant = null;
   var txStepAnswers = {};
@@ -2137,11 +2192,15 @@
   document.getElementById('recap-btn').addEventListener('click', showRecapSheet);
   document.getElementById('recap-print-btn').addEventListener('click', printRecap);
   document.getElementById('recap-close-btn').addEventListener('click', hideRecapSheet);
+  document.getElementById('tx-recap-btn').addEventListener('click', showTxRecapSheet);
+  document.getElementById('tx-recap-print-btn').addEventListener('click', printTxRecap);
+  document.getElementById('tx-recap-close-btn').addEventListener('click', hideTxRecapSheet);
   document.getElementById('ask-btn').addEventListener('click', askQuestion);
   document.getElementById('guess-btn').addEventListener('click', submitGuess);
 
   window.addEventListener('afterprint', function(){
     document.body.classList.remove('printing-recap');
+    document.body.classList.remove('printing-tx-recap');
   });
 
   function randomCaseId(){
@@ -2690,6 +2749,51 @@
 
   function printRecap(){
     document.body.classList.add('printing-recap');
+    window.print();
+  }
+
+  function buildTxRecapSheet(){
+    if(txRecapBuilt) return;
+    var grid = document.getElementById('tx-recap-grid');
+    DIAGNOSIS_ORDER.forEach(function(id){
+      var d = DIAGNOSES[id];
+      var diagram = DIAGRAMS[id];
+      var types = TX_RECAP_TYPES[id];
+      var card = document.createElement('div');
+      card.className = 'recap-card';
+      var signsHtml = d.signs.map(function(s){ return '<li>' + s + '</li>'; }).join('');
+      var variantsHtml = types.map(function(t){
+        var finalText = t.final !== null ? FINAL_OPTIONS[t.final] : 'Le geste d\'urgence est déjà le traitement définitif.';
+        return '<div class="recap-variant">' +
+          (t.condition ? '<div class="recap-variant-label">' + t.condition + '</div>' : '') +
+          '<div class="recap-tx"><b>Urgence</b>' + URGENCE_OPTIONS[t.urgence1] + '</div>' +
+          '<div class="recap-tx"><b>Traitement final</b>' + finalText + '</div>' +
+        '</div>';
+      }).join('');
+      card.innerHTML =
+        '<span class="badge cat-' + d.category + '">' + categoryLabel(d.category) + '</span>' +
+        '<h3>' + d.title + '</h3>' +
+        '<div class="recap-diagram">' + (diagram.dualRoot ? buildMixedRootSVG(diagram) : buildToothSVG(diagram)) + '</div>' +
+        '<ul>' + signsHtml + '</ul>' +
+        variantsHtml;
+      grid.appendChild(card);
+    });
+    txRecapBuilt = true;
+  }
+
+  function showTxRecapSheet(){
+    buildTxRecapSheet();
+    var sheet = document.getElementById('tx-recap-sheet');
+    sheet.classList.remove('hidden');
+    sheet.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function hideTxRecapSheet(){
+    document.getElementById('tx-recap-sheet').classList.add('hidden');
+  }
+
+  function printTxRecap(){
+    document.body.classList.add('printing-tx-recap');
     window.print();
   }
 
