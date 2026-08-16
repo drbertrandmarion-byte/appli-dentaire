@@ -1459,20 +1459,20 @@
     necrose:            [ {condition:null, urgence1:0, final:2} ],
     parodontite:        [ {condition:null, urgence1:4, final:2} ],
     abces_aigu: [
-      {condition:"Dent conservable", urgence1:5, final:2},
-      {condition:"Délabrement infra-osseux, dent non conservable", urgence1:7, final:null}
+      {condition:"Limite infra-gingivale (dent conservable)", urgence1:5, final:2},
+      {condition:"Limite infra-osseuse (extraction de la dent)", urgence1:7, final:null}
     ],
     abces_chronique: [
-      {condition:"Dent conservable", urgence1:6, final:2},
-      {condition:"Délabrement infra-osseux, dent non conservable", urgence1:7, final:null}
+      {condition:"Limite infra-gingivale (dent conservable)", urgence1:6, final:2},
+      {condition:"Limite infra-osseuse (extraction de la dent)", urgence1:7, final:null}
     ],
     cellulite_sereuse: [
-      {condition:"Dent conservable", urgence1:11, final:2},
-      {condition:"Délabrement infra-osseux, dent non conservable", urgence1:12, final:null}
+      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", urgence1:11, final:2},
+      {condition:"Limite infra-osseuse (extraction de la dent)", urgence1:12, final:null}
     ],
     cellulite_suppuree: [
-      {condition:"Dent conservable", urgence1:8, final:2},
-      {condition:"Délabrement infra-osseux, dent non conservable", urgence1:9, final:null}
+      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", urgence1:8, final:2},
+      {condition:"Limite infra-osseuse (extraction de la dent)", urgence1:9, final:null}
     ],
     cellulite_diffuse:  [ {condition:null, urgence1:10, final:null} ]
   };
@@ -1704,8 +1704,8 @@
         "Le froid (glace) apaise la douleur",
         "Pas encore de tuméfaction franche"
       ],
-      urgence:"Pose de la digue obligatoire, pulpectomie d'urgence pour drainer et lever la pression.",
-      traitementFinal:"Traitement endodontique complet, si possible dans la même séance ou à la séance suivante.",
+      urgence:"Pose de la digue obligatoire, pulpectomie d'urgence pour drainer et lever la pression, si la dent est conservable (limite infra-gingivale) ; extraction d'urgence si la limite est infra-osseuse (dent non conservable).",
+      traitementFinal:"Traitement endodontique complet si la dent est conservable (limite infra-gingivale), si possible dans la même séance ou à la séance suivante ; extraction si la limite est infra-osseuse (dent non conservable).",
       radioVariants: makeRadioVariants(
         "Traitement endodontique complet, si possible dans la même séance ou à la séance suivante.",
         "Extraction de la dent (non conservable), si possible dans la même séance ou à la séance suivante."
@@ -1739,8 +1739,8 @@
         "Petit bouton (fistule/parulie) visible sur la gencive, en regard de l'apex",
         "Image radioclaire périapicale souvent présente"
       ],
-      urgence:"Pas une urgence vraie. Une pulpectomie d'urgence (sous digue) est possible mais non systématique.",
-      traitementFinal:"Traitement endodontique complet à programmer ; si la dent n'est pas conservable, prévoir l'extraction.",
+      urgence:"Pas une urgence vraie. Une pulpectomie d'urgence (sous digue) est possible mais non systématique, si la dent est conservable (limite infra-gingivale) ; extraction si la limite est infra-osseuse (dent non conservable).",
+      traitementFinal:"Traitement endodontique complet à programmer si la dent est conservable (limite infra-gingivale) ; extraction si la limite est infra-osseuse (dent non conservable).",
       radioVariants: makeRadioVariants(
         "Traitement endodontique complet à programmer.",
         "Extraction de la dent (non conservable)."
@@ -1772,8 +1772,8 @@
         "Dent causale très douloureuse à la percussion et à la palpation, sensation de dent longue",
         "Douleur constante, apaisée par le froid ; mastication impossible"
       ],
-      urgence:"Pulpectomie sous digue si la dent est conservable (ou extraction si elle ne l'est pas), associée à une antibiothérapie.",
-      traitementFinal:"Traitement endodontique complet une fois l'épisode infectieux contrôlé.",
+      urgence:"Pulpectomie sous digue si la dent est conservable (limite supra- ou juxta-gingivale), associée à une antibiothérapie ; extraction avec antibiothérapie si la limite est infra-osseuse (dent non conservable).",
+      traitementFinal:"Traitement endodontique complet si la dent est conservable (limite supra- ou juxta-gingivale), une fois l'épisode infectieux contrôlé ; extraction si la limite est infra-osseuse (dent non conservable).",
       radioVariants: makeRadioVariants(
         "Traitement endodontique complet une fois l'épisode infectieux contrôlé.",
         "Extraction de la dent (non conservable), une fois l'épisode infectieux contrôlé."
@@ -1806,8 +1806,8 @@
         "Douleur constante, apaisée par le froid",
         "Pas de signes généraux marqués (pas de fièvre élevée, pas de trismus)"
       ],
-      urgence:"Pulpectomie sous digue si la dent est conservable (ou extraction), associée à un drainage muqueux et à une antibiothérapie.",
-      traitementFinal:"Traitement endodontique complet une fois la collection résorbée.",
+      urgence:"Pulpectomie sous digue si la dent est conservable (limite supra- ou juxta-gingivale), associée à un drainage muqueux et à une antibiothérapie ; extraction avec antibiothérapie si la limite est infra-osseuse (dent non conservable).",
+      traitementFinal:"Traitement endodontique complet si la dent est conservable (limite supra- ou juxta-gingivale), une fois la collection résorbée ; extraction si la limite est infra-osseuse (dent non conservable).",
       radioVariants: makeRadioVariants(
         "Traitement endodontique complet une fois la collection résorbée.",
         "Extraction de la dent (non conservable), une fois la collection résorbée."
@@ -2715,6 +2715,44 @@
     quizScoreCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
+  // Pour les diagnostics dont le pronostic (donc le traitement) dépend de la limite du délabrement,
+  // la fiche récapitulative diagnostic affiche les deux versions séparément plutôt qu'une seule
+  // phrase qui hedge les deux possibilités.
+  var DIAGNOSTIC_RECAP_VARIANTS = {
+    abces_aigu: [
+      {condition:"Limite infra-gingivale (dent conservable)",
+       urgence:"Pose de la digue obligatoire, pulpectomie d'urgence pour drainer et lever la pression.",
+       traitementFinal:"Traitement endodontique complet, si possible dans la même séance ou à la séance suivante."},
+      {condition:"Limite infra-osseuse (extraction de la dent)",
+       urgence:"Extraction d'urgence.",
+       traitementFinal:"Extraction de la dent (non conservable), si possible dans la même séance ou à la séance suivante."}
+    ],
+    abces_chronique: [
+      {condition:"Limite infra-gingivale (dent conservable)",
+       urgence:"Pas une urgence vraie. Une pulpectomie d'urgence (sous digue) est possible mais non systématique.",
+       traitementFinal:"Traitement endodontique complet à programmer."},
+      {condition:"Limite infra-osseuse (extraction de la dent)",
+       urgence:"Pas une urgence vraie. Extraction à programmer.",
+       traitementFinal:"Extraction de la dent (non conservable)."}
+    ],
+    cellulite_sereuse: [
+      {condition:"Limite supra- ou juxta-gingivale (dent conservable)",
+       urgence:"Pulpectomie sous digue, associée à une antibiothérapie.",
+       traitementFinal:"Traitement endodontique complet une fois l'épisode infectieux contrôlé."},
+      {condition:"Limite infra-osseuse (extraction de la dent)",
+       urgence:"Extraction, associée à une antibiothérapie.",
+       traitementFinal:"Extraction de la dent (non conservable), une fois l'épisode infectieux contrôlé."}
+    ],
+    cellulite_suppuree: [
+      {condition:"Limite supra- ou juxta-gingivale (dent conservable)",
+       urgence:"Pulpectomie sous digue, drainage muqueux et antibiothérapie.",
+       traitementFinal:"Traitement endodontique complet une fois la collection résorbée."},
+      {condition:"Limite infra-osseuse (extraction de la dent)",
+       urgence:"Extraction, drainage muqueux et antibiothérapie.",
+       traitementFinal:"Extraction de la dent (non conservable), une fois la collection résorbée."}
+    ]
+  };
+
   function buildRecapSheet(){
     if(recapBuilt) return;
     var grid = document.getElementById('recap-grid');
@@ -2724,13 +2762,23 @@
       var card = document.createElement('div');
       card.className = 'recap-card';
       var signsHtml = d.signs.map(function(s){ return '<li>' + s + '</li>'; }).join('');
+      var variants = DIAGNOSTIC_RECAP_VARIANTS[id];
+      var txHtml = variants
+        ? variants.map(function(v){
+            return '<div class="recap-variant">' +
+              '<div class="recap-variant-label">' + v.condition + '</div>' +
+              '<div class="recap-tx"><b>Urgence</b>' + v.urgence + '</div>' +
+              '<div class="recap-tx"><b>Traitement final</b>' + v.traitementFinal + '</div>' +
+            '</div>';
+          }).join('')
+        : '<div class="recap-tx"><b>Urgence</b>' + d.urgence + '</div>' +
+          '<div class="recap-tx"><b>Traitement final</b>' + d.traitementFinal + '</div>';
       card.innerHTML =
         '<span class="badge cat-' + d.category + '">' + categoryLabel(d.category) + '</span>' +
         '<h3>' + d.title + '</h3>' +
         '<div class="recap-diagram">' + (diagram.dualRoot ? buildMixedRootSVG(diagram) : buildToothSVG(diagram)) + '</div>' +
         '<ul>' + signsHtml + '</ul>' +
-        '<div class="recap-tx"><b>Urgence</b>' + d.urgence + '</div>' +
-        '<div class="recap-tx"><b>Traitement final</b>' + d.traitementFinal + '</div>';
+        txHtml;
       grid.appendChild(card);
     });
     recapBuilt = true;
