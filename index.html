@@ -797,6 +797,8 @@
   <div class="card result-card hidden" id="tx-case-card">
     <span class="badge" id="tx-badge"></span>
     <h2 id="tx-title"></h2>
+
+    <h3>Cas clinique</h3>
     <div class="def" id="tx-def"></div>
 
     <div class="diagram-wrap">
@@ -1973,10 +1975,13 @@
     txUrgenceSelect.value = '';
     txFinalSelect.value = '';
 
+    var variants = TX_MULTISTEP_CASES[txCaseId];
+    txVariant = variants ? variants[Math.floor(Math.random() * variants.length)] : null;
+
     document.getElementById('tx-badge').className = 'badge cat-' + d.category;
     document.getElementById('tx-badge').textContent = categoryLabel(d.category);
     document.getElementById('tx-title').textContent = d.title;
-    document.getElementById('tx-def').textContent = d.def;
+    document.getElementById('tx-def').textContent = txVariant ? txVariant.patientLine : d.def;
 
     document.getElementById('tx-diagram').innerHTML = diagram.dualRoot ? buildMixedRootSVG(diagram) : buildToothSVG(diagram);
     document.getElementById('tx-diagram-caption').textContent = diagram.caption;
@@ -2006,16 +2011,13 @@
 
     var simpleChoiceEl = document.getElementById('tx-simple-choice');
     var multistepChoiceEl = document.getElementById('tx-multistep-choice');
-    var variants = TX_MULTISTEP_CASES[txCaseId];
-    if(variants){
+    if(txVariant){
       simpleChoiceEl.classList.add('hidden');
       multistepChoiceEl.classList.remove('hidden');
-      txVariant = variants[Math.floor(Math.random() * variants.length)];
       txStepAnswers = {};
       txStage = (txVariant.urgence1 !== undefined) ? 'urgence1' : 'final';
       renderTxMultistep();
     } else {
-      txVariant = null;
       multistepChoiceEl.classList.add('hidden');
       multistepChoiceEl.innerHTML = '';
       simpleChoiceEl.classList.remove('hidden');
@@ -2045,7 +2047,7 @@
 
   function renderTxMultistep(){
     var el = document.getElementById('tx-multistep-choice');
-    var html = '<p class="tx-patient-line">' + txVariant.patientLine + '</p>';
+    var html = '';
 
     if(txStepAnswers.urgence1 !== undefined){
       html += txHistoryRowHtml('Traitement d\'urgence', txStepAnswers.urgence1 === txVariant.urgence1, URGENCE_OPTIONS[txStepAnswers.urgence1]);
