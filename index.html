@@ -971,27 +971,90 @@
   var TX_MULTISTEP_CASES = {
     irreversible: [
       {
-        patientLine: "Patiente de 15 ans, douleurs vives et spontanées depuis 2 jours. Le diagnostic de pulpite aiguë irréversible est posé.",
+        patientLine: "Lucas, 15 ans, consulte pour une douleur intense et spontanée. Le diagnostic de pulpite aiguë irréversible est posé.",
         urgence1: 9, // Pulpotomie d'urgence
-        outcomeText: "La pulpotomie d'urgence a été réalisée : on observe une hémostase simple et facile, une entrée canalaire rouge, rosée, vivante, sans saignement abondant.",
+        outcomeText: "Après réalisation de la pulpotomie, on observe une hémostase facile et rapide. Le tissu pulpaire présente un aspect rouge rosé et vivant, avec un saignement faible, facilement contrôlable.",
         needsEscalation: false,
+        finalLine: "Quel traitement définitif choisissez-vous ?",
         final: 6 // Pulpotomie thérapeutique définitive
       },
       {
-        patientLine: "Patient de 60 ans, douleurs spontanées et nocturnes. Le diagnostic de pulpite aiguë irréversible est posé.",
+        patientLine: "Michel, 60 ans, consulte pour une douleur aiguë spontanée compatible avec une pulpite aiguë irréversible.",
         urgence1: 9, // Pulpotomie d'urgence
-        outcomeText: "La pulpotomie d'urgence a été réalisée : ça saigne beaucoup, c'est difficile à arrêter au niveau du saignement canalaire.",
+        outcomeText: "Après la pulpotomie, le saignement canalaire est très abondant et persistant. Malgré plusieurs tentatives, l'hémostase reste difficile, voire impossible à stabiliser.",
         needsEscalation: true,
-        escalationLine: "L'hémostase n'est pas stabilisable après pulpotomie. Quel geste d'urgence complémentaire réalisez-vous ?",
+        escalationLine: "Quelle conduite tenez-vous ?",
         urgence2: 10, // Pulpectomie d'urgence
-        final: 2 // Traitement endodontique complet
+        finalLine: "Quel traitement définitif est programmé ?",
+        final: 2 // Traitement endodontique définitif
       },
       {
-        patientLine: "Patient d'une trentaine d'années, douleurs spontanées récentes. Le diagnostic de pulpite aiguë irréversible est posé.",
+        patientLine: "Thomas, 32 ans, consulte pour une douleur intense. Le diagnostic de pulpite aiguë irréversible est posé.",
         urgence1: 9, // Pulpotomie d'urgence
-        outcomeText: "La pulpotomie d'urgence a été réalisée : il y a pas mal de saignement, mais il reste stabilisable au prix de quelques efforts sur les entrées canalaires.",
+        outcomeText: "Une pulpotomie d'urgence est réalisée. Après l'intervention, le saignement est assez important. L'hémostase est difficile à obtenir au niveau des entrées canalaires, mais elle finit par être stabilisée.",
         needsEscalation: false,
-        final: 2 // Traitement endodontique complet (hémostase difficile malgré tout)
+        finalLine: "Quel traitement doit être programmé ?",
+        final: 2 // Traitement endodontique définitif
+      },
+      {
+        patientLine: "Hugo, 18 ans, consulte pour une douleur aiguë spontanée. Le diagnostic de pulpite aiguë irréversible est posé.",
+        urgence1: 9, // Pulpotomie d'urgence
+        outcomeText: "Après élimination de la pulpe camérale, le saignement est modéré mais rapidement contrôlé. Une hémostase stable est obtenue en quelques minutes.",
+        needsEscalation: false,
+        finalLine: "Quel traitement définitif choisissez-vous ?",
+        final: 6 // Pulpotomie thérapeutique définitive
+      },
+      {
+        patientLine: "Léa, 24 ans, présente une pulpite aiguë irréversible.",
+        urgence1: 9, // Pulpotomie d'urgence
+        outcomeText: "Après la pulpotomie, le saignement est important. Malgré plusieurs tentatives d'hémostase, les entrées canalaires restent difficiles à stabiliser et le saignement reprend régulièrement.",
+        needsEscalation: true,
+        escalationLine: "Quelle est la conduite à tenir ?",
+        urgence2: 10, // Pulpectomie d'urgence
+        finalLine: "Quel traitement définitif est programmé ?",
+        final: 2 // Traitement endodontique définitif
+      },
+      {
+        patientLine: "Sophie, 45 ans, consulte pour une douleur caractéristique d'une pulpite aiguë irréversible.",
+        urgence1: 9, // Pulpotomie d'urgence
+        outcomeText: "Le saignement est modéré mais facilement contrôlable. Les entrées canalaires deviennent rapidement sèches et stables.",
+        needsEscalation: false,
+        finalLine: "Quel traitement définitif est prévu ?",
+        final: 2 // Traitement endodontique définitif
+      },
+      {
+        patientLine: "Emma, 27 ans, présente une pulpite aiguë irréversible.",
+        urgence1: 9, // Pulpotomie d'urgence
+        outcomeText: "Après celle-ci, le saignement est modéré. L'hémostase demande quelques minutes mais devient ensuite complète et stable.",
+        needsEscalation: false,
+        finalLine: "Quel traitement définitif choisissez-vous ?",
+        final: 6 // Pulpotomie thérapeutique définitive
+      },
+      {
+        patientLine: "Jean, 68 ans, consulte pour une pulpite aiguë irréversible.",
+        urgence1: 9, // Pulpotomie d'urgence
+        outcomeText: "Le saignement est initialement important. Après plusieurs minutes, l'hémostase peut cependant être obtenue et les entrées canalaires sont finalement stabilisées.",
+        needsEscalation: false,
+        finalLine: "Quel traitement définitif programmez-vous ?",
+        final: 2 // Traitement endodontique définitif
+      },
+      {
+        patientLine: "Chloé, 21 ans, présente une pulpite aiguë irréversible.",
+        urgence1: 9, // Pulpotomie d'urgence
+        outcomeText: "Après la pulpotomie, le saignement est très abondant et persistant. Malgré les mesures d'hémostase, il est impossible d'obtenir une stabilisation satisfaisante.",
+        needsEscalation: true,
+        escalationLine: "Quelle est votre décision ?",
+        urgence2: 10, // Pulpectomie d'urgence
+        finalLine: "Quel traitement définitif est programmé ?",
+        final: 2 // Traitement endodontique définitif
+      },
+      {
+        patientLine: "Mathis, 29 ans, consulte pour une pulpite aiguë irréversible.",
+        urgence1: 9, // Pulpotomie d'urgence
+        outcomeText: "Le saignement est faible à modéré et l'hémostase est obtenue rapidement et durablement. Les entrées canalaires sont parfaitement stables.",
+        needsEscalation: false,
+        finalLine: "Quel traitement définitif choisissez-vous ?",
+        final: 6 // Pulpotomie thérapeutique définitive
       }
     ]
   };
@@ -1974,6 +2037,9 @@
         '<select id="tx-step-select">' + txOptionsHtml(URGENCE_OPTIONS, '-- Choisir un geste --') + '</select></div>' +
         '<div class="result-actions"><button class="btn-primary" id="tx-step-submit-btn">Valider</button></div>';
     } else if(txStage === 'final'){
+      if(txVariant.finalLine){
+        html += '<p class="tx-patient-line">' + txVariant.finalLine + '</p>';
+      }
       html += '<div class="tx-select-row"><label class="tx-label" for="tx-step-select">Traitement final / programmé</label>' +
         '<select id="tx-step-select">' + txOptionsHtml(FINAL_OPTIONS, '-- Choisir un traitement final --') + '</select></div>' +
         '<div class="result-actions"><button class="btn-primary" id="tx-step-submit-btn">Valider</button></div>';
