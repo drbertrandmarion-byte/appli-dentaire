@@ -667,7 +667,7 @@
 
     <div id="mode-diagnostic-intro" class="hidden">
       <button class="btn-secondary back-hub-btn" type="button" data-back>← Changer de mode d'entraînement</button>
-      <p>Au lancement d'une session, l'application choisit en secret un cas parmi les 11 diagnostics suivants :</p>
+      <p>Au lancement d'une session, l'application choisit en secret un cas parmi les 12 diagnostics suivants :</p>
       <div class="diag-group">
         <h3 class="diag-group-title">Pathologies pulpaires</h3>
         <ul>
@@ -676,6 +676,7 @@
           <li>Pulpite réversible</li>
           <li>Pulpite aiguë irréversible</li>
           <li>Syndrome mixte</li>
+          <li>Nécrose pulpaire</li>
         </ul>
       </div>
       <div class="diag-group">
@@ -874,7 +875,7 @@
 
   // ---------- Les 15 questions que l'étudiant peut choisir de poser ----------
   var QUESTIONS = [
-    {id:"froid",            text:"Y a-t-il une douleur au froid ?"},
+    {id:"froid",            text:"Réponse au test au froid ?"},
     {id:"percussion",       text:"Y a-t-il une douleur à la percussion ?"},
     {id:"palpation",        text:"Y a-t-il une douleur à la palpation apicale (vestibulaire, en regard de l'apex) ?"},
     {id:"dent_longue",      text:"Le patient a-t-il une sensation de dent « longue » (plus haute que les autres) ?"},
@@ -956,6 +957,7 @@
     reversible:         {depth:"supra_gingival", apical:false, urgence:2, final:1},
     irreversible:       {depth:"supra_gingival", apical:false, urgence:3, final:3},
     syndrome_mixte:     {depth:"juxta_gingival", apical:false, urgence:3, final:2},
+    necrose:            {depth:"juxta_gingival", apical:false, urgence:0, final:2},
     parodontite:        {depth:"juxta_gingival", apical:false, urgence:3, final:2},
     abces_aigu:         {depth:"infra_gingival", apical:true,  urgence:5, final:2},
     abces_chronique:    {depth:"infra_gingival", apical:true,  urgence:0, final:2},
@@ -1165,6 +1167,56 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         urgence1: 4, final: 2
+      }
+    ],
+
+    // Nécrose pulpaire : aucune douleur, aucune tuméfaction, test au froid négatif dans tous les cas.
+    // Le radiographie coronaire (perte tissulaire / soin récent / soin ayant perdu son étanchéité, à
+    // proximité de la pulpe) et l'état du ligament parodontal apical (sain / épaissi / lésion radioclaire)
+    // varient d'un cas à l'autre ; le traitement, lui, ne varie pas : pas d'urgence vraie, endodontie
+    // programmée.
+    necrose: [
+      {
+        patientLine: "Léon, 44 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une importante perte tissulaire coronaire à proximité de la pulpe, avec un ligament parodontal apical d'aspect sain, sans épaississement ni lésion radioclaire.",
+        radioText: "Importante perte tissulaire coronaire, à proximité de la pulpe. Ligament parodontal apical d'aspect sain, sans épaississement ni lésion radioclaire.",
+        depth: "juxta_gingival", apical: false,
+        finalLine: "Quel traitement définitif programmez-vous ?",
+        urgence1: 0, final: 2
+      },
+      {
+        patientLine: "Margaux, 37 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration récente à proximité de la pulpe, avec un ligament parodontal apical légèrement épaissi, sans lésion radioclaire constituée.",
+        radioText: "Restauration récente, à proximité de la pulpe. Ligament parodontal apical légèrement épaissi, sans lésion radioclaire constituée.",
+        depth: "juxta_gingival", apical: false,
+        finalLine: "Quelle prise en charge programmez-vous ?",
+        urgence1: 0, final: 2
+      },
+      {
+        patientLine: "Étienne, 52 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration ayant perdu son étanchéité, à proximité de la pulpe, avec une discrète image radioclaire apicale.",
+        radioText: "Restauration ayant perdu son étanchéité, à proximité de la pulpe. Présence d'une discrète image radioclaire apicale.",
+        depth: "juxta_gingival", apical: true,
+        finalLine: "Quel traitement définitif choisissez-vous ?",
+        urgence1: 0, final: 2
+      },
+      {
+        patientLine: "Noémie, 29 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration ayant perdu son étanchéité, à proximité de la pulpe, avec un ligament parodontal apical d'aspect sain.",
+        radioText: "Restauration ayant perdu son étanchéité, à proximité de la pulpe. Ligament parodontal apical d'aspect sain, sans épaississement ni lésion radioclaire.",
+        depth: "juxta_gingival", apical: false,
+        finalLine: "Quel traitement programmez-vous ?",
+        urgence1: 0, final: 2
+      },
+      {
+        patientLine: "Romain, 61 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une importante perte tissulaire coronaire à proximité de la pulpe, avec un ligament parodontal apical légèrement épaissi.",
+        radioText: "Importante perte tissulaire coronaire, à proximité de la pulpe. Ligament parodontal apical légèrement épaissi, sans lésion radioclaire constituée.",
+        depth: "juxta_gingival", apical: false,
+        finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
+        urgence1: 0, final: 2
+      },
+      {
+        patientLine: "Agathe, 34 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration récente à proximité de la pulpe, avec une discrète image radioclaire apicale.",
+        radioText: "Restauration récente, à proximité de la pulpe. Présence d'une discrète image radioclaire apicale.",
+        depth: "juxta_gingival", apical: true,
+        finalLine: "Quel traitement choisissez-vous ?",
+        urgence1: 0, final: 2
       }
     ],
 
@@ -1379,10 +1431,10 @@
       ],
       urgence:"Aucun geste d'urgence nécessaire.",
       traitementFinal:"Aucun traitement endodontique nécessaire.",
-      answers:{froid:"non", radio:"normal"},
+      answers:{froid:"normal", radio:"normal"},
       quotes:{
         radio:"Aucune image pathologique : pas de radioclarté carieuse coronaire, ligament et os périapicaux normaux.",
-        froid:"Non, le froid ne me fait rien du tout.",
+        froid:"Positif, mais normal : une sensation brève au froid, qui s'arrête immédiatement et n'est pas douloureuse.",
         percussion:"Non, ça ne me fait pas mal quand on tape dessus.",
         palpation:"Non, je peux appuyer sur la gencive sans problème.",
         dent_longue:"Non, elle est comme d'habitude.",
@@ -1412,7 +1464,7 @@
       answers:{froid:"leger", sucre:true, radio:"coronal"},
       quotes:{
         radio:"Très légère infiltration coronaire, à distance de la pulpe ; pas de radioclarté apicale.",
-        froid:"Oui, ça pique au froid mais c'est fugace et léger, ça s'arrête dès la fin du stimulus.",
+        froid:"Positif, légèrement exacerbé, mais ça s'arrête dès l'arrêt du stimulus.",
         percussion:"Non.",
         palpation:"Non.",
         dent_longue:"Non.",
@@ -1442,7 +1494,7 @@
       answers:{froid:"leger", sucre:true, radio:"coronal"},
       quotes:{
         radio:"Présence d'une perte tissulaire dentaire modérée au niveau coronaire, encore à distance de la pulpe ; pas de radioclarté apicale.",
-        froid:"Oui, mais c'est léger et fugace, ça passe quand j'arrête de manger du froid.",
+        froid:"Positif, légèrement exacerbé, mais ça s'arrête dès l'arrêt du stimulus.",
         percussion:"Non.",
         palpation:"Non.",
         dent_longue:"Non.",
@@ -1475,7 +1527,7 @@
       answers:{froid:"intense", chaud:true, sucre:true, nocturne:true, pulsation:true, radio:"coronal"},
       quotes:{
         radio:"Perte de substance coronaire importante avec atteinte pulpaire, sans image radioclaire péri-apicale.",
-        froid:"Oui, très intense, ça se prolonge et irradie jusqu'à l'oreille.",
+        froid:"Positif, irradiant et se prolongeant jusqu'à l'oreille.",
         percussion:"Non.",
         palpation:"Non.",
         dent_longue:"Non.",
@@ -1509,7 +1561,7 @@
       answers:{froid:"intense", percussion:true, dent_longue:true, chaud:true, mastication:true, nocturne:true, pulsation:true, continue_diffuse:true, radio:"coronal"},
       quotes:{
         radio:"Perte de substance coronaire importante avec atteinte pulpaire, sans image radioclaire péri-apicale.",
-        froid:"Oui, la douleur est très intense, irradiante.",
+        froid:"Positif, irradiant mais pas extrêmement intense.",
         percussion:"Oui, la dent est douloureuse à la percussion.",
         palpation:"Non, pas de douleur quand je touche ma gencive.",
         dent_longue:"Oui, un peu, mais pas de façon très importante.",
@@ -1523,6 +1575,36 @@
         nocturne:"Oui, ça peut m'empêcher de dormir.",
         pulsation:"Oui, par moments, ça pulse comme un cœur dans la dent.",
         continue_diffuse:"Oui, parfois, ça peut être lancinant."
+      }
+    },
+    necrose: {
+      title:"Nécrose pulpaire", category:"pulpaire",
+      def:"Mort du tissu pulpaire, avec perte totale de la vitalité ; le plus souvent silencieuse tant que l'atteinte reste confinée à l'espace pulpaire.",
+      signs:[
+        "Absence totale de douleur spontanée ou provoquée",
+        "Aucun gonflement, aucune tuméfaction",
+        "Absence de réponse à tous les tests de sensibilité pulpaire (froid, chaud, électrique)",
+        "Radiographie variable : ligament parodontal apical sain, épaissi, ou siège d'une discrète lésion radioclaire selon l'ancienneté de la nécrose"
+      ],
+      urgence:"Aucun traitement d'urgence nécessaire en l'absence de signe de diffusion infectieuse ; ne pas toucher à la dent si elle n'est pas symptomatique.",
+      traitementFinal:"Traitement endodontique complet à programmer sur un créneau de soin prévu.",
+      answers:{froid:"non", radio:"coronal"},
+      quotes:{
+        radio:"Perte de substance coronaire importante à proximité de la pulpe (ou restauration récente, ou restauration ayant perdu son étanchéité) ; le ligament parodontal apical peut apparaître sain, légèrement épaissi, ou montrer une discrète image radioclaire selon l'ancienneté.",
+        froid:"Négatif, aucune réaction, je ne ressens rien du tout.",
+        percussion:"Non, ça ne me fait pas mal quand on tape dessus.",
+        palpation:"Non, je peux appuyer sur la gencive sans problème.",
+        dent_longue:"Non.",
+        chaud:"Non, le chaud ne me fait rien.",
+        sucre:"Non.",
+        mastication:"Non, je mâche normalement.",
+        froid_apaise:"Non, ça ne s'applique pas, je n'ai pas mal.",
+        gonflement:"Non.",
+        godet:"Non.",
+        signes_generaux:"Non.",
+        nocturne:"Non, je dors bien.",
+        pulsation:"Non.",
+        continue_diffuse:"Non, je n'ai aucune douleur."
       }
     },
     parodontite: {
@@ -1539,7 +1621,7 @@
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante ; ligament parodontal apical légèrement élargi, pas de lésion arrondie constituée.",
-        froid:"Non, le froid ne me fait rien.",
+        froid:"Négatif, aucune réaction, je ne ressens rien du tout.",
         percussion:"Oui, dès qu'on touche c'est affreux.",
         palpation:"Oui, je peux difficilement toucher ma gencive à gauche.",
         dent_longue:"Oui, on dirait qu'elle a poussé dans la nuit.",
@@ -1573,7 +1655,7 @@
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante ; zone de radioclarté bien délimitée à l'apex de la racine.",
-        froid:"Non, le froid ne me fait rien.",
+        froid:"Négatif, aucune réaction, je ne ressens rien du tout.",
         percussion:"Oui, dès qu'on touche c'est affreux.",
         palpation:"Oui, je ne peux plus toucher la zone.",
         dent_longue:"Oui, on dirait que la dent a poussé.",
@@ -1608,7 +1690,7 @@
       answers:{mastication:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante ; radioclarté apicale bien limitée et arrondie (image de granulome/kyste).",
-        froid:"Non, le froid ne me fait rien.",
+        froid:"Négatif, aucune réaction, je ne ressens rien du tout.",
         percussion:"Non, c'est un peu sensible quand on tape dessus, mais ce n'est pas vraiment douloureux.",
         palpation:"Non, c'est juste légèrement gênant, et j'ai remarqué comme un petit bouton qui ressort sur ma gencive.",
         dent_longue:"Non.",
@@ -1641,7 +1723,7 @@
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante, voire destruction massive de la couronne dentaire ; radioclarté apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
-        froid:"Non, le froid ne me fait rien.",
+        froid:"Négatif, aucune réaction, je ne ressens rien du tout.",
         percussion:"Oui, je ne peux pas toucher ma dent sans douleur.",
         palpation:"Oui, je ne peux pas toucher ma gencive.",
         dent_longue:"Oui, comme si elle avait poussé.",
@@ -1675,7 +1757,7 @@
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante, voire destruction massive de la couronne dentaire ; radioclarté apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
-        froid:"Non, le froid ne me fait rien.",
+        froid:"Négatif, aucune réaction, je ne ressens rien du tout.",
         percussion:"Oui, je ne peux pas toucher ma dent sans douleur.",
         palpation:"Oui, je ne peux pas toucher ma gencive.",
         dent_longue:"Oui, comme si elle avait poussé.",
@@ -1709,7 +1791,7 @@
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, signes_generaux:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante, voire destruction massive de la couronne dentaire ; radioclarté apicale bien limitée, à l'origine de l'infection extensive des tissus mous.",
-        froid:"Non, le froid ne me fait rien.",
+        froid:"Négatif, aucune réaction, je ne ressens rien du tout.",
         percussion:"Oui, je ne peux pas toucher ma dent sans douleur.",
         palpation:"Oui, je ne peux pas toucher ma gencive.",
         dent_longue:"Oui, comme si elle avait poussé.",
@@ -1727,7 +1809,7 @@
     }
   };
 
-  var DIAGNOSIS_ORDER = ["saine","hyperhemie","reversible","irreversible","syndrome_mixte","parodontite","abces_aigu","abces_chronique","cellulite_sereuse","cellulite_suppuree","cellulite_diffuse"];
+  var DIAGNOSIS_ORDER = ["saine","hyperhemie","reversible","irreversible","syndrome_mixte","necrose","parodontite","abces_aigu","abces_chronique","cellulite_sereuse","cellulite_suppuree","cellulite_diffuse"];
 
   // Tire n cas au hasard en réduisant (sans l'annuler) la probabilité de répéter
   // un diagnostic déjà tombé dans la même série : chaque répétition supplémentaire
@@ -1780,6 +1862,11 @@
       pulp2:"#4a3d36", pulpLabel2:"Canal nécrosé",
       swellColor:"#f5e3e3", swellLabel:"Tissus mous (normaux)",
       caption:"Dent à deux racines : un canal encore vivant et enflammé, un canal déjà nécrosé, sans lésion périapicale constituée."
+    },
+    necrose: {
+      caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"widened", fistula:false, swelling:"none",
+      swellColor:"#f5e3e3", swellLabel:"Tissus mous (normaux)",
+      caption:"Pulpe nécrosée, asymptomatique ; le ligament parodontal apical peut être sain, épaissi ou le siège d'une discrète lésion selon l'ancienneté."
     },
     parodontite: {
       caries:"large", pulp:"#5a4a42", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"widened", fistula:false, swelling:"none",
@@ -2275,10 +2362,14 @@
     document.getElementById('tx-sw-swelling').style.background = diagram.swellColor;
     document.getElementById('tx-swelling-legend-label').textContent = diagram.swellLabel;
 
-    var radioDepth = (txVariant && txVariant.depth) ? txVariant.depth : profile.depth;
-    var radioApical = (txVariant && txVariant.apical !== undefined) ? txVariant.apical : profile.apical;
-    document.getElementById('tx-radio-text').textContent =
-      RADIO_DEPTH_LABELS[radioDepth] + (radioApical ? ', avec une image radioclaire apicale.' : ', sans image radioclaire apicale.');
+    if(txVariant && txVariant.radioText){
+      document.getElementById('tx-radio-text').textContent = txVariant.radioText;
+    } else {
+      var radioDepth = (txVariant && txVariant.depth) ? txVariant.depth : profile.depth;
+      var radioApical = (txVariant && txVariant.apical !== undefined) ? txVariant.apical : profile.apical;
+      document.getElementById('tx-radio-text').textContent =
+        RADIO_DEPTH_LABELS[radioDepth] + (radioApical ? ', avec une image radioclaire apicale.' : ', sans image radioclaire apicale.');
+    }
 
     var signsEl = document.getElementById('tx-signs');
     signsEl.innerHTML = '';
