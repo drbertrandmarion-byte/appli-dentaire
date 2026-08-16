@@ -948,7 +948,8 @@
     "Traitement endodontique complet ou pulpotomie thérapeutique",
     "Extraction (dent non conservable)",
     "Simple surveillance",
-    "Pulpotomie thérapeutique définitive (conservation de la vitalité radiculaire)"
+    "Pulpotomie thérapeutique définitive (conservation de la vitalité radiculaire)",
+    "Traitement conservateur : élimination de la cause irritative, protection pulpaire adaptée (coiffage direct/indirect) et restauration coronaire étanche, avec conservation de la vitalité pulpaire"
   ];
 
   // Profil "choix thérapeutique" par diagnostic — première version, à affiner.
@@ -1055,6 +1056,34 @@
         needsEscalation: false,
         finalLine: "Quel traitement définitif choisissez-vous ?",
         final: 6 // Pulpotomie thérapeutique définitive
+      }
+    ],
+    // Pulpite réversible : cas à question unique (pas de geste d'urgence distinct ni d'escalade).
+    reversible: [
+      {
+        patientLine: "Élise, 17 ans, consulte pour une douleur brève provoquée par le froid et les aliments sucrés. La douleur disparaît rapidement après l'arrêt du stimulus et n'est pas spontanée. Le diagnostic de pulpite réversible est posé. L'examen clinique met en évidence une lésion carieuse profonde, sans signe clinique ou radiographique en faveur d'une atteinte pulpaire irréversible.",
+        finalLine: "Quel traitement choisissez-vous ?",
+        final: 7 // Traitement conservateur avec conservation de la vitalité pulpaire
+      },
+      {
+        patientLine: "Thomas, 28 ans, consulte pour une sensibilité au froid sur une dent présentant une carie. La douleur est courte, localisée et disparaît en quelques secondes après retrait du stimulus. Le diagnostic de pulpite réversible est posé. Après élimination de la carie, la dent présente une pulpe exposée de façon très limitée lors de l'excavation.",
+        finalLine: "Quelle prise en charge choisissez-vous ?",
+        final: 7
+      },
+      {
+        patientLine: "Sophie, 42 ans, consulte pour une douleur provoquée par le froid au niveau d'une molaire. La douleur est immédiate mais très brève et cesse spontanément dès que le stimulus disparaît. Le diagnostic de pulpite réversible est posé. La radiographie montre une carie dentinaire sans signe d'atteinte périapicale. Il n'existe pas de douleur spontanée ni de douleur nocturne.",
+        finalLine: "Quel traitement définitif programmez-vous ?",
+        final: 7
+      },
+      {
+        patientLine: "Lucas, 12 ans, consulte pour une douleur provoquée par les boissons froides et les aliments sucrés. La douleur est courte et disparaît immédiatement après l'arrêt du stimulus. Le diagnostic de pulpite réversible est posé. La dent présente une carie profonde proche de la pulpe, mais aucun signe clinique d'atteinte pulpaire irréversible.",
+        finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
+        final: 7
+      },
+      {
+        patientLine: "Camille, 35 ans, consulte pour une sensibilité au froid sur une prémolaire présentant une restauration ancienne défectueuse. La douleur est déclenchée uniquement par le froid, reste faible et disparaît rapidement après retrait du stimulus. Le diagnostic de pulpite réversible est posé. L'ancienne restauration est infiltrée et doit être remplacée. Aucun signe de nécrose ou de pulpite irréversible n'est retrouvé.",
+        finalLine: "Quel traitement choisissez-vous ?",
+        final: 7
       }
     ]
   };
@@ -1983,7 +2012,7 @@
       multistepChoiceEl.classList.remove('hidden');
       txVariant = variants[Math.floor(Math.random() * variants.length)];
       txStepAnswers = {};
-      txStage = 'urgence1';
+      txStage = (txVariant.urgence1 !== undefined) ? 'urgence1' : 'final';
       renderTxMultistep();
     } else {
       txVariant = null;
@@ -2074,7 +2103,8 @@
 
   function showTxMultistepResult(){
     var d = DIAGNOSES[txCaseId];
-    var urgence1Correct = txStepAnswers.urgence1 === txVariant.urgence1;
+    var hasUrgence = txVariant.urgence1 !== undefined;
+    var urgence1Correct = hasUrgence ? (txStepAnswers.urgence1 === txVariant.urgence1) : true;
     var urgence2Correct = txVariant.needsEscalation ? (txStepAnswers.urgence2 === txVariant.urgence2) : true;
     var finalCorrect = txStepAnswers.final === txVariant.final;
     var allCorrect = urgence1Correct && urgence2Correct && finalCorrect;
@@ -2109,11 +2139,13 @@
       return div;
     }
 
-    recapEl.appendChild(row('Traitement d\'urgence', urgence1Correct, URGENCE_OPTIONS[txStepAnswers.urgence1], URGENCE_OPTIONS[txVariant.urgence1]));
+    if(hasUrgence){
+      recapEl.appendChild(row('Traitement d\'urgence', urgence1Correct, URGENCE_OPTIONS[txStepAnswers.urgence1], URGENCE_OPTIONS[txVariant.urgence1]));
+    }
     if(txVariant.needsEscalation){
       recapEl.appendChild(row('Geste d\'urgence complémentaire', urgence2Correct, URGENCE_OPTIONS[txStepAnswers.urgence2], URGENCE_OPTIONS[txVariant.urgence2]));
     }
-    recapEl.appendChild(row('Traitement final', finalCorrect, FINAL_OPTIONS[txStepAnswers.final], FINAL_OPTIONS[txVariant.final]));
+    recapEl.appendChild(row('Suite de soin d\'urgence ou traitement final', finalCorrect, FINAL_OPTIONS[txStepAnswers.final], FINAL_OPTIONS[txVariant.final]));
 
     txResultCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
