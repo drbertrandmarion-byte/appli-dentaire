@@ -15,6 +15,7 @@ Un questionnaire à dérouleur guide l'étudiant question après question (doule
 - Cellulite suppurée
 - Cellulite diffuse
 - Syndrome mixte
+- Nécrose pulpaire
 
 Chaque résultat affiche une courte définition, les signes cliniques évocateurs et une orientation thérapeutique.
 
