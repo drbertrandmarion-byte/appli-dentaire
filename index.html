@@ -1191,19 +1191,19 @@
       }
     ],
 
-    // Parodontite apicale aiguë : deux origines possibles — traumatisme occlusal (surveillance) ou nécrose pulpaire débutante (endodontie).
+    // Parodontite apicale aiguë : pulpe toujours nécrosée (cf. cours) — seul traitement d'urgence valable : pulpectomie d'urgence ; traitement final : endodontie complète.
     parodontite: [
       {
-        patientLine: "Céline, 34 ans, se plaint d'une dent douloureuse à la mastication depuis la pose d'une restauration un peu haute il y a quelques jours, avec une sensation de dent « plus haute » que les autres. La radiographie ne montre pas de délabrement carieux notable, sans image radioclaire apicale : le ligament parodontal apical est simplement légèrement élargi, en rapport avec le traumatisme occlusal.",
-        depth: "coronaire", apical: false,
+        patientLine: "Céline, 34 ans, se plaint d'une dent douloureuse à la mastication et d'une sensation de dent « plus haute » que les autres, sur une dent porteuse d'une carie ancienne non traitée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
+        depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
-        urgence1: 4, final: 5
+        urgence1: 10, final: 2
       },
       {
-        patientLine: "Pierre, 19 ans, bruxeur connu, se plaint d'une gêne à la mastication et d'une sensation de dent longue sur une dent sans carie ni restauration récente. La radiographie ne montre pas de délabrement carieux notable, sans image radioclaire apicale : le ligament parodontal apical est simplement légèrement élargi, en rapport avec le traumatisme occlusal.",
-        depth: "coronaire", apical: false,
+        patientLine: "Pierre, 19 ans, se plaint d'une gêne à la mastication et d'une sensation de dent longue, sur une dent porteuse d'une carie profonde évoluant depuis plusieurs mois. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
+        depth: "juxta_gingival", apical: false,
         finalLine: "Quelle prise en charge choisissez-vous ?",
-        urgence1: 4, final: 5
+        urgence1: 10, final: 2
       },
       {
         patientLine: "Isabelle, 47 ans, consulte pour une douleur récente à la percussion et une sensation de dent longue, sur une dent porteuse d'une carie ancienne et volumineuse. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
@@ -1556,15 +1556,15 @@
     },
     parodontite: {
       title:"Parodontite apicale aiguë", category:"periapical",
-      def:"Inflammation aiguë du ligament parodontal apical, d'origine traumatique/occlusale ou infectieuse débutante.",
+      def:"Inflammation aiguë du ligament parodontal apical, d'origine infectieuse, faisant suite à une nécrose pulpaire septique débutante.",
       signs:[
         "Douleur vive à la percussion et à la palpation apicale",
         "Sensation de « dent longue », comme si elle avait poussé dans la nuit",
         "Gêne à la mastication plutôt qu'une douleur franche",
         "Pas de tuméfaction, pas de signe général"
       ],
-      urgence:"Pose de la digue obligatoire. Meulage de la surocclusion si trauma occlusal ; si la pulpe est nécrosée, pulpectomie d'urgence.",
-      traitementFinal:"Traitement endodontique complet si la pulpe est nécrosée ; simple surveillance si la cause est occlusale et corrigée.",
+      urgence:"Pose de la digue obligatoire. Pulpectomie d'urgence (pulpe nécrosée).",
+      traitementFinal:"Traitement endodontique complet.",
       answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante ; ligament parodontal apical légèrement élargi, pas de lésion arrondie constituée.",
