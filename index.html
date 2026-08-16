@@ -713,7 +713,11 @@
     <div id="mode-tx-intro" class="hidden">
       <button class="btn-secondary back-hub-btn" type="button" data-back>← Changer de mode d'entraînement</button>
       <p>Le diagnostic vous est donné directement, avec le dossier radiographique (profondeur du délabrement coronaire et présence ou non d'une image apicale). À vous de choisir le traitement d'urgence et le traitement final adaptés parmi les propositions.</p>
-      <button class="btn-primary" id="start-tx-btn">Commencer un cas</button>
+      <div class="mode-buttons">
+        <button class="btn-primary" id="start-tx-btn">Session individuelle (1 cas)</button>
+        <button class="btn-primary" id="start-tx-quiz-btn">Série de 5 cas notée</button>
+        <button class="btn-primary" id="start-tx-quiz10-btn">Série de 10 cas notée</button>
+      </div>
 
       <div class="pdf-block">
         <button class="btn-pdf" id="tx-recap-btn" type="button">📄 Téléchargement PDF récapitulatif</button>
@@ -809,6 +813,7 @@
 
   <!-- Choix thérapeutique : cas -->
   <div class="card result-card hidden" id="tx-case-card">
+    <span class="counter-badge quiz-badge hidden" id="tx-quiz-progress"></span>
     <span class="badge" id="tx-badge"></span>
     <h2 id="tx-title"></h2>
 
@@ -864,6 +869,20 @@
     <div class="result-actions">
       <button class="btn-primary" id="tx-next-btn">Nouveau cas</button>
       <button class="btn-secondary" id="tx-home-btn">Retour à l'accueil</button>
+    </div>
+  </div>
+
+  <!-- Choix thérapeutique : score de la série -->
+  <div class="card quiz-score-card hidden" id="tx-quiz-score-card">
+    <div class="score-display">
+      <div class="score-number" id="tx-score-number">0 / 5</div>
+      <div class="score-label">Score de la série</div>
+      <p class="score-joke" id="tx-score-joke"></p>
+    </div>
+    <div class="score-recap" id="tx-score-recap"></div>
+    <div class="result-actions">
+      <button class="btn-primary" id="tx-quiz-restart-btn">Recommencer une série</button>
+      <button class="btn-secondary" id="tx-quiz-home-btn">Retour à l'accueil</button>
     </div>
   </div>
 
@@ -2109,6 +2128,11 @@
   var txVariant = null;
   var txStepAnswers = {};
   var txStage = '';
+  var txMode = 'single'; // 'single' | 'quiz'
+  var txQuizCases = [];
+  var txQuizIndex = 0;
+  var txQuizLength = 5;
+  var txQuizResults = [];
 
   // ---------- DOM refs ----------
   var introCard = document.getElementById('intro-card');
@@ -2131,6 +2155,9 @@
   var resultCard = document.getElementById('result-card');
   var quizScoreCard = document.getElementById('quiz-score-card');
   var nextActionBtn = document.getElementById('next-action-btn');
+  var txQuizProgressEl = document.getElementById('tx-quiz-progress');
+  var txQuizScoreCard = document.getElementById('tx-quiz-score-card');
+  var txNextActionBtn = document.getElementById('tx-next-btn');
 
   // populate diagnosis dropdown once (static list)
   var placeholder = document.createElement('option');
@@ -2166,9 +2193,12 @@
     btn.addEventListener('click', showHub);
   });
   document.getElementById('start-tx-btn').addEventListener('click', startTxCase);
+  document.getElementById('start-tx-quiz-btn').addEventListener('click', function(){ startTxQuizSession(5); });
+  document.getElementById('start-tx-quiz10-btn').addEventListener('click', function(){ startTxQuizSession(10); });
   document.getElementById('tx-submit-btn').addEventListener('click', submitTxChoice);
-  document.getElementById('tx-next-btn').addEventListener('click', startTxCase);
   document.getElementById('tx-home-btn').addEventListener('click', goHome);
+  document.getElementById('tx-quiz-restart-btn').addEventListener('click', function(){ startTxQuizSession(txQuizLength); });
+  document.getElementById('tx-quiz-home-btn').addEventListener('click', goHome);
 
   function showHub(){
     hubChoice.classList.remove('hidden');
@@ -2261,6 +2291,7 @@
     sessionArea.classList.add('hidden');
     txCaseCard.classList.add('hidden');
     txResultCard.classList.add('hidden');
+    txQuizScoreCard.classList.add('hidden');
     introCard.classList.remove('hidden');
     showHub();
     introCard.scrollIntoView({behavior:'smooth', block:'start'});
@@ -2424,16 +2455,24 @@
   }
 
   // ---------- Mode "choix thérapeutique" ----------
-  function startTxCase(){
-    txCaseId = randomCaseId();
+  function beginTxCase(id){
+    txCaseId = id;
     var profile = TX_PROFILE[txCaseId];
     var d = DIAGNOSES[txCaseId];
     var diagram = DIAGRAMS[txCaseId];
 
     introCard.classList.add('hidden');
     txResultCard.classList.add('hidden');
+    txQuizScoreCard.classList.add('hidden');
     txCaseCard.classList.remove('hidden');
     txCaseCard.className = 'card result-card cat-' + d.category;
+
+    if(txMode === 'quiz'){
+      txQuizProgressEl.classList.remove('hidden');
+      txQuizProgressEl.textContent = 'Cas ' + (txQuizIndex + 1) + ' / ' + txQuizLength;
+    } else {
+      txQuizProgressEl.classList.add('hidden');
+    }
 
     txUrgenceSelect.value = '';
     txFinalSelect.value = '';
@@ -2503,6 +2542,25 @@
     }
 
     txCaseCard.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function startTxCase(){
+    txMode = 'single';
+    beginTxCase(randomCaseId());
+  }
+
+  function startTxQuizSession(n){
+    txMode = 'quiz';
+    txQuizLength = n;
+    txQuizCases = generateSeriesCases(n);
+    txQuizIndex = 0;
+    txQuizResults = [];
+    beginTxCase(txQuizCases[0]);
+  }
+
+  function nextTxQuizCase(){
+    txQuizIndex++;
+    beginTxCase(txQuizCases[txQuizIndex]);
   }
 
   // ---------- Mode "choix thérapeutique" : cas à étapes multiples (ex. pulpite aiguë irréversible) ----------
@@ -2614,6 +2672,20 @@
       recapEl.appendChild(row('Suite de soin d\'urgence ou traitement final', finalCorrect, FINAL_OPTIONS[txStepAnswers.final], FINAL_OPTIONS[txVariant.final]));
     }
 
+    if(txMode === 'quiz'){
+      txQuizResults.push({caseId:txCaseId, correct:allCorrect});
+      if(txQuizIndex < txQuizLength - 1){
+        txNextActionBtn.textContent = 'Cas suivant (' + (txQuizIndex + 2) + ' / ' + txQuizLength + ')';
+        txNextActionBtn.onclick = nextTxQuizCase;
+      } else {
+        txNextActionBtn.textContent = 'Voir mon score final';
+        txNextActionBtn.onclick = showTxQuizScore;
+      }
+    } else {
+      txNextActionBtn.textContent = 'Nouveau cas';
+      txNextActionBtn.onclick = startTxCase;
+    }
+
     txResultCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
@@ -2713,6 +2785,56 @@
     });
 
     quizScoreCard.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  var TX_SCORE_JOKES_5 = [
+    "Digue oubliée : on efface tout et on recommence.",
+    "Un bon geste sur cinq... la carie n'a pas dit son dernier mot.",
+    "L'hémostase, ça se travaille.",
+    "Ça tient, avec un provisoire un peu juste.",
+    "Plus qu'un geste et l'obturation est nickel.",
+    "Cinq sur cinq : le patient ressort le sourire aux lèvres !"
+  ];
+  var TX_SCORE_JOKES_10 = [
+    "Digue oubliée : on efface tout et on recommence.",
+    "La pulpe n'est pas la seule chose qui aurait besoin de soins ici.",
+    "L'hémostase, ça se travaille.",
+    "Ça tient, avec un provisoire un peu juste.",
+    "Encore un peu de mise en forme canalaire à prévoir.",
+    "Tu maîtrises la digue, maintenant reste la moitié du travail : le bon geste au bon moment.",
+    "L'irrigation est bonne, la décision un peu moins.",
+    "Ça obture proprement, presque à chaque fois.",
+    "Un sourire qui inspire déjà confiance au patient.",
+    "Un seul geste vous sépare du sans-faute.",
+    "Dix sur dix : la digue, le geste, le protocole — un vrai clinicien !"
+  ];
+
+  function showTxQuizScore(){
+    txResultCard.classList.add('hidden');
+    txCaseCard.classList.add('hidden');
+    txQuizScoreCard.classList.remove('hidden');
+
+    var scoreCount = txQuizResults.filter(function(r){ return r.correct; }).length;
+    document.getElementById('tx-score-number').textContent = scoreCount + ' / ' + txQuizLength;
+    var jokes = txQuizLength === 10 ? TX_SCORE_JOKES_10 : TX_SCORE_JOKES_5;
+    document.getElementById('tx-score-joke').textContent = jokes[scoreCount] || '';
+
+    var recapEl = document.getElementById('tx-score-recap');
+    recapEl.innerHTML = '';
+    txQuizResults.forEach(function(r, i){
+      var d = DIAGNOSES[r.caseId];
+      var row = document.createElement('div');
+      row.className = 'score-row';
+      row.innerHTML =
+        '<div class="mark ' + (r.correct ? 'ok' : 'ko') + '">' + (r.correct ? '✓' : '✗') + '</div>' +
+        '<div class="details">' +
+          '<div class="real">Cas ' + (i + 1) + ' : ' + d.title + '</div>' +
+          '<div class="guess">' + (r.correct ? 'Choix thérapeutique correct' : 'Au moins un choix thérapeutique à revoir') + '</div>' +
+        '</div>';
+      recapEl.appendChild(row);
+    });
+
+    txQuizScoreCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
   // Pour les diagnostics dont le pronostic (donc le traitement) dépend de la limite du délabrement,
