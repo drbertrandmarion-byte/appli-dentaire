@@ -1022,7 +1022,7 @@
     "Extraction et drainage d'urgence avec antibiothérapie",                                                          // 9
     "Référer au service de chirurgie maxillo-faciale en urgence",                                                     // 10
     "Pulpectomie d'urgence avec antibiothérapie (digue obligatoire)",                                                 // 11
-    "Extraction avec antibiothérapie"                                                                                 // 12
+    "Extraction et drainage avec antibiothérapie"                                                                     // 12
   ];
 
   var FINAL_OPTIONS = [
@@ -1403,9 +1403,9 @@
       }
     ],
 
-    // Cellulite séreuse : pulpectomie thérapeutique + drainage d'urgence et antibiothérapie si le
-    // délabrement reste supra- ou juxta-gingival (dent conservable) ; extraction avec antibiothérapie
-    // d'emblée si le délabrement est infra-osseux. Pas de collection à ce stade : aucun drainage.
+    // Cellulite séreuse : pulpectomie d'urgence et antibiothérapie si le délabrement reste supra- ou
+    // juxta-gingival (dent conservable) ; extraction et drainage avec antibiothérapie d'emblée si le
+    // délabrement est infra-osseux — l'extraction expose l'apex et impose un drainage systématique.
     cellulite_sereuse: [
       {
         patientLine: "Julien, 26 ans, présente une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, une sensation de dent longue, et une douleur constante apaisée par le froid. La radiographie montre un délabrement supra-gingival, juste au-dessus du rebord gingival, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
@@ -1428,7 +1428,7 @@
       {
         patientLine: "Inès, 55 ans, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
         depth: "infra_osseux", apical: true,
-        urgence1: 12 // Extraction avec antibiothérapie — pas de question complémentaire
+        urgence1: 12 // Extraction et drainage avec antibiothérapie — pas de question complémentaire
       },
       {
         patientLine: "Manon, 62 ans, présente une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
