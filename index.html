@@ -174,6 +174,12 @@
     margin-bottom:6px;
   }
   .tx-select-row select{width:100%;}
+  .tx-patient-line{
+    margin:0 0 14px;
+    font-size:0.95rem;
+    color:var(--ink);
+    font-style:italic;
+  }
 
   button{
     font-family:inherit;
@@ -814,17 +820,22 @@
     <ul id="tx-signs"></ul>
 
     <h3>Votre choix thérapeutique</h3>
-    <div class="tx-select-row">
-      <label class="tx-label" for="tx-urgence-select">Traitement d'urgence</label>
-      <select id="tx-urgence-select"></select>
+
+    <div id="tx-simple-choice">
+      <div class="tx-select-row">
+        <label class="tx-label" for="tx-urgence-select">Traitement d'urgence</label>
+        <select id="tx-urgence-select"></select>
+      </div>
+      <div class="tx-select-row">
+        <label class="tx-label" for="tx-final-select">Traitement final</label>
+        <select id="tx-final-select"></select>
+      </div>
+      <div class="result-actions">
+        <button class="btn-primary" id="tx-submit-btn">Valider mon choix</button>
+      </div>
     </div>
-    <div class="tx-select-row">
-      <label class="tx-label" for="tx-final-select">Traitement final</label>
-      <select id="tx-final-select"></select>
-    </div>
-    <div class="result-actions">
-      <button class="btn-primary" id="tx-submit-btn">Valider mon choix</button>
-    </div>
+
+    <div id="tx-multistep-choice" class="hidden"></div>
   </div>
 
   <!-- Choix thérapeutique : résultat -->
@@ -925,7 +936,9 @@
     "Pulpectomie d'urgence pour drainer et lever la pression (digue obligatoire)",
     "Pulpectomie sous digue (ou extraction) associée à une antibiothérapie",
     "Pulpectomie sous digue (ou extraction), drainage muqueux et antibiothérapie",
-    "Référence hospitalière en urgence (urgence vitale)"
+    "Référence hospitalière en urgence (urgence vitale)",
+    "Pulpotomie d'urgence (digue obligatoire)",
+    "Pulpectomie d'urgence (digue obligatoire)"
   ];
 
   var FINAL_OPTIONS = [
@@ -934,7 +947,8 @@
     "Traitement endodontique complet",
     "Traitement endodontique complet ou pulpotomie thérapeutique",
     "Extraction (dent non conservable)",
-    "Simple surveillance"
+    "Simple surveillance",
+    "Pulpotomie thérapeutique définitive (conservation de la vitalité radiculaire)"
   ];
 
   // Profil "choix thérapeutique" par diagnostic — première version, à affiner.
@@ -950,6 +964,36 @@
     cellulite_sereuse:  {depth:"infra_gingival", apical:true,  urgence:6, final:2},
     cellulite_suppuree: {depth:"infra_gingival", apical:true,  urgence:7, final:2},
     cellulite_diffuse:  {depth:"infra_osseux",   apical:true,  urgence:8, final:4}
+  };
+
+  // Cas à variantes multiples avec décision en plusieurs étapes (urgence -> constat opératoire -> éventuelle
+  // escalade -> traitement final programmé). Pour l'instant : pulpite aiguë irréversible, à étendre plus tard.
+  var TX_MULTISTEP_CASES = {
+    irreversible: [
+      {
+        patientLine: "Patiente de 15 ans, douleurs vives et spontanées depuis 2 jours. Le diagnostic de pulpite aiguë irréversible est posé.",
+        urgence1: 9, // Pulpotomie d'urgence
+        outcomeText: "La pulpotomie d'urgence a été réalisée : on observe une hémostase simple et facile, une entrée canalaire rouge, rosée, vivante, sans saignement abondant.",
+        needsEscalation: false,
+        final: 6 // Pulpotomie thérapeutique définitive
+      },
+      {
+        patientLine: "Patient de 60 ans, douleurs spontanées et nocturnes. Le diagnostic de pulpite aiguë irréversible est posé.",
+        urgence1: 9, // Pulpotomie d'urgence
+        outcomeText: "La pulpotomie d'urgence a été réalisée : ça saigne beaucoup, c'est difficile à arrêter au niveau du saignement canalaire.",
+        needsEscalation: true,
+        escalationLine: "L'hémostase n'est pas stabilisable après pulpotomie. Quel geste d'urgence complémentaire réalisez-vous ?",
+        urgence2: 10, // Pulpectomie d'urgence
+        final: 2 // Traitement endodontique complet
+      },
+      {
+        patientLine: "Patient d'une trentaine d'années, douleurs spontanées récentes. Le diagnostic de pulpite aiguë irréversible est posé.",
+        urgence1: 9, // Pulpotomie d'urgence
+        outcomeText: "La pulpotomie d'urgence a été réalisée : il y a pas mal de saignement, mais il reste stabilisable au prix de quelques efforts sur les entrées canalaires.",
+        needsEscalation: false,
+        final: 2 // Traitement endodontique complet (hémostase difficile malgré tout)
+      }
+    ]
   };
 
   var DIAGNOSES = {
@@ -1519,6 +1563,9 @@
   var quizResults = [];
   var recapBuilt = false;
   var txCaseId = null;
+  var txVariant = null;
+  var txStepAnswers = {};
+  var txStage = '';
 
   // ---------- DOM refs ----------
   var introCard = document.getElementById('intro-card');
@@ -1865,7 +1912,144 @@
       signsEl.appendChild(li);
     });
 
+    var simpleChoiceEl = document.getElementById('tx-simple-choice');
+    var multistepChoiceEl = document.getElementById('tx-multistep-choice');
+    var variants = TX_MULTISTEP_CASES[txCaseId];
+    if(variants){
+      simpleChoiceEl.classList.add('hidden');
+      multistepChoiceEl.classList.remove('hidden');
+      txVariant = variants[Math.floor(Math.random() * variants.length)];
+      txStepAnswers = {};
+      txStage = 'urgence1';
+      renderTxMultistep();
+    } else {
+      txVariant = null;
+      multistepChoiceEl.classList.add('hidden');
+      multistepChoiceEl.innerHTML = '';
+      simpleChoiceEl.classList.remove('hidden');
+    }
+
     txCaseCard.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  // ---------- Mode "choix thérapeutique" : cas à étapes multiples (ex. pulpite aiguë irréversible) ----------
+  function txOptionsHtml(options, placeholderText){
+    var html = '<option value="">' + placeholderText + '</option>';
+    options.forEach(function(text, idx){
+      html += '<option value="' + idx + '">' + text + '</option>';
+    });
+    return html;
+  }
+
+  function txHistoryRowHtml(label, correct, yourText){
+    return '<div class="score-row">' +
+      '<div class="mark ' + (correct ? 'ok' : 'ko') + '">' + (correct ? '✓' : '✗') + '</div>' +
+      '<div class="details">' +
+        '<div class="real">' + label + '</div>' +
+        '<div class="guess">Votre réponse : ' + yourText + '</div>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderTxMultistep(){
+    var el = document.getElementById('tx-multistep-choice');
+    var html = '<p class="tx-patient-line">' + txVariant.patientLine + '</p>';
+
+    if(txStepAnswers.urgence1 !== undefined){
+      html += txHistoryRowHtml('Traitement d\'urgence', txStepAnswers.urgence1 === txVariant.urgence1, URGENCE_OPTIONS[txStepAnswers.urgence1]);
+      html += '<div class="treatment-box info"><h4>Constat opératoire</h4><div>' + txVariant.outcomeText + '</div></div>';
+    }
+
+    if(txStepAnswers.urgence2 !== undefined){
+      html += txHistoryRowHtml('Geste d\'urgence complémentaire', txStepAnswers.urgence2 === txVariant.urgence2, URGENCE_OPTIONS[txStepAnswers.urgence2]);
+    }
+
+    if(txStage === 'urgence1'){
+      html += '<div class="tx-select-row"><label class="tx-label" for="tx-step-select">Traitement d\'urgence</label>' +
+        '<select id="tx-step-select">' + txOptionsHtml(URGENCE_OPTIONS, '-- Choisir un traitement d\'urgence --') + '</select></div>' +
+        '<div class="result-actions"><button class="btn-primary" id="tx-step-submit-btn">Valider</button></div>';
+    } else if(txStage === 'urgence2'){
+      html += '<p class="tx-patient-line">' + txVariant.escalationLine + '</p>' +
+        '<div class="tx-select-row"><label class="tx-label" for="tx-step-select">Geste d\'urgence complémentaire</label>' +
+        '<select id="tx-step-select">' + txOptionsHtml(URGENCE_OPTIONS, '-- Choisir un geste --') + '</select></div>' +
+        '<div class="result-actions"><button class="btn-primary" id="tx-step-submit-btn">Valider</button></div>';
+    } else if(txStage === 'final'){
+      html += '<div class="tx-select-row"><label class="tx-label" for="tx-step-select">Traitement final / programmé</label>' +
+        '<select id="tx-step-select">' + txOptionsHtml(FINAL_OPTIONS, '-- Choisir un traitement final --') + '</select></div>' +
+        '<div class="result-actions"><button class="btn-primary" id="tx-step-submit-btn">Valider</button></div>';
+    }
+
+    el.innerHTML = html;
+
+    var submitBtn = document.getElementById('tx-step-submit-btn');
+    if(submitBtn){
+      submitBtn.addEventListener('click', handleTxStepSubmit);
+    }
+  }
+
+  function handleTxStepSubmit(){
+    var select = document.getElementById('tx-step-select');
+    if(!select || select.value === '') return;
+    var choice = Number(select.value);
+
+    if(txStage === 'urgence1'){
+      txStepAnswers.urgence1 = choice;
+      txStage = txVariant.needsEscalation ? 'urgence2' : 'final';
+      renderTxMultistep();
+    } else if(txStage === 'urgence2'){
+      txStepAnswers.urgence2 = choice;
+      txStage = 'final';
+      renderTxMultistep();
+    } else if(txStage === 'final'){
+      txStepAnswers.final = choice;
+      showTxMultistepResult();
+    }
+  }
+
+  function showTxMultistepResult(){
+    var d = DIAGNOSES[txCaseId];
+    var urgence1Correct = txStepAnswers.urgence1 === txVariant.urgence1;
+    var urgence2Correct = txVariant.needsEscalation ? (txStepAnswers.urgence2 === txVariant.urgence2) : true;
+    var finalCorrect = txStepAnswers.final === txVariant.final;
+    var allCorrect = urgence1Correct && urgence2Correct && finalCorrect;
+
+    txCaseCard.classList.add('hidden');
+    txResultCard.classList.remove('hidden');
+    txResultCard.className = 'card result-card cat-' + d.category;
+
+    var verdict = document.getElementById('tx-verdict');
+    verdict.className = 'verdict ' + (allCorrect ? 'ok' : 'ko');
+    verdict.innerHTML = allCorrect
+      ? '<span class="icon">✓</span> Tous les choix sont corrects !'
+      : '<span class="icon">✗</span> Au moins un choix est à revoir.';
+
+    document.getElementById('tx-result-badge').className = 'badge cat-' + d.category;
+    document.getElementById('tx-result-badge').textContent = categoryLabel(d.category);
+    document.getElementById('tx-result-title').textContent = d.title;
+
+    var recapEl = document.getElementById('tx-result-recap');
+    recapEl.innerHTML = '';
+
+    function row(label, correct, yourText, correctText){
+      var div = document.createElement('div');
+      div.className = 'score-row';
+      div.innerHTML =
+        '<div class="mark ' + (correct ? 'ok' : 'ko') + '">' + (correct ? '✓' : '✗') + '</div>' +
+        '<div class="details">' +
+          '<div class="real">' + label + '</div>' +
+          '<div class="guess">Votre réponse : ' + yourText + '</div>' +
+          (correct ? '' : '<div class="guess">Réponse attendue : ' + correctText + '</div>') +
+        '</div>';
+      return div;
+    }
+
+    recapEl.appendChild(row('Traitement d\'urgence', urgence1Correct, URGENCE_OPTIONS[txStepAnswers.urgence1], URGENCE_OPTIONS[txVariant.urgence1]));
+    if(txVariant.needsEscalation){
+      recapEl.appendChild(row('Geste d\'urgence complémentaire', urgence2Correct, URGENCE_OPTIONS[txStepAnswers.urgence2], URGENCE_OPTIONS[txVariant.urgence2]));
+    }
+    recapEl.appendChild(row('Traitement final', finalCorrect, FINAL_OPTIONS[txStepAnswers.final], FINAL_OPTIONS[txVariant.final]));
+
+    txResultCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
   function submitTxChoice(){
