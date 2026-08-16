@@ -408,6 +408,8 @@
   .treatment-box.final h4{color:var(--logo-blue-dark);}
   .treatment-box.info{background:var(--border);}
   .treatment-box.info h4{color:var(--muted);}
+  .treatment-box p{margin:0;}
+  .tx-rationale-box{text-align:left; margin-top:10px;}
   .guess-recap{
     font-size:0.9rem;
     color:var(--muted);
@@ -918,6 +920,10 @@
     <span class="badge" id="tx-result-badge"></span>
     <h2 id="tx-result-title"></h2>
     <div class="score-recap" id="tx-result-recap"></div>
+    <div class="treatment-box info tx-rationale-box hidden" id="tx-rationale-box">
+      <h4>Pourquoi ce traitement ?</h4>
+      <p id="tx-rationale-text"></p>
+    </div>
     <div class="result-actions">
       <button class="btn-primary" id="tx-next-btn">Nouveau cas</button>
       <button class="btn-secondary" id="tx-home-btn">Retour à l'accueil</button>
@@ -1547,6 +1553,48 @@
     ],
     cellulite_diffuse:  [ {condition:null, urgence1:10, final:null} ]
   };
+
+  // Paragraphe explicatif affiché sur l'écran de résultat du mode "choix thérapeutique", pour justifier
+  // le geste attendu. Certains diagnostics n'ont qu'un seul texte ; d'autres varient selon l'issue
+  // clinique du cas (l'index de TX_RATIONALE.byUrgence correspond à l'urgence1 attendu du cas tiré,
+  // cf. TX_MULTISTEP_CASES / TX_RECAP_TYPES ci-dessus).
+  var TX_RATIONALE = {
+    saine: "Aucun processus pathologique n'est retrouvé : pas de douleur, tests de vitalité normaux, ligament desmodontal sain. Il n'y a donc ni geste d'urgence ni traitement à réaliser — la dent ne nécessite aucune intervention.",
+    hyperhemie: "La réaction pulpaire est congestive et transitoire, pas une inflammation vraie : le stimulus déclenche une sensation brève qui s'arrête dès son retrait, sans douleur spontanée. Aucun geste d'urgence n'est donc justifié. Il suffit de traiter la cause — la carie superficielle à l'origine de l'irritation — par une obturation définitive, pour permettre à la pulpe de récupérer complètement.",
+    reversible: "L'inflammation pulpaire reste légère et réversible si la cause est traitée à temps : la douleur au froid ou au sucré cesse dès l'arrêt du stimulus, sans douleur spontanée ni nocturne. Le geste d'urgence — curetage carieux avec coiffage pulpaire et restauration temporaire biocompatible — élimine le tissu carieux infecté tout en protégeant la pulpe, pour lui permettre de cicatriser. Le traitement définitif (obturation en résine) peut ensuite être réalisé sur un rendez-vous classique.",
+    irreversible: { byUrgence: {
+      2: "Le saignement à l'ouverture pulpaire est discret et facilement contrôlable : l'inflammation reste localisée à la chambre pulpaire coronaire, sans avoir gagné les canaux radiculaires. On peut donc se limiter à une pulpotomie thérapeutique — l'ablation de la pulpe camérale enflammée, en préservant la pulpe radiculaire saine, coiffée par un matériau biocéramique. C'est un geste conservateur qui constitue à lui seul le traitement définitif, sans étape supplémentaire à programmer.",
+      3: "Le saignement à l'ouverture pulpaire est plus important et difficile à stabiliser, ce qui traduit une inflammation ayant probablement débordé au-delà de la chambre pulpaire vers les entrées canalaires. Une simple pulpotomie thérapeutique ne suffit plus à garantir un tissu résiduel sain : on réalise donc une pulpotomie d'urgence, un geste palliatif pour soulager la douleur et stabiliser le saignement, qui doit impérativement être complété par un traitement endodontique complet à distance, une fois l'épisode aigu passé.",
+      4: "Lorsque le saignement canalaire n'est pas maîtrisable, cela traduit une inflammation profonde de la pulpe, qui a gagné les canaux radiculaires. Il faut alors réaliser un parage canalaire (pulpectomie d'urgence) : l'irrigation à l'hypochlorite de sodium désorganise les tissus vasculaires et provoque une nécrose tissulaire contrôlée, ce qui stoppe le saignement. Ce geste évite une remise sous pression de la dent et la réapparition de signes de pulpite qui imposeraient un second passage en urgence. Un traitement endodontique complet est ensuite programmé pour finaliser la désinfection et l'obturation canalaire."
+    }},
+    syndrome_mixte: "La dent est pluriradiculée avec un état pulpaire mixte : un canal encore vivant et en inflammation aiguë, un autre déjà nécrosé et potentiellement infecté. Comme il est impossible de traiter différemment chaque canal en urgence, on réalise une pulpectomie d'urgence sur l'ensemble des canaux, y compris le canal encore vital, pour lever la douleur et éviter la prolifération bactérienne depuis le canal nécrosé. Le traitement endodontique complet, à programmer, traite ensuite chaque canal selon son propre état (vital ou nécrosé).",
+    necrose: "La dent n'est pas symptomatique : elle ne nécessite pas de prise en charge urgente avec un geste associé. On programme le traitement endodontique complet sur un créneau classique, en expliquant au patient les risques d'une absence de traitement — l'évolution vers une infection périapicale — tout en lui indiquant de revenir consulter en urgence si des symptômes apparaissent.",
+    parodontite: "La pulpe est déjà nécrosée et l'inflammation a gagné le ligament parodontal apical, d'où la douleur à la percussion et la sensation de dent longue. Il n'y a pas encore de collection purulente : le geste d'urgence est donc une pulpectomie, pour éliminer le contenu canalaire infecté et désamorcer l'inflammation apicale, avant de réaliser le traitement endodontique complet.",
+    abces_aigu: { byUrgence: {
+      5: "La collection purulente périapicale débute mais la dent reste conservable (limite infra-gingivale) : le geste d'urgence associe la pulpectomie à un drainage par transfixion apicale, c'est-à-dire le passage volontaire d'un instrument au-delà de l'apex pour créer une voie d'évacuation du pus et lever la pression responsable de la douleur intense. Le traitement endodontique complet peut ensuite être réalisé, si possible dès que la douleur est contrôlée.",
+      7: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : aucun traitement endodontique ne peut restaurer un support suffisant. Le geste d'urgence est alors l'extraction elle-même, qui traite à la fois la cause de la douleur et supprime définitivement la dent — il n'y a donc pas de traitement différé à programmer."
+    }},
+    abces_chronique: { byUrgence: {
+      6: "La collection est déjà drainée en continu par la fistule, ce qui explique la symptomatologie discrète : ce n'est donc pas une urgence vraie. Une pulpectomie peut être réalisée, avec un drainage par la voie fistulaire déjà existante, pour amorcer le traitement sans attendre un rendez-vous supplémentaire. Le traitement endodontique complet est ensuite programmé normalement.",
+      7: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable, même si ce n'est pas une urgence vraie compte tenu de la symptomatologie discrète et du drainage fistulaire déjà en place : l'extraction, à programmer, reste le seul geste utile — aucun traitement endodontique ne serait durable sur une dent non conservable."
+    }},
+    cellulite_sereuse: { byUrgence: {
+      11: "L'infection a diffusé dans les tissus mous mais reste au stade séreux, sans collection purulente constituée — il n'y a donc rien à drainer. Le geste d'urgence associe la pulpectomie, pour supprimer le foyer infectieux pulpaire à l'origine de la diffusion, à une antibiothérapie pour contrôler l'infection des tissus mous. Le traitement endodontique complet est réalisé une fois l'épisode infectieux maîtrisé.",
+      12: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, associée à une antibiothérapie pour contrôler la diffusion infectieuse dans les tissus mous. Le stade restant séreux, sans collection constituée, aucun drainage n'est nécessaire."
+    }},
+    cellulite_suppuree: { byUrgence: {
+      8: "La collection purulente est déjà constituée dans les tissus mous (signe du godet positif) : il faut à la fois traiter la cause — la pulpectomie, qui supprime le foyer infectieux pulpaire — et évacuer le pus par un drainage muqueux, associé à une antibiothérapie. Le traitement endodontique complet est réalisé une fois la collection résorbée.",
+      9: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, mais la collection purulente déjà constituée impose en plus un drainage et une antibiothérapie, pour évacuer le pus et contrôler l'infection des tissus mous."
+    }},
+    cellulite_diffuse: "L'infection progresse rapidement dans plusieurs espaces celluleux, sans tendance à la collection, avec un risque d'atteinte des voies aériennes (fièvre élevée, dysphagie, trismus serré). C'est une urgence vitale qui dépasse le cadre du cabinet dentaire : il faut référer immédiatement le patient en milieu hospitalier, le plus souvent en chirurgie maxillo-faciale, pour un drainage chirurgical large sous couverture antibiotique intraveineuse et une surveillance des voies aériennes."
+  };
+
+  function getTxRationale(diagnosisId, urgence1){
+    var entry = TX_RATIONALE[diagnosisId];
+    if(!entry) return '';
+    if(typeof entry === 'string') return entry;
+    return entry.byUrgence[urgence1] || '';
+  }
 
   var DIAGNOSES = {
     saine: {
@@ -2753,6 +2801,15 @@
       recapEl.appendChild(row('Suite de soin d\'urgence ou traitement final', finalCorrect, FINAL_OPTIONS[txStepAnswers.final], FINAL_OPTIONS[txVariant.final]));
     }
 
+    var rationaleBox = document.getElementById('tx-rationale-box');
+    var rationaleText = getTxRationale(txCaseId, txVariant.urgence1);
+    if(rationaleText){
+      rationaleBox.classList.remove('hidden');
+      document.getElementById('tx-rationale-text').textContent = rationaleText;
+    } else {
+      rationaleBox.classList.add('hidden');
+    }
+
     if(txMode === 'quiz'){
       txQuizResults.push({caseId:txCaseId, correct:allCorrect});
       if(txQuizIndex < txQuizLength - 1){
@@ -2813,6 +2870,15 @@
 
     recapEl.appendChild(txRow('Traitement d\'urgence', urgenceCorrect, URGENCE_OPTIONS[urgenceChoice], URGENCE_OPTIONS[profile.urgence]));
     recapEl.appendChild(txRow('Traitement final', finalCorrect, FINAL_OPTIONS[finalChoice], FINAL_OPTIONS[profile.final]));
+
+    var simpleRationaleBox = document.getElementById('tx-rationale-box');
+    var simpleRationaleText = getTxRationale(txCaseId, profile.urgence);
+    if(simpleRationaleText){
+      simpleRationaleBox.classList.remove('hidden');
+      document.getElementById('tx-rationale-text').textContent = simpleRationaleText;
+    } else {
+      simpleRationaleBox.classList.add('hidden');
+    }
 
     txResultCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
