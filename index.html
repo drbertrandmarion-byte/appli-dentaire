@@ -1956,7 +1956,9 @@
 
     // --- carie ou soin (restauration) ---
     if(cfg.restoration === "infiltrated"){
-      parts.push('<path d="M131,19 Q150,8 169,19 L161,53 Q150,63 139,53 Z" fill="none" stroke="#1a1512" stroke-width="4" opacity="0.6"/>');
+      // Liseré d'infiltration au niveau de la dentine (autour des bords et du fond du soin, pas au
+      // niveau de l'émail) : une reprise carieuse sous restauration progresse dans la dentine.
+      parts.push('<path d="M133,29 L139,54 Q150,64 161,54 L167,29" fill="none" stroke="#1a1512" stroke-width="4" opacity="0.6" stroke-linecap="round"/>');
       parts.push('<path d="M136,22 Q150,14 164,22 L158,50 Q150,58 142,50 Z" fill="#c7cdd6" stroke="#6b6f76" stroke-width="1.5"/>');
     } else if(cfg.restoration === "recent"){
       parts.push('<path d="M136,22 Q150,14 164,22 L158,50 Q150,58 142,50 Z" fill="#c7cdd6" stroke="#6b6f76" stroke-width="1.5"/>');
@@ -2008,7 +2010,8 @@
 
     // grosse carie, ou soin (restauration), dans le sillon occlusal central
     if(cfg.restoration === "infiltrated"){
-      parts.push('<path d="M129,23 Q150,13 171,23 L161,77 Q150,89 139,77 Z" fill="none" stroke="#1a1512" stroke-width="4" opacity="0.6"/>');
+      // Liseré d'infiltration au niveau de la dentine (bords et fond du soin), pas au niveau de l'émail.
+      parts.push('<path d="M131,32 L139,78 Q150,90 161,78 L169,32" fill="none" stroke="#1a1512" stroke-width="4" opacity="0.6" stroke-linecap="round"/>');
       parts.push('<path d="M134,26 Q150,19 166,26 L158,74 Q150,86 142,74 Z" fill="#c7cdd6" stroke="#6b6f76" stroke-width="1.5"/>');
     } else if(cfg.restoration === "recent"){
       parts.push('<path d="M134,26 Q150,19 166,26 L158,74 Q150,86 142,74 Z" fill="#c7cdd6" stroke="#6b6f76" stroke-width="1.5"/>');
