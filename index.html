@@ -134,6 +134,47 @@
     margin-top:16px;
   }
   .mode-buttons .btn-primary{flex:1 1 220px;}
+
+  /* Hub : choix du type d'entraînement */
+  .hub-intro{margin-top:0;}
+  .hub-buttons{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-top:16px;
+  }
+  .hub-card{
+    flex:1 1 220px;
+    background:var(--logo-blue-100);
+    border:2px solid transparent;
+    border-radius:14px;
+    padding:20px 16px;
+    text-align:left;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+    transition:border-color .15s ease, transform .1s ease;
+  }
+  .hub-card:hover{border-color:var(--logo-blue); transform:translateY(-2px);}
+  .hub-icon{font-size:1.8rem;}
+  .hub-title{font-weight:700; font-size:1.05rem; color:var(--logo-navy);}
+  .hub-desc{font-size:0.85rem; color:var(--muted); font-weight:400;}
+  .back-hub-btn{margin-bottom:14px;}
+
+  .tx-select-row{
+    margin-top:14px;
+  }
+  .tx-label{
+    display:block;
+    font-size:0.8rem;
+    font-weight:700;
+    color:var(--logo-blue-dark);
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    margin-bottom:6px;
+  }
+  .tx-select-row select{width:100%;}
+
   button{
     font-family:inherit;
     cursor:pointer;
@@ -353,6 +394,8 @@
     background:var(--logo-blue-100);
   }
   .treatment-box.final h4{color:var(--logo-blue-dark);}
+  .treatment-box.info{background:var(--border);}
+  .treatment-box.info h4{color:var(--muted);}
   .guess-recap{
     font-size:0.9rem;
     color:var(--muted);
@@ -599,34 +642,66 @@
 
   <!-- Intro screen -->
   <div class="card intro-card" id="intro-card">
-    <p>Au lancement d'une session, l'application choisit en secret un cas parmi les 11 diagnostics suivants :</p>
-    <div class="diag-group">
-      <h3 class="diag-group-title">Pathologies pulpaires</h3>
-      <ul>
-        <li>Dent saine</li>
-        <li>Hyperhémie pulpaire</li>
-        <li>Pulpite réversible</li>
-        <li>Pulpite aiguë irréversible</li>
-        <li>Syndrome mixte</li>
-      </ul>
+
+    <div id="hub-choice">
+      <p class="hub-intro">Choisissez un type d'entraînement :</p>
+      <div class="hub-buttons">
+        <button class="hub-card" id="hub-diagnostic-btn" type="button">
+          <span class="hub-icon">🔎</span>
+          <span class="hub-title">Cas cliniques diagnostique</span>
+          <span class="hub-desc">Interrogez un patient virtuel et trouvez le diagnostic parmi les 11 pathologies.</span>
+        </button>
+        <button class="hub-card" id="hub-tx-btn" type="button">
+          <span class="hub-icon">💊</span>
+          <span class="hub-title">Cas cliniques choix thérapeutique</span>
+          <span class="hub-desc">Le diagnostic est donné : à vous de choisir le traitement d'urgence et le traitement final.</span>
+        </button>
+      </div>
     </div>
-    <div class="diag-group">
-      <h3 class="diag-group-title">Pathologies périapicales</h3>
-      <ul>
-        <li>Parodontite apicale aiguë</li>
-        <li>Abcès apical aigu</li>
-        <li>Abcès apical chronique</li>
-        <li>Cellulite séreuse</li>
-        <li>Cellulite suppurée</li>
-        <li>Cellulite diffuse</li>
-      </ul>
+
+    <div id="mode-diagnostic-intro" class="hidden">
+      <button class="btn-secondary back-hub-btn" type="button" data-back>← Changer de mode d'entraînement</button>
+      <p>Au lancement d'une session, l'application choisit en secret un cas parmi les 11 diagnostics suivants :</p>
+      <div class="diag-group">
+        <h3 class="diag-group-title">Pathologies pulpaires</h3>
+        <ul>
+          <li>Dent saine</li>
+          <li>Hyperhémie pulpaire</li>
+          <li>Pulpite réversible</li>
+          <li>Pulpite aiguë irréversible</li>
+          <li>Syndrome mixte</li>
+        </ul>
+      </div>
+      <div class="diag-group">
+        <h3 class="diag-group-title">Pathologies périapicales</h3>
+        <ul>
+          <li>Parodontite apicale aiguë</li>
+          <li>Abcès apical aigu</li>
+          <li>Abcès apical chronique</li>
+          <li>Cellulite séreuse</li>
+          <li>Cellulite suppurée</li>
+          <li>Cellulite diffuse</li>
+        </ul>
+      </div>
+      <p>À vous de choisir, une par une, les questions à poser à ce « patient virtuel » pour identifier le diagnostic, puis de le proposer.</p>
+      <div class="mode-buttons">
+        <button class="btn-primary" id="start-single-btn">Session individuelle (1 cas)</button>
+        <button class="btn-primary" id="start-quiz-btn">Série de 5 cas notée</button>
+        <button class="btn-primary" id="start-quiz10-btn">Série de 10 cas notée</button>
+      </div>
+
+      <div class="pdf-block">
+        <button class="btn-pdf" id="recap-btn" type="button">📄 Téléchargement PDF récapitulatif</button>
+        <div class="pdf-hint">Affiche la fiche complète en bas de page, avec un bouton pour l'imprimer ou l'enregistrer en PDF.</div>
+      </div>
     </div>
-    <p>À vous de choisir, une par une, les questions à poser à ce « patient virtuel » pour identifier le diagnostic, puis de le proposer.</p>
-    <div class="mode-buttons">
-      <button class="btn-primary" id="start-single-btn">Session individuelle (1 cas)</button>
-      <button class="btn-primary" id="start-quiz-btn">Série de 5 cas notée</button>
-      <button class="btn-primary" id="start-quiz10-btn">Série de 10 cas notée</button>
+
+    <div id="mode-tx-intro" class="hidden">
+      <button class="btn-secondary back-hub-btn" type="button" data-back>← Changer de mode d'entraînement</button>
+      <p>Le diagnostic vous est donné directement, avec le dossier radiographique (profondeur du délabrement coronaire et présence ou non d'une image apicale). À vous de choisir le traitement d'urgence et le traitement final adaptés parmi les propositions.</p>
+      <button class="btn-primary" id="start-tx-btn">Commencer un cas</button>
     </div>
+
   </div>
 
   <!-- Session -->
@@ -712,9 +787,56 @@
     </div>
   </div>
 
-  <div class="pdf-block">
-    <button class="btn-pdf" id="recap-btn" type="button">📄 Téléchargement PDF récapitulatif</button>
-    <div class="pdf-hint">Affiche la fiche complète en bas de page, avec un bouton pour l'imprimer ou l'enregistrer en PDF.</div>
+  <!-- Choix thérapeutique : cas -->
+  <div class="card result-card hidden" id="tx-case-card">
+    <span class="badge" id="tx-badge"></span>
+    <h2 id="tx-title"></h2>
+    <div class="def" id="tx-def"></div>
+
+    <div class="diagram-wrap">
+      <div class="diagram-svg" id="tx-diagram"></div>
+      <p class="diagram-caption" id="tx-diagram-caption"></p>
+      <div class="diagram-legend">
+        <span><i class="sw sw-enamel"></i>Émail</span>
+        <span><i class="sw sw-dentin"></i>Dentine</span>
+        <span><i class="sw" id="tx-sw-pulp"></i><span id="tx-pulp-legend-label">Pulpe / nerf</span></span>
+        <span id="tx-pulp-legend-item-2" class="hidden"><i class="sw" id="tx-sw-pulp-2"></i><span id="tx-pulp-legend-label-2"></span></span>
+        <span><i class="sw sw-bone"></i>Os alvéolaire</span>
+        <span><i class="sw sw-gum"></i>Gencive</span>
+        <span><i class="sw" id="tx-sw-swelling"></i><span id="tx-swelling-legend-label">Tissus mous / tuméfaction</span></span>
+      </div>
+    </div>
+
+    <h3>Radiographie</h3>
+    <div class="treatment-box info"><div id="tx-radio-text"></div></div>
+
+    <h3>Signes cliniques évocateurs</h3>
+    <ul id="tx-signs"></ul>
+
+    <h3>Votre choix thérapeutique</h3>
+    <div class="tx-select-row">
+      <label class="tx-label" for="tx-urgence-select">Traitement d'urgence</label>
+      <select id="tx-urgence-select"></select>
+    </div>
+    <div class="tx-select-row">
+      <label class="tx-label" for="tx-final-select">Traitement final</label>
+      <select id="tx-final-select"></select>
+    </div>
+    <div class="result-actions">
+      <button class="btn-primary" id="tx-submit-btn">Valider mon choix</button>
+    </div>
+  </div>
+
+  <!-- Choix thérapeutique : résultat -->
+  <div class="card result-card hidden" id="tx-result-card">
+    <div class="verdict" id="tx-verdict"></div>
+    <span class="badge" id="tx-result-badge"></span>
+    <h2 id="tx-result-title"></h2>
+    <div class="score-recap" id="tx-result-recap"></div>
+    <div class="result-actions">
+      <button class="btn-primary" id="tx-next-btn">Nouveau cas</button>
+      <button class="btn-secondary" id="tx-home-btn">Retour à l'accueil</button>
+    </div>
   </div>
 
   <footer>
@@ -783,6 +905,52 @@
       return {radio: text, traitementFinal: finalTreatment};
     });
   }
+
+  // ---------- Mode "choix thérapeutique" ----------
+  // Échelle de profondeur du délabrement coronaire par rapport à la gencive et à l'os.
+  var RADIO_DEPTH_LABELS = {
+    coronaire:       "Délabrement coronaire, situé au-dessus de la gencive",
+    supra_gingival:  "Délabrement supra-gingival (juste au-dessus du rebord gingival)",
+    juxta_gingival:  "Délabrement juxta-gingival (au niveau du rebord gingival)",
+    infra_gingival:  "Délabrement infra-gingival (sous le rebord gingival, au-dessus de la crête osseuse)",
+    infra_osseux:    "Délabrement infra-osseux (sous la crête osseuse)"
+  };
+
+  var URGENCE_OPTIONS = [
+    "Aucun geste d'urgence nécessaire",
+    "Soin de la carie / reprise de restauration",
+    "Curetage carieux avec coiffage pulpaire (digue recommandée)",
+    "Pulpotomie thérapeutique ou pulpectomie d'urgence (digue obligatoire)",
+    "Meulage de la surocclusion",
+    "Pulpectomie d'urgence pour drainer et lever la pression (digue obligatoire)",
+    "Pulpectomie sous digue (ou extraction) associée à une antibiothérapie",
+    "Pulpectomie sous digue (ou extraction), drainage muqueux et antibiothérapie",
+    "Référence hospitalière en urgence (urgence vitale)"
+  ];
+
+  var FINAL_OPTIONS = [
+    "Aucun traitement nécessaire",
+    "Restauration simple (obturation)",
+    "Traitement endodontique complet",
+    "Traitement endodontique complet ou pulpotomie thérapeutique",
+    "Extraction (dent non conservable)",
+    "Simple surveillance"
+  ];
+
+  // Profil "choix thérapeutique" par diagnostic — première version, à affiner.
+  var TX_PROFILE = {
+    saine:              {depth:"coronaire",      apical:false, urgence:0, final:0},
+    hyperhemie:         {depth:"coronaire",      apical:false, urgence:0, final:1},
+    reversible:         {depth:"supra_gingival", apical:false, urgence:2, final:1},
+    irreversible:       {depth:"supra_gingival", apical:false, urgence:3, final:3},
+    syndrome_mixte:     {depth:"juxta_gingival", apical:false, urgence:3, final:2},
+    parodontite:        {depth:"juxta_gingival", apical:false, urgence:3, final:2},
+    abces_aigu:         {depth:"infra_gingival", apical:true,  urgence:5, final:2},
+    abces_chronique:    {depth:"infra_gingival", apical:true,  urgence:0, final:2},
+    cellulite_sereuse:  {depth:"infra_gingival", apical:true,  urgence:6, final:2},
+    cellulite_suppuree: {depth:"infra_gingival", apical:true,  urgence:7, final:2},
+    cellulite_diffuse:  {depth:"infra_osseux",   apical:true,  urgence:8, final:4}
+  };
 
   var DIAGNOSES = {
     saine: {
@@ -1350,9 +1518,17 @@
   var quizLength = 5;
   var quizResults = [];
   var recapBuilt = false;
+  var txCaseId = null;
 
   // ---------- DOM refs ----------
   var introCard = document.getElementById('intro-card');
+  var hubChoice = document.getElementById('hub-choice');
+  var modeDiagnosticIntro = document.getElementById('mode-diagnostic-intro');
+  var modeTxIntro = document.getElementById('mode-tx-intro');
+  var txCaseCard = document.getElementById('tx-case-card');
+  var txResultCard = document.getElementById('tx-result-card');
+  var txUrgenceSelect = document.getElementById('tx-urgence-select');
+  var txFinalSelect = document.getElementById('tx-final-select');
   var sessionArea = document.getElementById('session-area');
   var stepHistoryEl = document.getElementById('step-history');
   var historyLabel = document.getElementById('history-label');
@@ -1377,6 +1553,45 @@
     opt.textContent = DIAGNOSES[id].title;
     diagnosisSelect.appendChild(opt);
   });
+
+  // populate the two "choix thérapeutique" dropdowns once (static lists)
+  [ [txUrgenceSelect, URGENCE_OPTIONS, '-- Choisir un traitement d\'urgence --'],
+    [txFinalSelect, FINAL_OPTIONS, '-- Choisir un traitement final --'] ].forEach(function(cfg){
+    var sel = cfg[0], options = cfg[1], placeholderText = cfg[2];
+    var ph = document.createElement('option');
+    ph.value = '';
+    ph.textContent = placeholderText;
+    sel.appendChild(ph);
+    options.forEach(function(text, idx){
+      var opt = document.createElement('option');
+      opt.value = idx;
+      opt.textContent = text;
+      sel.appendChild(opt);
+    });
+  });
+
+  document.getElementById('hub-diagnostic-btn').addEventListener('click', function(){ showMode(modeDiagnosticIntro); });
+  document.getElementById('hub-tx-btn').addEventListener('click', function(){ showMode(modeTxIntro); });
+  document.querySelectorAll('[data-back]').forEach(function(btn){
+    btn.addEventListener('click', showHub);
+  });
+  document.getElementById('start-tx-btn').addEventListener('click', startTxCase);
+  document.getElementById('tx-submit-btn').addEventListener('click', submitTxChoice);
+  document.getElementById('tx-next-btn').addEventListener('click', startTxCase);
+  document.getElementById('tx-home-btn').addEventListener('click', goHome);
+
+  function showHub(){
+    hubChoice.classList.remove('hidden');
+    modeDiagnosticIntro.classList.add('hidden');
+    modeTxIntro.classList.add('hidden');
+  }
+
+  function showMode(panel){
+    hubChoice.classList.add('hidden');
+    modeDiagnosticIntro.classList.add('hidden');
+    modeTxIntro.classList.add('hidden');
+    panel.classList.remove('hidden');
+  }
 
   document.getElementById('start-single-btn').addEventListener('click', startSingleSession);
   document.getElementById('start-quiz-btn').addEventListener('click', function(){ startQuizSession(5); });
@@ -1450,7 +1665,10 @@
     quizScoreCard.classList.add('hidden');
     resultCard.classList.add('hidden');
     sessionArea.classList.add('hidden');
+    txCaseCard.classList.add('hidden');
+    txResultCard.classList.add('hidden');
     introCard.classList.remove('hidden');
+    showHub();
     introCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
@@ -1599,6 +1817,102 @@
     }
 
     resultCard.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  // ---------- Mode "choix thérapeutique" ----------
+  function startTxCase(){
+    txCaseId = randomCaseId();
+    var profile = TX_PROFILE[txCaseId];
+    var d = DIAGNOSES[txCaseId];
+    var diagram = DIAGRAMS[txCaseId];
+
+    introCard.classList.add('hidden');
+    txResultCard.classList.add('hidden');
+    txCaseCard.classList.remove('hidden');
+    txCaseCard.className = 'card result-card cat-' + d.category;
+
+    txUrgenceSelect.value = '';
+    txFinalSelect.value = '';
+
+    document.getElementById('tx-badge').className = 'badge cat-' + d.category;
+    document.getElementById('tx-badge').textContent = categoryLabel(d.category);
+    document.getElementById('tx-title').textContent = d.title;
+    document.getElementById('tx-def').textContent = d.def;
+
+    document.getElementById('tx-diagram').innerHTML = diagram.dualRoot ? buildMixedRootSVG(diagram) : buildToothSVG(diagram);
+    document.getElementById('tx-diagram-caption').textContent = diagram.caption;
+    document.getElementById('tx-sw-pulp').style.background = diagram.pulp;
+    document.getElementById('tx-pulp-legend-label').textContent = diagram.pulpLabel;
+    var pulpItem2 = document.getElementById('tx-pulp-legend-item-2');
+    if(diagram.dualRoot){
+      pulpItem2.classList.remove('hidden');
+      document.getElementById('tx-sw-pulp-2').style.background = diagram.pulp2;
+      document.getElementById('tx-pulp-legend-label-2').textContent = diagram.pulpLabel2;
+    } else {
+      pulpItem2.classList.add('hidden');
+    }
+    document.getElementById('tx-sw-swelling').style.background = diagram.swellColor;
+    document.getElementById('tx-swelling-legend-label').textContent = diagram.swellLabel;
+
+    document.getElementById('tx-radio-text').textContent =
+      RADIO_DEPTH_LABELS[profile.depth] + (profile.apical ? ', avec une image radioclaire apicale.' : ', sans image radioclaire apicale.');
+
+    var signsEl = document.getElementById('tx-signs');
+    signsEl.innerHTML = '';
+    d.signs.forEach(function(s){
+      var li = document.createElement('li');
+      li.textContent = s;
+      signsEl.appendChild(li);
+    });
+
+    txCaseCard.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function submitTxChoice(){
+    var urgenceChoice = txUrgenceSelect.value;
+    var finalChoice = txFinalSelect.value;
+    if(urgenceChoice === '' || finalChoice === '') return;
+
+    var profile = TX_PROFILE[txCaseId];
+    var d = DIAGNOSES[txCaseId];
+    var urgenceCorrect = Number(urgenceChoice) === profile.urgence;
+    var finalCorrect = Number(finalChoice) === profile.final;
+    var bothCorrect = urgenceCorrect && finalCorrect;
+
+    txCaseCard.classList.add('hidden');
+    txResultCard.classList.remove('hidden');
+    txResultCard.className = 'card result-card cat-' + d.category;
+
+    var verdict = document.getElementById('tx-verdict');
+    verdict.className = 'verdict ' + (bothCorrect ? 'ok' : 'ko');
+    verdict.innerHTML = bothCorrect
+      ? '<span class="icon">✓</span> Les deux choix sont corrects !'
+      : '<span class="icon">✗</span> Au moins un choix est à revoir.';
+
+    document.getElementById('tx-result-badge').className = 'badge cat-' + d.category;
+    document.getElementById('tx-result-badge').textContent = categoryLabel(d.category);
+    document.getElementById('tx-result-title').textContent = d.title;
+
+    var recapEl = document.getElementById('tx-result-recap');
+    recapEl.innerHTML = '';
+
+    function txRow(label, correct, yourText, correctText){
+      var div = document.createElement('div');
+      div.className = 'score-row';
+      div.innerHTML =
+        '<div class="mark ' + (correct ? 'ok' : 'ko') + '">' + (correct ? '✓' : '✗') + '</div>' +
+        '<div class="details">' +
+          '<div class="real">' + label + '</div>' +
+          '<div class="guess">Votre réponse : ' + yourText + '</div>' +
+          (correct ? '' : '<div class="guess">Réponse attendue : ' + correctText + '</div>') +
+        '</div>';
+      return div;
+    }
+
+    recapEl.appendChild(txRow('Traitement d\'urgence', urgenceCorrect, URGENCE_OPTIONS[urgenceChoice], URGENCE_OPTIONS[profile.urgence]));
+    recapEl.appendChild(txRow('Traitement final', finalCorrect, FINAL_OPTIONS[finalChoice], FINAL_OPTIONS[profile.final]));
+
+    txResultCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
   var SCORE_JOKES_5 = [
