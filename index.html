@@ -38,6 +38,9 @@
     --logo-blue-dark:#2c4bb0;
     --logo-blue-100:#e7ecfb;
     --logo-orange:#e8532e;
+    --tx-accent:#be185d;
+    --tx-accent-dark:#9d174d;
+    --tx-accent-100:#fce7f3;
     --ok:#0f9488;
     --ko:#b91c1c;
     --radius:14px;
@@ -168,7 +171,7 @@
     display:block;
     font-size:0.8rem;
     font-weight:700;
-    color:var(--logo-blue-dark);
+    color:var(--tx-accent-dark);
     text-transform:uppercase;
     letter-spacing:.03em;
     margin-bottom:6px;
@@ -633,6 +636,40 @@
   .recap-card .recap-variant{margin-top:8px; padding-top:6px; border-top:1px dashed var(--border);}
   .recap-card .recap-variant:first-child{margin-top:0; padding-top:0; border-top:none;}
   .recap-card .recap-variant-label{font-size:0.7rem; font-weight:700; color:var(--logo-blue-dark); margin-top:6px;}
+
+  /* Choix thérapeutique : accent rose/magenta, distinct du bleu du mode diagnostic */
+  #hub-tx-btn{background:var(--tx-accent-100);}
+  #hub-tx-btn:hover{border-color:var(--tx-accent);}
+  #hub-tx-btn .hub-title{color:var(--tx-accent-dark);}
+
+  #mode-tx-intro .btn-primary,
+  #tx-case-card .btn-primary,
+  #tx-result-card .btn-primary,
+  #tx-quiz-score-card .btn-primary,
+  #tx-recap-sheet .btn-primary{background:var(--tx-accent);}
+  #mode-tx-intro .btn-primary:hover,
+  #tx-case-card .btn-primary:hover,
+  #tx-result-card .btn-primary:hover,
+  #tx-quiz-score-card .btn-primary:hover,
+  #tx-recap-sheet .btn-primary:hover{background:var(--tx-accent-dark);}
+  #mode-tx-intro .btn-secondary,
+  #tx-result-card .btn-secondary,
+  #tx-quiz-score-card .btn-secondary,
+  #tx-recap-sheet .btn-secondary{color:var(--tx-accent-dark); border-color:var(--tx-accent);}
+  #mode-tx-intro .btn-secondary:hover,
+  #tx-result-card .btn-secondary:hover,
+  #tx-quiz-score-card .btn-secondary:hover,
+  #tx-recap-sheet .btn-secondary:hover{background:var(--tx-accent-100);}
+
+  #tx-simple-choice select:focus,
+  #tx-multistep-choice select:focus{outline-color:var(--tx-accent);}
+
+  #tx-quiz-progress{background:var(--tx-accent-100); color:var(--tx-accent-dark);}
+  #tx-score-number{color:var(--tx-accent-dark);}
+  #tx-score-joke{color:var(--tx-accent-dark);}
+
+  #tx-recap-sheet h1{color:var(--tx-accent-dark);}
+  #tx-recap-grid .recap-variant-label{color:var(--tx-accent-dark);}
 </style>
 </head>
 <body>
@@ -662,7 +699,7 @@
         <button class="hub-card" id="hub-diagnostic-btn" type="button">
           <span class="hub-icon">🔎</span>
           <span class="hub-title">Cas cliniques diagnostique</span>
-          <span class="hub-desc">Interrogez un patient virtuel et trouvez le diagnostic parmi les 11 pathologies.</span>
+          <span class="hub-desc">Interrogez un patient virtuel et trouvez le diagnostic parmi les 12 pathologies.</span>
         </button>
         <button class="hub-card" id="hub-tx-btn" type="button">
           <span class="hub-icon">💊</span>
