@@ -137,6 +137,9 @@
     margin-top:16px;
   }
   .mode-buttons .btn-primary{flex:1 1 220px;}
+  .mode-btn-group{display:flex; flex-direction:column; gap:4px; flex:1 1 220px;}
+  .mode-btn-group .btn-primary{flex:1 1 auto; width:100%;}
+  .score-stats{font-size:0.72rem; color:var(--muted); text-align:center;}
 
   /* Hub : choix du type d'entraînement */
   .hub-intro{margin-top:0;}
@@ -737,8 +740,14 @@
       <p>À vous de choisir, une par une, les questions à poser à ce « patient virtuel » pour identifier le diagnostic, puis de le proposer.</p>
       <div class="mode-buttons">
         <button class="btn-primary" id="start-single-btn">Session individuelle (1 cas)</button>
-        <button class="btn-primary" id="start-quiz-btn">Série de 5 cas notée</button>
-        <button class="btn-primary" id="start-quiz10-btn">Série de 10 cas notée</button>
+        <div class="mode-btn-group">
+          <button class="btn-primary" id="start-quiz-btn">Série de 5 cas notée</button>
+          <div class="score-stats" id="stats-diag5"></div>
+        </div>
+        <div class="mode-btn-group">
+          <button class="btn-primary" id="start-quiz10-btn">Série de 10 cas notée</button>
+          <div class="score-stats" id="stats-diag10"></div>
+        </div>
       </div>
 
       <div class="pdf-block">
@@ -752,8 +761,14 @@
       <p>Le diagnostic vous est donné directement, avec le dossier radiographique (profondeur du délabrement coronaire et présence ou non d'une image apicale). À vous de choisir le traitement d'urgence et le traitement final adaptés parmi les propositions.</p>
       <div class="mode-buttons">
         <button class="btn-primary" id="start-tx-btn">Session individuelle (1 cas)</button>
-        <button class="btn-primary" id="start-tx-quiz-btn">Série de 5 cas notée</button>
-        <button class="btn-primary" id="start-tx-quiz10-btn">Série de 10 cas notée</button>
+        <div class="mode-btn-group">
+          <button class="btn-primary" id="start-tx-quiz-btn">Série de 5 cas notée</button>
+          <div class="score-stats" id="stats-tx5"></div>
+        </div>
+        <div class="mode-btn-group">
+          <button class="btn-primary" id="start-tx-quiz10-btn">Série de 10 cas notée</button>
+          <div class="score-stats" id="stats-tx10"></div>
+        </div>
       </div>
 
       <div class="pdf-block">
@@ -2224,6 +2239,35 @@
     });
   });
 
+  // Meilleur score / dernier score par série, conservés localement sur l'appareil (localStorage).
+  var SCORE_STORAGE_KEY = 'endodiag_scores_v1';
+
+  function loadScores(){
+    try{ return JSON.parse(localStorage.getItem(SCORE_STORAGE_KEY)) || {}; }
+    catch(e){ return {}; }
+  }
+
+  function saveSeriesScore(seriesId, score, total){
+    var data = loadScores();
+    var prevBest = (data[seriesId] && data[seriesId].best) || 0;
+    data[seriesId] = { best: Math.max(score, prevBest), last: score, total: total };
+    try{ localStorage.setItem(SCORE_STORAGE_KEY, JSON.stringify(data)); }catch(e){}
+    renderScoreStats();
+  }
+
+  function renderScoreStats(){
+    var data = loadScores();
+    [['stats-diag5','diag5'], ['stats-diag10','diag10'], ['stats-tx5','tx5'], ['stats-tx10','tx10']].forEach(function(pair){
+      var el = document.getElementById(pair[0]);
+      if(!el) return;
+      var entry = data[pair[1]];
+      el.textContent = entry
+        ? 'Meilleur score : ' + entry.best + ' / ' + entry.total + ' · Dernier score : ' + entry.last + ' / ' + entry.total
+        : 'Pas encore de score enregistré';
+    });
+  }
+  renderScoreStats();
+
   document.getElementById('hub-diagnostic-btn').addEventListener('click', function(){ showMode(modeDiagnosticIntro); });
   document.getElementById('hub-tx-btn').addEventListener('click', function(){ showMode(modeTxIntro); });
   document.querySelectorAll('[data-back]').forEach(function(btn){
@@ -2804,6 +2848,7 @@
     document.getElementById('score-number').textContent = scoreCount + ' / ' + quizLength;
     var jokes = quizLength === 10 ? SCORE_JOKES_10 : SCORE_JOKES_5;
     document.getElementById('score-joke').textContent = jokes[scoreCount] || '';
+    saveSeriesScore(quizLength === 10 ? 'diag10' : 'diag5', scoreCount, quizLength);
 
     var recapEl = document.getElementById('score-recap');
     recapEl.innerHTML = '';
@@ -2855,6 +2900,7 @@
     document.getElementById('tx-score-number').textContent = scoreCount + ' / ' + txQuizLength;
     var jokes = txQuizLength === 10 ? TX_SCORE_JOKES_10 : TX_SCORE_JOKES_5;
     document.getElementById('tx-score-joke').textContent = jokes[scoreCount] || '';
+    saveSeriesScore(txQuizLength === 10 ? 'tx10' : 'tx5', scoreCount, txQuizLength);
 
     var recapEl = document.getElementById('tx-score-recap');
     recapEl.innerHTML = '';
