@@ -1087,6 +1087,312 @@
         finalLine: "Quel traitement choisissez-vous ?",
         final: 7
       }
+    ],
+
+    // Dent saine : contrôle de routine, aucune anomalie retrouvée.
+    saine: [
+      {
+        patientLine: "Nora, 8 ans, vient pour un contrôle de routine sans aucune plainte. L'examen clinique ne retrouve aucune lésion carieuse ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
+        depth: "coronaire", apical: false,
+        finalLine: "Quel traitement choisissez-vous ?",
+        urgence1: 0, final: 0
+      },
+      {
+        patientLine: "Ethan, 25 ans, consulte dans le cadre d'un bilan préorthodontique. Aucune plainte, examen clinique normal ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
+        depth: "coronaire", apical: false,
+        finalLine: "Quel traitement choisissez-vous ?",
+        urgence1: 0, final: 0
+      },
+      {
+        patientLine: "Gabriel, 60 ans, consulte pour un bilan buccodentaire général. La dent examinée est asymptomatique ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
+        depth: "coronaire", apical: false,
+        finalLine: "Quel traitement choisissez-vous ?",
+        urgence1: 0, final: 0
+      },
+      {
+        patientLine: "Alice, 33 ans, s'inquiète pour une ancienne restauration qu'elle trouve suspecte mais indolore. L'examen clinique confirme une restauration étanche ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
+        depth: "coronaire", apical: false,
+        finalLine: "Quel traitement choisissez-vous ?",
+        urgence1: 0, final: 0
+      },
+      {
+        patientLine: "Sarah, 16 ans, vient pour sa visite de contrôle annuelle. Aucune plainte ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
+        depth: "coronaire", apical: false,
+        finalLine: "Quel traitement choisissez-vous ?",
+        urgence1: 0, final: 0
+      }
+    ],
+
+    // Hyperhémie pulpaire : sensibilité très légère et fugace, carie superficielle à distance de la pulpe.
+    hyperhemie: [
+      {
+        patientLine: "Yasmine, 22 ans, décrit un léger picotement au contact du froid, très fugace, et parfois au sucré. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
+        depth: "coronaire", apical: false,
+        finalLine: "Quel traitement choisissez-vous ?",
+        urgence1: 0, final: 1
+      },
+      {
+        patientLine: "Théo, 14 ans, signale une sensibilité très légère et inconstante au froid sur une molaire, qui disparaît immédiatement à l'arrêt du stimulus. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
+        depth: "coronaire", apical: false,
+        finalLine: "Quelle prise en charge choisissez-vous ?",
+        urgence1: 0, final: 1
+      },
+      {
+        patientLine: "Chiara, 40 ans, a remarqué une petite gêne fugace au froid depuis quelques jours, sans autre symptôme. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
+        depth: "coronaire", apical: false,
+        finalLine: "Quel traitement définitif programmez-vous ?",
+        urgence1: 0, final: 1
+      },
+      {
+        patientLine: "Robert, 52 ans, décrit une sensibilité discrète et passagère au contact du froid sur une prémolaire. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
+        depth: "coronaire", apical: false,
+        finalLine: "Quel traitement choisissez-vous ?",
+        urgence1: 0, final: 1
+      },
+      {
+        patientLine: "Sylvie, 29 ans, rapporte une gêne très légère et occasionnelle au sucré, sans douleur spontanée. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
+        depth: "coronaire", apical: false,
+        finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
+        urgence1: 0, final: 1
+      }
+    ],
+
+    // Syndrome mixte : dent pluriradiculée, un canal encore vivant et enflammé, l'autre nécrosé, sans lésion périapicale constituée.
+    syndrome_mixte: [
+      {
+        patientLine: "Frédéric, 45 ans, présente une molaire pluriradiculée très douloureuse. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
+        depth: "juxta_gingival", apical: false,
+        finalLine: "Quel traitement définitif choisissez-vous ?",
+        urgence1: 3, final: 2
+      },
+      {
+        patientLine: "Amandine, 31 ans, consulte pour une douleur spontanée intense et irradiante sur une molaire pluriradiculée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
+        depth: "juxta_gingival", apical: false,
+        finalLine: "Quelle prise en charge choisissez-vous ?",
+        urgence1: 3, final: 2
+      },
+      {
+        patientLine: "Bruno, 58 ans, présente une douleur nocturne et pulsatile par moments sur une molaire pluriradiculée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
+        depth: "juxta_gingival", apical: false,
+        finalLine: "Quel traitement définitif programmez-vous ?",
+        urgence1: 3, final: 2
+      },
+      {
+        patientLine: "Nathalie, 27 ans, consulte pour une douleur vive à la percussion sur une molaire pluriradiculée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
+        depth: "juxta_gingival", apical: false,
+        finalLine: "Quel traitement choisissez-vous ?",
+        urgence1: 3, final: 2
+      },
+      {
+        patientLine: "Olivier, 39 ans, présente une sensation de dent longue et une gêne inconstante au chaud sur une molaire pluriradiculée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
+        depth: "juxta_gingival", apical: false,
+        finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
+        urgence1: 3, final: 2
+      }
+    ],
+
+    // Parodontite apicale aiguë : deux origines possibles — traumatisme occlusal (surveillance) ou nécrose pulpaire débutante (endodontie).
+    parodontite: [
+      {
+        patientLine: "Céline, 34 ans, se plaint d'une dent douloureuse à la mastication depuis la pose d'une restauration un peu haute il y a quelques jours, avec une sensation de dent « plus haute » que les autres. La radiographie ne montre pas de délabrement carieux notable, sans image radioclaire apicale : le ligament parodontal apical est simplement légèrement élargi, en rapport avec le traumatisme occlusal.",
+        depth: "coronaire", apical: false,
+        finalLine: "Quel traitement choisissez-vous ?",
+        urgence1: 4, final: 5
+      },
+      {
+        patientLine: "Pierre, 19 ans, bruxeur connu, se plaint d'une gêne à la mastication et d'une sensation de dent longue sur une dent sans carie ni restauration récente. La radiographie ne montre pas de délabrement carieux notable, sans image radioclaire apicale : le ligament parodontal apical est simplement légèrement élargi, en rapport avec le traumatisme occlusal.",
+        depth: "coronaire", apical: false,
+        finalLine: "Quelle prise en charge choisissez-vous ?",
+        urgence1: 4, final: 5
+      },
+      {
+        patientLine: "Isabelle, 47 ans, consulte pour une douleur récente à la percussion et une sensation de dent longue, sur une dent porteuse d'une carie ancienne et volumineuse. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
+        depth: "juxta_gingival", apical: false,
+        finalLine: "Quel traitement définitif programmez-vous ?",
+        urgence1: 10, final: 2
+      },
+      {
+        patientLine: "Xavier, 55 ans, présente une gêne franche à la mastication et une sensation de dent longue, sur une dent porteuse d'une volumineuse carie proche de la pulpe. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
+        depth: "juxta_gingival", apical: false,
+        finalLine: "Quel traitement choisissez-vous ?",
+        urgence1: 10, final: 2
+      },
+      {
+        patientLine: "Valérie, 24 ans, consulte pour une douleur vive à la percussion et à la palpation apicale, sur une dent porteuse d'une carie profonde évoluant depuis plusieurs mois. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
+        depth: "juxta_gingival", apical: false,
+        finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
+        urgence1: 10, final: 2
+      }
+    ],
+
+    // Abcès apical aigu : le geste d'urgence est constant (drainage), mais le traitement final dépend de la profondeur du délabrement.
+    abces_aigu: [
+      {
+        patientLine: "Denis, 41 ans, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une zone de radioclarté bien délimitée à l'apex de la racine.",
+        depth: "infra_gingival", apical: true,
+        finalLine: "Quel traitement définitif choisissez-vous ?",
+        urgence1: 5, final: 2
+      },
+      {
+        patientLine: "Martine, 36 ans, consulte pour une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une zone de radioclarté bien délimitée à l'apex de la racine.",
+        depth: "infra_gingival", apical: true,
+        finalLine: "Quelle prise en charge choisissez-vous ?",
+        urgence1: 5, final: 2
+      },
+      {
+        patientLine: "Fabien, 50 ans, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une zone de radioclarté bien délimitée à l'apex de la racine.",
+        depth: "infra_gingival", apical: true,
+        finalLine: "Quel traitement définitif programmez-vous ?",
+        urgence1: 5, final: 2
+      },
+      {
+        patientLine: "Aurélie, 62 ans, consulte pour une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse zone de radioclarté à l'apex de la racine.",
+        depth: "infra_osseux", apical: true,
+        finalLine: "Quel traitement choisissez-vous ?",
+        urgence1: 5, final: 4
+      },
+      {
+        patientLine: "Yves, 68 ans, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse zone de radioclarté à l'apex de la racine.",
+        depth: "infra_osseux", apical: true,
+        finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
+        urgence1: 5, final: 4
+      }
+    ],
+
+    // Abcès apical chronique : peu symptomatique, la fistule draine en continu ; le traitement final dépend de la profondeur du délabrement.
+    abces_chronique: [
+      {
+        patientLine: "Corinne, 44 ans, présente une gêne discrète à la mastication, sans douleur franche, avec un petit bouton visible sur la gencive en regard de l'apex. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée et arrondie.",
+        depth: "infra_gingival", apical: true,
+        finalLine: "Quel traitement définitif choisissez-vous ?",
+        urgence1: 0, final: 2
+      },
+      {
+        patientLine: "Damien, 38 ans, consulte pour un léger inconfort à la percussion et un petit bouton visible sur la gencive en regard de l'apex, sans douleur franche. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée et arrondie.",
+        depth: "infra_gingival", apical: true,
+        finalLine: "Quelle prise en charge choisissez-vous ?",
+        urgence1: 0, final: 2
+      },
+      {
+        patientLine: "Élodie, 30 ans, présente une gêne légère à la mastication, avec un petit bouton visible sur la gencive en regard de l'apex, sans douleur franche. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée et arrondie.",
+        depth: "infra_gingival", apical: true,
+        finalLine: "Quel traitement définitif programmez-vous ?",
+        urgence1: 0, final: 2
+      },
+      {
+        patientLine: "Grégoire, 57 ans, consulte pour un petit bouton visible sur la gencive en regard de l'apex, sans douleur franche. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale bien limitée (image de granulome/kyste).",
+        depth: "infra_osseux", apical: true,
+        finalLine: "Quel traitement choisissez-vous ?",
+        urgence1: 0, final: 4
+      },
+      {
+        patientLine: "Karim, 65 ans, présente une gêne légère à la mastication et un petit bouton visible sur la gencive en regard de l'apex. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale bien limitée (image de granulome/kyste).",
+        depth: "infra_osseux", apical: true,
+        finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
+        urgence1: 0, final: 4
+      }
+    ],
+
+    // Cellulite séreuse : tuméfaction débutante sans collection ; le traitement final dépend de la profondeur du délabrement.
+    cellulite_sereuse: [
+      {
+        patientLine: "Julien, 26 ans, présente une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, une sensation de dent longue, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
+        depth: "infra_gingival", apical: true,
+        finalLine: "Quel traitement définitif programmez-vous, une fois l'épisode infectieux contrôlé ?",
+        urgence1: 6, final: 2
+      },
+      {
+        patientLine: "Nadia, 33 ans, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
+        depth: "infra_gingival", apical: true,
+        finalLine: "Quelle prise en charge choisissez-vous ?",
+        urgence1: 6, final: 2
+      },
+      {
+        patientLine: "Marc, 48 ans, présente une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
+        depth: "infra_gingival", apical: true,
+        finalLine: "Quel traitement choisissez-vous, une fois l'épisode infectieux contrôlé ?",
+        urgence1: 6, final: 2
+      },
+      {
+        patientLine: "Inès, 55 ans, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
+        depth: "infra_osseux", apical: true,
+        finalLine: "Quel traitement programmez-vous, une fois l'épisode infectieux contrôlé ?",
+        urgence1: 6, final: 4
+      },
+      {
+        patientLine: "Manon, 62 ans, présente une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
+        depth: "infra_osseux", apical: true,
+        finalLine: "Quelle stratégie thérapeutique choisissez-vous, une fois l'épisode infectieux contrôlé ?",
+        urgence1: 6, final: 4
+      }
+    ],
+
+    // Cellulite suppurée (collectée) : tuméfaction avec collection fluctuante ; le traitement final dépend de la profondeur du délabrement.
+    cellulite_suppuree: [
+      {
+        patientLine: "Victor, 29 ans, présente une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
+        depth: "infra_gingival", apical: true,
+        finalLine: "Quel traitement définitif programmez-vous, une fois la collection résorbée ?",
+        urgence1: 7, final: 2
+      },
+      {
+        patientLine: "Laura, 41 ans, consulte pour une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
+        depth: "infra_gingival", apical: true,
+        finalLine: "Quelle prise en charge choisissez-vous ?",
+        urgence1: 7, final: 2
+      },
+      {
+        patientLine: "Hakim, 53 ans, présente une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
+        depth: "infra_gingival", apical: true,
+        finalLine: "Quel traitement choisissez-vous, une fois la collection résorbée ?",
+        urgence1: 7, final: 2
+      },
+      {
+        patientLine: "Paul, 59 ans, consulte pour une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de la collection purulente des tissus mous.",
+        depth: "infra_osseux", apical: true,
+        finalLine: "Quel traitement programmez-vous, une fois la collection résorbée ?",
+        urgence1: 7, final: 4
+      },
+      {
+        patientLine: "Zoé, 22 ans, présente une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de la collection purulente des tissus mous.",
+        depth: "infra_osseux", apical: true,
+        finalLine: "Quelle stratégie thérapeutique choisissez-vous, une fois la collection résorbée ?",
+        urgence1: 7, final: 4
+      }
+    ],
+
+    // Cellulite diffuse : urgence vitale, toujours en délabrement infra-osseux ; référence hospitalière puis extraction à distance.
+    cellulite_diffuse: [
+      {
+        patientLine: "Adam, 45 ans, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre à 39°C, une dysphagie, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        depth: "infra_osseux", apical: true,
+        finalLine: "Une fois l'épisode infectieux sévère maîtrisé en milieu hospitalier, quel traitement programmez-vous sur la dent causale ?",
+        urgence1: 8, final: 4
+      },
+      {
+        patientLine: "Claire, 52 ans, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        depth: "infra_osseux", apical: true,
+        finalLine: "Une fois l'épisode infectieux sévère maîtrisé, quel traitement programmez-vous sur la dent causale ?",
+        urgence1: 8, final: 4
+      },
+      {
+        patientLine: "Antoine, 38 ans, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        depth: "infra_osseux", apical: true,
+        finalLine: "Quel geste choisissez-vous en premier lieu ?",
+        urgence1: 8, final: 4
+      },
+      {
+        patientLine: "Nathan, 60 ans, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        depth: "infra_osseux", apical: true,
+        finalLine: "Une fois l'épisode infectieux sévère maîtrisé en milieu hospitalier, quel traitement programmez-vous sur la dent causale ?",
+        urgence1: 8, final: 4
+      },
+      {
+        patientLine: "Julie, 33 ans, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        depth: "infra_osseux", apical: true,
+        finalLine: "Quel traitement programmez-vous sur la dent causale, une fois l'épisode infectieux sévère maîtrisé ?",
+        urgence1: 8, final: 4
+      }
     ]
   };
 
@@ -1998,8 +2304,10 @@
     document.getElementById('tx-sw-swelling').style.background = diagram.swellColor;
     document.getElementById('tx-swelling-legend-label').textContent = diagram.swellLabel;
 
+    var radioDepth = (txVariant && txVariant.depth) ? txVariant.depth : profile.depth;
+    var radioApical = (txVariant && txVariant.apical !== undefined) ? txVariant.apical : profile.apical;
     document.getElementById('tx-radio-text').textContent =
-      RADIO_DEPTH_LABELS[profile.depth] + (profile.apical ? ', avec une image radioclaire apicale.' : ', sans image radioclaire apicale.');
+      RADIO_DEPTH_LABELS[radioDepth] + (radioApical ? ', avec une image radioclaire apicale.' : ', sans image radioclaire apicale.');
 
     var signsEl = document.getElementById('tx-signs');
     signsEl.innerHTML = '';
@@ -2051,7 +2359,9 @@
 
     if(txStepAnswers.urgence1 !== undefined){
       html += txHistoryRowHtml('Traitement d\'urgence', txStepAnswers.urgence1 === txVariant.urgence1, URGENCE_OPTIONS[txStepAnswers.urgence1]);
-      html += '<div class="treatment-box info"><h4>Constat opératoire</h4><div>' + txVariant.outcomeText + '</div></div>';
+      if(txVariant.outcomeText){
+        html += '<div class="treatment-box info"><h4>Constat opératoire</h4><div>' + txVariant.outcomeText + '</div></div>';
+      }
     }
 
     if(txStepAnswers.urgence2 !== undefined){
