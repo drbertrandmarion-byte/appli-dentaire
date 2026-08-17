@@ -1108,6 +1108,9 @@
 
   // ---------- Transitions en fondu (remplace le simple show/hide instantané) ----------
   var FADE_MS = 350;
+  // Pour refreshFade() : le contenu disparaît d'un coup avant de réapparaître (pas de vrai fondu
+  // croisé), donc plus court que FADE_MS pour limiter le temps où rien n'est affiché.
+  var REFRESH_FADE_MS = 120;
 
   // Tant qu'un fondu est en cours, l'élément n'est pas encore display:none : s'il s'enchaîne trop
   // de changements d'écran plus vite que la durée du fondu, un ancien panneau resterait affiché en
@@ -1189,13 +1192,13 @@
     el.style.opacity = '0';
     updateFn();
     void el.offsetWidth; // force le recalcul de style pour que l'opacité 0 soit bien prise en compte avant de lancer la transition
-    el.style.transition = 'opacity ' + FADE_MS + 'ms ease';
+    el.style.transition = 'opacity ' + REFRESH_FADE_MS + 'ms ease';
     el.style.opacity = '1';
     el.__fadeTimer = setTimeout(function(){
       el.style.opacity = '';
       el.style.transition = '';
       el.__fadeTimer = null;
-    }, FADE_MS);
+    }, REFRESH_FADE_MS);
   }
 
   // ---------- Les 15 questions que l'étudiant peut choisir de poser ----------
