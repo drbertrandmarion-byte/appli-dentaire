@@ -1105,6 +1105,80 @@
     schedule(hideSplash, 3400); // filet de sécurité si le morph échoue pour une raison quelconque
   })();
 
+  // ---------- Transitions en fondu (remplace le simple show/hide instantané) ----------
+  var FADE_MS = 150;
+
+  // Tant qu'un fondu est en cours, l'élément n'est pas encore display:none : s'il s'enchaîne trop
+  // de changements d'écran plus vite que la durée du fondu, un ancien panneau resterait affiché en
+  // même temps qu'un nouveau (doublant la mise en page). pendingFadeEls garde la liste de ce qui est
+  // en cours ; flushPendingFades() force tout à son état final avant qu'une nouvelle navigation ne
+  // démarre, pour ne jamais laisser deux écrans se superposer dans la mise en page.
+  var pendingFadeEls = [];
+
+  function settleFade(el){
+    if(el.__fadeTimer){ clearTimeout(el.__fadeTimer); el.__fadeTimer = null; }
+    if(el.__fadeTarget === 'hidden') el.classList.add('hidden');
+    el.style.opacity = '';
+    el.style.transition = '';
+    el.__fadeTarget = null;
+  }
+
+  function flushPendingFades(){
+    pendingFadeEls.forEach(settleFade);
+    pendingFadeEls.length = 0;
+  }
+
+  function trackFade(el){
+    if(pendingFadeEls.indexOf(el) === -1) pendingFadeEls.push(el);
+  }
+
+  function untrackFade(el){
+    var idx = pendingFadeEls.indexOf(el);
+    if(idx !== -1) pendingFadeEls.splice(idx, 1);
+  }
+
+  // L'état classList('hidden') ne se met à jour qu'à la fin du fondu (via setTimeout), donc un
+  // hideEl/showEl déclenché sur un élément déjà en cours de fondu ne peut pas s'y fier pour savoir
+  // ce qui est réellement demandé : on garde donc l'intention cible (__fadeTarget) à part, et on
+  // annule toujours le minuteur en attente avant d'en reposer un, pour ne jamais perdre le dernier
+  // état voulu même en cas d'appels rapprochés.
+  function hideEl(el){
+    if(!el || (el.__fadeTarget || (el.classList.contains('hidden') ? 'hidden' : 'visible')) === 'hidden') return;
+    if(el.__fadeTimer) clearTimeout(el.__fadeTimer);
+    trackFade(el);
+    el.__fadeTarget = 'hidden';
+    el.style.transition = 'opacity ' + FADE_MS + 'ms ease';
+    el.style.opacity = '0';
+    el.__fadeTimer = setTimeout(function(){
+      el.classList.add('hidden');
+      el.style.opacity = '';
+      el.style.transition = '';
+      el.__fadeTimer = null;
+      el.__fadeTarget = null;
+      untrackFade(el);
+    }, FADE_MS);
+  }
+
+  function showEl(el){
+    if(!el || (el.__fadeTarget || (el.classList.contains('hidden') ? 'hidden' : 'visible')) === 'visible') return;
+    if(el.__fadeTimer) clearTimeout(el.__fadeTimer);
+    trackFade(el);
+    el.__fadeTarget = 'visible';
+    el.style.transition = 'none';
+    el.style.opacity = '0';
+    el.classList.remove('hidden');
+    void el.offsetWidth; // force le recalcul de style pour que l'opacité 0 soit bien prise en compte avant de lancer la transition
+    el.style.transition = 'opacity ' + FADE_MS + 'ms ease';
+    el.style.opacity = '1';
+    el.__fadeTimer = setTimeout(function(){
+      el.style.opacity = '';
+      el.style.transition = '';
+      el.__fadeTimer = null;
+      el.__fadeTarget = null;
+      untrackFade(el);
+    }, FADE_MS);
+  }
+
   // ---------- Les 15 questions que l'étudiant peut choisir de poser ----------
   var QUESTIONS = [
     {id:"froid",            text:"Réponse au test au froid ?"},
@@ -2493,16 +2567,18 @@
   document.getElementById('tx-quiz-home-btn').addEventListener('click', goHome);
 
   function showHub(){
-    hubChoice.classList.remove('hidden');
-    modeDiagnosticIntro.classList.add('hidden');
-    modeTxIntro.classList.add('hidden');
+    flushPendingFades();
+    showEl(hubChoice);
+    hideEl(modeDiagnosticIntro);
+    hideEl(modeTxIntro);
   }
 
   function showMode(panel){
-    hubChoice.classList.add('hidden');
-    modeDiagnosticIntro.classList.add('hidden');
-    modeTxIntro.classList.add('hidden');
-    panel.classList.remove('hidden');
+    flushPendingFades();
+    hideEl(hubChoice);
+    hideEl(modeDiagnosticIntro);
+    hideEl(modeTxIntro);
+    showEl(panel);
   }
 
   document.getElementById('start-single-btn').addEventListener('click', startSingleSession);
@@ -2530,26 +2606,25 @@
   }
 
   function beginCase(id){
+    flushPendingFades();
     caseId = id;
     askedIds = [];
 
     var variants = DIAGNOSES[id].radioVariants;
     currentVariant = variants ? variants[Math.floor(Math.random() * variants.length)] : null;
 
-    introCard.classList.add('hidden');
-    resultCard.classList.add('hidden');
-    quizScoreCard.classList.add('hidden');
-    sessionArea.classList.remove('hidden');
-
+    hideEl(introCard);
+    hideEl(resultCard);
+    hideEl(quizScoreCard);
+    showEl(sessionArea);
     diagnosisSelect.value = '';
     stepHistoryEl.innerHTML = '';
-    historyLabel.classList.add('hidden');
-
+    hideEl(historyLabel);
     if(mode === 'quiz'){
-      quizProgressEl.classList.remove('hidden');
+      showEl(quizProgressEl);
       quizProgressEl.textContent = 'Cas ' + (quizIndex + 1) + ' / ' + quizLength;
     } else {
-      quizProgressEl.classList.add('hidden');
+      hideEl(quizProgressEl);
     }
 
     renderCounter();
@@ -2578,13 +2653,13 @@
   }
 
   function goHome(){
-    quizScoreCard.classList.add('hidden');
-    resultCard.classList.add('hidden');
-    sessionArea.classList.add('hidden');
-    txCaseCard.classList.add('hidden');
-    txResultCard.classList.add('hidden');
-    txQuizScoreCard.classList.add('hidden');
-    introCard.classList.remove('hidden');
+    hideEl(quizScoreCard);
+    hideEl(resultCard);
+    hideEl(sessionArea);
+    hideEl(txCaseCard);
+    hideEl(txResultCard);
+    hideEl(txQuizScoreCard);
+    showEl(introCard);
     showHub();
     introCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
@@ -2598,13 +2673,12 @@
 
     questionSelect.innerHTML = '';
     if(remaining.length === 0){
-      askCard.querySelector('.ask-row').classList.add('hidden');
-      allAskedMsg.classList.remove('hidden');
+      hideEl(askCard.querySelector('.ask-row'));
+      showEl(allAskedMsg);
       return;
     }
-    askCard.querySelector('.ask-row').classList.remove('hidden');
-    allAskedMsg.classList.add('hidden');
-
+    showEl(askCard.querySelector('.ask-row'));
+    hideEl(allAskedMsg);
     var placeholder = document.createElement('option');
     placeholder.value = '';
     placeholder.textContent = '-- Choisir une question --';
@@ -2648,7 +2722,7 @@
 
     askedIds.push(qid);
 
-    historyLabel.classList.remove('hidden');
+    showEl(historyLabel);
     var div = document.createElement('div');
     div.className = 'step-done';
     div.innerHTML =
@@ -2667,11 +2741,12 @@
     var guessId = diagnosisSelect.value;
     if(!guessId) return;
 
+    flushPendingFades();
     var correct = guessId === caseId;
     var actual = DIAGNOSES[caseId];
 
-    sessionArea.classList.add('hidden');
-    resultCard.classList.remove('hidden');
+    hideEl(sessionArea);
+    showEl(resultCard);
     resultCard.className = 'card result-card cat-' + actual.category;
 
     var verdict = document.getElementById('verdict');
@@ -2701,19 +2776,19 @@
     document.getElementById('pulp-legend-label').textContent = diagram.pulpLabel;
     var pulpItem2 = document.getElementById('pulp-legend-item-2');
     if(diagram.dualRoot){
-      pulpItem2.classList.remove('hidden');
+      showEl(pulpItem2);
       document.getElementById('sw-pulp-2').style.background = diagram.pulp2;
       document.getElementById('pulp-legend-label-2').textContent = diagram.pulpLabel2;
     } else {
-      pulpItem2.classList.add('hidden');
+      hideEl(pulpItem2);
     }
     var restorationItem = document.getElementById('restoration-legend-item');
     if(restoration){
-      restorationItem.classList.remove('hidden');
+      showEl(restorationItem);
       document.getElementById('sw-restoration').style.background = '#c7cdd6';
       document.getElementById('restoration-legend-label').textContent = restoration === 'infiltrated' ? 'Soin infiltré (liseré noir)' : 'Soin récent';
     } else {
-      restorationItem.classList.add('hidden');
+      hideEl(restorationItem);
     }
     document.getElementById('sw-swelling').style.background = diagram.swellColor;
     document.getElementById('swelling-legend-label').textContent = diagram.swellLabel;
@@ -2748,23 +2823,24 @@
 
   // ---------- Mode "choix thérapeutique" ----------
   function beginTxCase(id){
+    flushPendingFades();
     txCaseId = id;
     lastTxCaseId = id;
     var profile = TX_PROFILE[txCaseId];
     var d = DIAGNOSES[txCaseId];
     var diagram = DIAGRAMS[txCaseId];
 
-    introCard.classList.add('hidden');
-    txResultCard.classList.add('hidden');
-    txQuizScoreCard.classList.add('hidden');
-    txCaseCard.classList.remove('hidden');
+    hideEl(introCard);
+    hideEl(txResultCard);
+    hideEl(txQuizScoreCard);
+    showEl(txCaseCard);
     txCaseCard.className = 'card result-card cat-' + d.category;
 
     if(txMode === 'quiz'){
-      txQuizProgressEl.classList.remove('hidden');
+      showEl(txQuizProgressEl);
       txQuizProgressEl.textContent = 'Cas ' + (txQuizIndex + 1) + ' / ' + txQuizLength;
     } else {
-      txQuizProgressEl.classList.add('hidden');
+      hideEl(txQuizProgressEl);
     }
 
     txUrgenceSelect.value = '';
@@ -2786,19 +2862,19 @@
     document.getElementById('tx-pulp-legend-label').textContent = diagram.pulpLabel;
     var pulpItem2 = document.getElementById('tx-pulp-legend-item-2');
     if(diagram.dualRoot){
-      pulpItem2.classList.remove('hidden');
+      showEl(pulpItem2);
       document.getElementById('tx-sw-pulp-2').style.background = diagram.pulp2;
       document.getElementById('tx-pulp-legend-label-2').textContent = diagram.pulpLabel2;
     } else {
-      pulpItem2.classList.add('hidden');
+      hideEl(pulpItem2);
     }
     var txRestorationItem = document.getElementById('tx-restoration-legend-item');
     if(txRestoration){
-      txRestorationItem.classList.remove('hidden');
+      showEl(txRestorationItem);
       document.getElementById('tx-sw-restoration').style.background = '#c7cdd6';
       document.getElementById('tx-restoration-legend-label').textContent = txRestoration === 'infiltrated' ? 'Soin infiltré (liseré noir)' : 'Soin récent';
     } else {
-      txRestorationItem.classList.add('hidden');
+      hideEl(txRestorationItem);
     }
     document.getElementById('tx-sw-swelling').style.background = diagram.swellColor;
     document.getElementById('tx-swelling-legend-label').textContent = diagram.swellLabel;
@@ -2823,15 +2899,15 @@
     var simpleChoiceEl = document.getElementById('tx-simple-choice');
     var multistepChoiceEl = document.getElementById('tx-multistep-choice');
     if(txVariant){
-      simpleChoiceEl.classList.add('hidden');
-      multistepChoiceEl.classList.remove('hidden');
+      hideEl(simpleChoiceEl);
+      showEl(multistepChoiceEl);
       txStepAnswers = {};
       txStage = 'urgence1';
       renderTxMultistep();
     } else {
-      multistepChoiceEl.classList.add('hidden');
+      hideEl(multistepChoiceEl);
       multistepChoiceEl.innerHTML = '';
-      simpleChoiceEl.classList.remove('hidden');
+      showEl(simpleChoiceEl);
     }
 
     txCaseCard.scrollIntoView({behavior:'smooth', block:'start'});
@@ -2924,14 +3000,15 @@
   }
 
   function showTxMultistepResult(){
+    flushPendingFades();
     var d = DIAGNOSES[txCaseId];
     var urgenceCorrect = txStepAnswers.urgence1 === txVariant.urgence1;
     var hasFinal = txVariant.final !== undefined;
     var finalCorrect = hasFinal ? (txStepAnswers.final === txVariant.final) : true;
     var allCorrect = urgenceCorrect && finalCorrect;
 
-    txCaseCard.classList.add('hidden');
-    txResultCard.classList.remove('hidden');
+    hideEl(txCaseCard);
+    showEl(txResultCard);
     txResultCard.className = 'card result-card cat-' + d.category;
 
     var verdict = document.getElementById('tx-verdict');
@@ -2968,10 +3045,10 @@
     var rationaleBox = document.getElementById('tx-rationale-box');
     var rationaleText = getTxRationale(txCaseId, txVariant.urgence1);
     if(rationaleText){
-      rationaleBox.classList.remove('hidden');
+      showEl(rationaleBox);
       document.getElementById('tx-rationale-text').textContent = rationaleText;
     } else {
-      rationaleBox.classList.add('hidden');
+      hideEl(rationaleBox);
     }
 
     if(txMode === 'quiz'){
@@ -2996,14 +3073,15 @@
     var finalChoice = txFinalSelect.value;
     if(urgenceChoice === '' || finalChoice === '') return;
 
+    flushPendingFades();
     var profile = TX_PROFILE[txCaseId];
     var d = DIAGNOSES[txCaseId];
     var urgenceCorrect = Number(urgenceChoice) === profile.urgence;
     var finalCorrect = Number(finalChoice) === profile.final;
     var bothCorrect = urgenceCorrect && finalCorrect;
 
-    txCaseCard.classList.add('hidden');
-    txResultCard.classList.remove('hidden');
+    hideEl(txCaseCard);
+    showEl(txResultCard);
     txResultCard.className = 'card result-card cat-' + d.category;
 
     var verdict = document.getElementById('tx-verdict');
@@ -3038,10 +3116,10 @@
     var simpleRationaleBox = document.getElementById('tx-rationale-box');
     var simpleRationaleText = getTxRationale(txCaseId, profile.urgence);
     if(simpleRationaleText){
-      simpleRationaleBox.classList.remove('hidden');
+      showEl(simpleRationaleBox);
       document.getElementById('tx-rationale-text').textContent = simpleRationaleText;
     } else {
-      simpleRationaleBox.classList.add('hidden');
+      hideEl(simpleRationaleBox);
     }
 
     txResultCard.scrollIntoView({behavior:'smooth', block:'start'});
@@ -3070,10 +3148,10 @@
   ];
 
   function showQuizScore(){
-    resultCard.classList.add('hidden');
-    sessionArea.classList.add('hidden');
-    quizScoreCard.classList.remove('hidden');
-
+    flushPendingFades();
+    hideEl(resultCard);
+    hideEl(sessionArea);
+    showEl(quizScoreCard);
     var scoreCount = quizResults.filter(function(r){ return r.correct; }).length;
     document.getElementById('score-number').textContent = scoreCount + ' / ' + quizLength;
     var jokes = quizLength === 10 ? SCORE_JOKES_10 : SCORE_JOKES_5;
@@ -3122,10 +3200,10 @@
   ];
 
   function showTxQuizScore(){
-    txResultCard.classList.add('hidden');
-    txCaseCard.classList.add('hidden');
-    txQuizScoreCard.classList.remove('hidden');
-
+    flushPendingFades();
+    hideEl(txResultCard);
+    hideEl(txCaseCard);
+    showEl(txQuizScoreCard);
     var scoreCount = txQuizResults.filter(function(r){ return r.correct; }).length;
     document.getElementById('tx-score-number').textContent = scoreCount + ' / ' + txQuizLength;
     var jokes = txQuizLength === 10 ? TX_SCORE_JOKES_10 : TX_SCORE_JOKES_5;
@@ -3222,12 +3300,12 @@
   function showRecapSheet(){
     buildRecapSheet();
     var sheet = document.getElementById('recap-sheet');
-    sheet.classList.remove('hidden');
+    showEl(sheet);
     sheet.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
   function hideRecapSheet(){
-    document.getElementById('recap-sheet').classList.add('hidden');
+    hideEl(document.getElementById('recap-sheet'));
   }
 
   function printRecap(){
@@ -3267,12 +3345,12 @@
   function showTxRecapSheet(){
     buildTxRecapSheet();
     var sheet = document.getElementById('tx-recap-sheet');
-    sheet.classList.remove('hidden');
+    showEl(sheet);
     sheet.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
   function hideTxRecapSheet(){
-    document.getElementById('tx-recap-sheet').classList.add('hidden');
+    hideEl(document.getElementById('tx-recap-sheet'));
   }
 
   function printTxRecap(){
