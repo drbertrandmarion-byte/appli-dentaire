@@ -1180,6 +1180,24 @@
     }, FADE_MS);
   }
 
+  // Pour un élément déjà visible dont on remplace juste le contenu (ex. le menu déroulant de l'étape
+  // suivante d'un cas à plusieurs étapes) : le contenu change instantanément (invisible le temps d'un
+  // repaint), puis apparaît en fondu, au lieu de sauter à l'écran d'un coup.
+  function refreshFade(el, updateFn){
+    if(el.__fadeTimer) clearTimeout(el.__fadeTimer);
+    el.style.transition = 'none';
+    el.style.opacity = '0';
+    updateFn();
+    void el.offsetWidth; // force le recalcul de style pour que l'opacité 0 soit bien prise en compte avant de lancer la transition
+    el.style.transition = 'opacity ' + FADE_MS + 'ms ease';
+    el.style.opacity = '1';
+    el.__fadeTimer = setTimeout(function(){
+      el.style.opacity = '';
+      el.style.transition = '';
+      el.__fadeTimer = null;
+    }, FADE_MS);
+  }
+
   // ---------- Les 15 questions que l'étudiant peut choisir de poser ----------
   var QUESTIONS = [
     {id:"froid",            text:"Réponse au test au froid ?"},
@@ -2990,7 +3008,7 @@
       txStepAnswers.urgence1 = choice;
       if(txVariant.final !== undefined){
         txStage = 'final';
-        renderTxMultistep();
+        refreshFade(document.getElementById('tx-multistep-choice'), renderTxMultistep);
       } else {
         showTxMultistepResult();
       }
