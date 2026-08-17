@@ -102,6 +102,8 @@
     display:flex; align-items:center; justify-content:center;
     font-size:clamp(2.2rem, 9vw, 3.4rem);
     font-weight:800; margin:0; letter-spacing:-0.01em;
+    transform-origin:center center;
+    transition:transform .7s cubic-bezier(.4,0,.2,1);
   }
   #splash-title .splash-end, #splash-title .splash-diag{
     opacity:0; transform:translateY(10px);
@@ -1028,13 +1030,40 @@
     if(!splash) return;
 
     var hidden = false;
+    var timers = [];
+    function schedule(fn, delay){ timers.push(setTimeout(fn, delay)); }
+
     function hideSplash(){
       if(hidden) return;
       hidden = true;
+      timers.forEach(clearTimeout);
       splash.classList.add('splash-hide');
       setTimeout(function(){
         if(splash.parentNode) splash.parentNode.removeChild(splash);
       }, 550);
+    }
+
+    // Au lieu de simplement s'effacer, le logo du splash glisse et rétrécit jusqu'à se superposer
+    // exactement au logo réel de l'en-tête ; le fondu final révèle alors ce même logo déjà en place.
+    function morphToHeader(){
+      if(hidden) return;
+      var splashTitle = document.getElementById('splash-title');
+      var splashTagline = document.getElementById('splash-tagline');
+      var splashHint = document.getElementById('splash-hint');
+      var realTitle = document.querySelector('header.app-header h1');
+      if(!realTitle){ hideSplash(); return; }
+
+      var src = splashTitle.getBoundingClientRect();
+      var dst = realTitle.getBoundingClientRect();
+      var scale = dst.height / src.height;
+      var dx = (dst.left + dst.width / 2) - (src.left + src.width / 2);
+      var dy = (dst.top + dst.height / 2) - (src.top + src.height / 2);
+
+      splashTagline.style.opacity = '0';
+      splashHint.style.opacity = '0';
+      splashTitle.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + scale + ')';
+
+      schedule(hideSplash, 700);
     }
 
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1053,10 +1082,11 @@
       requestAnimationFrame(function(){
         requestAnimationFrame(function(){
           document.getElementById('splash-circle').style.strokeDashoffset = '0';
-          setTimeout(function(){ document.getElementById('splash-tooth').style.strokeDashoffset = '0'; }, 350);
-          setTimeout(function(){ document.getElementById('splash-canal').style.strokeDashoffset = '0'; }, 750);
-          setTimeout(function(){ splash.classList.add('splash-text-ready'); }, 950);
-          setTimeout(function(){ splash.classList.add('splash-tagline-ready'); }, 1300);
+          schedule(function(){ document.getElementById('splash-tooth').style.strokeDashoffset = '0'; }, 350);
+          schedule(function(){ document.getElementById('splash-canal').style.strokeDashoffset = '0'; }, 750);
+          schedule(function(){ splash.classList.add('splash-text-ready'); }, 950);
+          schedule(function(){ splash.classList.add('splash-tagline-ready'); }, 1300);
+          schedule(morphToHeader, 2100);
         });
       });
     }catch(e){
@@ -1069,7 +1099,7 @@
       hideSplash();
       document.removeEventListener('keydown', onKey);
     });
-    setTimeout(hideSplash, 2800);
+    schedule(hideSplash, 3400); // filet de sécurité si le morph échoue pour une raison quelconque
   })();
 
   // ---------- Les 15 questions que l'étudiant peut choisir de poser ----------
