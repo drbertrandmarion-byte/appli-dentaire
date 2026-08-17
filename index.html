@@ -1992,21 +1992,51 @@
   // un diagnostic déjà tombé dans la même série : chaque répétition supplémentaire
   // divise son poids de tirage, les autres diagnostics restent prioritaires
   // sans que la répétition ne devienne strictement impossible.
+  function pickWeighted(ids, weights){
+    var total = weights.reduce(function(a, b){ return a + b; }, 0);
+    var r = Math.random() * total;
+    for(var j = 0; j < ids.length; j++){
+      r -= weights[j];
+      if(r <= 0) return ids[j];
+    }
+    return ids[ids.length - 1];
+  }
+
   function generateSeriesCases(n){
     var counts = {};
     DIAGNOSIS_ORDER.forEach(function(id){ counts[id] = 0; });
     var result = [];
     for(var i = 0; i < n; i++){
       var weights = DIAGNOSIS_ORDER.map(function(id){ return 1 / (1 + counts[id]); });
-      var total = weights.reduce(function(a, b){ return a + b; }, 0);
-      var r = Math.random() * total;
-      var chosen = DIAGNOSIS_ORDER[DIAGNOSIS_ORDER.length - 1];
-      for(var j = 0; j < DIAGNOSIS_ORDER.length; j++){
-        r -= weights[j];
-        if(r <= 0){ chosen = DIAGNOSIS_ORDER[j]; break; }
-      }
+      var chosen = pickWeighted(DIAGNOSIS_ORDER, weights);
       counts[chosen]++;
       result.push(chosen);
+    }
+    return result;
+  }
+
+  // Choix thérapeutique : abaisse fortement (sans l'annuler) le poids de tirage du diagnostic qui
+  // vient d'être présenté, pour limiter les répétitions immédiates sans les rendre impossibles.
+  function randomTxCaseId(){
+    var weights = DIAGNOSIS_ORDER.map(function(id){ return id === lastTxCaseId ? 0.15 : 1; });
+    return pickWeighted(DIAGNOSIS_ORDER, weights);
+  }
+
+  function generateTxSeriesCases(n){
+    var counts = {};
+    DIAGNOSIS_ORDER.forEach(function(id){ counts[id] = 0; });
+    var result = [];
+    var prev = lastTxCaseId;
+    for(var i = 0; i < n; i++){
+      var weights = DIAGNOSIS_ORDER.map(function(id){
+        var w = 1 / (1 + counts[id]);
+        if(id === prev) w *= 0.15;
+        return w;
+      });
+      var chosen = pickWeighted(DIAGNOSIS_ORDER, weights);
+      counts[chosen]++;
+      result.push(chosen);
+      prev = chosen;
     }
     return result;
   }
@@ -2233,6 +2263,7 @@
   var txQuizIndex = 0;
   var txQuizLength = 5;
   var txQuizResults = [];
+  var lastTxCaseId = null; // dernier diagnostic tiré en choix thérapeutique, pour limiter (sans l'exclure) un tirage identique juste après
 
   // ---------- DOM refs ----------
   var introCard = document.getElementById('intro-card');
@@ -2586,6 +2617,7 @@
   // ---------- Mode "choix thérapeutique" ----------
   function beginTxCase(id){
     txCaseId = id;
+    lastTxCaseId = id;
     var profile = TX_PROFILE[txCaseId];
     var d = DIAGNOSES[txCaseId];
     var diagram = DIAGRAMS[txCaseId];
@@ -2675,13 +2707,13 @@
 
   function startTxCase(){
     txMode = 'single';
-    beginTxCase(randomCaseId());
+    beginTxCase(randomTxCaseId());
   }
 
   function startTxQuizSession(n){
     txMode = 'quiz';
     txQuizLength = n;
-    txQuizCases = generateSeriesCases(n);
+    txQuizCases = generateTxSeriesCases(n);
     txQuizIndex = 0;
     txQuizResults = [];
     beginTxCase(txQuizCases[0]);
