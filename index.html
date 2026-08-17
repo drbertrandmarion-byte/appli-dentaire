@@ -89,6 +89,42 @@
     color:var(--muted);
     font-size:0.95rem;
   }
+
+  /* Animation d'ouverture : reprend le logo, disparaît une fois jouée (ou immédiatement si l'utilisateur clique / appuie sur une touche, ou si le système demande de réduire les animations). */
+  #splash-screen{
+    position:fixed; inset:0; z-index:9999;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    background:var(--bg);
+    transition:opacity .5s ease, visibility .5s ease;
+  }
+  #splash-screen.splash-hide{opacity:0; visibility:hidden; pointer-events:none;}
+  #splash-title{
+    display:flex; align-items:center; justify-content:center;
+    font-size:clamp(2.2rem, 9vw, 3.4rem);
+    font-weight:800; margin:0; letter-spacing:-0.01em;
+  }
+  #splash-title .splash-end, #splash-title .splash-diag{
+    opacity:0; transform:translateY(10px);
+    transition:opacity .5s ease, transform .5s ease;
+  }
+  #splash-title .splash-end{color:var(--logo-navy);}
+  #splash-title .splash-diag{color:var(--logo-blue); transition-delay:.15s;}
+  #splash-screen.splash-text-ready #splash-title .splash-end,
+  #splash-screen.splash-text-ready #splash-title .splash-diag{opacity:1; transform:none;}
+  #splash-logo{width:auto; height:0.86em; vertical-align:-0.16em; display:inline-block; margin:0 0.05em;}
+  #splash-logo circle, #splash-logo path{transition:stroke-dashoffset 1s ease;}
+  #splash-tagline{
+    margin-top:12px; font-size:0.8rem; font-weight:700; letter-spacing:.2em;
+    color:var(--logo-navy); opacity:0; transition:opacity .6s ease;
+  }
+  #splash-screen.splash-tagline-ready #splash-tagline{opacity:1;}
+  #splash-hint{
+    margin-top:22px; font-size:0.72rem; color:var(--muted); opacity:0; transition:opacity .6s ease;
+  }
+  #splash-screen.splash-tagline-ready #splash-hint{opacity:1;}
+  @media (prefers-reduced-motion: reduce){
+    #splash-screen{display:none;}
+  }
   .disclaimer{
     background:var(--logo-blue-100);
     border:1px solid var(--logo-blue);
@@ -678,6 +714,19 @@
 </style>
 </head>
 <body>
+
+<div id="splash-screen" role="presentation">
+  <h1 id="splash-title">
+    <span class="splash-end">End</span><svg id="splash-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="EndoDiag">
+      <circle id="splash-circle" cx="50" cy="50" r="46" fill="none" stroke="#182849" stroke-width="5"/>
+      <path id="splash-tooth" d="M35,32 Q38,22 46,26 Q50,30 54,26 Q62,22 65,32 Q70,40 66,52 Q66,60 64,70 Q62,80 58,84 Q55,87 54,80 Q53,68 50,62 Q47,68 46,80 Q45,87 42,84 Q38,80 36,70 Q34,60 34,52 Q30,40 35,32 Z" fill="none" stroke="#182849" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <path id="splash-canal" d="M45,29 Q50,35 55,29 M50,33 L50,63" fill="none" stroke="#e8532e" stroke-width="4.5" stroke-linecap="round"/>
+    </svg><span class="splash-diag">Diag</span>
+  </h1>
+  <div id="splash-tagline">DIAGNOSTIC EN ENDODONTIE</div>
+  <div id="splash-hint">Cliquez pour passer</div>
+</div>
+
 <div class="wrap">
 
   <header class="app-header">
@@ -972,6 +1021,56 @@
 
 <script>
 (function(){
+
+  // ---------- Animation d'ouverture ----------
+  (function initSplash(){
+    var splash = document.getElementById('splash-screen');
+    if(!splash) return;
+
+    var hidden = false;
+    function hideSplash(){
+      if(hidden) return;
+      hidden = true;
+      splash.classList.add('splash-hide');
+      setTimeout(function(){
+        if(splash.parentNode) splash.parentNode.removeChild(splash);
+      }, 550);
+    }
+
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(reduceMotion){
+      hideSplash();
+      return;
+    }
+
+    try{
+      ['splash-circle', 'splash-tooth', 'splash-canal'].forEach(function(id){
+        var el = document.getElementById(id);
+        var len = el.getTotalLength();
+        el.style.strokeDasharray = len;
+        el.style.strokeDashoffset = len;
+      });
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){
+          document.getElementById('splash-circle').style.strokeDashoffset = '0';
+          setTimeout(function(){ document.getElementById('splash-tooth').style.strokeDashoffset = '0'; }, 350);
+          setTimeout(function(){ document.getElementById('splash-canal').style.strokeDashoffset = '0'; }, 750);
+          setTimeout(function(){ splash.classList.add('splash-text-ready'); }, 950);
+          setTimeout(function(){ splash.classList.add('splash-tagline-ready'); }, 1300);
+        });
+      });
+    }catch(e){
+      hideSplash();
+      return;
+    }
+
+    splash.addEventListener('click', hideSplash);
+    document.addEventListener('keydown', function onKey(){
+      hideSplash();
+      document.removeEventListener('keydown', onKey);
+    });
+    setTimeout(hideSplash, 2800);
+  })();
 
   // ---------- Les 15 questions que l'étudiant peut choisir de poser ----------
   var QUESTIONS = [
