@@ -99,10 +99,11 @@
   }
   #splash-screen.splash-hide{opacity:0; visibility:hidden; pointer-events:none;}
   #splash-title{
-    display:flex; align-items:center; justify-content:center;
+    display:block; text-align:center;
     font-size:clamp(2.2rem, 9vw, 3.4rem);
     font-weight:800; margin:0; letter-spacing:-0.01em;
     transform-origin:center center;
+    will-change:transform;
     transition:transform .7s cubic-bezier(.4,0,.2,1);
   }
   #splash-title .splash-end, #splash-title .splash-diag{
@@ -113,7 +114,7 @@
   #splash-title .splash-diag{color:var(--logo-blue); transition-delay:.15s;}
   #splash-screen.splash-text-ready #splash-title .splash-end,
   #splash-screen.splash-text-ready #splash-title .splash-diag{opacity:1; transform:none;}
-  #splash-logo{width:auto; height:0.86em; vertical-align:-0.16em; display:inline-block; margin:0 0.05em;}
+  #splash-logo{width:auto; height:0.86em; vertical-align:-0.16em; display:inline-block; margin:0 0.02em;}
   #splash-logo circle, #splash-logo path{transition:stroke-dashoffset 1s ease;}
   #splash-tagline{
     margin-top:12px; font-size:0.8rem; font-weight:700; letter-spacing:.2em;
@@ -1061,9 +1062,11 @@
 
       splashTagline.style.opacity = '0';
       splashHint.style.opacity = '0';
-      splashTitle.style.transform = 'translate(' + dx + 'px, ' + dy + 'px) scale(' + scale + ')';
+      splashTitle.style.transform = 'translate3d(' + dx + 'px, ' + dy + 'px, 0) scale(' + scale + ')';
 
-      schedule(hideSplash, 700);
+      // Le fondu démarre un peu avant la fin du mouvement : le dernier souffle de la translation
+      // se termine "sous" le fondu, ce qui masque tout micro-écart et évite un sursaut à l'arrivée.
+      schedule(hideSplash, 580);
     }
 
     var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
