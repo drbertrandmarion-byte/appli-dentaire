@@ -226,6 +226,14 @@
     font-style:italic;
   }
 
+  .tx-stage-notice{
+    background:var(--tx-accent-100);
+    color:var(--tx-accent-dark);
+    border-radius:10px;
+    padding:10px 14px;
+    font-size:0.88rem;
+    margin:14px 0 0;
+  }
   .tx-checkbox-group{
     border:1px solid var(--border);
     border-radius:10px;
@@ -1325,6 +1333,7 @@
     {id:'referer', label:"Référer au service de chirurgie maxillo-faciale en urgence"}
   ];
   var TX_MEDIC_OPTIONS = [
+    {id:'aucun', label:"Aucun"},
     {id:'ains', label:"AINS"},
     {id:'antalgique', label:"Antalgique"},
     {id:'antibiotiques', label:"Antibiotiques"},
@@ -1466,40 +1475,40 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif prévoyez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['soin'], medicamenteux:[]}
+        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Thomas, 28 ans, consulte pour une sensibilité au froid sur une dent présentant une carie. La douleur est courte, localisée et disparaît en quelques secondes après retrait du stimulus. Le diagnostic de pulpite réversible est posé.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['soin'], medicamenteux:[]}
+        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Sophie, 42 ans, consulte pour une douleur provoquée par le froid au niveau d'une molaire. La douleur est immédiate mais très brève et cesse spontanément dès que le stimulus disparaît. Le diagnostic de pulpite réversible est posé. La radiographie montre une carie dentinaire sans signe d'atteinte périapicale. Il n'existe pas de douleur spontanée ni de douleur nocturne.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['soin'], medicamenteux:[]}
+        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Lucas, 12 ans, consulte pour une douleur provoquée par les boissons froides et les aliments sucrés. La douleur est courte et disparaît immédiatement après l'arrêt du stimulus. Le diagnostic de pulpite réversible est posé. La dent présente une carie profonde proche de la pulpe, mais aucun signe clinique d'atteinte pulpaire irréversible.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['soin'], medicamenteux:[]}
+        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Camille, 35 ans, consulte pour une sensibilité au froid sur une prémolaire présentant une restauration ancienne défectueuse. La douleur est déclenchée uniquement par le froid, reste faible et disparaît rapidement après retrait du stimulus. Le diagnostic de pulpite réversible est posé. L'ancienne restauration est infiltrée et doit être remplacée. Aucun signe de nécrose ou de pulpite irréversible n'est retrouvé.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['soin'], medicamenteux:[]}
+        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       }
     ],
 
@@ -1510,40 +1519,40 @@
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['rien'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['rien'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Ethan, 25 ans, consulte dans le cadre d'un bilan préorthodontique. Aucune plainte, examen clinique normal ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['rien'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['rien'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Gabriel, 60 ans, consulte pour un bilan buccodentaire général. La dent examinée est asymptomatique ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['rien'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['rien'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Alice, 33 ans, s'inquiète pour une ancienne restauration qu'elle trouve suspecte mais indolore. L'examen clinique confirme une restauration étanche ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['rien'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['rien'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Sarah, 16 ans, vient pour sa visite de contrôle annuelle. Aucune plainte ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['rien'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['rien'], medicamenteux:['aucun']}
       }
     ],
 
@@ -1554,40 +1563,40 @@
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['soin'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Théo, 14 ans, signale une sensibilité très légère et inconstante au froid sur une molaire, qui disparaît immédiatement à l'arrêt du stimulus. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['soin'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Chiara, 40 ans, a remarqué une petite gêne fugace au froid depuis quelques jours, sans autre symptôme. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['soin'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Robert, 52 ans, décrit une sensibilité discrète et passagère au contact du froid sur une prémolaire. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['soin'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Sylvie, 29 ans, rapporte une gêne très légère et occasionnelle au sucré, sans douleur spontanée. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
-        finalAxes: {geste:['soin'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       }
     ],
 
@@ -1652,7 +1661,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1661,7 +1670,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle prise en charge programmez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1670,7 +1679,7 @@
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1679,7 +1688,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement programmez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1688,7 +1697,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1697,7 +1706,7 @@
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1706,7 +1715,7 @@
         depth: "infra_osseux", apical: false,
         finalLine: "La dent n'étant pas conservable, quel traitement définitif programmez-vous ?",
         rationaleKey: 'nonconservable',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
       }
     ],
@@ -1933,27 +1942,27 @@
       {
         patientLine: "Adam, 45 ans, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre à 39°C, une dysphagie, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
-        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Claire, 52 ans, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
-        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Antoine, 38 ans, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
-        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Nathan, 60 ans, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
-        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Julie, 33 ans, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
-        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:[]}
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
       }
     ]
   };
@@ -1961,9 +1970,9 @@
   // Fiche récapitulative du mode "choix thérapeutique" : pas tous les cas nommés, seulement les
   // différentes situations thérapeutiques distinctes rencontrées pour chaque diagnostic.
   var TX_RECAP_TYPES = {
-    saine:              [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]}, finalAxes:{geste:['rien'], medicamenteux:[]}} ],
-    hyperhemie:         [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]}, finalAxes:{geste:['soin'], medicamenteux:[]}} ],
-    reversible:         [ {condition:null, axes:{coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:[]}, finalAxes:{geste:['soin'], medicamenteux:[]}} ],
+    saine:              [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['rien'], medicamenteux:['aucun']}} ],
+    hyperhemie:         [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['soin'], medicamenteux:['aucun']}} ],
+    reversible:         [ {condition:null, axes:{coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['soin'], medicamenteux:['aucun']}} ],
     irreversible: [
       {condition:"Hémostase facile, patient jeune", axes:{coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:null},
       {condition:"Hémostase difficile mais stabilisée, patient de plus de 30 ans", axes:{coronaire:['pulpotomie_urgence'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
@@ -1971,8 +1980,8 @@
     ],
     syndrome_mixte:     [ {condition:null, axes:{coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}} ],
     necrose: [
-      {condition:"Dent conservable", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"Dent non conservable (limite infra-osseuse)", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]}, finalAxes:{geste:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}}
+      {condition:"Dent conservable", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Dent non conservable (limite infra-osseuse)", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}}
     ],
     parodontite:        [ {condition:null, axes:{coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}} ],
     abces_aigu: [
@@ -1991,7 +2000,7 @@
       {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_therapeutique'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null}
     ],
-    cellulite_diffuse:  [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['referer'], medicamenteux:[]}, finalAxes:null} ]
+    cellulite_diffuse:  [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}, finalAxes:null} ]
   };
 
   // Paragraphe explicatif affiché sur l'écran de résultat du mode "choix thérapeutique", pour justifier
@@ -3215,11 +3224,13 @@
       }
 
       if(txStage === 'urgence1'){
-        html += txCheckboxGroupHtml('Geste coronaire', TX_CORONAIRE_OPTIONS, 'coronaire') +
+        html += '<p class="tx-stage-notice">Ceci concerne uniquement le <strong>traitement d\'urgence</strong> — le geste réalisé aujourd\'hui, à ce rendez-vous.</p>' +
+          txCheckboxGroupHtml('Geste coronaire', TX_CORONAIRE_OPTIONS, 'coronaire') +
           txCheckboxGroupHtml('Geste chirurgical', TX_CHIRURGICAL_OPTIONS, 'chirurgical') +
           txCheckboxGroupHtml('Geste médicamenteux', TX_MEDIC_OPTIONS, 'medicamenteux') +
           '<div class="result-actions"><button class="btn-primary" id="tx-step-submit-btn">Valider</button></div>';
       } else if(txStage === 'final'){
+        html += '<p class="tx-stage-notice">Ceci concerne le <strong>traitement final</strong> — lors du rendez-vous de soins programmé, une fois l\'épisode d\'urgence géré.</p>';
         if(txVariant.finalLine){
           html += '<p class="tx-patient-line">' + txVariant.finalLine + '</p>';
         }
