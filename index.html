@@ -1321,7 +1321,6 @@
     {id:'curetage', label:"Curetage carieux avec coiffage (résine temporaire biocompatible, digue obligatoire)"},
     {id:'pulpotomie_therapeutique', label:"Pulpotomie thérapeutique (digue obligatoire)"},
     {id:'pulpotomie_urgence', label:"Pulpotomie d'urgence (digue obligatoire)"},
-    {id:'pulpectomie_therapeutique', label:"Pulpectomie thérapeutique (digue obligatoire)"},
     {id:'pulpectomie_urgence', label:"Pulpectomie d'urgence (digue obligatoire)"}
   ];
   var TX_CHIRURGICAL_OPTIONS = [
@@ -1903,7 +1902,7 @@
         depth: "supra_gingival", apical: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois la collection résorbée ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_therapeutique'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1911,7 +1910,7 @@
         depth: "juxta_gingival", apical: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_therapeutique'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1919,7 +1918,7 @@
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement choisissez-vous, une fois la collection résorbée ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_therapeutique'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1997,7 +1996,7 @@
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_suppuree: [
-      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_therapeutique'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_diffuse:  [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}, finalAxes:null} ]
@@ -2035,7 +2034,7 @@
       extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, associée à un antalgique et une antibiothérapie pour contrôler la diffusion infectieuse dans les tissus mous, ainsi qu'à un bain de bouche du fait de la plaie d'extraction. Le stade restant séreux, sans collection constituée, aucun drainage supplémentaire n'est nécessaire."
     }},
     cellulite_suppuree: { byKey: {
-      conservable: "La collection purulente est déjà constituée dans les tissus mous (signe du godet positif) : il faut à la fois traiter la cause — la pulpectomie thérapeutique, qui supprime le foyer infectieux pulpaire — et évacuer le pus par un drainage muqueux, associé à un antalgique, une antibiothérapie et un bain de bouche (la voie muqueuse étant une plaie ouverte). Le traitement endodontique complet, avec un antalgique, est réalisé une fois la collection résorbée.",
+      conservable: "La collection purulente est déjà constituée dans les tissus mous (signe du godet positif) : il faut à la fois traiter la cause — la pulpectomie d'urgence, qui supprime le foyer infectieux pulpaire — et évacuer le pus par un drainage muqueux, associé à un antalgique, une antibiothérapie et un bain de bouche (la voie muqueuse étant une plaie ouverte). Le traitement endodontique complet, avec un antalgique, est réalisé une fois la collection résorbée.",
       extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, mais la collection purulente déjà constituée impose en plus un drainage par voie muqueuse, un antalgique, une antibiothérapie et un bain de bouche, pour évacuer le pus et contrôler l'infection des tissus mous."
     }},
     cellulite_diffuse: "L'infection progresse rapidement dans plusieurs espaces celluleux, sans tendance à la collection, avec un risque d'atteinte des voies aériennes (fièvre élevée, dysphagie, trismus serré). C'est une urgence vitale qui dépasse le cadre du cabinet dentaire : il faut référer immédiatement le patient en milieu hospitalier, le plus souvent en chirurgie maxillo-faciale, pour un drainage chirurgical large sous couverture antibiotique intraveineuse et une surveillance des voies aériennes."
