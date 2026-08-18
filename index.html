@@ -226,6 +226,29 @@
     font-style:italic;
   }
 
+  .tx-checkbox-group{
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:12px 14px;
+    margin-top:14px;
+  }
+  .tx-checkbox-group legend{padding:0 4px;}
+  .tx-checkbox-item{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    font-size:0.92rem;
+    color:var(--ink);
+    padding:5px 0;
+    cursor:pointer;
+  }
+  .tx-checkbox-item input{margin-top:3px; flex-shrink:0; accent-color:var(--tx-accent);}
+  .tx-check-list{margin:2px 0 0; padding:0; list-style:none; font-size:0.88rem;}
+  .tx-check-item{padding:2px 0;}
+  .tx-check-item.tx-check-ok{color:var(--ok);}
+  .tx-check-item.tx-check-missing{color:var(--periapical); font-weight:600;}
+  .tx-check-item.tx-check-extra{color:var(--ko); font-weight:600; text-decoration:line-through;}
+
   button{
     font-family:inherit;
     cursor:pointer;
@@ -1280,6 +1303,61 @@
     "Traitement endodontique final"                                    // 2
   ];
 
+  // ---------- Choix thérapeutique en cases à cocher (nouveau modèle, en cours de déploiement) ----------
+  // Plutôt qu'une seule phrase toute faite par menu déroulant, la réponse se décompose en axes
+  // indépendants : chaque axe est une liste de cases à cocher, et la bonne réponse est l'ensemble
+  // exact des cases attendues (ni oubli, ni case en trop). Diagnostics migrés pour l'instant :
+  // abces_aigu et necrose (repérables via la présence du champ "axes" sur leurs variantes).
+  var TX_CORONAIRE_OPTIONS = [
+    {id:'aucun', label:"Aucun geste coronaire"},
+    {id:'curetage', label:"Curetage carieux avec coiffage (résine temporaire biocompatible, digue obligatoire)"},
+    {id:'pulpotomie_therapeutique', label:"Pulpotomie thérapeutique (digue obligatoire)"},
+    {id:'pulpotomie_urgence', label:"Pulpotomie d'urgence (digue obligatoire)"},
+    {id:'pulpectomie_urgence', label:"Pulpectomie d'urgence (digue obligatoire)"}
+  ];
+  var TX_CHIRURGICAL_OPTIONS = [
+    {id:'aucun', label:"Aucun geste chirurgical"},
+    {id:'extraction', label:"Extraction"},
+    {id:'drainage_transfixion', label:"Drainage par transfixion apicale"},
+    {id:'drainage_fistulaire', label:"Drainage par voie fistulaire"},
+    {id:'drainage_muqueuse', label:"Drainage par voie muqueuse"},
+    {id:'referer', label:"Référer au service de chirurgie maxillo-faciale en urgence"}
+  ];
+  var TX_MEDIC_OPTIONS = [
+    {id:'ains', label:"AINS"},
+    {id:'antalgique', label:"Antalgique"},
+    {id:'antibiotiques', label:"Antibiotiques"},
+    {id:'bain_bouche', label:"Bain de bouche (chlorhexidine)"}
+  ];
+  var TX_FINAL_GESTE_OPTIONS = [
+    {id:'rien', label:"Aucun traitement nécessaire"},
+    {id:'soin', label:"Soin de la lésion carieuse (résine définitive)"},
+    {id:'endo_complet', label:"Traitement endodontique complet"},
+    {id:'extraction', label:"Extraction de la dent (non conservable)"}
+  ];
+
+  function txAxesSetsEqual(a, b){
+    var as = (a || []).slice().sort();
+    var bs = (b || []).slice().sort();
+    if(as.length !== bs.length) return false;
+    for(var i = 0; i < as.length; i++){ if(as[i] !== bs[i]) return false; }
+    return true;
+  }
+
+  function txAxesAllCorrect(answers, correct){
+    return Object.keys(correct).every(function(key){
+      return txAxesSetsEqual(answers && answers[key], correct[key]);
+    });
+  }
+
+  function txAxesSummaryText(ids, options){
+    if(!ids || ids.length === 0) return 'Aucun';
+    return ids.map(function(id){
+      var opt = options.filter(function(o){ return o.id === id; })[0];
+      return opt ? opt.label : id;
+    }).join(', ');
+  }
+
   // Profil "choix thérapeutique" par diagnostic — première version, à affiner.
   var TX_PROFILE = {
     saine:              {depth:"coronaire",      apical:false, urgence:0, final:0},
@@ -1505,48 +1583,74 @@
     // proximité de la pulpe) et l'état du ligament parodontal apical (sain / épaissi / lésion radioclaire)
     // varient d'un cas à l'autre ; le traitement, lui, ne varie pas : pas d'urgence vraie, endodontie
     // programmée.
+    // Nécrose pulpaire : modèle en cases à cocher (axes). Cas conservables (délabrement juxta-gingival) :
+    // aucun geste ni médicament à l'urgence (asymptomatique), traitement endodontique complet en final.
+    // Cas non conservable (délabrement infra-osseux) : toujours rien à l'urgence, mais extraction au
+    // traitement final, avec antalgique + bain de bouche à ce moment-là (pas avant, puisqu'il ne se
+    // passe rien à l'urgence).
     necrose: [
       {
         patientLine: "Léon, 44 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une importante perte tissulaire coronaire à proximité de la pulpe, avec un ligament parodontal apical d'aspect sain, sans épaississement ni lésion radioclaire.",
         radioText: "Importante perte tissulaire coronaire, à proximité de la pulpe. Ligament parodontal apical d'aspect sain, sans épaississement ni lésion radioclaire.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
-        urgence1: 0, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Margaux, 37 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration récente à proximité de la pulpe, avec un ligament parodontal apical légèrement épaissi, sans lésion radioclaire constituée.",
         radioText: "Restauration récente, à proximité de la pulpe. Ligament parodontal apical légèrement épaissi, sans lésion radioclaire constituée.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle prise en charge programmez-vous ?",
-        urgence1: 0, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Étienne, 52 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration ayant perdu son étanchéité, à proximité de la pulpe, avec une discrète image radioclaire apicale.",
         radioText: "Restauration ayant perdu son étanchéité, à proximité de la pulpe. Présence d'une discrète image radioclaire apicale.",
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
-        urgence1: 0, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Noémie, 29 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration ayant perdu son étanchéité, à proximité de la pulpe, avec un ligament parodontal apical d'aspect sain.",
         radioText: "Restauration ayant perdu son étanchéité, à proximité de la pulpe. Ligament parodontal apical d'aspect sain, sans épaississement ni lésion radioclaire.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement programmez-vous ?",
-        urgence1: 0, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Romain, 61 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une importante perte tissulaire coronaire à proximité de la pulpe, avec un ligament parodontal apical légèrement épaissi.",
         radioText: "Importante perte tissulaire coronaire, à proximité de la pulpe. Ligament parodontal apical légèrement épaissi, sans lésion radioclaire constituée.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
-        urgence1: 0, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Agathe, 34 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration récente à proximité de la pulpe, avec une discrète image radioclaire apicale.",
         radioText: "Restauration récente, à proximité de la pulpe. Présence d'une discrète image radioclaire apicale.",
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement choisissez-vous ?",
-        urgence1: 0, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Bernard, 58 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre un délabrement infra-osseux majeur, sous la crête osseuse, avec un ligament parodontal apical légèrement épaissi : la dent n'est pas conservable.",
+        radioText: "Délabrement infra-osseux majeur, sous la crête osseuse. Ligament parodontal apical légèrement épaissi, sans lésion radioclaire constituée. Dent jugée non conservable.",
+        depth: "infra_osseux", apical: false,
+        finalLine: "La dent n'étant pas conservable, quel traitement définitif programmez-vous ?",
+        rationaleKey: 'nonconservable',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
       }
     ],
 
@@ -1588,34 +1692,48 @@
     // Abcès apical aigu : pulpectomie d'urgence avec drainage par transfixion apicale si la dent est
     // conservable ; extraction d'urgence d'emblée (sans question complémentaire) si le délabrement est
     // infra-osseux.
+    // Abcès apical aigu : modèle en cases à cocher. Cas conservable (infra-gingival) : pulpectomie
+    // d'urgence + drainage par transfixion apicale + antalgique/antibiotiques (pas de bain de bouche,
+    // la transfixion n'est pas une voie d'ouverture muqueuse) ; traitement final = endo complet +
+    // antalgique. Cas non conservable (infra-osseux) : extraction d'urgence, seule et suffisante
+    // (aucun geste coronaire), avec antalgique + antibiotiques + bain de bouche (extraction = plaie
+    // muqueuse) ; pas de traitement final séparé, l'extraction est déjà le geste définitif.
     abces_aigu: [
       {
         patientLine: "Denis, 41 ans, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une zone de radioclarté bien délimitée à l'apex de la racine.",
         depth: "infra_gingival", apical: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
-        urgence1: 5, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique', 'antibiotiques']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Martine, 36 ans, consulte pour une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une zone de radioclarté bien délimitée à l'apex de la racine.",
         depth: "infra_gingival", apical: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
-        urgence1: 5, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique', 'antibiotiques']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Fabien, 50 ans, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une zone de radioclarté bien délimitée à l'apex de la racine.",
         depth: "infra_gingival", apical: true,
         finalLine: "Quel traitement définitif programmez-vous ?",
-        urgence1: 5, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique', 'antibiotiques']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Aurélie, 62 ans, consulte pour une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse zone de radioclarté à l'apex de la racine.",
         depth: "infra_osseux", apical: true,
-        urgence1: 7 // Extraction d'urgence — pas de question complémentaire
+        rationaleKey: 'extraction',
+        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
       },
       {
         patientLine: "Yves, 68 ans, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse zone de radioclarté à l'apex de la racine.",
         depth: "infra_osseux", apical: true,
-        urgence1: 7
+        rationaleKey: 'extraction',
+        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
       }
     ],
 
@@ -1761,11 +1879,14 @@
       {condition:"Hémostase impossible à stabiliser", urgence1:4, final:2}
     ],
     syndrome_mixte:     [ {condition:null, urgence1:4, final:2} ],
-    necrose:            [ {condition:null, urgence1:0, final:2} ],
+    necrose: [
+      {condition:"Dent conservable", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Dent non conservable (limite infra-osseuse)", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]}, finalAxes:{geste:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}}
+    ],
     parodontite:        [ {condition:null, urgence1:4, final:2} ],
     abces_aigu: [
-      {condition:"Limite infra-gingivale (dent conservable)", urgence1:5, final:2},
-      {condition:"Limite infra-osseuse (extraction de la dent)", urgence1:7, final:null}
+      {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique', 'antibiotiques']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null}
     ],
     abces_chronique: [
       {condition:"Limite infra-gingivale (dent conservable)", urgence1:6, final:2},
@@ -1796,11 +1917,14 @@
       4: "Lorsque le saignement canalaire n'est pas maîtrisable, cela traduit une inflammation profonde de la pulpe, qui a gagné les canaux radiculaires. Il faut alors réaliser un parage canalaire (pulpectomie d'urgence) : l'irrigation à l'hypochlorite de sodium désorganise les tissus vasculaires et provoque une nécrose tissulaire contrôlée, ce qui stoppe le saignement. Ce geste évite une remise sous pression de la dent et la réapparition de signes de pulpite qui imposeraient un second passage en urgence. Un traitement endodontique complet est ensuite programmé pour finaliser la désinfection et l'obturation canalaire."
     }},
     syndrome_mixte: "La dent est pluriradiculée avec un état pulpaire mixte : un canal encore vivant et en inflammation aiguë, un autre déjà nécrosé et potentiellement infecté. Comme il est impossible de traiter différemment chaque canal en urgence, on réalise une pulpectomie d'urgence sur l'ensemble des canaux, y compris le canal encore vital, pour lever la douleur et éviter la prolifération bactérienne depuis le canal nécrosé. Le traitement endodontique complet, à programmer, traite ensuite chaque canal selon son propre état (vital ou nécrosé).",
-    necrose: "La dent n'est pas symptomatique : elle ne nécessite pas de prise en charge urgente avec un geste associé. On programme le traitement endodontique complet sur un créneau classique, en expliquant au patient les risques d'une absence de traitement — l'évolution vers une infection périapicale — tout en lui indiquant de revenir consulter en urgence si des symptômes apparaissent.",
+    necrose: { byKey: {
+      conservable: "La dent n'est pas symptomatique : elle ne nécessite pas de prise en charge urgente avec un geste ou un médicament associé. On programme le traitement endodontique complet sur un créneau classique, avec un antalgique pour la séance de traitement, en expliquant au patient les risques d'une absence de traitement — l'évolution vers une infection périapicale — tout en lui indiquant de revenir consulter en urgence si des symptômes apparaissent.",
+      nonconservable: "La dent n'est pas symptomatique et le délabrement infra-osseux la rend non conservable : il n'y a donc rien à faire en urgence, ni geste ni médicament, puisqu'aucune infection active ne le justifie dans l'immédiat. L'extraction est programmée comme traitement final, associée à un antalgique et un bain de bouche pour la gestion post-opératoire de la plaie d'extraction — l'antibiothérapie et les AINS ne sont pas nécessaires puisqu'il n'y a pas d'infection à traiter."
+    }},
     parodontite: "La pulpe est déjà nécrosée et l'inflammation a gagné le ligament parodontal apical, d'où la douleur à la percussion et la sensation de dent longue. Il n'y a pas encore de collection purulente : le geste d'urgence est donc une pulpectomie, pour éliminer le contenu canalaire infecté et désamorcer l'inflammation apicale, avant de réaliser le traitement endodontique complet.",
-    abces_aigu: { byUrgence: {
-      5: "La collection purulente périapicale débute mais la dent reste conservable (limite infra-gingivale) : le geste d'urgence associe la pulpectomie à un drainage par transfixion apicale, c'est-à-dire le passage volontaire d'un instrument au-delà de l'apex pour créer une voie d'évacuation du pus et lever la pression responsable de la douleur intense. Le traitement endodontique complet peut ensuite être réalisé, si possible dès que la douleur est contrôlée.",
-      7: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : aucun traitement endodontique ne peut restaurer un support suffisant. Le geste d'urgence est alors l'extraction elle-même, qui traite à la fois la cause de la douleur et supprime définitivement la dent — il n'y a donc pas de traitement différé à programmer."
+    abces_aigu: { byKey: {
+      conservable: "La collection purulente périapicale débute mais la dent reste conservable (limite infra-gingivale) : le geste d'urgence associe la pulpectomie à un drainage par transfixion apicale, c'est-à-dire le passage volontaire d'un instrument au-delà de l'apex pour créer une voie d'évacuation du pus et lever la pression responsable de la douleur intense — accompagné d'un antalgique et d'une antibiothérapie (la transfixion reste une voie intracanalaire, pas une plaie muqueuse : pas de bain de bouche nécessaire). Le traitement endodontique complet, avec un antalgique pour cette séance, peut ensuite être réalisé dès que la douleur est contrôlée.",
+      extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : aucun traitement endodontique ne peut restaurer un support suffisant. Le geste d'urgence est alors l'extraction elle-même, qui traite à la fois la cause de la douleur et supprime définitivement la dent — il n'y a donc pas de traitement différé à programmer. L'extraction ouvrant une plaie muqueuse, elle s'accompagne d'un antalgique, d'une antibiothérapie et d'un bain de bouche."
     }},
     abces_chronique: { byUrgence: {
       6: "La collection est déjà drainée en continu par la fistule, ce qui explique la symptomatologie discrète : ce n'est donc pas une urgence vraie. Une pulpectomie peut être réalisée, avec un drainage par la voie fistulaire déjà existante, pour amorcer le traitement sans attendre un rendez-vous supplémentaire. Le traitement endodontique complet est ensuite programmé normalement.",
@@ -1817,11 +1941,12 @@
     cellulite_diffuse: "L'infection progresse rapidement dans plusieurs espaces celluleux, sans tendance à la collection, avec un risque d'atteinte des voies aériennes (fièvre élevée, dysphagie, trismus serré). C'est une urgence vitale qui dépasse le cadre du cabinet dentaire : il faut référer immédiatement le patient en milieu hospitalier, le plus souvent en chirurgie maxillo-faciale, pour un drainage chirurgical large sous couverture antibiotique intraveineuse et une surveillance des voies aériennes."
   };
 
-  function getTxRationale(diagnosisId, urgence1){
+  function getTxRationale(diagnosisId, urgence1, key){
     var entry = TX_RATIONALE[diagnosisId];
     if(!entry) return '';
     if(typeof entry === 'string') return entry;
-    return entry.byUrgence[urgence1] || '';
+    if(key && entry.byKey) return entry.byKey[key] || '';
+    return entry.byUrgence ? (entry.byUrgence[urgence1] || '') : '';
   }
 
   var DIAGNOSES = {
@@ -2973,9 +3098,52 @@
     '</div>';
   }
 
+  // ---------- Rendu et lecture des groupes de cases à cocher (modèle en axes) ----------
+  function txCheckboxGroupHtml(title, options, groupKey){
+    var items = options.map(function(opt){
+      return '<label class="tx-checkbox-item"><input type="checkbox" data-group="' + groupKey + '" value="' + opt.id + '"> ' + opt.label + '</label>';
+    }).join('');
+    return '<fieldset class="tx-checkbox-group"><legend class="tx-label">' + title + '</legend>' + items + '</fieldset>';
+  }
+
+  function txReadCheckboxGroup(groupKey){
+    return Array.prototype.slice.call(document.querySelectorAll('input[data-group="' + groupKey + '"]:checked')).map(function(el){ return el.value; });
+  }
+
   function renderTxMultistep(){
     var el = document.getElementById('tx-multistep-choice');
     var html = '';
+
+    if(txVariant.axes){
+      if(txStepAnswers.urgence1Sets){
+        var uCorrect = txAxesAllCorrect(txStepAnswers.urgence1Sets, txVariant.axes);
+        html += txHistoryRowHtml('Traitement d\'urgence', uCorrect,
+          txAxesSummaryText(txStepAnswers.urgence1Sets.coronaire, TX_CORONAIRE_OPTIONS) + ' · ' +
+          txAxesSummaryText(txStepAnswers.urgence1Sets.chirurgical, TX_CHIRURGICAL_OPTIONS) + ' · ' +
+          txAxesSummaryText(txStepAnswers.urgence1Sets.medicamenteux, TX_MEDIC_OPTIONS));
+      }
+
+      if(txStage === 'urgence1'){
+        html += txCheckboxGroupHtml('Geste coronaire', TX_CORONAIRE_OPTIONS, 'coronaire') +
+          txCheckboxGroupHtml('Geste chirurgical', TX_CHIRURGICAL_OPTIONS, 'chirurgical') +
+          txCheckboxGroupHtml('Geste médicamenteux', TX_MEDIC_OPTIONS, 'medicamenteux') +
+          '<div class="result-actions"><button class="btn-primary" id="tx-step-submit-btn">Valider</button></div>';
+      } else if(txStage === 'final'){
+        if(txVariant.finalLine){
+          html += '<p class="tx-patient-line">' + txVariant.finalLine + '</p>';
+        }
+        html += txCheckboxGroupHtml('Traitement final', TX_FINAL_GESTE_OPTIONS, 'geste') +
+          txCheckboxGroupHtml('Geste médicamenteux (traitement final)', TX_MEDIC_OPTIONS, 'medicamenteux') +
+          '<div class="result-actions"><button class="btn-primary" id="tx-step-submit-btn">Valider</button></div>';
+      }
+
+      el.innerHTML = html;
+      var checkboxSubmitBtn = document.getElementById('tx-step-submit-btn');
+      if(checkboxSubmitBtn){
+        checkboxSubmitBtn.addEventListener('click', handleTxStepSubmit);
+      }
+      return;
+    }
 
     if(txStepAnswers.urgence1 !== undefined){
       html += txHistoryRowHtml('Traitement d\'urgence', txStepAnswers.urgence1 === txVariant.urgence1, URGENCE_OPTIONS[txStepAnswers.urgence1]);
@@ -3003,6 +3171,26 @@
   }
 
   function handleTxStepSubmit(){
+    if(txVariant.axes){
+      if(txStage === 'urgence1'){
+        var uAnswers = {coronaire: txReadCheckboxGroup('coronaire'), chirurgical: txReadCheckboxGroup('chirurgical'), medicamenteux: txReadCheckboxGroup('medicamenteux')};
+        if(uAnswers.coronaire.length === 0 || uAnswers.chirurgical.length === 0) return;
+        txStepAnswers.urgence1Sets = uAnswers;
+        if(txVariant.finalAxes){
+          txStage = 'final';
+          refreshFade(document.getElementById('tx-multistep-choice'), renderTxMultistep);
+        } else {
+          showTxMultistepResult();
+        }
+      } else if(txStage === 'final'){
+        var fAnswers = {geste: txReadCheckboxGroup('geste'), medicamenteux: txReadCheckboxGroup('medicamenteux')};
+        if(fAnswers.geste.length === 0) return;
+        txStepAnswers.finalSets = fAnswers;
+        showTxMultistepResult();
+      }
+      return;
+    }
+
     var select = document.getElementById('tx-step-select');
     if(!select || select.value === '') return;
     var choice = Number(select.value);
@@ -3021,13 +3209,50 @@
     }
   }
 
+  // Ligne de correction d'un groupe de cases à cocher : montre chaque item touché (coché par
+  // l'étudiant, attendu, ou les deux) avec un état visuel distinct — correct / oublié / en trop —
+  // plutôt qu'une simple liste "réponse attendue".
+  function txCheckboxCorrectionRow(label, options, selected, correct){
+    var sel = selected || [];
+    var cor = correct || [];
+    var isCorrect = txAxesSetsEqual(sel, cor);
+    var itemsHtml = options.filter(function(o){
+      return sel.indexOf(o.id) !== -1 || cor.indexOf(o.id) !== -1;
+    }).map(function(o){
+      var wasSelected = sel.indexOf(o.id) !== -1;
+      var wasCorrect = cor.indexOf(o.id) !== -1;
+      var state = wasSelected && wasCorrect ? 'ok' : (wasSelected ? 'extra' : 'missing');
+      var icon = state === 'ok' ? '✓' : (state === 'extra' ? '✗ en trop :' : '＋ oublié :');
+      return '<li class="tx-check-item tx-check-' + state + '">' + icon + ' ' + o.label + '</li>';
+    }).join('');
+    if(!itemsHtml){
+      itemsHtml = '<li class="tx-check-item tx-check-ok">✓ Rien à cocher ici, et vous n\'avez rien coché — correct.</li>';
+    }
+    var div = document.createElement('div');
+    div.className = 'score-row';
+    div.innerHTML =
+      '<div class="mark ' + (isCorrect ? 'ok' : 'ko') + '">' + (isCorrect ? '✓' : '✗') + '</div>' +
+      '<div class="details"><div class="real">' + label + '</div><ul class="tx-check-list">' + itemsHtml + '</ul></div>';
+    return div;
+  }
+
   function showTxMultistepResult(){
     flushPendingFades();
     var d = DIAGNOSES[txCaseId];
-    var urgenceCorrect = txStepAnswers.urgence1 === txVariant.urgence1;
-    var hasFinal = txVariant.final !== undefined;
-    var finalCorrect = hasFinal ? (txStepAnswers.final === txVariant.final) : true;
-    var allCorrect = urgenceCorrect && finalCorrect;
+    var checkboxMode = !!txVariant.axes;
+    var allCorrect;
+
+    if(checkboxMode){
+      var urgenceCorrect = txAxesAllCorrect(txStepAnswers.urgence1Sets, txVariant.axes);
+      var hasFinalAxes = !!txVariant.finalAxes;
+      var finalCorrect = hasFinalAxes ? txAxesAllCorrect(txStepAnswers.finalSets, txVariant.finalAxes) : true;
+      allCorrect = urgenceCorrect && finalCorrect;
+    } else {
+      var urgenceCorrectOld = txStepAnswers.urgence1 === txVariant.urgence1;
+      var hasFinal = txVariant.final !== undefined;
+      var finalCorrectOld = hasFinal ? (txStepAnswers.final === txVariant.final) : true;
+      allCorrect = urgenceCorrectOld && finalCorrectOld;
+    }
 
     hideEl(txCaseCard);
     showEl(txResultCard);
@@ -3046,26 +3271,40 @@
     var recapEl = document.getElementById('tx-result-recap');
     recapEl.innerHTML = '';
 
-    function row(label, correct, yourText, correctText){
-      var div = document.createElement('div');
-      div.className = 'score-row';
-      div.innerHTML =
-        '<div class="mark ' + (correct ? 'ok' : 'ko') + '">' + (correct ? '✓' : '✗') + '</div>' +
-        '<div class="details">' +
-          '<div class="real">' + label + '</div>' +
-          '<div class="guess">Votre réponse : ' + yourText + '</div>' +
-          (correct ? '' : '<div class="guess">Réponse attendue : ' + correctText + '</div>') +
-        '</div>';
-      return div;
-    }
+    if(checkboxMode){
+      recapEl.appendChild(txCheckboxCorrectionRow('Geste coronaire', TX_CORONAIRE_OPTIONS, txStepAnswers.urgence1Sets.coronaire, txVariant.axes.coronaire));
+      recapEl.appendChild(txCheckboxCorrectionRow('Geste chirurgical', TX_CHIRURGICAL_OPTIONS, txStepAnswers.urgence1Sets.chirurgical, txVariant.axes.chirurgical));
+      recapEl.appendChild(txCheckboxCorrectionRow('Geste médicamenteux (urgence)', TX_MEDIC_OPTIONS, txStepAnswers.urgence1Sets.medicamenteux, txVariant.axes.medicamenteux));
+      if(txVariant.finalAxes){
+        recapEl.appendChild(txCheckboxCorrectionRow('Traitement final', TX_FINAL_GESTE_OPTIONS, txStepAnswers.finalSets.geste, txVariant.finalAxes.geste));
+        recapEl.appendChild(txCheckboxCorrectionRow('Geste médicamenteux (traitement final)', TX_MEDIC_OPTIONS, txStepAnswers.finalSets.medicamenteux, txVariant.finalAxes.medicamenteux));
+      }
+    } else {
+      var urgenceCorrectDisplay = txStepAnswers.urgence1 === txVariant.urgence1;
+      var hasFinalDisplay = txVariant.final !== undefined;
+      var finalCorrectDisplay = hasFinalDisplay ? (txStepAnswers.final === txVariant.final) : true;
 
-    recapEl.appendChild(row('Traitement d\'urgence', urgenceCorrect, URGENCE_OPTIONS[txStepAnswers.urgence1], URGENCE_OPTIONS[txVariant.urgence1]));
-    if(hasFinal){
-      recapEl.appendChild(row('Suite de soin d\'urgence ou traitement final', finalCorrect, FINAL_OPTIONS[txStepAnswers.final], FINAL_OPTIONS[txVariant.final]));
+      function row(label, correct, yourText, correctText){
+        var div = document.createElement('div');
+        div.className = 'score-row';
+        div.innerHTML =
+          '<div class="mark ' + (correct ? 'ok' : 'ko') + '">' + (correct ? '✓' : '✗') + '</div>' +
+          '<div class="details">' +
+            '<div class="real">' + label + '</div>' +
+            '<div class="guess">Votre réponse : ' + yourText + '</div>' +
+            (correct ? '' : '<div class="guess">Réponse attendue : ' + correctText + '</div>') +
+          '</div>';
+        return div;
+      }
+
+      recapEl.appendChild(row('Traitement d\'urgence', urgenceCorrectDisplay, URGENCE_OPTIONS[txStepAnswers.urgence1], URGENCE_OPTIONS[txVariant.urgence1]));
+      if(hasFinalDisplay){
+        recapEl.appendChild(row('Suite de soin d\'urgence ou traitement final', finalCorrectDisplay, FINAL_OPTIONS[txStepAnswers.final], FINAL_OPTIONS[txVariant.final]));
+      }
     }
 
     var rationaleBox = document.getElementById('tx-rationale-box');
-    var rationaleText = getTxRationale(txCaseId, txVariant.urgence1);
+    var rationaleText = getTxRationale(txCaseId, txVariant.urgence1, txVariant.rationaleKey);
     if(rationaleText){
       showEl(rationaleBox);
       document.getElementById('tx-rationale-text').textContent = rationaleText;
@@ -3346,6 +3585,19 @@
       card.className = 'recap-card';
       var signsHtml = d.signs.map(function(s){ return '<li>' + s + '</li>'; }).join('');
       var variantsHtml = types.map(function(t){
+        if(t.axes){
+          var finalAxesText = t.finalAxes
+            ? txAxesSummaryText(t.finalAxes.geste, TX_FINAL_GESTE_OPTIONS) +
+              (t.finalAxes.medicamenteux.length ? ' + ' + txAxesSummaryText(t.finalAxes.medicamenteux, TX_MEDIC_OPTIONS) : '')
+            : 'Le geste d\'urgence est déjà le traitement définitif.';
+          return '<div class="recap-variant">' +
+            (t.condition ? '<div class="recap-variant-label">' + t.condition + '</div>' : '') +
+            '<div class="recap-tx"><b>Geste coronaire</b>' + txAxesSummaryText(t.axes.coronaire, TX_CORONAIRE_OPTIONS) + '</div>' +
+            '<div class="recap-tx"><b>Geste chirurgical</b>' + txAxesSummaryText(t.axes.chirurgical, TX_CHIRURGICAL_OPTIONS) + '</div>' +
+            '<div class="recap-tx"><b>Médicamenteux</b>' + txAxesSummaryText(t.axes.medicamenteux, TX_MEDIC_OPTIONS) + '</div>' +
+            '<div class="recap-tx"><b>Traitement final</b>' + finalAxesText + '</div>' +
+          '</div>';
+        }
         var finalText = t.final !== null ? FINAL_OPTIONS[t.final] : 'Le geste d\'urgence est déjà le traitement définitif.';
         return '<div class="recap-variant">' +
           (t.condition ? '<div class="recap-variant-label">' + t.condition + '</div>' : '') +
