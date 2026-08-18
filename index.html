@@ -3224,13 +3224,13 @@
       }
 
       if(txStage === 'urgence1'){
-        html += '<p class="tx-stage-notice">Ceci concerne uniquement le <strong>traitement d\'urgence</strong> — le geste réalisé aujourd\'hui, à ce rendez-vous.</p>' +
+        html += '<p class="tx-stage-notice" id="tx-stage-notice">Ceci concerne uniquement le <strong>traitement d\'urgence</strong> — le geste réalisé aujourd\'hui, à ce rendez-vous.</p>' +
           txCheckboxGroupHtml('Geste coronaire', TX_CORONAIRE_OPTIONS, 'coronaire') +
           txCheckboxGroupHtml('Geste chirurgical', TX_CHIRURGICAL_OPTIONS, 'chirurgical') +
           txCheckboxGroupHtml('Geste médicamenteux', TX_MEDIC_OPTIONS, 'medicamenteux') +
           '<div class="result-actions"><button class="btn-primary" id="tx-step-submit-btn">Valider</button></div>';
       } else if(txStage === 'final'){
-        html += '<p class="tx-stage-notice">Ceci concerne le <strong>traitement final</strong> — lors du rendez-vous de soins programmé, une fois l\'épisode d\'urgence géré.</p>';
+        html += '<p class="tx-stage-notice" id="tx-stage-notice">Il s\'agit maintenant du <strong>traitement final</strong>, au moment du rendez-vous de soins programmé, quelques jours ou semaines après le traitement d\'urgence.</p>';
         if(txVariant.finalLine){
           html += '<p class="tx-patient-line">' + txVariant.finalLine + '</p>';
         }
@@ -3281,6 +3281,8 @@
         if(txVariant.finalAxes){
           txStage = 'final';
           refreshFade(document.getElementById('tx-multistep-choice'), renderTxMultistep);
+          var stageNotice = document.getElementById('tx-stage-notice');
+          if(stageNotice) stageNotice.scrollIntoView({behavior:'smooth', block:'start'});
         } else {
           showTxMultistepResult();
         }
