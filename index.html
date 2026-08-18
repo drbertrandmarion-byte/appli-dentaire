@@ -1313,6 +1313,7 @@
     {id:'curetage', label:"Curetage carieux avec coiffage (résine temporaire biocompatible, digue obligatoire)"},
     {id:'pulpotomie_therapeutique', label:"Pulpotomie thérapeutique (digue obligatoire)"},
     {id:'pulpotomie_urgence', label:"Pulpotomie d'urgence (digue obligatoire)"},
+    {id:'pulpectomie_therapeutique', label:"Pulpectomie thérapeutique (digue obligatoire)"},
     {id:'pulpectomie_urgence', label:"Pulpectomie d'urgence (digue obligatoire)"}
   ];
   var TX_CHIRURGICAL_OPTIONS = [
@@ -1386,58 +1387,74 @@
       {
         patientLine: "Lucas, 15 ans, consulte pour une douleur intense et spontanée. Le diagnostic de pulpite aiguë irréversible est posé. L'exposition pulpaire carieuse montre un saignement discret, facilement contrôlable, sur un tissu pulpaire rouge rosé et vivant.",
         depth: "supra_gingival", apical: false,
-        urgence1: 2 // Pulpotomie thérapeutique — traitement définitif, pas de question complémentaire
+        rationaleKey: 'facile',
+        axes: {coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
       },
       {
         patientLine: "Hugo, 18 ans, consulte pour une douleur aiguë spontanée. Le diagnostic de pulpite aiguë irréversible est posé. L'exposition pulpaire carieuse montre un saignement modéré mais rapidement contrôlable, sur un tissu pulpaire rouge rosé et vivant.",
         depth: "supra_gingival", apical: false,
-        urgence1: 2
+        rationaleKey: 'facile',
+        axes: {coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
       },
       {
         patientLine: "Emma, 27 ans, présente une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement modéré, contrôlable en quelques minutes, sur un tissu pulpaire rouge rosé et vivant.",
         depth: "supra_gingival", apical: false,
-        urgence1: 2
+        rationaleKey: 'facile',
+        axes: {coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
       },
       {
         patientLine: "Mathis, 29 ans, consulte pour une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement faible à modéré, rapidement et durablement contrôlable, sur un tissu pulpaire rouge rosé et vivant.",
         depth: "supra_gingival", apical: false,
-        urgence1: 2
+        rationaleKey: 'facile',
+        axes: {coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
       },
       {
         patientLine: "Thomas, 32 ans, consulte pour une douleur intense. Le diagnostic de pulpite aiguë irréversible est posé. L'exposition pulpaire carieuse montre un saignement assez important, difficile à stabiliser au niveau des entrées canalaires, mais qui finit par être contrôlé.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement doit être programmé ?",
-        urgence1: 3, final: 2 // Pulpotomie d'urgence -> traitement endodontique final
+        rationaleKey: 'difficile',
+        axes: {coronaire:['pulpotomie_urgence'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Sophie, 45 ans, consulte pour une douleur caractéristique d'une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement modéré, difficile à stabiliser compte tenu de l'âge de la patiente, mais qui reste contrôlable.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est prévu ?",
-        urgence1: 3, final: 2
+        rationaleKey: 'difficile',
+        axes: {coronaire:['pulpotomie_urgence'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Jean, 68 ans, consulte pour une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement initialement important ; l'hémostase, difficile compte tenu de l'âge du patient, finit par être obtenue.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
-        urgence1: 3, final: 2
+        rationaleKey: 'difficile',
+        axes: {coronaire:['pulpotomie_urgence'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Michel, 60 ans, consulte pour une douleur aiguë spontanée compatible avec une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement canalaire très abondant et persistant, impossible à stabiliser malgré plusieurs tentatives d'hémostase.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
-        urgence1: 4, final: 2 // Pulpectomie d'urgence -> traitement endodontique final
+        rationaleKey: 'impossible',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Léa, 24 ans, présente une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement canalaire important, qui reprend systématiquement malgré plusieurs tentatives d'hémostase : les entrées canalaires restent impossibles à stabiliser.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
-        urgence1: 4, final: 2
+        rationaleKey: 'impossible',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Chloé, 21 ans, présente une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement canalaire très abondant et persistant, malgré les mesures d'hémostase mises en œuvre : aucune stabilisation satisfaisante n'est obtenue.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
-        urgence1: 4, final: 2
+        rationaleKey: 'impossible',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       }
     ],
 
@@ -1448,31 +1465,41 @@
         patientLine: "Élise, 17 ans, consulte pour une douleur brève provoquée par le froid et les aliments sucrés. La douleur disparaît rapidement après l'arrêt du stimulus et n'est pas spontanée. Le diagnostic de pulpite réversible est posé. L'examen clinique met en évidence une lésion carieuse profonde, sans signe clinique ou radiographique en faveur d'une atteinte pulpaire irréversible.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif prévoyez-vous ?",
-        urgence1: 1, final: 1
+        rationaleKey: 'default',
+        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['soin'], medicamenteux:[]}
       },
       {
         patientLine: "Thomas, 28 ans, consulte pour une sensibilité au froid sur une dent présentant une carie. La douleur est courte, localisée et disparaît en quelques secondes après retrait du stimulus. Le diagnostic de pulpite réversible est posé.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quelle prise en charge choisissez-vous ?",
-        urgence1: 1, final: 1
+        rationaleKey: 'default',
+        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['soin'], medicamenteux:[]}
       },
       {
         patientLine: "Sophie, 42 ans, consulte pour une douleur provoquée par le froid au niveau d'une molaire. La douleur est immédiate mais très brève et cesse spontanément dès que le stimulus disparaît. Le diagnostic de pulpite réversible est posé. La radiographie montre une carie dentinaire sans signe d'atteinte périapicale. Il n'existe pas de douleur spontanée ni de douleur nocturne.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
-        urgence1: 1, final: 1
+        rationaleKey: 'default',
+        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['soin'], medicamenteux:[]}
       },
       {
         patientLine: "Lucas, 12 ans, consulte pour une douleur provoquée par les boissons froides et les aliments sucrés. La douleur est courte et disparaît immédiatement après l'arrêt du stimulus. Le diagnostic de pulpite réversible est posé. La dent présente une carie profonde proche de la pulpe, mais aucun signe clinique d'atteinte pulpaire irréversible.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
-        urgence1: 1, final: 1
+        rationaleKey: 'default',
+        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['soin'], medicamenteux:[]}
       },
       {
         patientLine: "Camille, 35 ans, consulte pour une sensibilité au froid sur une prémolaire présentant une restauration ancienne défectueuse. La douleur est déclenchée uniquement par le froid, reste faible et disparaît rapidement après retrait du stimulus. Le diagnostic de pulpite réversible est posé. L'ancienne restauration est infiltrée et doit être remplacée. Aucun signe de nécrose ou de pulpite irréversible n'est retrouvé.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
-        urgence1: 1, final: 1
+        rationaleKey: 'default',
+        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['soin'], medicamenteux:[]}
       }
     ],
 
@@ -1482,31 +1509,41 @@
         patientLine: "Nora, 8 ans, vient pour un contrôle de routine sans aucune plainte. L'examen clinique ne retrouve aucune lésion carieuse ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
-        urgence1: 0, final: 0
+        rationaleKey: 'default',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['rien'], medicamenteux:[]}
       },
       {
         patientLine: "Ethan, 25 ans, consulte dans le cadre d'un bilan préorthodontique. Aucune plainte, examen clinique normal ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
-        urgence1: 0, final: 0
+        rationaleKey: 'default',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['rien'], medicamenteux:[]}
       },
       {
         patientLine: "Gabriel, 60 ans, consulte pour un bilan buccodentaire général. La dent examinée est asymptomatique ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
-        urgence1: 0, final: 0
+        rationaleKey: 'default',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['rien'], medicamenteux:[]}
       },
       {
         patientLine: "Alice, 33 ans, s'inquiète pour une ancienne restauration qu'elle trouve suspecte mais indolore. L'examen clinique confirme une restauration étanche ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
-        urgence1: 0, final: 0
+        rationaleKey: 'default',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['rien'], medicamenteux:[]}
       },
       {
         patientLine: "Sarah, 16 ans, vient pour sa visite de contrôle annuelle. Aucune plainte ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
-        urgence1: 0, final: 0
+        rationaleKey: 'default',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['rien'], medicamenteux:[]}
       }
     ],
 
@@ -1516,31 +1553,41 @@
         patientLine: "Yasmine, 22 ans, décrit un léger picotement au contact du froid, très fugace, et parfois au sucré. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
-        urgence1: 0, final: 1
+        rationaleKey: 'default',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['soin'], medicamenteux:[]}
       },
       {
         patientLine: "Théo, 14 ans, signale une sensibilité très légère et inconstante au froid sur une molaire, qui disparaît immédiatement à l'arrêt du stimulus. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quelle prise en charge choisissez-vous ?",
-        urgence1: 0, final: 1
+        rationaleKey: 'default',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['soin'], medicamenteux:[]}
       },
       {
         patientLine: "Chiara, 40 ans, a remarqué une petite gêne fugace au froid depuis quelques jours, sans autre symptôme. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
-        urgence1: 0, final: 1
+        rationaleKey: 'default',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['soin'], medicamenteux:[]}
       },
       {
         patientLine: "Robert, 52 ans, décrit une sensibilité discrète et passagère au contact du froid sur une prémolaire. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
-        urgence1: 0, final: 1
+        rationaleKey: 'default',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['soin'], medicamenteux:[]}
       },
       {
         patientLine: "Sylvie, 29 ans, rapporte une gêne très légère et occasionnelle au sucré, sans douleur spontanée. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
-        urgence1: 0, final: 1
+        rationaleKey: 'default',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]},
+        finalAxes: {geste:['soin'], medicamenteux:[]}
       }
     ],
 
@@ -1550,31 +1597,41 @@
         patientLine: "Frédéric, 45 ans, présente une molaire pluriradiculée très douloureuse. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement définitif choisissez-vous ?",
-        urgence1: 4, final: 2
+        rationaleKey: 'default',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Amandine, 31 ans, consulte pour une douleur spontanée intense et irradiante sur une molaire pluriradiculée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle prise en charge choisissez-vous ?",
-        urgence1: 4, final: 2
+        rationaleKey: 'default',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Bruno, 58 ans, présente une douleur nocturne et pulsatile par moments sur une molaire pluriradiculée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
-        urgence1: 4, final: 2
+        rationaleKey: 'default',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Nathalie, 27 ans, consulte pour une douleur vive à la percussion sur une molaire pluriradiculée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
-        urgence1: 4, final: 2
+        rationaleKey: 'default',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Olivier, 39 ans, présente une sensation de dent longue et une gêne inconstante au chaud sur une molaire pluriradiculée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
-        urgence1: 4, final: 2
+        rationaleKey: 'default',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       }
     ],
 
@@ -1661,31 +1718,41 @@
         patientLine: "Céline, 34 ans, se plaint d'une dent douloureuse à la mastication et d'une sensation de dent « plus haute » que les autres, sur une dent porteuse d'une carie ancienne non traitée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
-        urgence1: 4, final: 2
+        rationaleKey: 'default',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Pierre, 19 ans, se plaint d'une gêne à la mastication et d'une sensation de dent longue, sur une dent porteuse d'une carie profonde évoluant depuis plusieurs mois. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle prise en charge choisissez-vous ?",
-        urgence1: 4, final: 2
+        rationaleKey: 'default',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Isabelle, 47 ans, consulte pour une douleur récente à la percussion et une sensation de dent longue, sur une dent porteuse d'une carie ancienne et volumineuse. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
-        urgence1: 4, final: 2
+        rationaleKey: 'default',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Xavier, 55 ans, présente une gêne franche à la mastication et une sensation de dent longue, sur une dent porteuse d'une volumineuse carie proche de la pulpe. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
-        urgence1: 4, final: 2
+        rationaleKey: 'default',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Valérie, 24 ans, consulte pour une douleur vive à la percussion et à la palpation apicale, sur une dent porteuse d'une carie profonde évoluant depuis plusieurs mois. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
-        urgence1: 4, final: 2
+        rationaleKey: 'default',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       }
     ],
 
@@ -1744,29 +1811,37 @@
         patientLine: "Corinne, 44 ans, présente une gêne discrète à la mastication, sans douleur franche, avec un petit bouton visible sur la gencive en regard de l'apex. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée et arrondie.",
         depth: "infra_gingival", apical: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
-        urgence1: 6, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Damien, 38 ans, consulte pour un léger inconfort à la percussion et un petit bouton visible sur la gencive en regard de l'apex, sans douleur franche. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée et arrondie.",
         depth: "infra_gingival", apical: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
-        urgence1: 6, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Élodie, 30 ans, présente une gêne légère à la mastication, avec un petit bouton visible sur la gencive en regard de l'apex, sans douleur franche. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée et arrondie.",
         depth: "infra_gingival", apical: true,
         finalLine: "Quel traitement définitif programmez-vous ?",
-        urgence1: 6, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Grégoire, 57 ans, consulte pour un petit bouton visible sur la gencive en regard de l'apex, sans douleur franche. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale bien limitée (image de granulome/kyste).",
         depth: "infra_osseux", apical: true,
-        urgence1: 7 // Extraction d'urgence — pas de question complémentaire
+        rationaleKey: 'extraction',
+        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
       },
       {
         patientLine: "Karim, 65 ans, présente une gêne légère à la mastication et un petit bouton visible sur la gencive en regard de l'apex. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale bien limitée (image de granulome/kyste).",
         depth: "infra_osseux", apical: true,
-        urgence1: 7
+        rationaleKey: 'extraction',
+        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
       }
     ],
 
@@ -1778,29 +1853,37 @@
         patientLine: "Julien, 26 ans, présente une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, une sensation de dent longue, et une douleur constante apaisée par le froid. La radiographie montre un délabrement supra-gingival, juste au-dessus du rebord gingival, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
         depth: "supra_gingival", apical: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois l'épisode infectieux contrôlé ?",
-        urgence1: 11, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Nadia, 33 ans, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
         depth: "juxta_gingival", apical: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
-        urgence1: 11, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Marc, 48 ans, présente une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement choisissez-vous, une fois l'épisode infectieux contrôlé ?",
-        urgence1: 11, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Inès, 55 ans, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
         depth: "infra_osseux", apical: true,
-        urgence1: 12 // Extraction avec antibiothérapie — pas de question complémentaire
+        rationaleKey: 'extraction',
+        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
       },
       {
         patientLine: "Manon, 62 ans, présente une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
         depth: "infra_osseux", apical: true,
-        urgence1: 12
+        rationaleKey: 'extraction',
+        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
       }
     ],
 
@@ -1810,29 +1893,37 @@
         patientLine: "Victor, 29 ans, présente une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement supra-gingival, juste au-dessus du rebord gingival, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
         depth: "supra_gingival", apical: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois la collection résorbée ?",
-        urgence1: 8, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['pulpectomie_therapeutique'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Laura, 41 ans, consulte pour une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
         depth: "juxta_gingival", apical: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
-        urgence1: 8, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['pulpectomie_therapeutique'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Hakim, 53 ans, présente une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement choisissez-vous, une fois la collection résorbée ?",
-        urgence1: 8, final: 2
+        rationaleKey: 'conservable',
+        axes: {coronaire:['pulpectomie_therapeutique'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Paul, 59 ans, consulte pour une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de la collection purulente des tissus mous.",
         depth: "infra_osseux", apical: true,
-        urgence1: 9
+        rationaleKey: 'extraction',
+        axes: {coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
       },
       {
         patientLine: "Zoé, 22 ans, présente une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de la collection purulente des tissus mous.",
         depth: "infra_osseux", apical: true,
-        urgence1: 9
+        rationaleKey: 'extraction',
+        axes: {coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
       }
     ],
 
@@ -1842,27 +1933,27 @@
       {
         patientLine: "Adam, 45 ans, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre à 39°C, une dysphagie, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
-        urgence1: 10
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:[]}
       },
       {
         patientLine: "Claire, 52 ans, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
-        urgence1: 10
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:[]}
       },
       {
         patientLine: "Antoine, 38 ans, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
-        urgence1: 10
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:[]}
       },
       {
         patientLine: "Nathan, 60 ans, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
-        urgence1: 10
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:[]}
       },
       {
         patientLine: "Julie, 33 ans, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
-        urgence1: 10
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:[]}
       }
     ]
   };
@@ -1870,37 +1961,37 @@
   // Fiche récapitulative du mode "choix thérapeutique" : pas tous les cas nommés, seulement les
   // différentes situations thérapeutiques distinctes rencontrées pour chaque diagnostic.
   var TX_RECAP_TYPES = {
-    saine:              [ {condition:null, urgence1:0, final:0} ],
-    hyperhemie:         [ {condition:null, urgence1:0, final:1} ],
-    reversible:         [ {condition:null, urgence1:1, final:1} ],
+    saine:              [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]}, finalAxes:{geste:['rien'], medicamenteux:[]}} ],
+    hyperhemie:         [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]}, finalAxes:{geste:['soin'], medicamenteux:[]}} ],
+    reversible:         [ {condition:null, axes:{coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:[]}, finalAxes:{geste:['soin'], medicamenteux:[]}} ],
     irreversible: [
-      {condition:"Hémostase facile, patient jeune", urgence1:2, final:null},
-      {condition:"Hémostase difficile mais stabilisée, patient de plus de 30 ans", urgence1:3, final:2},
-      {condition:"Hémostase impossible à stabiliser", urgence1:4, final:2}
+      {condition:"Hémostase facile, patient jeune", axes:{coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:null},
+      {condition:"Hémostase difficile mais stabilisée, patient de plus de 30 ans", axes:{coronaire:['pulpotomie_urgence'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Hémostase impossible à stabiliser", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}}
     ],
-    syndrome_mixte:     [ {condition:null, urgence1:4, final:2} ],
+    syndrome_mixte:     [ {condition:null, axes:{coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}} ],
     necrose: [
       {condition:"Dent conservable", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
       {condition:"Dent non conservable (limite infra-osseuse)", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:[]}, finalAxes:{geste:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}}
     ],
-    parodontite:        [ {condition:null, urgence1:4, final:2} ],
+    parodontite:        [ {condition:null, axes:{coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}} ],
     abces_aigu: [
       {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique', 'antibiotiques']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null}
     ],
     abces_chronique: [
-      {condition:"Limite infra-gingivale (dent conservable)", urgence1:6, final:2},
-      {condition:"Limite infra-osseuse (extraction de la dent)", urgence1:7, final:null}
+      {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_sereuse: [
-      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", urgence1:11, final:2},
-      {condition:"Limite infra-osseuse (extraction de la dent)", urgence1:12, final:null}
+      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_suppuree: [
-      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", urgence1:8, final:2},
-      {condition:"Limite infra-osseuse (extraction de la dent)", urgence1:9, final:null}
+      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_therapeutique'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null}
     ],
-    cellulite_diffuse:  [ {condition:null, urgence1:10, final:null} ]
+    cellulite_diffuse:  [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['referer'], medicamenteux:[]}, finalAxes:null} ]
   };
 
   // Paragraphe explicatif affiché sur l'écran de résultat du mode "choix thérapeutique", pour justifier
@@ -1911,10 +2002,10 @@
     saine: "Aucun processus pathologique n'est retrouvé : pas de douleur, tests de vitalité normaux, ligament desmodontal sain. Il n'y a donc ni geste d'urgence ni traitement à réaliser — la dent ne nécessite aucune intervention.",
     hyperhemie: "La réaction pulpaire est congestive et transitoire, pas une inflammation vraie : le stimulus déclenche une sensation brève qui s'arrête dès son retrait, sans douleur spontanée. Aucun geste d'urgence n'est donc justifié. Il suffit de traiter la cause — la carie superficielle à l'origine de l'irritation — par une obturation définitive, pour permettre à la pulpe de récupérer complètement.",
     reversible: "L'inflammation pulpaire reste légère et réversible si la cause est traitée à temps : la douleur au froid ou au sucré cesse dès l'arrêt du stimulus, sans douleur spontanée ni nocturne. Le geste d'urgence — curetage carieux avec coiffage pulpaire et restauration temporaire biocompatible — élimine le tissu carieux infecté tout en protégeant la pulpe, pour lui permettre de cicatriser. Le traitement définitif (obturation en résine) peut ensuite être réalisé sur un rendez-vous classique.",
-    irreversible: { byUrgence: {
-      2: "Le saignement à l'ouverture pulpaire est discret et facilement contrôlable : l'inflammation reste localisée à la chambre pulpaire coronaire, sans avoir gagné les canaux radiculaires. On peut donc se limiter à une pulpotomie thérapeutique — l'ablation de la pulpe camérale enflammée, en préservant la pulpe radiculaire saine, coiffée par un matériau biocéramique. C'est un geste conservateur qui constitue à lui seul le traitement définitif, sans étape supplémentaire à programmer.",
-      3: "Le saignement à l'ouverture pulpaire est plus important et difficile à stabiliser, ce qui traduit une inflammation ayant probablement débordé au-delà de la chambre pulpaire vers les entrées canalaires. Une simple pulpotomie thérapeutique ne suffit plus à garantir un tissu résiduel sain : on réalise donc une pulpotomie d'urgence, un geste palliatif pour soulager la douleur et stabiliser le saignement, qui doit impérativement être complété par un traitement endodontique complet à distance, une fois l'épisode aigu passé.",
-      4: "Lorsque le saignement canalaire n'est pas maîtrisable, cela traduit une inflammation profonde de la pulpe, qui a gagné les canaux radiculaires. Il faut alors réaliser un parage canalaire (pulpectomie d'urgence) : l'irrigation à l'hypochlorite de sodium désorganise les tissus vasculaires et provoque une nécrose tissulaire contrôlée, ce qui stoppe le saignement. Ce geste évite une remise sous pression de la dent et la réapparition de signes de pulpite qui imposeraient un second passage en urgence. Un traitement endodontique complet est ensuite programmé pour finaliser la désinfection et l'obturation canalaire."
+    irreversible: { byKey: {
+      facile: "Le saignement à l'ouverture pulpaire est discret et facilement contrôlable : l'inflammation reste localisée à la chambre pulpaire coronaire, sans avoir gagné les canaux radiculaires. On peut donc se limiter à une pulpotomie thérapeutique — l'ablation de la pulpe camérale enflammée, en préservant la pulpe radiculaire saine, coiffée par un matériau biocéramique. C'est un geste conservateur qui constitue à lui seul le traitement définitif, sans étape supplémentaire à programmer. Un AINS et un antalgique accompagnent le geste, l'inflammation pulpaire aiguë justifiant les deux.",
+      difficile: "Le saignement à l'ouverture pulpaire est plus important et difficile à stabiliser, ce qui traduit une inflammation ayant probablement débordé au-delà de la chambre pulpaire vers les entrées canalaires. Une simple pulpotomie thérapeutique ne suffit plus à garantir un tissu résiduel sain : on réalise donc une pulpotomie d'urgence, un geste palliatif pour soulager la douleur et stabiliser le saignement, associé à un AINS et un antalgique, qui doit impérativement être complété par un traitement endodontique complet à distance (avec un antalgique pour cette séance), une fois l'épisode aigu passé.",
+      impossible: "Lorsque le saignement canalaire n'est pas maîtrisable, cela traduit une inflammation profonde de la pulpe, qui a gagné les canaux radiculaires. Il faut alors réaliser un parage canalaire (pulpectomie d'urgence) : l'irrigation à l'hypochlorite de sodium désorganise les tissus vasculaires et provoque une nécrose tissulaire contrôlée, ce qui stoppe le saignement. Ce geste évite une remise sous pression de la dent et la réapparition de signes de pulpite qui imposeraient un second passage en urgence, et s'accompagne d'un AINS et d'un antalgique. Un traitement endodontique complet, avec un antalgique pour cette séance, est ensuite programmé pour finaliser la désinfection et l'obturation canalaire."
     }},
     syndrome_mixte: "La dent est pluriradiculée avec un état pulpaire mixte : un canal encore vivant et en inflammation aiguë, un autre déjà nécrosé et potentiellement infecté. Comme il est impossible de traiter différemment chaque canal en urgence, on réalise une pulpectomie d'urgence sur l'ensemble des canaux, y compris le canal encore vital, pour lever la douleur et éviter la prolifération bactérienne depuis le canal nécrosé. Le traitement endodontique complet, à programmer, traite ensuite chaque canal selon son propre état (vital ou nécrosé).",
     necrose: { byKey: {
@@ -1926,17 +2017,17 @@
       conservable: "La collection purulente périapicale débute mais la dent reste conservable (limite infra-gingivale) : le geste d'urgence associe la pulpectomie à un drainage par transfixion apicale, c'est-à-dire le passage volontaire d'un instrument au-delà de l'apex pour créer une voie d'évacuation du pus et lever la pression responsable de la douleur intense — accompagné d'un antalgique et d'une antibiothérapie (la transfixion reste une voie intracanalaire, pas une plaie muqueuse : pas de bain de bouche nécessaire). Le traitement endodontique complet, avec un antalgique pour cette séance, peut ensuite être réalisé dès que la douleur est contrôlée.",
       extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : aucun traitement endodontique ne peut restaurer un support suffisant. Le geste d'urgence est alors l'extraction elle-même, qui traite à la fois la cause de la douleur et supprime définitivement la dent — il n'y a donc pas de traitement différé à programmer. L'extraction ouvrant une plaie muqueuse, elle s'accompagne d'un antalgique, d'une antibiothérapie et d'un bain de bouche."
     }},
-    abces_chronique: { byUrgence: {
-      6: "La collection est déjà drainée en continu par la fistule, ce qui explique la symptomatologie discrète : ce n'est donc pas une urgence vraie. Une pulpectomie peut être réalisée, avec un drainage par la voie fistulaire déjà existante, pour amorcer le traitement sans attendre un rendez-vous supplémentaire. Le traitement endodontique complet est ensuite programmé normalement.",
-      7: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable, même si ce n'est pas une urgence vraie compte tenu de la symptomatologie discrète et du drainage fistulaire déjà en place : l'extraction, à programmer, reste le seul geste utile — aucun traitement endodontique ne serait durable sur une dent non conservable."
+    abces_chronique: { byKey: {
+      conservable: "La collection est déjà drainée en continu par la fistule, ce qui explique la symptomatologie discrète : ce n'est donc pas une urgence vraie. Une pulpectomie peut être réalisée, avec un drainage par la voie fistulaire déjà existante, pour amorcer le traitement sans attendre un rendez-vous supplémentaire — accompagnée d'un antalgique et d'un bain de bouche, la voie fistulaire étant une plaie muqueuse (pas d'antibiothérapie : l'infection est déjà drainée, pas active). Le traitement endodontique complet, avec un antalgique, est ensuite programmé normalement.",
+      extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable, même si ce n'est pas une urgence vraie compte tenu de la symptomatologie discrète et du drainage fistulaire déjà en place : l'extraction, à programmer, reste le seul geste utile — aucun traitement endodontique ne serait durable sur une dent non conservable. Un antalgique et un bain de bouche accompagnent l'extraction ; pas d'antibiothérapie, l'infection étant déjà drainée."
     }},
-    cellulite_sereuse: { byUrgence: {
-      11: "L'infection a diffusé dans les tissus mous mais reste au stade séreux, sans collection purulente constituée — il n'y a donc rien à drainer. Le geste d'urgence associe la pulpectomie, pour supprimer le foyer infectieux pulpaire à l'origine de la diffusion, à une antibiothérapie pour contrôler l'infection des tissus mous. Le traitement endodontique complet est réalisé une fois l'épisode infectieux maîtrisé.",
-      12: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, associée à une antibiothérapie pour contrôler la diffusion infectieuse dans les tissus mous. Le stade restant séreux, sans collection constituée, aucun drainage n'est nécessaire."
+    cellulite_sereuse: { byKey: {
+      conservable: "L'infection a diffusé dans les tissus mous mais reste au stade séreux, sans collection purulente constituée — il n'y a donc rien à drainer. Le geste d'urgence associe la pulpectomie, pour supprimer le foyer infectieux pulpaire à l'origine de la diffusion, à un antalgique et une antibiothérapie pour contrôler l'infection des tissus mous. Le traitement endodontique complet, avec un antalgique, est réalisé une fois l'épisode infectieux maîtrisé.",
+      extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, associée à un antalgique et une antibiothérapie pour contrôler la diffusion infectieuse dans les tissus mous, ainsi qu'à un bain de bouche du fait de la plaie d'extraction. Le stade restant séreux, sans collection constituée, aucun drainage supplémentaire n'est nécessaire."
     }},
-    cellulite_suppuree: { byUrgence: {
-      8: "La collection purulente est déjà constituée dans les tissus mous (signe du godet positif) : il faut à la fois traiter la cause — la pulpectomie, qui supprime le foyer infectieux pulpaire — et évacuer le pus par un drainage muqueux, associé à une antibiothérapie. Le traitement endodontique complet est réalisé une fois la collection résorbée.",
-      9: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, mais la collection purulente déjà constituée impose en plus un drainage et une antibiothérapie, pour évacuer le pus et contrôler l'infection des tissus mous."
+    cellulite_suppuree: { byKey: {
+      conservable: "La collection purulente est déjà constituée dans les tissus mous (signe du godet positif) : il faut à la fois traiter la cause — la pulpectomie thérapeutique, qui supprime le foyer infectieux pulpaire — et évacuer le pus par un drainage muqueux, associé à un antalgique, une antibiothérapie et un bain de bouche (la voie muqueuse étant une plaie ouverte). Le traitement endodontique complet, avec un antalgique, est réalisé une fois la collection résorbée.",
+      extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, mais la collection purulente déjà constituée impose en plus un drainage par voie muqueuse, un antalgique, une antibiothérapie et un bain de bouche, pour évacuer le pus et contrôler l'infection des tissus mous."
     }},
     cellulite_diffuse: "L'infection progresse rapidement dans plusieurs espaces celluleux, sans tendance à la collection, avec un risque d'atteinte des voies aériennes (fièvre élevée, dysphagie, trismus serré). C'est une urgence vitale qui dépasse le cadre du cabinet dentaire : il faut référer immédiatement le patient en milieu hospitalier, le plus souvent en chirurgie maxillo-faciale, pour un drainage chirurgical large sous couverture antibiotique intraveineuse et une surveillance des voies aériennes."
   };
