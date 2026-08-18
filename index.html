@@ -1772,18 +1772,19 @@
     // conservable ; extraction d'urgence d'emblée (sans question complémentaire) si le délabrement est
     // infra-osseux.
     // Abcès apical aigu : modèle en cases à cocher. Cas conservable (infra-gingival) : pulpectomie
-    // d'urgence + drainage par transfixion apicale + antalgique/antibiotiques (pas de bain de bouche,
-    // la transfixion n'est pas une voie d'ouverture muqueuse) ; traitement final = endo complet +
-    // antalgique. Cas non conservable (infra-osseux) : extraction d'urgence, seule et suffisante
-    // (aucun geste coronaire), avec antalgique + antibiotiques + bain de bouche (extraction = plaie
-    // muqueuse) ; pas de traitement final séparé, l'extraction est déjà le geste définitif.
+    // d'urgence + drainage par transfixion apicale + antalgique seul (pas de bain de bouche, la
+    // transfixion n'est pas une voie d'ouverture muqueuse ; pas d'antibiotique, infection localisée
+    // et drainée) ; traitement final = endo complet + antalgique. Cas non conservable (infra-osseux) :
+    // extraction d'urgence, seule et suffisante (aucun geste coronaire), avec antalgique + bain de
+    // bouche (extraction = plaie muqueuse, pas d'antibiotique) ; pas de traitement final séparé,
+    // l'extraction est déjà le geste définitif.
     abces_aigu: [
       {
         patientLine: "Denis, 41 ans, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une zone de radioclarté bien délimitée à l'apex de la racine.",
         depth: "infra_gingival", apical: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique', 'antibiotiques']},
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1791,7 +1792,7 @@
         depth: "infra_gingival", apical: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique', 'antibiotiques']},
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1799,20 +1800,20 @@
         depth: "infra_gingival", apical: true,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique', 'antibiotiques']},
+        axes: {coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Aurélie, 62 ans, consulte pour une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse zone de radioclarté à l'apex de la racine.",
         depth: "infra_osseux", apical: true,
         rationaleKey: 'extraction',
-        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
+        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
       },
       {
         patientLine: "Yves, 68 ans, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse zone de radioclarté à l'apex de la racine.",
         depth: "infra_osseux", apical: true,
         rationaleKey: 'extraction',
-        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
+        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
       }
     ],
 
@@ -1988,8 +1989,8 @@
     ],
     parodontite:        [ {condition:null, axes:{coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}} ],
     abces_aigu: [
-      {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique', 'antibiotiques']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null}
+      {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     abces_chronique: [
       {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
@@ -2026,8 +2027,8 @@
     }},
     parodontite: "La pulpe est déjà nécrosée et l'inflammation a gagné le ligament parodontal apical, d'où la douleur à la percussion et la sensation de dent longue. Il n'y a pas encore de collection purulente : le geste d'urgence est donc une pulpectomie, pour éliminer le contenu canalaire infecté et désamorcer l'inflammation apicale, avant de réaliser le traitement endodontique complet.",
     abces_aigu: { byKey: {
-      conservable: "La collection purulente périapicale débute mais la dent reste conservable (limite infra-gingivale) : le geste d'urgence associe la pulpectomie à un drainage par transfixion apicale, c'est-à-dire le passage volontaire d'un instrument au-delà de l'apex pour créer une voie d'évacuation du pus et lever la pression responsable de la douleur intense — accompagné d'un antalgique et d'une antibiothérapie (la transfixion reste une voie intracanalaire, pas une plaie muqueuse : pas de bain de bouche nécessaire). Le traitement endodontique complet, avec un antalgique pour cette séance, peut ensuite être réalisé dès que la douleur est contrôlée.",
-      extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : aucun traitement endodontique ne peut restaurer un support suffisant. Le geste d'urgence est alors l'extraction elle-même, qui traite à la fois la cause de la douleur et supprime définitivement la dent — il n'y a donc pas de traitement différé à programmer. L'extraction ouvrant une plaie muqueuse, elle s'accompagne d'un antalgique, d'une antibiothérapie et d'un bain de bouche."
+      conservable: "La collection purulente périapicale débute mais la dent reste conservable (limite infra-gingivale) : le geste d'urgence associe la pulpectomie à un drainage par transfixion apicale, c'est-à-dire le passage volontaire d'un instrument au-delà de l'apex pour créer une voie d'évacuation du pus et lever la pression responsable de la douleur intense — accompagné d'un antalgique (la transfixion reste une voie intracanalaire, pas une plaie muqueuse : pas de bain de bouche nécessaire ; l'infection restant localisée et désormais drainée, une antibiothérapie n'est pas justifiée). Le traitement endodontique complet, avec un antalgique pour cette séance, peut ensuite être réalisé dès que la douleur est contrôlée.",
+      extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : aucun traitement endodontique ne peut restaurer un support suffisant. Le geste d'urgence est alors l'extraction elle-même, qui traite à la fois la cause de la douleur et supprime définitivement la dent — il n'y a donc pas de traitement différé à programmer. L'extraction ouvrant une plaie muqueuse, elle s'accompagne d'un antalgique et d'un bain de bouche ; l'infection restant localisée et désormais évacuée par l'alvéole, une antibiothérapie n'est pas nécessaire."
     }},
     abces_chronique: { byKey: {
       conservable: "La collection est déjà drainée en continu par la fistule, ce qui explique la symptomatologie discrète : ce n'est donc pas une urgence vraie. Une pulpectomie peut être réalisée, avec un drainage par la voie fistulaire déjà existante, pour amorcer le traitement sans attendre un rendez-vous supplémentaire — accompagnée d'un antalgique et d'un bain de bouche, la voie fistulaire étant une plaie muqueuse (pas d'antibiothérapie : l'infection est déjà drainée, pas active). Le traitement endodontique complet, avec un antalgique, est ensuite programmé normalement.",
