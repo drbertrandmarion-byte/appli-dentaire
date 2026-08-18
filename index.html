@@ -1320,6 +1320,8 @@
   // indépendants : chaque axe est une liste de cases à cocher, et la bonne réponse est l'ensemble
   // exact des cases attendues (ni oubli, ni case en trop). Diagnostics migrés pour l'instant :
   // abces_aigu et necrose (repérables via la présence du champ "axes" sur leurs variantes).
+  // Couleur du schéma pour une dent déjà traitée par endodontie (canal obturé à la gutta-percha).
+  var TX_GUTTA_COLOR = '#e0895a';
   var TX_CORONAIRE_OPTIONS = [
     {id:'aucun', label:"Aucun geste coronaire"},
     {id:'curetage', label:"Curetage carieux avec coiffage (résine temporaire biocompatible, digue obligatoire)"},
@@ -1346,6 +1348,7 @@
     {id:'rien', label:"Aucun traitement nécessaire"},
     {id:'soin', label:"Soin de la lésion carieuse (résine définitive)"},
     {id:'endo_complet', label:"Traitement endodontique complet"},
+    {id:'retraitement', label:"Retraitement endodontique (dépose et reprise du traitement canalaire)"},
     {id:'extraction', label:"Extraction de la dent (non conservable)"}
   ];
 
@@ -1765,6 +1768,34 @@
         rationaleKey: 'default',
         axes: {coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+      },
+      // Parodontite apicale aiguë sur dent déjà traitée par endodontie (réinfection) : aucun geste
+      // coronaire en urgence puisque le canal est déjà obturé — seuls les médicaments (et l'extraction
+      // si la dent n'est plus conservable) s'appliquent.
+      {
+        patientLine: "Michel, 52 ans, porteur d'une dent déjà traitée par endodontie, se plaint d'une gêne à la mastication et d'une sensation de dent « plus haute » que les autres, sans tuméfaction. La radiographie montre un canal correctement obturé jusqu'à l'apex, avec un ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée. Dent conservable : un retraitement endodontique est envisageable.",
+        alreadyTreated: true,
+        finalLine: "Quel traitement définitif programmez-vous ?",
+        rationaleKey: 'dejaTraiteeConservable',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
+        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Véronique, 39 ans, porteuse d'une dent déjà traitée par endodontie plusieurs années auparavant, consulte pour une douleur à la percussion et une sensation de dent longue, sans tuméfaction. La radiographie montre une obturation canalaire complète jusqu'à l'apex, avec un ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée : la dent reste conservable.",
+        radioText: "Obturation canalaire complète jusqu'à l'apex ; ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée. Dent conservable : un retraitement endodontique est envisageable.",
+        alreadyTreated: true,
+        finalLine: "Quelle prise en charge choisissez-vous ?",
+        rationaleKey: 'dejaTraiteeConservable',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
+        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Roger, 61 ans, porteur d'une dent déjà traitée par endodontie, se plaint d'une gêne à la mastication et d'une sensation de dent longue, sans tuméfaction. La radiographie montre une obturation canalaire ancienne associée à une fracture radiculaire verticale, rendant la dent non conservable : aucun retraitement n'est envisageable.",
+        radioText: "Obturation canalaire ancienne ; fracture radiculaire verticale visible, ligament parodontal apical légèrement élargi. Dent non conservable : le retraitement n'est pas envisageable.",
+        alreadyTreated: true,
+        rationaleKey: 'dejaTraiteeExtraction',
+        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
       }
     ],
 
@@ -1809,10 +1840,32 @@
         rationaleKey: 'extraction',
         axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
       },
+      // Abcès apical aigu sur dent déjà traitée par endodontie (réinfection) : aucun geste coronaire en
+      // urgence (canal déjà obturé), pas encore de collection dans les tissus mous à ce stade donc pas
+      // de drainage muqueux (réservé aux cellulites) ; antibiothérapie pour contrôler l'infection.
       {
-        patientLine: "Yves, 68 ans, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse zone de radioclarté à l'apex de la racine.",
-        depth: "infra_osseux", apical: true,
-        rationaleKey: 'extraction',
+        patientLine: "Nicolas, 47 ans, porteur d'une dent déjà traitée par endodontie, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex, avec une zone de radioclarté bien délimitée à l'apex de la racine : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; zone radioclaire bien délimitée à l'apex, sans collection dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        alreadyTreated: true,
+        finalLine: "Quel traitement définitif choisissez-vous ?",
+        rationaleKey: 'dejaTraiteeConservable',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
+        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Sandrine, 54 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une douleur constante et lancinante, très intense à la percussion et à la palpation, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex, avec une zone de radioclarté bien délimitée à l'apex de la racine : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; zone radioclaire bien délimitée à l'apex, sans collection dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        alreadyTreated: true,
+        finalLine: "Quelle prise en charge choisissez-vous ?",
+        rationaleKey: 'dejaTraiteeConservable',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
+        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Thierry, 63 ans, porteur d'une dent déjà traitée par endodontie, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, sans tuméfaction. La radiographie montre une obturation canalaire incomplète et une fracture radiculaire verticale, rendant la dent non conservable.",
+        radioText: "Obturation canalaire incomplète ; fracture radiculaire verticale visible, volumineuse zone de radioclarté apicale. Dent non conservable : le retraitement n'est pas envisageable.",
+        alreadyTreated: true,
+        rationaleKey: 'dejaTraiteeExtraction',
         axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
       }
     ],
@@ -1846,12 +1899,6 @@
       },
       {
         patientLine: "Grégoire, 57 ans, consulte pour un petit bouton visible sur la gencive en regard de l'apex, sans douleur franche. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale bien limitée (image de granulome/kyste).",
-        depth: "infra_osseux", apical: true,
-        rationaleKey: 'extraction',
-        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
-      },
-      {
-        patientLine: "Karim, 65 ans, présente une gêne légère à la mastication et un petit bouton visible sur la gencive en regard de l'apex. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale bien limitée (image de granulome/kyste).",
         depth: "infra_osseux", apical: true,
         rationaleKey: 'extraction',
         axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
@@ -1892,11 +1939,33 @@
         rationaleKey: 'extraction',
         axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
       },
+      // Cellulite séreuse sur dent déjà traitée par endodontie (réinfection) : aucun geste coronaire en
+      // urgence (canal déjà obturé) ; drainage muqueux si la dent reste conservable, puisque l'infection
+      // a diffusé dans les tissus mous ; antibiothérapie dans tous les cas pour contrôler la diffusion.
       {
-        patientLine: "Manon, 62 ans, présente une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
-        depth: "infra_osseux", apical: true,
-        rationaleKey: 'extraction',
-        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
+        patientLine: "Rémi, 43 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        alreadyTreated: true,
+        finalLine: "Quel traitement définitif programmez-vous, une fois l'épisode infectieux contrôlé ?",
+        rationaleKey: 'dejaTraiteeConservable',
+        axes: {coronaire:['aucun'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
+        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Brigitte, 49 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        alreadyTreated: true,
+        finalLine: "Quelle prise en charge choisissez-vous ?",
+        rationaleKey: 'dejaTraiteeConservable',
+        axes: {coronaire:['aucun'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
+        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Gilbert, 66 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre une fracture radiculaire verticale sur une dent déjà traitée, associée à une volumineuse image radioclaire apicale : la dent n'est pas conservable.",
+        radioText: "Fracture radiculaire verticale sur dent déjà traitée ; volumineuse image radioclaire apicale, foyer de la diffusion infectieuse. Dent non conservable : le retraitement n'est pas envisageable.",
+        alreadyTreated: true,
+        rationaleKey: 'dejaTraiteeExtraction',
+        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
       }
     ],
 
@@ -1932,11 +2001,33 @@
         rationaleKey: 'extraction',
         axes: {coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
       },
+      // Cellulite suppurée sur dent déjà traitée par endodontie (réinfection) : aucun geste coronaire en
+      // urgence (canal déjà obturé) ; drainage muqueux dans tous les cas puisque la collection est
+      // constituée, associé à l'extraction si la dent n'est plus conservable.
       {
-        patientLine: "Zoé, 22 ans, présente une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de la collection purulente des tissus mous.",
-        depth: "infra_osseux", apical: true,
-        rationaleKey: 'extraction',
-        axes: {coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
+        patientLine: "Fabrice, 45 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        alreadyTreated: true,
+        finalLine: "Quel traitement définitif programmez-vous, une fois la collection résorbée ?",
+        rationaleKey: 'dejaTraiteeConservable',
+        axes: {coronaire:['aucun'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
+        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Ghislaine, 51 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        alreadyTreated: true,
+        finalLine: "Quelle prise en charge choisissez-vous ?",
+        rationaleKey: 'dejaTraiteeConservable',
+        axes: {coronaire:['aucun'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
+        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Serge, 64 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre une fracture radiculaire verticale sur une dent déjà traitée, associée à une volumineuse image radioclaire apicale : la dent n'est pas conservable.",
+        radioText: "Fracture radiculaire verticale sur dent déjà traitée ; volumineuse image radioclaire apicale, à l'origine de la collection purulente des tissus mous. Dent non conservable : le retraitement n'est pas envisageable.",
+        alreadyTreated: true,
+        rationaleKey: 'dejaTraiteeExtraction',
+        axes: {coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'bain_bouche']}
       }
     ],
 
@@ -1946,26 +2037,62 @@
       {
         patientLine: "Adam, 45 ans, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre à 39°C, une dysphagie, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
+        rationaleKey: 'initial',
         axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Claire, 52 ans, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
+        rationaleKey: 'initial',
         axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Antoine, 38 ans, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
+        rationaleKey: 'initial',
         axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Nathan, 60 ans, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
+        rationaleKey: 'initial',
         axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Julie, 33 ans, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
         depth: "infra_osseux", apical: true,
+        rationaleKey: 'initial',
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
+      },
+      // Cellulite diffuse sur dent déjà traitée par endodontie : le renvoi hospitalier immédiat reste
+      // la même urgence vitale, que la dent soit ou non conservable — sa conservabilité ne relève de
+      // toute façon pas d'une décision au cabinet à ce stade.
+      {
+        patientLine: "Denise, 56 ans, porteuse d'une dent déjà traitée par endodontie, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie et un trismus serré. La radiographie montre un canal obturé jusqu'à l'apex, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        alreadyTreated: true,
+        rationaleKey: 'dejaTraitee',
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
+      },
+      {
+        patientLine: "Régis, 62 ans, porteur d'une dent déjà traitée par endodontie, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        alreadyTreated: true,
+        rationaleKey: 'dejaTraitee',
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
+      },
+      {
+        patientLine: "Bernadette, 69 ans, porteuse d'une dent déjà traitée par endodontie, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie et un trismus serré. La radiographie montre une fracture radiculaire verticale sur une dent déjà traitée, non conservable, associée à une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        radioText: "Fracture radiculaire verticale sur dent déjà traitée, non conservable ; volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        alreadyTreated: true,
+        rationaleKey: 'dejaTraitee',
+        axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
+      },
+      {
+        patientLine: "Lucien, 74 ans, porteur d'une dent déjà traitée par endodontie, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre une fracture radiculaire verticale sur une dent déjà traitée, non conservable, associée à une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        radioText: "Fracture radiculaire verticale sur dent déjà traitée, non conservable ; volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        alreadyTreated: true,
+        rationaleKey: 'dejaTraitee',
         axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
       }
     ]
@@ -1987,10 +2114,16 @@
       {condition:"Dent conservable", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
       {condition:"Dent non conservable (limite infra-osseuse)", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}}
     ],
-    parodontite:        [ {condition:null, axes:{coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}} ],
+    parodontite: [
+      {condition:"Dent jamais traitée", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
+    ],
     abces_aigu: [
       {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
+      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     abces_chronique: [
       {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
@@ -1998,13 +2131,19 @@
     ],
     cellulite_sereuse: [
       {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null}
+      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['aucun'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_suppuree: [
       {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null}
+      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['aucun'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
-    cellulite_diffuse:  [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}, finalAxes:null} ]
+    cellulite_diffuse: [
+      {condition:"Dent jamais traitée ou déjà traitée", axes:{coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}, finalAxes:null}
+    ]
   };
 
   // Paragraphe explicatif affiché sur l'écran de résultat du mode "choix thérapeutique", pour justifier
@@ -2025,10 +2164,16 @@
       conservable: "La dent n'est pas symptomatique : elle ne nécessite pas de prise en charge urgente avec un geste ou un médicament associé. On programme le traitement endodontique complet sur un créneau classique, avec un antalgique pour la séance de traitement, en expliquant au patient les risques d'une absence de traitement — l'évolution vers une infection périapicale — tout en lui indiquant de revenir consulter en urgence si des symptômes apparaissent.",
       nonconservable: "La dent n'est pas symptomatique et le délabrement infra-osseux la rend non conservable : il n'y a donc rien à faire en urgence, ni geste ni médicament, puisqu'aucune infection active ne le justifie dans l'immédiat. L'extraction est programmée comme traitement final, associée à un antalgique et un bain de bouche pour la gestion post-opératoire de la plaie d'extraction — l'antibiothérapie et les AINS ne sont pas nécessaires puisqu'il n'y a pas d'infection à traiter."
     }},
-    parodontite: "La pulpe est déjà nécrosée et l'inflammation a gagné le ligament parodontal apical, d'où la douleur à la percussion et la sensation de dent longue. Il n'y a pas encore de collection purulente : le geste d'urgence est donc une pulpectomie, pour éliminer le contenu canalaire infecté et désamorcer l'inflammation apicale, avant de réaliser le traitement endodontique complet.",
+    parodontite: { byKey: {
+      "default": "La pulpe est déjà nécrosée et l'inflammation a gagné le ligament parodontal apical, d'où la douleur à la percussion et la sensation de dent longue. Il n'y a pas encore de collection purulente : le geste d'urgence est donc une pulpectomie, pour éliminer le contenu canalaire infecté et désamorcer l'inflammation apicale, avant de réaliser le traitement endodontique complet.",
+      dejaTraiteeConservable: "La dent est déjà traitée par endodontie : il n'y a donc aucun geste coronaire à réaliser, le canal étant déjà obturé. L'inflammation périapicale (douleur à la percussion, sensation de dent longue) traduit une réinfection sans collection constituée ; une antibiothérapie et un antalgique suffisent en urgence, la dent restant conservable. Le retraitement endodontique, avec un antalgique, est ensuite programmé pour reprendre le canal.",
+      dejaTraiteeExtraction: "La dent est déjà traitée par endodontie mais n'est plus conservable (fracture radiculaire, échec du traitement initial) : aucun retraitement n'est possible, aucun geste coronaire n'a donc de sens. L'extraction est le geste d'urgence, associée à un antalgique et un bain de bouche pour la gestion post-opératoire de la plaie ; l'infection restant localisée, une antibiothérapie n'est pas nécessaire."
+    }},
     abces_aigu: { byKey: {
       conservable: "La collection purulente périapicale débute mais la dent reste conservable (limite infra-gingivale) : le geste d'urgence associe la pulpectomie à un drainage par transfixion apicale, c'est-à-dire le passage volontaire d'un instrument au-delà de l'apex pour créer une voie d'évacuation du pus et lever la pression responsable de la douleur intense — accompagné d'un antalgique (la transfixion reste une voie intracanalaire, pas une plaie muqueuse : pas de bain de bouche nécessaire ; l'infection restant localisée et désormais drainée, une antibiothérapie n'est pas justifiée). Le traitement endodontique complet, avec un antalgique pour cette séance, peut ensuite être réalisé dès que la douleur est contrôlée.",
-      extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : aucun traitement endodontique ne peut restaurer un support suffisant. Le geste d'urgence est alors l'extraction elle-même, qui traite à la fois la cause de la douleur et supprime définitivement la dent — il n'y a donc pas de traitement différé à programmer. L'extraction ouvrant une plaie muqueuse, elle s'accompagne d'un antalgique et d'un bain de bouche ; l'infection restant localisée et désormais évacuée par l'alvéole, une antibiothérapie n'est pas nécessaire."
+      extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : aucun traitement endodontique ne peut restaurer un support suffisant. Le geste d'urgence est alors l'extraction elle-même, qui traite à la fois la cause de la douleur et supprime définitivement la dent — il n'y a donc pas de traitement différé à programmer. L'extraction ouvrant une plaie muqueuse, elle s'accompagne d'un antalgique et d'un bain de bouche ; l'infection restant localisée et désormais évacuée par l'alvéole, une antibiothérapie n'est pas nécessaire.",
+      dejaTraiteeConservable: "La dent est déjà traitée par endodontie : aucun geste coronaire n'est nécessaire, le canal étant déjà obturé. La collection périapicale débute mais ne s'est pas encore propagée aux tissus mous (pas de drainage muqueux à ce stade) : une antibiothérapie et un antalgique suffisent, la dent restant conservable. Le retraitement endodontique, avec un antalgique, est ensuite programmé.",
+      dejaTraiteeExtraction: "La dent est déjà traitée par endodontie mais n'est plus conservable (fracture radiculaire, échec du traitement initial) : aucun geste coronaire n'a de sens, et l'extraction devient le seul geste utile, associée à un antalgique et un bain de bouche pour la plaie d'extraction ; l'infection restant localisée, une antibiothérapie n'est pas nécessaire."
     }},
     abces_chronique: { byKey: {
       conservable: "La collection est déjà drainée en continu par la fistule, ce qui explique la symptomatologie discrète : ce n'est donc pas une urgence vraie. Une pulpectomie peut être réalisée, avec un drainage par la voie fistulaire déjà existante, pour amorcer le traitement sans attendre un rendez-vous supplémentaire — accompagnée d'un antalgique et d'un bain de bouche, la voie fistulaire étant une plaie muqueuse (pas d'antibiothérapie : l'infection est déjà drainée, pas active). Le traitement endodontique complet, avec un antalgique, est ensuite programmé normalement.",
@@ -2036,13 +2181,20 @@
     }},
     cellulite_sereuse: { byKey: {
       conservable: "L'infection a diffusé dans les tissus mous mais reste au stade séreux, sans collection purulente constituée — il n'y a donc rien à drainer. Le geste d'urgence associe la pulpectomie, pour supprimer le foyer infectieux pulpaire à l'origine de la diffusion, à un antalgique et une antibiothérapie pour contrôler l'infection des tissus mous. Le traitement endodontique complet, avec un antalgique, est réalisé une fois l'épisode infectieux maîtrisé.",
-      extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, associée à un antalgique et une antibiothérapie pour contrôler la diffusion infectieuse dans les tissus mous, ainsi qu'à un bain de bouche du fait de la plaie d'extraction. Le stade restant séreux, sans collection constituée, aucun drainage supplémentaire n'est nécessaire."
+      extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, associée à un antalgique et une antibiothérapie pour contrôler la diffusion infectieuse dans les tissus mous, ainsi qu'à un bain de bouche du fait de la plaie d'extraction. Le stade restant séreux, sans collection constituée, aucun drainage supplémentaire n'est nécessaire.",
+      dejaTraiteeConservable: "La dent est déjà traitée par endodontie : aucun geste coronaire n'est nécessaire, le canal étant déjà obturé. L'infection a diffusé dans les tissus mous, d'où le drainage muqueux associé à une antibiothérapie et un antalgique, et un bain de bouche du fait de la plaie muqueuse ouverte. Le retraitement endodontique, avec un antalgique, est ensuite programmé une fois l'épisode infectieux maîtrisé.",
+      dejaTraiteeExtraction: "La dent est déjà traitée par endodontie mais n'est plus conservable : aucun geste coronaire n'a de sens, et l'extraction devient le geste d'urgence, associée à un antalgique et un bain de bouche pour la plaie d'extraction ; l'infection restant localisée et évacuée par l'alvéole, une antibiothérapie n'est pas nécessaire."
     }},
     cellulite_suppuree: { byKey: {
       conservable: "La collection purulente est déjà constituée dans les tissus mous (signe du godet positif) : il faut à la fois traiter la cause — la pulpectomie d'urgence, qui supprime le foyer infectieux pulpaire — et évacuer le pus par un drainage muqueux, associé à un antalgique, une antibiothérapie et un bain de bouche (la voie muqueuse étant une plaie ouverte). Le traitement endodontique complet, avec un antalgique, est réalisé une fois la collection résorbée.",
-      extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, mais la collection purulente déjà constituée impose en plus un drainage par voie muqueuse, un antalgique, une antibiothérapie et un bain de bouche, pour évacuer le pus et contrôler l'infection des tissus mous."
+      extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, mais la collection purulente déjà constituée impose en plus un drainage par voie muqueuse, un antalgique, une antibiothérapie et un bain de bouche, pour évacuer le pus et contrôler l'infection des tissus mous.",
+      dejaTraiteeConservable: "La dent est déjà traitée par endodontie : aucun geste coronaire n'est nécessaire, le canal étant déjà obturé. La collection purulente est déjà constituée dans les tissus mous, d'où le drainage muqueux associé à une antibiothérapie, un antalgique et un bain de bouche (voie muqueuse ouverte). Le retraitement endodontique, avec un antalgique, est ensuite programmé une fois la collection résorbée.",
+      dejaTraiteeExtraction: "La dent est déjà traitée par endodontie mais n'est plus conservable : aucun geste coronaire n'a de sens. L'extraction reste le geste d'urgence, mais la collection purulente déjà constituée impose en plus un drainage par voie muqueuse et un bain de bouche ; l'infection restant localisée et évacuée, une antibiothérapie n'est pas nécessaire — seul un antalgique complète la prise en charge."
     }},
-    cellulite_diffuse: "L'infection progresse rapidement dans plusieurs espaces celluleux, sans tendance à la collection, avec un risque d'atteinte des voies aériennes (fièvre élevée, dysphagie, trismus serré). C'est une urgence vitale qui dépasse le cadre du cabinet dentaire : il faut référer immédiatement le patient en milieu hospitalier, le plus souvent en chirurgie maxillo-faciale, pour un drainage chirurgical large sous couverture antibiotique intraveineuse et une surveillance des voies aériennes."
+    cellulite_diffuse: { byKey: {
+      initial: "L'infection progresse rapidement dans plusieurs espaces celluleux, sans tendance à la collection, avec un risque d'atteinte des voies aériennes (fièvre élevée, dysphagie, trismus serré). C'est une urgence vitale qui dépasse le cadre du cabinet dentaire : il faut référer immédiatement le patient en milieu hospitalier, le plus souvent en chirurgie maxillo-faciale, pour un drainage chirurgical large sous couverture antibiotique intraveineuse et une surveillance des voies aériennes.",
+      dejaTraitee: "Même sur une dent déjà traitée par endodontie, la cellulite diffuse reste une urgence vitale qui dépasse le cadre du cabinet dentaire, quelle que soit la conservabilité de la dent : aucun geste local, coronaire ou chirurgical, ni aucune prescription ne sont réalisés au cabinet. Il faut référer immédiatement le patient en milieu hospitalier, le plus souvent en chirurgie maxillo-faciale, pour un drainage chirurgical large sous couverture antibiotique intraveineuse et une surveillance des voies aériennes ; la question du retraitement ou de l'extraction de la dent causale sera tranchée une fois l'épisode vital maîtrisé."
+    }}
   };
 
   function getTxRationale(diagnosisId, urgence1, key){
@@ -3106,11 +3258,18 @@
     document.getElementById('tx-def').textContent = txVariant ? txVariant.patientLine : d.def;
 
     var txRestoration = detectRestoration(txVariant && txVariant.radioText ? txVariant.radioText : null);
-    var txDiagramCfg = txRestoration ? Object.assign({}, diagram, {restoration: txRestoration}) : diagram;
+    var txDiagramOverrides = {};
+    if(txRestoration) txDiagramOverrides.restoration = txRestoration;
+    if(txVariant && txVariant.alreadyTreated){
+      txDiagramOverrides.pulp = TX_GUTTA_COLOR;
+      txDiagramOverrides.pulpLabel = 'Obturation canalaire';
+      txDiagramOverrides.caption = 'Canal obturé (gutta-percha) ; réinfection périapicale sur une dent déjà traitée par endodontie.';
+    }
+    var txDiagramCfg = Object.keys(txDiagramOverrides).length ? Object.assign({}, diagram, txDiagramOverrides) : diagram;
     document.getElementById('tx-diagram').innerHTML = txDiagramCfg.dualRoot ? buildMixedRootSVG(txDiagramCfg) : buildToothSVG(txDiagramCfg);
-    document.getElementById('tx-diagram-caption').textContent = diagram.caption;
-    document.getElementById('tx-sw-pulp').style.background = diagram.pulp;
-    document.getElementById('tx-pulp-legend-label').textContent = diagram.pulpLabel;
+    document.getElementById('tx-diagram-caption').textContent = txDiagramCfg.caption;
+    document.getElementById('tx-sw-pulp').style.background = txDiagramCfg.pulp;
+    document.getElementById('tx-pulp-legend-label').textContent = txDiagramCfg.pulpLabel;
     var pulpItem2 = document.getElementById('tx-pulp-legend-item-2');
     if(diagram.dualRoot){
       showEl(pulpItem2);
