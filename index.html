@@ -90,6 +90,28 @@
     font-size:0.95rem;
   }
 
+  .sound-toggle{
+    position:fixed;
+    top:12px;
+    right:12px;
+    z-index:500;
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    border:1px solid var(--border);
+    background:#fff;
+    font-size:1.1rem;
+    line-height:1;
+    cursor:pointer;
+    box-shadow:0 1px 4px rgba(0,0,0,0.12);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:0;
+  }
+  .sound-toggle:hover{border-color:var(--tx-accent);}
+  .sound-toggle.is-muted{color:var(--muted);}
+
   /* Animation d'ouverture : reprend le logo, disparaît une fois jouée (ou immédiatement si l'utilisateur clique / appuie sur une touche, ou si le système demande de réduire les animations). */
   #splash-screen{
     position:fixed; inset:0; z-index:9999;
@@ -773,6 +795,8 @@
   <div id="splash-hint">Cliquez pour passer</div>
 </div>
 
+<button id="sound-toggle-btn" class="sound-toggle" type="button" title="Couper le son" aria-label="Couper le son">🔊</button>
+
 <div class="wrap">
 
   <header class="app-header">
@@ -1073,6 +1097,10 @@
 (function(){
 
   // ---------- Sons de l'application (synthétisés via Web Audio, aucun fichier à charger) ----------
+  var SOUND_MUTED_KEY = 'endodiag-sound-muted';
+  var soundMuted = false;
+  try{ soundMuted = localStorage.getItem(SOUND_MUTED_KEY) === '1'; }catch(e){}
+
   var audioCtx = null;
   function getAudioCtx(){
     if(!audioCtx){
@@ -1123,6 +1151,7 @@
   }
 
   function playOpeningChime(){
+    if(soundMuted) return;
     var ctx = getAudioCtx();
     if(!ctx) return;
     var t0 = ctx.currentTime + 0.01;
@@ -1161,6 +1190,7 @@
   }
 
   function playClickSound(){
+    if(soundMuted) return;
     var ctx = getAudioCtx();
     if(!ctx) return;
     if(ctx.state === 'suspended'){ ctx.resume().catch(function(){}); }
@@ -1170,6 +1200,26 @@
     var btn = e.target && e.target.closest && e.target.closest('button');
     if(btn) playClickSound();
   }, true);
+
+  // ---------- Bouton couper/activer le son ----------
+  (function initSoundToggle(){
+    var toggleBtn = document.getElementById('sound-toggle-btn');
+    if(!toggleBtn) return;
+    function render(){
+      toggleBtn.textContent = soundMuted ? '🔇' : '🔊';
+      toggleBtn.classList.toggle('is-muted', soundMuted);
+      var label = soundMuted ? 'Activer le son' : 'Couper le son';
+      toggleBtn.title = label;
+      toggleBtn.setAttribute('aria-label', label);
+    }
+    render();
+    toggleBtn.addEventListener('click', function(){
+      soundMuted = !soundMuted;
+      try{ localStorage.setItem(SOUND_MUTED_KEY, soundMuted ? '1' : '0'); }catch(e){}
+      render();
+      if(!soundMuted) playClickSound(); // petit clic de confirmation quand on réactive le son
+    });
+  })();
 
   // ---------- Animation d'ouverture ----------
   (function initSplash(){
