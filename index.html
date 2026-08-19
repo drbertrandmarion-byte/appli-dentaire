@@ -1072,6 +1072,77 @@
 <script>
 (function(){
 
+  // ---------- Sons de l'application (synthétisés via Web Audio, aucun fichier à charger) ----------
+  var audioCtx = null;
+  function getAudioCtx(){
+    if(!audioCtx){
+      var Ctx = window.AudioContext || window.webkitAudioContext;
+      if(!Ctx) return null;
+      try{ audioCtx = new Ctx(); }catch(e){ return null; }
+    }
+    return audioCtx;
+  }
+
+  function playTone(ctx, freq, startTime, duration, gainPeak, type){
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.type = type || 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, startTime);
+    gain.gain.linearRampToValueAtTime(gainPeak, startTime + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(startTime);
+    osc.stop(startTime + duration + 0.03);
+  }
+
+  function playOpeningChime(){
+    var ctx = getAudioCtx();
+    if(!ctx) return;
+    var t0 = ctx.currentTime + 0.01;
+    [523.25, 659.25, 783.99, 1046.50].forEach(function(freq, i){ // Do5, Mi5, Sol5, Do6
+      playTone(ctx, freq, t0 + i * 0.11, 0.32, 0.08, 'triangle');
+    });
+  }
+
+  var openingChimePlayed = false;
+  function playOpeningChimeOnce(){
+    if(openingChimePlayed) return;
+    var ctx = getAudioCtx();
+    if(!ctx) return;
+    if(ctx.state === 'suspended'){
+      // Ne marque "joué" qu'une fois la reprise effective : un premier appel bloqué (avant toute
+      // interaction) ne doit pas empêcher la tentative suivante, déclenchée par un vrai geste utilisateur.
+      ctx.resume().then(function(){
+        if(openingChimePlayed) return;
+        openingChimePlayed = true;
+        playOpeningChime();
+      }).catch(function(){});
+    } else {
+      openingChimePlayed = true;
+      playOpeningChime();
+    }
+  }
+  // L'autoplay avec son est bloqué par les navigateurs tant qu'aucune interaction n'a eu lieu sur la
+  // page : on tente de jouer le carillon tout de suite, et on retente à la toute première interaction
+  // de l'utilisateur (clic, appui clavier ou tap) si la première tentative a été bloquée.
+  playOpeningChimeOnce();
+  ['pointerdown', 'keydown'].forEach(function(evt){
+    document.addEventListener(evt, playOpeningChimeOnce, {once: true, passive: true});
+  });
+
+  function playClickSound(){
+    var ctx = getAudioCtx();
+    if(!ctx) return;
+    if(ctx.state === 'suspended'){ ctx.resume().catch(function(){}); }
+    playTone(ctx, 720, ctx.currentTime, 0.06, 0.05, 'sine');
+  }
+  document.addEventListener('click', function(e){
+    var btn = e.target && e.target.closest && e.target.closest('button');
+    if(btn) playClickSound();
+  }, true);
+
   // ---------- Animation d'ouverture ----------
   (function initSplash(){
     var splash = document.getElementById('splash-screen');
