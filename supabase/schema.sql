@@ -128,6 +128,38 @@ create trigger trg_protect_profile
   for each row execute function public.protect_profile_fields();
 
 
+-- Création automatique du profil à l'inscription.
+-- Nécessaire parce que la confirmation par e-mail est obligatoire : au moment de
+-- l'inscription l'étudiant n'a pas encore de session, il ne peut donc pas insérer
+-- sa propre fiche. L'application transmet prénom / nom / année / faculté dans les
+-- métadonnées du compte, et ce déclencheur les recopie ici.
+create or replace function public.handle_new_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  insert into public.profiles (id, email, prenom, nom, annee, faculte)
+  values (
+    new.id,
+    coalesce(new.email, ''),
+    coalesce(new.raw_user_meta_data ->> 'prenom',  ''),
+    coalesce(new.raw_user_meta_data ->> 'nom',     ''),
+    coalesce(new.raw_user_meta_data ->> 'annee',   ''),
+    coalesce(new.raw_user_meta_data ->> 'faculte', '')
+  )
+  on conflict (id) do nothing;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function public.handle_new_user();
+
+
 -- -----------------------------------------------------------------------------
 -- 3. Résultats des séries notées
 -- -----------------------------------------------------------------------------

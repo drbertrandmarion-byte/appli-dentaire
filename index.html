@@ -809,6 +809,80 @@
 
   #tx-recap-sheet h1{color:var(--tx-accent-dark);}
   #tx-recap-grid .recap-variant-label{color:var(--tx-accent-dark);}
+
+  /* ---------- Comptes étudiants ---------- */
+  /* Menu de compte : symétrique du bouton son, ancré au bord gauche du contenu. */
+  .account-menu{position:fixed; top:12px; left:max(12px, calc(50% - 380px)); z-index:500;}
+  .account-btn{
+    display:flex; align-items:center; gap:6px;
+    height:36px; padding:0 13px 0 11px;
+    border-radius:999px; border:1.5px solid var(--logo-navy);
+    background:var(--card); color:var(--logo-navy);
+    font-family:inherit; font-size:0.8rem; font-weight:700; line-height:1;
+    cursor:pointer; box-shadow:var(--shadow);
+    max-width:60vw; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+  }
+  .account-btn:hover{background:var(--logo-blue-100); border-color:var(--logo-blue);}
+  .account-btn svg{display:block; flex-shrink:0;}
+  .account-dropdown{
+    position:absolute; top:44px; left:0; min-width:250px;
+    background:var(--card); border:1px solid var(--border);
+    border-radius:12px; box-shadow:0 6px 24px rgba(15,60,55,0.16); padding:6px;
+  }
+  .account-dropdown .acct-head{padding:9px 11px 10px; border-bottom:1px solid var(--border); margin-bottom:5px;}
+  .account-dropdown .acct-name{font-weight:700; font-size:0.88rem; color:var(--ink);}
+  .account-dropdown .acct-sub{font-size:0.74rem; color:var(--muted); margin-top:2px;}
+  .account-dropdown button{
+    display:block; width:100%; text-align:left;
+    padding:9px 11px; border:none; background:none; border-radius:8px;
+    font-family:inherit; font-size:0.85rem; color:var(--ink); cursor:pointer;
+  }
+  .account-dropdown button:hover{background:var(--logo-blue-100);}
+  .account-dropdown button.acct-danger{color:var(--ko);}
+  .account-dropdown button.acct-danger:hover{background:rgba(185,28,28,0.08);}
+
+  /* Écran de connexion : recouvre l'application tant que le compte n'est pas validé. */
+  #auth-gate{
+    position:fixed; inset:0; z-index:9000;
+    background:var(--bg); overflow-y:auto;
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:24px 16px 48px;
+  }
+  /* Un sélecteur d'identifiant l'emporte sur .hidden : sans cette règle, la porte
+     resterait invisible mais continuerait d'intercepter les clics de la page. */
+  #auth-gate.hidden{display:none;}
+  .auth-card{
+    width:100%; max-width:430px; margin-top:4vh;
+    background:var(--card); border-radius:var(--radius);
+    box-shadow:var(--shadow); padding:26px 24px 24px;
+  }
+  .auth-card h2{margin:0 0 4px; font-size:1.25rem; color:var(--logo-navy);}
+  .auth-card .auth-sub{margin:0 0 18px; font-size:0.88rem; color:var(--muted); line-height:1.5;}
+  .auth-field{margin-bottom:13px;}
+  .auth-field label{display:block; font-size:0.78rem; font-weight:700; color:var(--ink); margin-bottom:5px;}
+  .auth-field input, .auth-field select{
+    width:100%; padding:10px 11px;
+    border:1px solid var(--border); border-radius:9px;
+    font-family:inherit; font-size:0.92rem; color:var(--ink); background:#fff;
+  }
+  .auth-field input:focus, .auth-field select:focus{outline:2px solid var(--logo-blue); outline-offset:1px;}
+  .auth-row{display:flex; gap:10px;}
+  .auth-row .auth-field{flex:1;}
+  .auth-card .btn-primary{width:100%; margin-top:6px;}
+  .auth-switch{margin-top:15px; text-align:center; font-size:0.85rem; color:var(--muted);}
+  .auth-switch button{
+    background:none; border:none; padding:0; cursor:pointer;
+    font-family:inherit; font-size:0.85rem; font-weight:700;
+    color:var(--logo-blue); text-decoration:underline;
+  }
+  .auth-msg{margin-top:14px; padding:11px 13px; border-radius:9px; font-size:0.85rem; line-height:1.5;}
+  .auth-msg.err{background:rgba(185,28,28,0.09); color:var(--ko);}
+  .auth-msg.ok{background:var(--teal-100); color:var(--teal-700);}
+  .auth-msg.info{background:var(--logo-blue-100); color:var(--logo-blue-dark);}
+  .auth-note{margin-top:16px; font-size:0.74rem; color:var(--muted); line-height:1.5;}
+  .auth-logo{text-align:center; font-size:1.5rem; font-weight:800; margin:0 0 20px; letter-spacing:-0.01em;}
+  .auth-logo .logo-navy{color:var(--logo-navy);} .auth-logo .logo-blue{color:var(--logo-blue);}
+  .auth-pending-icon{font-size:2.4rem; text-align:center; margin-bottom:8px;}
 </style>
 </head>
 <body>
@@ -823,6 +897,28 @@
   </h1>
   <div id="splash-tagline">DIAGNOSTIC EN ENDODONTIE</div>
   <div id="splash-hint">Cliquez pour passer</div>
+</div>
+
+<!-- Menu de compte (haut gauche) — masqué tant que personne n'est connecté -->
+<div class="account-menu hidden" id="account-menu">
+  <button class="account-btn" id="account-btn" type="button" aria-haspopup="true" aria-expanded="false">
+    <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/>
+      <path d="M5 20c0-3.6 3.1-5.5 7-5.5s7 1.9 7 5.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span id="account-btn-label">Mon compte</span>
+  </button>
+  <div class="account-dropdown hidden" id="account-dropdown" role="menu">
+    <div class="acct-head">
+      <div class="acct-name" id="acct-name"></div>
+      <div class="acct-sub" id="acct-sub"></div>
+    </div>
+    <button type="button" id="acct-progress-btn" role="menuitem">📈 Ma progression</button>
+    <button type="button" id="acct-best-btn" role="menuitem">🏆 Mes meilleurs scores</button>
+    <button type="button" id="acct-weak-btn" role="menuitem">🎯 Mes points faibles</button>
+    <button type="button" id="acct-admin-btn" class="hidden" role="menuitem">🛠️ Back-office enseignant</button>
+    <button type="button" id="acct-logout-btn" class="acct-danger" role="menuitem">Se déconnecter</button>
+  </div>
 </div>
 
 <button id="sound-toggle-btn" class="sound-toggle" type="button" title="Couper le son" aria-label="Couper le son">
@@ -1295,7 +1391,7 @@
       var splashTagline = document.getElementById('splash-tagline');
       var splashHint = document.getElementById('splash-hint');
       var realTitle = document.querySelector('header.app-header h1');
-      if(!realTitle){ hideSplash(); return; }
+      if(!realTitle || !splashTitle || !splashTagline || !splashHint){ hideSplash(); return; }
 
       var src = splashTitle.getBoundingClientRect();
       var dst = realTitle.getBoundingClientRect();
@@ -4210,6 +4306,466 @@
     }
   }
 
+})();
+</script>
+
+<!-- =====================================================================
+     Écran de connexion — recouvre l'application tant que le compte n'est
+     pas connecté ET validé par l'enseignante.
+     ===================================================================== -->
+<div id="auth-gate" class="hidden">
+  <div class="auth-card">
+    <div class="auth-logo"><span class="logo-navy">End</span><span class="logo-blue">Diag</span></div>
+
+    <!-- Connexion -->
+    <div id="auth-view-login">
+      <h2>Connexion</h2>
+      <p class="auth-sub">Accès réservé aux étudiants inscrits.</p>
+      <div class="auth-field">
+        <label for="login-email">Adresse e-mail</label>
+        <input type="email" id="login-email" autocomplete="email" placeholder="prenom.nom@exemple.fr">
+      </div>
+      <div class="auth-field">
+        <label for="login-password">Mot de passe</label>
+        <input type="password" id="login-password" autocomplete="current-password">
+      </div>
+      <button class="btn-primary" id="login-btn" type="button">Se connecter</button>
+      <div class="auth-switch">
+        Pas encore de compte ? <button type="button" id="go-signup-btn">Créer un compte</button>
+      </div>
+      <div class="auth-switch" style="margin-top:8px;">
+        <button type="button" id="go-reset-btn">Mot de passe oublié ?</button>
+      </div>
+      <div id="login-msg"></div>
+    </div>
+
+    <!-- Inscription -->
+    <div id="auth-view-signup" class="hidden">
+      <h2>Créer un compte</h2>
+      <p class="auth-sub">Votre compte devra être validé par l'enseignante avant de donner accès aux cas cliniques.</p>
+      <div class="auth-row">
+        <div class="auth-field">
+          <label for="signup-prenom">Prénom</label>
+          <input type="text" id="signup-prenom" autocomplete="given-name">
+        </div>
+        <div class="auth-field">
+          <label for="signup-nom">Nom</label>
+          <input type="text" id="signup-nom" autocomplete="family-name">
+        </div>
+      </div>
+      <div class="auth-field">
+        <label for="signup-annee">Année d'études</label>
+        <select id="signup-annee">
+          <option value="">-- Choisir --</option>
+          <option>DFGSO2</option><option>DFGSO3</option>
+          <option>DFASO1</option><option>DFASO2</option>
+          <option>TCEO1</option><option>Internat</option>
+        </select>
+      </div>
+      <div class="auth-field">
+        <label for="signup-faculte">Faculté</label>
+        <select id="signup-faculte">
+          <option value="">-- Choisir --</option>
+          <option>UFR Odontologie Dijon</option>
+        </select>
+      </div>
+      <div class="auth-field">
+        <label for="signup-email">Adresse e-mail</label>
+        <input type="email" id="signup-email" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label for="signup-password">Mot de passe (8 caractères minimum)</label>
+        <input type="password" id="signup-password" autocomplete="new-password">
+      </div>
+      <button class="btn-primary" id="signup-btn" type="button">Créer mon compte</button>
+      <div class="auth-switch">
+        Déjà un compte ? <button type="button" id="go-login-btn">Se connecter</button>
+      </div>
+      <div id="signup-msg"></div>
+      <p class="auth-note">
+        Vos nom, prénom, adresse e-mail, année et faculté sont enregistrés dans l'Union
+        européenne, dans le seul but de vérifier votre inscription et de suivre votre
+        progression pédagogique. Vous pouvez demander leur suppression à tout moment
+        auprès de votre enseignante.
+      </p>
+    </div>
+
+    <!-- Réinitialisation du mot de passe -->
+    <div id="auth-view-reset" class="hidden">
+      <h2>Mot de passe oublié</h2>
+      <p class="auth-sub">Nous vous enverrons un lien pour en choisir un nouveau.</p>
+      <div class="auth-field">
+        <label for="reset-email">Adresse e-mail</label>
+        <input type="email" id="reset-email" autocomplete="email">
+      </div>
+      <button class="btn-primary" id="reset-btn" type="button">Envoyer le lien</button>
+      <div class="auth-switch">
+        <button type="button" id="back-login-btn">Retour à la connexion</button>
+      </div>
+      <div id="reset-msg"></div>
+    </div>
+
+    <!-- Compte en attente de validation -->
+    <div id="auth-view-pending" class="hidden">
+      <div class="auth-pending-icon">⏳</div>
+      <h2>Compte en attente</h2>
+      <p class="auth-sub">
+        Votre inscription est bien enregistrée. Elle doit maintenant être validée par
+        votre enseignante avant de vous donner accès aux cas cliniques.
+        Vous n'avez rien d'autre à faire : reconnectez-vous plus tard.
+      </p>
+      <div id="pending-detail"></div>
+      <button class="btn-primary" id="pending-refresh-btn" type="button">Vérifier maintenant</button>
+      <div class="auth-switch">
+        <button type="button" id="pending-logout-btn">Se déconnecter</button>
+      </div>
+      <div id="pending-msg"></div>
+    </div>
+
+    <!-- Chargement -->
+    <div id="auth-view-loading" class="hidden">
+      <h2>Connexion…</h2>
+      <p class="auth-sub">Vérification de votre compte.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   Comptes étudiants — dialogue direct avec Supabase via fetch().
+   Aucune bibliothèque externe : l'application reste un fichier autonome,
+   qui continue de fonctionner si un service tiers est indisponible.
+   ===================================================================== */
+(function(){
+  var SUPABASE_URL = 'https://ujkpnlcbxzhwcftvxgcd.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_VafCKFLkoHnIk9gPkukwxQ_2vgqns7B';
+
+  var SESSION_KEY = 'endodiag-session';
+  var PROFILE_KEY = 'endodiag-profile';
+
+  var gate       = document.getElementById('auth-gate');
+  var menu       = document.getElementById('account-menu');
+  var dropdown   = document.getElementById('account-dropdown');
+  var session    = null;   // { access_token, refresh_token, expires_at, user_id }
+  var profile    = null;   // ligne de la table profiles
+  var isAdmin    = false;
+  var offline    = false;  // vrai si le serveur est injoignable
+
+  // ---------- utilitaires ----------
+  function $(id){ return document.getElementById(id); }
+  function show(el){ if(el) el.classList.remove('hidden'); }
+  function hide(el){ if(el) el.classList.add('hidden'); }
+
+  function msg(id, text, kind){
+    var el = $(id);
+    if(!el) return;
+    el.innerHTML = text ? '<div class="auth-msg ' + (kind || 'info') + '">' + text + '</div>' : '';
+  }
+
+  function readStore(key){
+    try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : null; }
+    catch(e){ return null; }
+  }
+  function writeStore(key, val){
+    try { val === null ? localStorage.removeItem(key) : localStorage.setItem(key, JSON.stringify(val)); }
+    catch(e){}
+  }
+
+  // ---------- appels réseau ----------
+  // Délai maximal : une connexion défaillante ne fait pas échouer la requête, elle
+  // la laisse en suspens indéfiniment. Sans ce garde-fou, l'application resterait
+  // bloquée sur « Connexion… » au lieu de basculer en mode hors ligne.
+  var REQUEST_TIMEOUT_MS = 12000;
+
+  function request(path, opts){
+    opts = opts || {};
+    var headers = { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' };
+    if(opts.token) headers['Authorization'] = 'Bearer ' + opts.token;
+    if(opts.prefer) headers['Prefer'] = opts.prefer;
+
+    var ctrl  = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function(){ ctrl.abort(); }, opts.timeout || REQUEST_TIMEOUT_MS) : null;
+    var clear = function(v){ if(timer) clearTimeout(timer); return v; };
+
+    return fetch(SUPABASE_URL + path, {
+      method: opts.method || 'GET',
+      headers: headers,
+      signal: ctrl ? ctrl.signal : undefined,
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    }).then(clear, function(err){ clear(); throw err; }).then(function(res){
+      return res.text().then(function(txt){
+        var data = null;
+        try { data = txt ? JSON.parse(txt) : null; } catch(e){ data = txt; }
+        if(!res.ok){
+          var err = new Error((data && (data.msg || data.message || data.error_description || data.error)) || ('Erreur ' + res.status));
+          err.status = res.status;
+          throw err;
+        }
+        return data;
+      });
+    });
+  }
+
+  // Rejoue la requête une fois après renouvellement du jeton si celui-ci a expiré.
+  function authed(path, opts){
+    opts = opts || {};
+    if(!session) return Promise.reject(new Error('Non connecté'));
+    opts.token = session.access_token;
+    return request(path, opts).catch(function(err){
+      if(err.status !== 401) throw err;
+      return refresh().then(function(){
+        opts.token = session.access_token;
+        return request(path, opts);
+      });
+    });
+  }
+
+  function saveSession(data){
+    session = {
+      access_token:  data.access_token,
+      refresh_token: data.refresh_token,
+      expires_at:    Date.now() + ((data.expires_in || 3600) * 1000),
+      user_id:       data.user && data.user.id,
+      email:         data.user && data.user.email
+    };
+    writeStore(SESSION_KEY, session);
+    return session;
+  }
+
+  function refresh(){
+    var rt = session && session.refresh_token;
+    if(!rt) return Promise.reject(new Error('Session expirée'));
+    return request('/auth/v1/token?grant_type=refresh_token', {
+      method: 'POST', body: { refresh_token: rt }
+    }).then(saveSession);
+  }
+
+  function clearSession(){
+    session = null; profile = null; isAdmin = false;
+    writeStore(SESSION_KEY, null);
+    writeStore(PROFILE_KEY, null);
+  }
+
+  // ---------- profil ----------
+  function loadProfile(){
+    return authed('/rest/v1/profiles?select=*&id=eq.' + session.user_id).then(function(rows){
+      profile = (rows && rows[0]) || null;
+      if(profile) writeStore(PROFILE_KEY, profile);
+      return profile;
+    });
+  }
+
+  function loadAdminFlag(){
+    return authed('/rest/v1/admins?select=user_id&user_id=eq.' + session.user_id)
+      .then(function(rows){ isAdmin = !!(rows && rows.length); return isAdmin; })
+      .catch(function(){ isAdmin = false; return false; });
+  }
+
+  function touchLastSeen(){
+    if(!profile) return Promise.resolve();
+    return authed('/rest/v1/profiles?id=eq.' + session.user_id, {
+      method: 'PATCH', body: { last_seen_at: new Date().toISOString() }, prefer: 'return=minimal'
+    }).catch(function(){});
+  }
+
+  // ---------- affichage ----------
+  var VIEWS = ['login', 'signup', 'reset', 'pending', 'loading'];
+  function showView(name){
+    VIEWS.forEach(function(v){
+      var el = $('auth-view-' + v);
+      if(el) (v === name ? show : hide)(el);
+    });
+    show(gate);
+  }
+
+  function enterApp(){
+    hide(gate);
+    show(menu);
+    var label = profile ? (profile.prenom || 'Mon compte') : 'Mon compte';
+    $('account-btn-label').textContent = offline ? label + ' (hors ligne)' : label;
+    $('acct-name').textContent = profile ? (profile.prenom + ' ' + profile.nom) : '';
+    $('acct-sub').textContent  = profile ? (profile.annee + ' · ' + profile.faculte) : '';
+    (isAdmin ? show : hide)($('acct-admin-btn'));
+    if(!offline) touchLastSeen();
+    window.EndoAccount = { profile: profile, isAdmin: isAdmin, offline: offline, userId: session && session.user_id };
+  }
+
+  // Décide quoi afficher à partir de la session courante.
+  function route(){
+    if(!session){ showView('login'); return Promise.resolve(); }
+    showView('loading');
+    return loadProfile()
+      .then(function(){ return loadAdminFlag(); })
+      .then(function(){
+        offline = false;
+        if(isAdmin || (profile && profile.approved)) enterApp();
+        else showPending();
+      })
+      .catch(function(err){
+        // Serveur injoignable : on laisse entrer si ce navigateur avait déjà un
+        // compte validé — un étudiant peut ainsi réviser sans connexion, sans
+        // pour autant ouvrir l'application à un inconnu.
+        var cached = readStore(PROFILE_KEY);
+        if(isNetworkError(err) && cached && cached.approved){
+          profile = cached; offline = true; enterApp();
+          return;
+        }
+        if(isNetworkError(err)){
+          showView('login');
+          msg('login-msg', 'Serveur injoignable. Vérifiez votre connexion internet.', 'err');
+        } else {
+          clearSession(); showView('login');
+        }
+      });
+  }
+
+  function isNetworkError(err){
+    return !err.status; // pas de code HTTP => la requête n'a pas abouti
+  }
+
+  function showPending(){
+    showView('pending');
+    var d = $('pending-detail');
+    if(d && profile){
+      d.innerHTML = '<div class="auth-msg info"><b>' + esc(profile.prenom) + ' ' + esc(profile.nom) +
+        '</b><br>' + esc(profile.annee) + ' · ' + esc(profile.faculte) + '<br>' + esc(profile.email) + '</div>';
+    }
+  }
+
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+    });
+  }
+
+  // ---------- traduction des messages d'erreur ----------
+  function humanError(err){
+    var m = String(err && err.message || '');
+    if(/Invalid login credentials/i.test(m))   return 'Adresse e-mail ou mot de passe incorrect.';
+    if(/Email not confirmed/i.test(m))         return 'Vous devez d\'abord confirmer votre adresse e-mail. Vérifiez votre boîte de réception, et le dossier « indésirables ».';
+    if(/User already registered/i.test(m))     return 'Un compte existe déjà avec cette adresse. Essayez de vous connecter.';
+    if(/Password should be at least|weak_password/i.test(m)) return 'Mot de passe trop court : il doit contenir au moins 8 caractères.';
+    if(/rate limit|too many/i.test(m))         return 'Trop de tentatives. Patientez quelques minutes.';
+    if(isNetworkError(err))                    return 'Serveur injoignable. Vérifiez votre connexion internet.';
+    return m || 'Une erreur est survenue.';
+  }
+
+  function busy(btn, on, labelOn, labelOff){
+    if(!btn) return;
+    btn.disabled = on;
+    btn.textContent = on ? labelOn : labelOff;
+  }
+
+  // ---------- actions ----------
+  function doLogin(){
+    var email = ($('login-email').value || '').trim();
+    var pass  = $('login-password').value || '';
+    if(!email || !pass){ msg('login-msg', 'Renseignez votre adresse e-mail et votre mot de passe.', 'err'); return; }
+    msg('login-msg', '');
+    busy($('login-btn'), true, 'Connexion…', 'Se connecter');
+    request('/auth/v1/token?grant_type=password', { method:'POST', body:{ email:email, password:pass } })
+      .then(function(data){ saveSession(data); return route(); })
+      .catch(function(err){ showView('login'); msg('login-msg', humanError(err), 'err'); })
+      .then(function(){ busy($('login-btn'), false, '', 'Se connecter'); });
+  }
+
+  function doSignup(){
+    var prenom  = ($('signup-prenom').value || '').trim();
+    var nom     = ($('signup-nom').value || '').trim();
+    var annee   = $('signup-annee').value;
+    var faculte = $('signup-faculte').value;
+    var email   = ($('signup-email').value || '').trim();
+    var pass    = $('signup-password').value || '';
+
+    if(!prenom || !nom)      { msg('signup-msg', 'Indiquez votre prénom et votre nom.', 'err'); return; }
+    if(!annee)               { msg('signup-msg', 'Choisissez votre année d\'études.', 'err'); return; }
+    if(!faculte)             { msg('signup-msg', 'Choisissez votre faculté.', 'err'); return; }
+    if(!email)               { msg('signup-msg', 'Indiquez votre adresse e-mail.', 'err'); return; }
+    if(pass.length < 8)      { msg('signup-msg', 'Le mot de passe doit contenir au moins 8 caractères.', 'err'); return; }
+
+    msg('signup-msg', '');
+    busy($('signup-btn'), true, 'Création…', 'Créer mon compte');
+    request('/auth/v1/signup', {
+      method: 'POST',
+      body: { email: email, password: pass, data: { prenom:prenom, nom:nom, annee:annee, faculte:faculte } }
+    })
+      .then(function(){
+        msg('signup-msg',
+          '<b>Compte créé.</b> Un e-mail de confirmation vient de vous être envoyé — ' +
+          'cliquez sur le lien qu\'il contient, puis connectez-vous. ' +
+          'Votre accès sera ouvert dès que votre enseignante aura validé votre profil.', 'ok');
+      })
+      .catch(function(err){ msg('signup-msg', humanError(err), 'err'); })
+      .then(function(){ busy($('signup-btn'), false, '', 'Créer mon compte'); });
+  }
+
+  function doReset(){
+    var email = ($('reset-email').value || '').trim();
+    if(!email){ msg('reset-msg', 'Indiquez votre adresse e-mail.', 'err'); return; }
+    msg('reset-msg', '');
+    busy($('reset-btn'), true, 'Envoi…', 'Envoyer le lien');
+    request('/auth/v1/recover', { method:'POST', body:{ email: email } })
+      .then(function(){ msg('reset-msg', 'Si un compte existe avec cette adresse, un lien vient d\'être envoyé.', 'ok'); })
+      .catch(function(err){ msg('reset-msg', humanError(err), 'err'); })
+      .then(function(){ busy($('reset-btn'), false, '', 'Envoyer le lien'); });
+  }
+
+  function doLogout(){
+    if(session){
+      authed('/auth/v1/logout', { method:'POST' }).catch(function(){});
+    }
+    clearSession();
+    hide(menu); hide(dropdown);
+    window.EndoAccount = null;
+    showView('login');
+    msg('login-msg', '');
+  }
+
+  // ---------- branchement ----------
+  $('login-btn').addEventListener('click', doLogin);
+  $('signup-btn').addEventListener('click', doSignup);
+  $('reset-btn').addEventListener('click', doReset);
+  $('go-signup-btn').addEventListener('click', function(){ showView('signup'); });
+  $('go-login-btn').addEventListener('click',  function(){ showView('login'); });
+  $('go-reset-btn').addEventListener('click',  function(){ showView('reset'); });
+  $('back-login-btn').addEventListener('click',function(){ showView('login'); });
+  $('pending-logout-btn').addEventListener('click', doLogout);
+  $('acct-logout-btn').addEventListener('click', doLogout);
+
+  $('pending-refresh-btn').addEventListener('click', function(){
+    busy($('pending-refresh-btn'), true, 'Vérification…', 'Vérifier maintenant');
+    route().then(function(){ busy($('pending-refresh-btn'), false, '', 'Vérifier maintenant'); });
+  });
+
+  // Entrée au clavier dans les champs
+  ['login-email','login-password'].forEach(function(id){
+    $(id).addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
+  });
+  $('reset-email').addEventListener('keydown', function(e){ if(e.key === 'Enter') doReset(); });
+
+  // Menu déroulant du compte
+  $('account-btn').addEventListener('click', function(e){
+    e.stopPropagation();
+    var open = dropdown.classList.contains('hidden');
+    (open ? show : hide)(dropdown);
+    $('account-btn').setAttribute('aria-expanded', open ? 'true' : 'false');
+  });
+  document.addEventListener('click', function(e){
+    if(!menu.contains(e.target)) { hide(dropdown); $('account-btn').setAttribute('aria-expanded','false'); }
+  });
+  $('acct-admin-btn').addEventListener('click', function(){ window.location.href = 'admin.html'; });
+
+  ['acct-progress-btn','acct-best-btn','acct-weak-btn'].forEach(function(id){
+    $(id).addEventListener('click', function(){
+      hide(dropdown);
+      alert('Cette section arrive à la prochaine étape.');
+    });
+  });
+
+  // ---------- démarrage ----------
+  session = readStore(SESSION_KEY);
+  showView(session ? 'loading' : 'login');
+  route();
 })();
 </script>
 </body>

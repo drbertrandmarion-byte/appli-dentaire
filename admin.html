@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EndoDiag — Back-office enseignant</title>
+<style>
+  :root{
+    --ink:#1c2b2a; --muted:#5c6f6d; --bg:#f4f8f7; --card:#ffffff; --border:#dfe9e7;
+    --shadow:0 2px 10px rgba(15,60,55,0.08);
+    --logo-navy:#182849; --logo-blue:#3f66d8; --logo-blue-dark:#2c4bb0; --logo-blue-100:#e7ecfb;
+    --teal-100:#e6f7f5; --teal-700:#0d6e64; --ok:#0f9488; --ko:#b91c1c;
+    --warn:#d97706; --warn-100:#fef3c7; --radius:14px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55;
+  }
+  .wrap{max-width:1060px; margin:0 auto; padding:24px 16px 64px;}
+  header{text-align:center; padding:16px 0 8px;}
+  header h1{margin:0; font-size:1.7rem; font-weight:800; letter-spacing:-0.01em;}
+  header h1 .n{color:var(--logo-navy);} header h1 .b{color:var(--logo-blue);}
+  header .sub{margin:4px 0 0; font-size:0.9rem; color:var(--muted);}
+
+  .card{background:var(--card); border-radius:var(--radius); box-shadow:var(--shadow); padding:20px; margin-top:18px;}
+  .card h2{margin:0 0 4px; font-size:1.1rem; color:var(--logo-navy);}
+  .card .hint{margin:0 0 14px; font-size:0.84rem; color:var(--muted);}
+
+  .btn{
+    border:1.5px solid var(--logo-navy); background:var(--card); color:var(--logo-navy);
+    border-radius:999px; padding:8px 15px; font-family:inherit; font-size:0.82rem;
+    font-weight:700; cursor:pointer;
+  }
+  .btn:hover{background:var(--logo-blue-100);}
+  .btn:disabled{opacity:0.5; cursor:not-allowed;}
+  .btn-ok{border-color:var(--ok); color:var(--ok);}
+  .btn-ok:hover{background:var(--teal-100);}
+  .btn-ko{border-color:var(--ko); color:var(--ko);}
+  .btn-ko:hover{background:rgba(185,28,28,0.08);}
+  .btn-solid{background:var(--logo-navy); color:#fff;}
+  .btn-solid:hover{background:var(--logo-blue-dark); border-color:var(--logo-blue-dark);}
+
+  table{width:100%; border-collapse:collapse; font-size:0.86rem;}
+  th{
+    text-align:left; font-size:0.72rem; text-transform:uppercase; letter-spacing:0.04em;
+    color:var(--muted); padding:8px 10px; border-bottom:2px solid var(--border); white-space:nowrap;
+  }
+  td{padding:10px; border-bottom:1px solid var(--border); vertical-align:middle;}
+  tr:last-child td{border-bottom:none;}
+  .tbl-wrap{overflow-x:auto;}
+  .actions{display:flex; gap:7px; white-space:nowrap;}
+
+  .tag{display:inline-block; padding:2px 9px; border-radius:999px; font-size:0.72rem; font-weight:700;}
+  .tag-wait{background:var(--warn-100); color:var(--warn);}
+  .tag-ok{background:var(--teal-100); color:var(--teal-700);}
+
+  .empty{padding:26px 10px; text-align:center; color:var(--muted); font-size:0.88rem;}
+  .msg{padding:11px 13px; border-radius:9px; font-size:0.86rem; margin-bottom:14px;}
+  .msg.err{background:rgba(185,28,28,0.09); color:var(--ko);}
+  .msg.ok{background:var(--teal-100); color:var(--teal-700);}
+  .msg.info{background:var(--logo-blue-100); color:var(--logo-blue-dark);}
+
+  .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px;}
+  .stat{background:var(--bg); border-radius:11px; padding:13px 15px;}
+  .stat .v{font-size:1.5rem; font-weight:800; color:var(--logo-navy); line-height:1.2;}
+  .stat .l{font-size:0.76rem; color:var(--muted); margin-top:2px;}
+
+  .bar{height:7px; background:var(--border); border-radius:4px; overflow:hidden; min-width:70px;}
+  .bar i{display:block; height:100%; background:var(--ko);}
+
+  .login-box{max-width:400px; margin:8vh auto 0;}
+  .field{margin-bottom:13px;}
+  .field label{display:block; font-size:0.78rem; font-weight:700; margin-bottom:5px;}
+  .field input{
+    width:100%; padding:10px 11px; border:1px solid var(--border);
+    border-radius:9px; font-family:inherit; font-size:0.92rem;
+  }
+  .hidden{display:none !important;}
+  .back{display:inline-block; margin-bottom:6px; font-size:0.82rem; color:var(--logo-blue); text-decoration:none;}
+  .back:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1><span class="n">Endo</span><span class="b">Diag</span></h1>
+    <p class="sub">Back-office enseignant</p>
+  </header>
+
+  <!-- Connexion -->
+  <div id="login-view" class="card login-box hidden">
+    <h2>Connexion enseignante</h2>
+    <p class="hint">Accès réservé aux comptes administrateurs.</p>
+    <div class="field">
+      <label for="email">Adresse e-mail</label>
+      <input type="email" id="email" autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="password">Mot de passe</label>
+      <input type="password" id="password" autocomplete="current-password">
+    </div>
+    <button class="btn btn-solid" id="login-btn" style="width:100%;">Se connecter</button>
+    <div id="login-msg" style="margin-top:13px;"></div>
+    <p style="margin-top:16px; text-align:center;"><a class="back" href="index.html">← Retour à l'application</a></p>
+  </div>
+
+  <!-- Chargement -->
+  <div id="loading-view" class="card"><div class="empty">Chargement…</div></div>
+
+  <!-- Back-office -->
+  <div id="admin-view" class="hidden">
+    <a class="back" href="index.html">← Retour à l'application</a>
+    <div id="global-msg"></div>
+
+    <div class="card">
+      <h2>Vue d'ensemble</h2>
+      <p class="hint">Chiffres de la promotion, mis à jour à chaque chargement.</p>
+      <div class="stats" id="stats"></div>
+    </div>
+
+    <div class="card">
+      <h2>Comptes en attente de validation <span id="pending-count"></span></h2>
+      <p class="hint">Tant qu'un compte n'est pas validé, l'étudiant ne peut pas accéder aux cas cliniques.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr>
+          <th>Nom</th><th>Année</th><th>Faculté</th><th>E-mail</th><th>Inscrit le</th><th></th>
+        </tr></thead>
+        <tbody id="pending-body"></tbody>
+      </table></div>
+    </div>
+
+    <div class="card">
+      <h2>Comptes validés <span id="approved-count"></span></h2>
+      <p class="hint">Cliquez sur un étudiant pour consulter ses résultats.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr>
+          <th>Nom</th><th>Année</th><th>Faculté</th><th>Dernière connexion</th><th>Séries</th><th>Moyenne</th><th></th>
+        </tr></thead>
+        <tbody id="approved-body"></tbody>
+      </table></div>
+    </div>
+
+    <div class="card" id="detail-card" style="display:none;">
+      <h2 id="detail-title"></h2>
+      <p class="hint">Détail des séries terminées, de la plus récente à la plus ancienne.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Date</th><th>Mode</th><th>Score</th></tr></thead>
+        <tbody id="detail-body"></tbody>
+      </table></div>
+    </div>
+
+    <div class="card">
+      <h2>Pathologies les plus ratées</h2>
+      <p class="hint">Sur l'ensemble de la promotion — utile pour repérer ce qui mérite d'être repris en cours.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Pathologie</th><th>Cas traités</th><th>Taux d'erreur</th><th style="width:35%"></th></tr></thead>
+        <tbody id="weak-body"></tbody>
+      </table></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+  var SUPABASE_URL = 'https://ujkpnlcbxzhwcftvxgcd.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_VafCKFLkoHnIk9gPkukwxQ_2vgqns7B';
+  var SESSION_KEY  = 'endodiag-session';
+
+  var session = null, profiles = [], results = [], caseResults = [];
+
+  function $(id){ return document.getElementById(id); }
+  function show(el){ el.classList.remove('hidden'); }
+  function hide(el){ el.classList.add('hidden'); }
+  function esc(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+  function msg(id, text, kind){
+    $(id).innerHTML = text ? '<div class="msg ' + (kind||'info') + '">' + text + '</div>' : '';
+  }
+  function fmtDate(s){
+    if(!s) return '—';
+    var d = new Date(s);
+    return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' });
+  }
+  function fmtDateTime(s){
+    if(!s) return 'jamais';
+    var d = new Date(s);
+    return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'2-digit' }) +
+           ' à ' + d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  // Noms lisibles des pathologies (doivent correspondre aux identifiants de l'application)
+  var DIAG_LABELS = {
+    saine:'Dent saine', hyperhemie:'Hyperhémie pulpaire', reversible:'Pulpite réversible',
+    irreversible:'Pulpite aiguë irréversible', syndrome_mixte:'Syndrome mixte',
+    necrose:'Nécrose pulpaire', parodontite:'Parodontite apicale aiguë',
+    abces_aigu:'Abcès apical aigu', abces_chronique:'Abcès apical chronique',
+    cellulite_sereuse:'Cellulite séreuse', cellulite_suppuree:'Cellulite suppurée',
+    cellulite_diffuse:'Cellulite diffuse'
+  };
+
+  // ---------- réseau ----------
+  // Voir index.html : une connexion defaillante laisse la requete en suspens
+  // indefiniment plutot que d'echouer. Sans delai maximal, la page resterait
+  // bloquee sur « Chargement… ».
+  var REQUEST_TIMEOUT_MS = 12000;
+
+  function request(path, opts){
+    opts = opts || {};
+    var h = { 'apikey': SUPABASE_KEY, 'Content-Type':'application/json' };
+    if(opts.token)  h['Authorization'] = 'Bearer ' + opts.token;
+    if(opts.prefer) h['Prefer'] = opts.prefer;
+    var ctrl  = (typeof AbortController !== 'undefined') ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function(){ ctrl.abort(); }, REQUEST_TIMEOUT_MS) : null;
+    var clear = function(v){ if(timer) clearTimeout(timer); return v; };
+    return fetch(SUPABASE_URL + path, {
+      method: opts.method || 'GET', headers: h,
+      signal: ctrl ? ctrl.signal : undefined,
+      body: opts.body ? JSON.stringify(opts.body) : undefined
+    }).then(clear, function(err){ clear(); throw err; }).then(function(res){
+      return res.text().then(function(t){
+        var d = null; try { d = t ? JSON.parse(t) : null; } catch(e){ d = t; }
+        if(!res.ok){
+          var e2 = new Error((d && (d.msg || d.message)) || ('Erreur ' + res.status));
+          e2.status = res.status; throw e2;
+        }
+        return d;
+      });
+    });
+  }
+  function authed(path, opts){
+    opts = opts || {}; opts.token = session.access_token;
+    return request(path, opts).catch(function(err){
+      if(err.status !== 401) throw err;
+      return request('/auth/v1/token?grant_type=refresh_token', {
+        method:'POST', body:{ refresh_token: session.refresh_token }
+      }).then(function(d){
+        session.access_token = d.access_token;
+        session.refresh_token = d.refresh_token;
+        session.user_id = d.user && d.user.id;
+        try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch(e){}
+        opts.token = session.access_token;
+        return request(path, opts);
+      });
+    });
+  }
+
+  // ---------- chargement ----------
+  function loadAll(){
+    return Promise.all([
+      authed('/rest/v1/profiles?select=*&order=created_at.desc'),
+      authed('/rest/v1/results?select=*&order=created_at.desc'),
+      authed('/rest/v1/case_results?select=diagnosis_id,correct')
+    ]).then(function(r){
+      profiles = r[0] || []; results = r[1] || []; caseResults = r[2] || [];
+      render();
+    });
+  }
+
+  function render(){
+    var pending  = profiles.filter(function(p){ return !p.approved; });
+    var approved = profiles.filter(function(p){ return p.approved; });
+
+    // Vue d'ensemble
+    var active = approved.filter(function(p){
+      if(!p.last_seen_at) return false;
+      return (Date.now() - new Date(p.last_seen_at).getTime()) < 7*24*3600*1000;
+    }).length;
+    $('stats').innerHTML =
+      stat(pending.length, 'en attente') +
+      stat(approved.length, 'comptes validés') +
+      stat(active, 'actifs (7 jours)') +
+      stat(results.length, 'séries terminées');
+
+    // En attente
+    $('pending-count').innerHTML = pending.length ? '<span class="tag tag-wait">' + pending.length + '</span>' : '';
+    $('pending-body').innerHTML = pending.length ? pending.map(function(p){
+      return '<tr>' +
+        '<td><b>' + esc(p.prenom) + ' ' + esc(p.nom) + '</b></td>' +
+        '<td>' + esc(p.annee) + '</td>' +
+        '<td>' + esc(p.faculte) + '</td>' +
+        '<td>' + esc(p.email) + '</td>' +
+        '<td>' + fmtDate(p.created_at) + '</td>' +
+        '<td><div class="actions">' +
+          '<button class="btn btn-ok" data-approve="' + esc(p.id) + '">Valider</button>' +
+          '<button class="btn btn-ko" data-delete="' + esc(p.id) + '">Supprimer</button>' +
+        '</div></td></tr>';
+    }).join('') : '<tr><td colspan="6"><div class="empty">Aucune inscription en attente.</div></td></tr>';
+
+    // Validés
+    $('approved-count').innerHTML = approved.length ? '<span class="tag tag-ok">' + approved.length + '</span>' : '';
+    $('approved-body').innerHTML = approved.length ? approved.map(function(p){
+      var mine = results.filter(function(r){ return r.user_id === p.id; });
+      var moy = '—';
+      if(mine.length){
+        var tot = mine.reduce(function(a,r){ return a + (r.score / r.serie); }, 0);
+        moy = Math.round((tot / mine.length) * 100) + ' %';
+      }
+      return '<tr>' +
+        '<td><b>' + esc(p.prenom) + ' ' + esc(p.nom) + '</b><br><span style="font-size:0.76rem;color:var(--muted)">' + esc(p.email) + '</span></td>' +
+        '<td>' + esc(p.annee) + '</td>' +
+        '<td>' + esc(p.faculte) + '</td>' +
+        '<td>' + fmtDateTime(p.last_seen_at) + '</td>' +
+        '<td>' + mine.length + '</td>' +
+        '<td>' + moy + '</td>' +
+        '<td><div class="actions">' +
+          '<button class="btn" data-detail="' + esc(p.id) + '">Résultats</button>' +
+          '<button class="btn btn-ko" data-delete="' + esc(p.id) + '">Supprimer</button>' +
+        '</div></td></tr>';
+    }).join('') : '<tr><td colspan="7"><div class="empty">Aucun compte validé pour le moment.</div></td></tr>';
+
+    // Pathologies les plus ratées
+    var byDiag = {};
+    caseResults.forEach(function(c){
+      var k = c.diagnosis_id;
+      if(!byDiag[k]) byDiag[k] = { total:0, wrong:0 };
+      byDiag[k].total++;
+      if(!c.correct) byDiag[k].wrong++;
+    });
+    var rows = Object.keys(byDiag).map(function(k){
+      var d = byDiag[k];
+      return { id:k, total:d.total, rate: d.wrong / d.total };
+    }).sort(function(a,b){ return b.rate - a.rate; });
+
+    $('weak-body').innerHTML = rows.length ? rows.map(function(r){
+      var pct = Math.round(r.rate * 100);
+      return '<tr>' +
+        '<td>' + esc(DIAG_LABELS[r.id] || r.id) + '</td>' +
+        '<td>' + r.total + '</td>' +
+        '<td><b>' + pct + ' %</b></td>' +
+        '<td><div class="bar"><i style="width:' + pct + '%"></i></div></td>' +
+        '</tr>';
+    }).join('') : '<tr><td colspan="4"><div class="empty">Aucun cas traité pour le moment.</div></td></tr>';
+  }
+
+  function stat(v, l){ return '<div class="stat"><div class="v">' + v + '</div><div class="l">' + l + '</div></div>'; }
+
+  function showDetail(id){
+    var p = profiles.filter(function(x){ return x.id === id; })[0];
+    if(!p) return;
+    var mine = results.filter(function(r){ return r.user_id === id; });
+    $('detail-title').textContent = 'Résultats de ' + p.prenom + ' ' + p.nom;
+    $('detail-body').innerHTML = mine.length ? mine.map(function(r){
+      return '<tr><td>' + fmtDateTime(r.created_at) + '</td>' +
+        '<td>' + (r.mode === 'diagnostic' ? 'Diagnostic' : 'Choix thérapeutique') + '</td>' +
+        '<td><b>' + r.score + ' / ' + r.serie + '</b></td></tr>';
+    }).join('') : '<tr><td colspan="3"><div class="empty">Aucune série terminée.</div></td></tr>';
+    $('detail-card').style.display = '';
+    $('detail-card').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  // ---------- actions ----------
+  document.addEventListener('click', function(e){
+    var t = e.target;
+    if(!t || t.tagName !== 'BUTTON') return;
+
+    var id;
+    if((id = t.getAttribute('data-approve'))){
+      t.disabled = true; t.textContent = '…';
+      authed('/rest/v1/profiles?id=eq.' + id, {
+        method:'PATCH', body:{ approved:true }, prefer:'return=minimal'
+      }).then(loadAll)
+        .then(function(){ msg('global-msg', 'Compte validé. L\'étudiant a désormais accès aux cas cliniques.', 'ok'); })
+        .catch(function(err){ msg('global-msg', 'Échec de la validation : ' + esc(err.message), 'err'); t.disabled = false; t.textContent = 'Valider'; });
+    }
+    else if((id = t.getAttribute('data-delete'))){
+      var p = profiles.filter(function(x){ return x.id === id; })[0];
+      var who = p ? (p.prenom + ' ' + p.nom + ' (' + p.email + ')') : 'ce compte';
+      if(!confirm('Supprimer définitivement le profil de ' + who + ' ?\n\nSes résultats seront également effacés. Cette action est irréversible.')) return;
+      t.disabled = true; t.textContent = '…';
+      authed('/rest/v1/profiles?id=eq.' + id, { method:'DELETE', prefer:'return=minimal' })
+        .then(loadAll)
+        .then(function(){ msg('global-msg', 'Profil supprimé.', 'ok'); })
+        .catch(function(err){ msg('global-msg', 'Échec de la suppression : ' + esc(err.message), 'err'); t.disabled = false; t.textContent = 'Supprimer'; });
+    }
+    else if((id = t.getAttribute('data-detail'))){
+      showDetail(id);
+    }
+  });
+
+  function doLogin(){
+    var email = ($('email').value || '').trim(), pass = $('password').value || '';
+    if(!email || !pass){ msg('login-msg', 'Renseignez vos identifiants.', 'err'); return; }
+    msg('login-msg', '');
+    $('login-btn').disabled = true; $('login-btn').textContent = 'Connexion…';
+    request('/auth/v1/token?grant_type=password', { method:'POST', body:{ email:email, password:pass } })
+      .then(function(d){
+        session = {
+          access_token:d.access_token, refresh_token:d.refresh_token,
+          user_id: d.user && d.user.id, email: d.user && d.user.email
+        };
+        try { localStorage.setItem(SESSION_KEY, JSON.stringify(session)); } catch(e){}
+        return start();
+      })
+      .catch(function(err){
+        var m = String(err.message || '');
+        msg('login-msg', /Invalid login credentials/i.test(m) ? 'Adresse e-mail ou mot de passe incorrect.'
+          : /Email not confirmed/i.test(m) ? 'Confirmez d\'abord votre adresse e-mail.'
+          : (m || 'Erreur de connexion.'), 'err');
+      })
+      .then(function(){ $('login-btn').disabled = false; $('login-btn').textContent = 'Se connecter'; });
+  }
+
+  $('login-btn').addEventListener('click', doLogin);
+  ['email','password'].forEach(function(id){
+    $(id).addEventListener('keydown', function(e){ if(e.key === 'Enter') doLogin(); });
+  });
+
+  // ---------- démarrage ----------
+  function start(){
+    if(!session){ hide($('loading-view')); show($('login-view')); return Promise.resolve(); }
+    show($('loading-view')); hide($('login-view')); hide($('admin-view'));
+    // Vérifie que ce compte est bien administrateur avant d'afficher quoi que ce soit.
+    return authed('/rest/v1/admins?select=user_id&user_id=eq.' + session.user_id)
+      .then(function(rows){
+        if(!rows || !rows.length){
+          hide($('loading-view')); show($('login-view'));
+          msg('login-msg',
+            'Ce compte n\'est pas administrateur. Exécutez la commande d\'activation ' +
+            'indiquée dans <code>supabase/README.md</code>, puis reconnectez-vous.', 'err');
+          return;
+        }
+        return loadAll().then(function(){
+          hide($('loading-view')); hide($('login-view')); show($('admin-view'));
+        });
+      })
+      .catch(function(err){
+        hide($('loading-view')); show($('login-view'));
+        msg('login-msg', err.status ? ('Erreur : ' + esc(err.message))
+                                    : 'Serveur injoignable. Vérifiez votre connexion internet.', 'err');
+      });
+  }
+
+  try { session = JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch(e){ session = null; }
+  start();
+})();
+</script>
+</body>
+</html>
