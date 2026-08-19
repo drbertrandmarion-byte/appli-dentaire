@@ -549,6 +549,13 @@
     margin-top:20px;
   }
 
+  .tx-skip-row{
+    display:flex;
+    justify-content:flex-end;
+    margin:6px 0 4px;
+  }
+  .tx-skip-row .btn-secondary{font-size:0.82rem; padding:6px 12px;}
+
   footer{
     text-align:center;
     color:var(--muted);
@@ -958,6 +965,10 @@
     <span class="counter-badge quiz-badge hidden" id="tx-quiz-progress"></span>
     <span class="badge" id="tx-badge"></span>
     <h2 id="tx-title"></h2>
+
+    <div class="tx-skip-row hidden" id="tx-skip-row">
+      <button class="btn-secondary" id="tx-skip-btn" type="button">Passer ce cas, en tirer un autre →</button>
+    </div>
 
     <h3>Cas clinique</h3>
     <div class="def" id="tx-def"></div>
@@ -2905,6 +2916,8 @@
   var txQuizProgressEl = document.getElementById('tx-quiz-progress');
   var txQuizScoreCard = document.getElementById('tx-quiz-score-card');
   var txNextActionBtn = document.getElementById('tx-next-btn');
+  var txSkipRow = document.getElementById('tx-skip-row');
+  document.getElementById('tx-skip-btn').addEventListener('click', startTxCase);
 
   // populate diagnosis dropdown once (static list)
   var placeholder = document.createElement('option');
@@ -3249,8 +3262,10 @@
     if(txMode === 'quiz'){
       showEl(txQuizProgressEl);
       txQuizProgressEl.textContent = 'Cas ' + (txQuizIndex + 1) + ' / ' + txQuizLength;
+      hideEl(txSkipRow);
     } else {
       hideEl(txQuizProgressEl);
+      showEl(txSkipRow);
     }
 
     txUrgenceSelect.value = '';
