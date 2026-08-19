@@ -1449,6 +1449,14 @@
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
+        patientLine: "Fatou, 36 ans, consulte pour une douleur intense caractéristique d'une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement assez important, difficile à stabiliser au niveau des entrées canalaires, mais qui finit par être contrôlé.",
+        depth: "supra_gingival", apical: false,
+        finalLine: "Quel traitement définitif est prévu ?",
+        rationaleKey: 'difficile',
+        axes: {coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+      },
+      {
         patientLine: "Michel, 60 ans, consulte pour une douleur aiguë spontanée compatible avec une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement canalaire très abondant et persistant, impossible à stabiliser malgré plusieurs tentatives d'hémostase.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
@@ -1466,6 +1474,14 @@
       },
       {
         patientLine: "Chloé, 21 ans, présente une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement canalaire très abondant et persistant, malgré les mesures d'hémostase mises en œuvre : aucune stabilisation satisfaisante n'est obtenue.",
+        depth: "supra_gingival", apical: false,
+        finalLine: "Quel traitement définitif est programmé ?",
+        rationaleKey: 'impossible',
+        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Rachid, 55 ans, consulte pour une douleur aiguë spontanée compatible avec une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement canalaire très abondant et persistant, impossible à stabiliser malgré plusieurs tentatives d'hémostase.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
@@ -1539,22 +1555,6 @@
       },
       {
         patientLine: "Gabriel, 60 ans, consulte pour un bilan buccodentaire général. La dent examinée est asymptomatique ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
-        depth: "coronaire", apical: false,
-        finalLine: "Quel traitement choisissez-vous ?",
-        rationaleKey: 'default',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['rien'], medicamenteux:['aucun']}
-      },
-      {
-        patientLine: "Alice, 33 ans, s'inquiète pour une ancienne restauration qu'elle trouve suspecte mais indolore. L'examen clinique confirme une restauration étanche ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
-        depth: "coronaire", apical: false,
-        finalLine: "Quel traitement choisissez-vous ?",
-        rationaleKey: 'default',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['rien'], medicamenteux:['aucun']}
-      },
-      {
-        patientLine: "Sarah, 16 ans, vient pour sa visite de contrôle annuelle. Aucune plainte ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
         depth: "coronaire", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
@@ -1657,10 +1657,12 @@
     // varient d'un cas à l'autre ; le traitement, lui, ne varie pas : pas d'urgence vraie, endodontie
     // programmée.
     // Nécrose pulpaire : modèle en cases à cocher (axes). Cas conservables (délabrement juxta-gingival) :
-    // aucun geste ni médicament à l'urgence (asymptomatique), traitement endodontique complet en final.
-    // Cas non conservable (délabrement infra-osseux) : toujours rien à l'urgence, mais extraction au
-    // traitement final, avec antalgique + bain de bouche à ce moment-là (pas avant, puisqu'il ne se
-    // passe rien à l'urgence).
+    // aucun médicament à l'urgence (asymptomatique), mais curetage carieux et reconstitution coronaire
+    // provisoire pour diminuer la charge bactérienne et redonner un peu de fonctionnalité mécanique à
+    // la dent, afin d'éviter une fracture secondaire qui mettrait en jeu sa conservabilité ; traitement
+    // endodontique complet en final. Cas non conservable (délabrement infra-osseux) : toujours rien à
+    // l'urgence, mais extraction au traitement final, avec antalgique + bain de bouche à ce moment-là
+    // (pas avant, puisqu'il ne se passe rien à l'urgence).
     necrose: [
       {
         patientLine: "Léon, 44 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une importante perte tissulaire coronaire à proximité de la pulpe, avec un ligament parodontal apical d'aspect sain, sans épaississement ni lésion radioclaire.",
@@ -1668,7 +1670,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1677,7 +1679,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle prise en charge programmez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1686,7 +1688,7 @@
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1695,7 +1697,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement programmez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1704,7 +1706,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1713,7 +1715,7 @@
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2116,7 +2118,7 @@
     ],
     syndrome_mixte:     [ {condition:null, axes:{coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}} ],
     necrose: [
-      {condition:"Dent conservable", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Dent conservable", axes:{coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
       {condition:"Dent non conservable (limite infra-osseuse)", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}}
     ],
     parodontite: [
@@ -2166,7 +2168,7 @@
     }},
     syndrome_mixte: "La dent est pluriradiculée avec un état pulpaire mixte : un canal encore vivant et en inflammation aiguë, un autre déjà nécrosé et potentiellement infecté. Comme il est impossible de traiter différemment chaque canal en urgence, on réalise une pulpectomie d'urgence sur l'ensemble des canaux, y compris le canal encore vital, pour lever la douleur et éviter la prolifération bactérienne depuis le canal nécrosé. Le traitement endodontique complet, à programmer, traite ensuite chaque canal selon son propre état (vital ou nécrosé).",
     necrose: { byKey: {
-      conservable: "La dent n'est pas symptomatique : elle ne nécessite pas de prise en charge urgente avec un geste ou un médicament associé. On programme le traitement endodontique complet sur un créneau classique, avec un antalgique pour la séance de traitement, en expliquant au patient les risques d'une absence de traitement — l'évolution vers une infection périapicale — tout en lui indiquant de revenir consulter en urgence si des symptômes apparaissent.",
+      conservable: "La dent n'est pas symptomatique : elle ne nécessite pas de geste endodontique ni de médicament en urgence. On réalise cependant un curetage carieux avec une reconstitution coronaire provisoire, dans le double but de diminuer la charge bactérienne coronaire et de redonner à la dent un peu de fonctionnalité mécanique, afin d'éviter une fracture secondaire qui mettrait en jeu sa conservabilité en attendant le traitement endodontique complet. Celui-ci est ensuite programmé sur un créneau classique, avec un antalgique pour la séance de traitement, en expliquant au patient les risques d'une absence de traitement — l'évolution vers une infection périapicale — tout en lui indiquant de revenir consulter en urgence si des symptômes apparaissent.",
       nonconservable: "La dent n'est pas symptomatique et le délabrement infra-osseux la rend non conservable : il n'y a donc rien à faire en urgence, ni geste ni médicament, puisqu'aucune infection active ne le justifie dans l'immédiat. L'extraction est programmée comme traitement final, associée à un antalgique et un bain de bouche pour la gestion post-opératoire de la plaie d'extraction — l'antibiothérapie et les AINS ne sont pas nécessaires puisqu'il n'y a pas d'infection à traiter."
     }},
     parodontite: { byKey: {
