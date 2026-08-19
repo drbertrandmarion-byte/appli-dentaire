@@ -1146,18 +1146,18 @@
     playOpeningChime();
   }
 
-  // Déclenchée par un vrai geste sur l'écran d'ouverture (clic ou touche pour le passer) : la reprise
-  // du contexte audio y est fiable, puisqu'elle est directement liée à ce geste.
+  // Déclenchée par un vrai geste sur l'écran d'ouverture (clic ou touche pour le passer). Les notes
+  // sont programmées tout de suite, de façon synchrone dans le geste (comme le clic des boutons, qui
+  // fonctionne) : certains navigateurs (Safari/iOS notamment) n'autorisent le déblocage du son que si
+  // la programmation a lieu directement dans le geste, pas après coup dans le ".then()" d'une reprise
+  // du contexte audio — un son déjà programmé démarre de toute façon dès que le contexte est repris.
   function playOpeningChimeOnGesture(){
     if(openingChimePlayed) return;
     var ctx = getAudioCtx();
     if(!ctx) return;
     openingChimePlayed = true;
-    if(ctx.state === 'suspended'){
-      ctx.resume().then(playOpeningChime).catch(function(){});
-    } else {
-      playOpeningChime();
-    }
+    playOpeningChime();
+    if(ctx.state === 'suspended'){ ctx.resume().catch(function(){}); }
   }
 
   function playClickSound(){
