@@ -100,8 +100,7 @@
     border-radius:50%;
     border:1px solid var(--border);
     background:#fff;
-    font-size:1.1rem;
-    line-height:1;
+    color:var(--logo-navy);
     cursor:pointer;
     box-shadow:0 1px 4px rgba(0,0,0,0.12);
     display:flex;
@@ -109,8 +108,12 @@
     justify-content:center;
     padding:0;
   }
+  .sound-toggle svg{display:block;}
+  .sound-toggle .sound-mute-x{display:none;}
   .sound-toggle:hover{border-color:var(--tx-accent);}
   .sound-toggle.is-muted{color:var(--muted);}
+  .sound-toggle.is-muted .sound-waves{display:none;}
+  .sound-toggle.is-muted .sound-mute-x{display:block;}
 
   /* Animation d'ouverture : reprend le logo, disparaît une fois jouée (ou immédiatement si l'utilisateur clique / appuie sur une touche, ou si le système demande de réduire les animations). */
   #splash-screen{
@@ -795,7 +798,16 @@
   <div id="splash-hint">Cliquez pour passer</div>
 </div>
 
-<button id="sound-toggle-btn" class="sound-toggle" type="button" title="Couper le son" aria-label="Couper le son">🔊</button>
+<button id="sound-toggle-btn" class="sound-toggle" type="button" title="Couper le son" aria-label="Couper le son">
+  <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+    <path d="M4 9v6h4l5 4V5L8 9H4z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <g class="sound-waves">
+      <path d="M16.2 8.8c1.1 1 1.1 5.4 0 6.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path d="M18.6 6.3c2.1 2 2.1 9.4 0 11.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </g>
+    <path class="sound-mute-x" d="M16 9l5.5 6M21.5 9L16 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+</button>
 
 <div class="wrap">
 
@@ -1206,7 +1218,6 @@
     var toggleBtn = document.getElementById('sound-toggle-btn');
     if(!toggleBtn) return;
     function render(){
-      toggleBtn.textContent = soundMuted ? '🔇' : '🔊';
       toggleBtn.classList.toggle('is-muted', soundMuted);
       var label = soundMuted ? 'Activer le son' : 'Couper le son';
       toggleBtn.title = label;
