@@ -1132,20 +1132,30 @@
   }
 
   var openingChimePlayed = false;
-  function playOpeningChimeOnce(){
+
+  // Tentative "silencieuse", sans interaction : ne joue que si le navigateur autorise déjà l'audio à
+  // cet instant précis (rare avant tout geste utilisateur). Surtout, elle n'entame aucune reprise
+  // différée du contexte audio : une telle reprise ne se résoudrait que plus tard, au premier geste
+  // de l'utilisateur où qu'il ait lieu dans l'appli, et jouerait alors le carillon hors contexte, sur
+  // un bouton sans rapport avec l'écran d'ouverture.
+  function playOpeningChimeIfAllowed(){
+    if(openingChimePlayed) return;
+    var ctx = getAudioCtx();
+    if(!ctx || ctx.state !== 'running') return;
+    openingChimePlayed = true;
+    playOpeningChime();
+  }
+
+  // Déclenchée par un vrai geste sur l'écran d'ouverture (clic ou touche pour le passer) : la reprise
+  // du contexte audio y est fiable, puisqu'elle est directement liée à ce geste.
+  function playOpeningChimeOnGesture(){
     if(openingChimePlayed) return;
     var ctx = getAudioCtx();
     if(!ctx) return;
+    openingChimePlayed = true;
     if(ctx.state === 'suspended'){
-      // Ne marque "joué" qu'une fois la reprise effective : un premier appel bloqué (avant toute
-      // interaction) ne doit pas empêcher la tentative suivante, déclenchée par un vrai geste utilisateur.
-      ctx.resume().then(function(){
-        if(openingChimePlayed) return;
-        openingChimePlayed = true;
-        playOpeningChime();
-      }).catch(function(){});
+      ctx.resume().then(playOpeningChime).catch(function(){});
     } else {
-      openingChimePlayed = true;
       playOpeningChime();
     }
   }
@@ -1221,10 +1231,7 @@
       requestAnimationFrame(function(){
         requestAnimationFrame(function(){
           document.getElementById('splash-circle').style.strokeDashoffset = '0';
-          // Tentative de lecture pile au moment où le dessin démarre ; si l'autoplay est bloqué (cas le
-          // plus courant tant qu'aucune interaction n'a eu lieu), le clic/la touche pour passer l'écran
-          // d'ouverture — juste ci-dessous — sert de second déclencheur, toujours lié à cette animation.
-          playOpeningChimeOnce();
+          playOpeningChimeIfAllowed();
           schedule(function(){ document.getElementById('splash-tooth').style.strokeDashoffset = '0'; }, 350);
           schedule(function(){ document.getElementById('splash-canal').style.strokeDashoffset = '0'; }, 750);
           schedule(function(){ splash.classList.add('splash-text-ready'); }, 950);
@@ -1238,11 +1245,11 @@
     }
 
     splash.addEventListener('click', function(){
-      playOpeningChimeOnce();
+      playOpeningChimeOnGesture();
       hideSplash();
     });
     document.addEventListener('keydown', function onKey(){
-      playOpeningChimeOnce();
+      playOpeningChimeOnGesture();
       hideSplash();
       document.removeEventListener('keydown', onKey);
     });
