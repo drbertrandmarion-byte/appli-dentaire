@@ -21,6 +21,7 @@ node tests/cas-choix-therapeutique.js
 node tests/analyse-differentielle.js
 node tests/economie-diagnostique.js
 node tests/barre-commandes.js
+node tests/schemas-soins.js
 node tests/back-office.js
 ```
 
@@ -48,6 +49,7 @@ il n'a pas de verdict automatique — voir plus bas.
 | `analyse-differentielle.js` | La correction du mode « Diagnostic » : signes discriminants, signe posé ou non |
 | `economie-diagnostique.js` | Le rappel à partir de 7 questions et le calcul du rang décisif |
 | `barre-commandes.js` | Que les boutons retour / compte / son ne se chevauchent à aucune largeur d'écran |
+| `schemas-soins.js` | Que le schéma dessine bien le soin coronaire décrit par l'énoncé |
 | `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion et exports CSV |
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
@@ -60,6 +62,13 @@ posée », ni l'inverse. Il termine par `Erreurs : 0`.
 boutons ne se recouvre, qu'aucun ne sort de l'écran, que la page ne défile pas
 latéralement, et que la barre — invisible mais large — n'intercepte pas les clics dans sa
 zone vide. Mesurer plutôt qu'inspecter le CSS est délibéré : c'est le rendu qui compte.
+
+`schemas-soins.js` tire des cas de « Choix thérapeutique » jusqu'à couvrir les énoncés
+radiographiques distincts, et vérifie pour chacun que le dessin correspond au texte : une
+dent déjà traitée porte toujours une obturation coronaire infiltrée — une dent dépulpée en
+a forcément une, et c'est sa perte d'étanchéité qui explique la réinfection —, la légende
+et le tracé s'accordent, et aucun soin n'est dessiné si l'énoncé n'en mentionne pas.
+Il termine par `Erreurs : 0`.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas
