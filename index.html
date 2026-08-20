@@ -986,6 +986,7 @@
     <button type="button" id="acct-progress-btn" role="menuitem">📈 Ma progression</button>
     <button type="button" id="acct-best-btn" role="menuitem">🏆 Mes meilleurs scores</button>
     <button type="button" id="acct-weak-btn" role="menuitem">🎯 Mes points faibles</button>
+    <button type="button" id="acct-review-btn" role="menuitem">🔁 Mes cas à revoir</button>
     <button type="button" id="acct-admin-btn" class="hidden" role="menuitem">🛠️ Back-office enseignant</button>
     <button type="button" id="acct-logout-btn" class="acct-danger" role="menuitem">Se déconnecter</button>
   </div>
@@ -1073,6 +1074,7 @@
       <p>À vous de choisir, une par une, les questions à poser à ce « patient virtuel » pour identifier le diagnostic, puis de le proposer.</p>
       <div class="mode-buttons">
         <button class="btn-primary" id="start-single-btn">Session individuelle (1 cas)</button>
+        <button class="btn-secondary hidden" id="start-revision-btn" type="button">🎯 Réviser mes erreurs</button>
         <div class="mode-btn-group">
           <button class="btn-primary" id="start-quiz-btn">Série de 5 cas notée</button>
           <div class="score-stats" id="stats-diag5"></div>
@@ -1094,6 +1096,7 @@
       <p>Le diagnostic vous est donné directement, avec le dossier radiographique (profondeur du délabrement coronaire et présence ou non d'une image apicale). À vous de choisir le traitement d'urgence et le traitement final adaptés parmi les propositions.</p>
       <div class="mode-buttons">
         <button class="btn-primary" id="start-tx-btn">Session individuelle (1 cas)</button>
+        <button class="btn-secondary hidden" id="start-tx-revision-btn" type="button">🎯 Réviser mes erreurs</button>
         <div class="mode-btn-group">
           <button class="btn-primary" id="start-tx-quiz-btn">Série de 5 cas notée</button>
           <div class="score-stats" id="stats-tx5"></div>
@@ -3066,7 +3069,12 @@
   // Choix thérapeutique : abaisse fortement (sans l'annuler) le poids de tirage du diagnostic qui
   // vient d'être présenté, pour limiter les répétitions immédiates sans les rendre impossibles.
   function randomTxCaseId(){
-    var weights = DIAGNOSIS_ORDER.map(function(id){ return id === lastTxCaseId ? 0.15 : 1; });
+    // En révision, la pénalité anti-répétition est adoucie : sinon elle frappe
+    // précisément la pathologie que l'on cherche à faire retravailler.
+    var repeatPenalty = revisionWeights ? 0.5 : 0.15;
+    var weights = DIAGNOSIS_ORDER.map(function(id){
+      return (id === lastTxCaseId ? repeatPenalty : 1) * revisionWeight(id);
+    });
     return pickWeighted(DIAGNOSIS_ORDER, weights);
   }
 
@@ -3434,9 +3442,9 @@
   document.querySelectorAll('[data-back]').forEach(function(btn){
     btn.addEventListener('click', showHub);
   });
-  document.getElementById('start-tx-btn').addEventListener('click', startTxCase);
-  document.getElementById('start-tx-quiz-btn').addEventListener('click', function(){ startTxQuizSession(5); });
-  document.getElementById('start-tx-quiz10-btn').addEventListener('click', function(){ startTxQuizSession(10); });
+  document.getElementById('start-tx-btn').addEventListener('click', function(){ revisionWeights = null; startTxCase(); });
+  document.getElementById('start-tx-quiz-btn').addEventListener('click', function(){ revisionWeights = null; startTxQuizSession(5); });
+  document.getElementById('start-tx-quiz10-btn').addEventListener('click', function(){ revisionWeights = null; startTxQuizSession(10); });
   document.getElementById('tx-submit-btn').addEventListener('click', submitTxChoice);
   document.getElementById('tx-home-btn').addEventListener('click', goHome);
   document.getElementById('tx-quiz-restart-btn').addEventListener('click', function(){ startTxQuizSession(txQuizLength); });
@@ -3459,9 +3467,41 @@
     setBackTarget(showHub);
   }
 
-  document.getElementById('start-single-btn').addEventListener('click', startSingleSession);
-  document.getElementById('start-quiz-btn').addEventListener('click', function(){ startQuizSession(5); });
-  document.getElementById('start-quiz10-btn').addEventListener('click', function(){ startQuizSession(10); });
+  document.getElementById('start-single-btn').addEventListener('click', function(){ revisionWeights = null; startSingleSession(); });
+
+  // ---------- Mode révision ----------
+  // Le bouton n'apparaît que si le compte a effectivement des erreurs enregistrées :
+  // proposer de « réviser ses erreurs » à quelqu'un qui n'en a pas encore n'aurait
+  // aucun sens.
+  function setupRevision(mode, btnId, startFn){
+    var btn = document.getElementById(btnId);
+    if(!btn) return;
+    btn.addEventListener('click', function(){
+      btn.disabled = true;
+      btn.textContent = 'Préparation…';
+      window.EndoStats.getWeakWeights(mode).then(function(w){
+        revisionWeights = w;
+        btn.disabled = false;
+        btn.textContent = '🎯 Réviser mes erreurs';
+        startFn();
+      });
+    });
+  }
+
+  function refreshRevisionButtons(){
+    [['diagnostic','start-revision-btn'], ['therapeutique','start-tx-revision-btn']].forEach(function(p){
+      var btn = document.getElementById(p[1]);
+      if(!btn) return;
+      if(!window.EndoStats || !EndoStats.hasSession()){ hideEl(btn); return; }
+      EndoStats.getWeakWeights(p[0]).then(function(w){ w ? showEl(btn) : hideEl(btn); });
+    });
+  }
+
+  setupRevision('diagnostic',    'start-revision-btn',    startSingleSession);
+  setupRevision('therapeutique', 'start-tx-revision-btn', startTxCase);
+  window.EndoRefreshRevision = refreshRevisionButtons;
+  document.getElementById('start-quiz-btn').addEventListener('click', function(){ revisionWeights = null; startQuizSession(5); });
+  document.getElementById('start-quiz10-btn').addEventListener('click', function(){ revisionWeights = null; startQuizSession(10); });
   document.getElementById('quiz-restart-btn').addEventListener('click', function(){ startQuizSession(quizLength); });
   document.getElementById('quiz-home-btn').addEventListener('click', goHome);
   document.getElementById('result-home-btn').addEventListener('click', goHome);
@@ -3479,7 +3519,19 @@
     document.body.classList.remove('printing-tx-recap');
   });
 
+  // Mode révision : lorsqu'il est actif, le tirage privilégie les pathologies que
+  // l'étudiant rate le plus, sans jamais exclure les autres.
+  var revisionWeights = null;
+
+  function revisionWeight(id){
+    if(!revisionWeights) return 1;
+    return revisionWeights[id] !== undefined ? revisionWeights[id] : 1;
+  }
+
   function randomCaseId(){
+    if(revisionWeights){
+      return pickWeighted(DIAGNOSIS_ORDER, DIAGNOSIS_ORDER.map(revisionWeight));
+    }
     return DIAGNOSIS_ORDER[Math.floor(Math.random() * DIAGNOSIS_ORDER.length)];
   }
 
@@ -3683,7 +3735,15 @@
     document.getElementById('result-urgence').textContent = actual.urgence;
     document.getElementById('result-final').textContent = currentVariant ? currentVariant.traitementFinal : actual.traitementFinal;
 
-    if(window.EndoStats) EndoStats.recordCase('diagnostic', caseId, correct);
+    if(window.EndoStats){
+      EndoStats.recordCase('diagnostic', caseId, correct);
+      if(!correct){
+        EndoStats.recordReview('diagnostic', caseId,
+          (currentVariant && currentVariant.radio) || actual.def,
+          DIAGNOSES[guessId] ? DIAGNOSES[guessId].title : '',
+          actual.title);
+      }
+    }
 
     if(mode === 'quiz'){
       quizResults.push({caseId:caseId, guessId:guessId, correct:correct, questions:askedIds.length});
@@ -4059,7 +4119,18 @@
       hideEl(rationaleBox);
     }
 
-    if(window.EndoStats) EndoStats.recordCase('therapeutique', txCaseId, allCorrect);
+    if(window.EndoStats){
+      EndoStats.recordCase('therapeutique', txCaseId, allCorrect);
+      if(!allCorrect && checkboxMode){
+        var donne = txAxesSummaryText(txStepAnswers.urgence1Sets.coronaire, TX_CORONAIRE_OPTIONS) + ' · ' +
+                    txAxesSummaryText(txStepAnswers.urgence1Sets.chirurgical, TX_CHIRURGICAL_OPTIONS) + ' · ' +
+                    txAxesSummaryText(txStepAnswers.urgence1Sets.medicamenteux, TX_MEDIC_OPTIONS);
+        var attendu = txAxesSummaryText(txVariant.axes.coronaire, TX_CORONAIRE_OPTIONS) + ' · ' +
+                      txAxesSummaryText(txVariant.axes.chirurgical, TX_CHIRURGICAL_OPTIONS) + ' · ' +
+                      txAxesSummaryText(txVariant.axes.medicamenteux, TX_MEDIC_OPTIONS);
+        EndoStats.recordReview('therapeutique', txCaseId, txVariant.patientLine, donne, attendu);
+      }
+    }
 
     if(txMode === 'quiz'){
       txQuizResults.push({caseId:txCaseId, correct:allCorrect});
@@ -4761,18 +4832,75 @@
     });
   }
 
+  // Nombre de cas ratés conservés pour relecture. Au-delà, les plus anciens sont
+  // effacés : le volume stocké reste borné quel que soit l'usage.
+  var REVIEW_KEEP = 20;
+
   window.EndoStats = {
     recordCase: function(mode, diagnosisId, correct){
       if(!session || !diagnosisId) return;
       queuePush({k:'c', mode:mode, diagnosis_id:diagnosisId, correct:!!correct});
       flushQueue();
     },
+
     recordSeries: function(mode, serie, score){
       if(!session || !serie) return;
       queuePush({k:'s', mode:mode, serie:serie, score:score});
       flushQueue();
-    }
+    },
+
+    // Conserve le détail d'un cas raté, pour que l'étudiant puisse le revoir.
+    recordReview: function(mode, diagnosisId, patient, given, expected){
+      if(!session || !session.user_id || offline || !diagnosisId) return;
+      authed('/rest/v1/review_cases', {
+        method: 'POST', prefer: 'return=minimal',
+        body: {
+          user_id: session.user_id, mode: mode, diagnosis_id: diagnosisId,
+          patient: (patient || '').slice(0, 300),
+          given: (given || '').slice(0, 300),
+          expected: (expected || '').slice(0, 300)
+        }
+      }).then(trimReview).catch(function(){});
+    },
+
+    // Poids de tirage pour le mode révision : plus une pathologie est ratée, plus
+    // elle a de chances d'être proposée. Celles jamais ratées restent possibles.
+    getWeakWeights: function(mode){
+      if(!session || !session.user_id) return Promise.resolve(null);
+      return authed('/rest/v1/case_results?select=diagnosis_id,correct&mode=eq.' + mode +
+                    '&user_id=eq.' + session.user_id + '&order=created_at.desc&limit=400')
+        .then(function(rows){
+          if(!rows || !rows.length) return null;
+          var agg = {};
+          rows.forEach(function(r){
+            var a = agg[r.diagnosis_id] || (agg[r.diagnosis_id] = {t:0, w:0});
+            a.t++; if(!r.correct) a.w++;
+          });
+          var weights = {}, anyWrong = false;
+          Object.keys(agg).forEach(function(id){
+            var rate = agg[id].w / agg[id].t;
+            if(agg[id].w) anyWrong = true;
+            weights[id] = 0.3 + 4.7 * rate;
+          });
+          return anyWrong ? weights : null;
+        })
+        .catch(function(){ return null; });
+    },
+
+    hasSession: function(){ return !!(session && session.user_id); }
   };
+
+  // Ne garde que les REVIEW_KEEP cas les plus récents.
+  function trimReview(){
+    return authed('/rest/v1/review_cases?select=id&user_id=eq.' + session.user_id +
+                  '&order=created_at.desc&offset=' + REVIEW_KEEP)
+      .then(function(old){
+        if(!old || !old.length) return;
+        var ids = old.map(function(r){ return r.id; }).join(',');
+        return authed('/rest/v1/review_cases?id=in.(' + ids + ')',
+                      { method:'DELETE', prefer:'return=minimal' });
+      }).catch(function(){});
+  }
 
   function touchLastSeen(){
     if(!profile) return Promise.resolve();
@@ -4800,6 +4928,7 @@
     $('acct-sub').textContent  = profile ? (profile.annee + ' · ' + profile.faculte) : '';
     (isAdmin ? show : hide)($('acct-admin-btn'));
     if(!offline){ touchLastSeen(); flushQueue(); }
+    if(window.EndoRefreshRevision) window.EndoRefreshRevision();
     window.EndoAccount = { profile: profile, isAdmin: isAdmin, offline: offline, userId: session && session.user_id };
   }
 
@@ -5165,6 +5294,43 @@
   $('acct-weak-btn').addEventListener('click', function(){
     openStats('Mes points faibles', 'Les pathologies sur lesquelles vous vous trompez le plus.',
       function(series, cases){ buildWeak(cases); });
+  });
+
+  // Les cas ratés récents, avec ce qui avait été répondu et ce qui était attendu.
+  $('acct-review-btn').addEventListener('click', function(){
+    document.getElementById('stats-title').textContent = 'Mes cas à revoir';
+    document.getElementById('stats-hint').textContent =
+      'Vos ' + REVIEW_KEEP + ' derniers cas ratés, du plus récent au plus ancien.';
+    statsBody('<div class="stats-empty">Chargement…</div>');
+    hide(dropdown);
+    show(statsPanel);
+
+    if(offline){
+      statsBody('<div class="stats-empty">Vous êtes hors ligne.<br>Reconnectez-vous pour consulter vos cas à revoir.</div>');
+      return;
+    }
+    authed('/rest/v1/review_cases?select=*&user_id=eq.' + session.user_id +
+           '&order=created_at.desc&limit=' + REVIEW_KEEP)
+      .then(function(rows){
+        if(!rows || !rows.length){
+          statsBody('<div class="stats-empty">Aucun cas raté pour le moment.<br>Tant mieux !</div>');
+          return;
+        }
+        statsBody(rows.map(function(r){
+          return '<div style="padding:12px 0; border-bottom:1px solid var(--border);">' +
+            '<div style="font-weight:700; color:var(--ink);">' + esc(diagLabel(r.diagnosis_id)) +
+              '<span class="stats-badge ' + (r.mode === 'diagnostic' ? 'diag">Diagnostic' : 'tx">Choix thérapeutique') + '</span></div>' +
+            (r.patient ? '<div style="font-size:0.8rem; color:var(--muted); margin-top:3px;">' + esc(r.patient) + '</div>' : '') +
+            '<div style="font-size:0.83rem; margin-top:6px; color:var(--ko);">Votre réponse : ' + esc(r.given || '—') + '</div>' +
+            '<div style="font-size:0.83rem; color:var(--ok);">Attendu : ' + esc(r.expected || '—') + '</div>' +
+            '<div style="font-size:0.72rem; color:var(--muted); margin-top:4px;">' +
+              new Date(r.created_at).toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'2-digit'}) + '</div>' +
+          '</div>';
+        }).join(''));
+      })
+      .catch(function(){
+        statsBody('<div class="stats-empty">Impossible de charger vos cas à revoir.<br>Vérifiez votre connexion internet.</div>');
+      });
   });
 
   // ---------- retour des liens reçus par e-mail ----------
