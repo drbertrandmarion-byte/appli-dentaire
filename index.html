@@ -882,6 +882,27 @@
   .auth-note{margin-top:16px; font-size:0.74rem; color:var(--muted); line-height:1.5;}
   .auth-logo{text-align:center; font-size:1.5rem; font-weight:800; margin:0 0 20px; letter-spacing:-0.01em;}
   .auth-logo .logo-navy{color:var(--logo-navy);} .auth-logo .logo-blue{color:var(--logo-blue);}
+  .auth-logo .logo-o{width:auto; height:0.86em; vertical-align:-0.16em; display:inline-block; margin:0 0.02em;}
+
+  /* Attente de connexion : le logo se dessine en boucle, comme à l'ouverture. */
+  .auth-loader{display:flex; justify-content:center; padding:6px 0 2px;}
+  .auth-loader svg{width:84px; height:84px;}
+  .auth-loader .ld-p{
+    fill:none; stroke-linecap:round; stroke-linejoin:round;
+    stroke-dasharray:420; stroke-dashoffset:420;
+    animation:ld-draw 2.6s ease-in-out infinite;
+  }
+  .auth-loader .ld-tooth{animation-delay:0.3s;}
+  .auth-loader .ld-canal{animation-delay:0.6s;}
+  @keyframes ld-draw{
+    0%   {stroke-dashoffset:420;}
+    45%  {stroke-dashoffset:0;}
+    72%  {stroke-dashoffset:0;}
+    100% {stroke-dashoffset:420;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .auth-loader .ld-p{animation:none; stroke-dashoffset:0;}
+  }
   .auth-pending-icon{font-size:2.4rem; text-align:center; margin-bottom:8px;}
 </style>
 </head>
@@ -4315,7 +4336,11 @@
      ===================================================================== -->
 <div id="auth-gate" class="hidden">
   <div class="auth-card">
-    <div class="auth-logo"><span class="logo-navy">Endo</span><span class="logo-blue">Diag</span></div>
+    <div class="auth-logo"><span class="logo-navy">End</span><svg class="logo-o" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="o (dent stylisée)">
+      <circle cx="50" cy="50" r="46" fill="none" stroke="#182849" stroke-width="5"/>
+      <path d="M35,32 Q38,22 46,26 Q50,30 54,26 Q62,22 65,32 Q70,40 66,52 Q66,60 64,70 Q62,80 58,84 Q55,87 54,80 Q53,68 50,62 Q47,68 46,80 Q45,87 42,84 Q38,80 36,70 Q34,60 34,52 Q30,40 35,32 Z" fill="none" stroke="#182849" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/>
+      <path d="M45,29 Q50,35 55,29 M50,33 L50,60 M50,60 Q52,67 54,77 M50,60 Q48,67 46,77" fill="none" stroke="#e8532e" stroke-width="4.5" stroke-linecap="round"/>
+    </svg><span class="logo-blue">Diag</span></div>
 
     <!-- Connexion -->
     <div id="auth-view-login">
@@ -4441,8 +4466,15 @@
 
     <!-- Chargement -->
     <div id="auth-view-loading" class="hidden">
-      <h2>Connexion…</h2>
-      <p class="auth-sub">Vérification de votre compte.</p>
+      <div class="auth-loader">
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Chargement">
+          <circle class="ld-p ld-circle" cx="50" cy="50" r="46" stroke="#182849" stroke-width="5"/>
+          <path class="ld-p ld-tooth" d="M35,32 Q38,22 46,26 Q50,30 54,26 Q62,22 65,32 Q70,40 66,52 Q66,60 64,70 Q62,80 58,84 Q55,87 54,80 Q53,68 50,62 Q47,68 46,80 Q45,87 42,84 Q38,80 36,70 Q34,60 34,52 Q30,40 35,32 Z" stroke="#182849" stroke-width="4.5"/>
+          <path class="ld-p ld-canal" d="M45,29 Q50,35 55,29 M50,33 L50,60 M50,60 Q52,67 54,77 M50,60 Q48,67 46,77" stroke="#e8532e" stroke-width="4.5"/>
+        </svg>
+      </div>
+      <h2 style="text-align:center;">Connexion…</h2>
+      <p class="auth-sub" style="text-align:center;">Vérification de votre compte.</p>
     </div>
   </div>
 </div>
@@ -4731,6 +4763,9 @@
     if(!email || !pass){ msg('login-msg', 'Renseignez votre adresse e-mail et votre mot de passe.', 'err'); return; }
     msg('login-msg', '');
     busy($('login-btn'), true, 'Connexion…', 'Se connecter');
+    // Bascule tout de suite sur l'écran d'attente : la vérification enchaîne plusieurs
+    // requêtes, mieux vaut une animation franche qu'un formulaire figé.
+    showView('loading');
     request('/auth/v1/token?grant_type=password', { method:'POST', body:{ email:email, password:pass } })
       .then(function(data){ saveSession(data); return route(); })
       .catch(function(err){ showView('login'); msg('login-msg', humanError(err), 'err'); })
