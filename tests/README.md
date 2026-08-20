@@ -20,6 +20,7 @@ python3 -m http.server 9300 &
 node tests/cas-choix-therapeutique.js
 node tests/analyse-differentielle.js
 node tests/economie-diagnostique.js
+node tests/barre-commandes.js
 node tests/back-office.js
 ```
 
@@ -46,12 +47,19 @@ il n'a pas de verdict automatique — voir plus bas.
 | `cas-choix-therapeutique.js` | Le corrigé clinique des 85 cas nommés du mode « Choix thérapeutique » |
 | `analyse-differentielle.js` | La correction du mode « Diagnostic » : signes discriminants, signe posé ou non |
 | `economie-diagnostique.js` | Le rappel à partir de 7 questions et le calcul du rang décisif |
+| `barre-commandes.js` | Que les boutons retour / compte / son ne se chevauchent à aucune largeur d'écran |
 | `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion et exports CSV |
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
 un différentiel affiché sur une erreur et jamais sur une bonne réponse, et surtout un
 marquage exact des signes — une question posée ne doit jamais apparaître comme « non
 posée », ni l'inverse. Il termine par `Erreurs : 0`.
+
+`barre-commandes.js` mesure les rectangles réellement affichés à sept largeurs d'écran, de
+320 à 1440 pixels, et avec un prénom court puis très long. Il vérifie qu'aucune paire de
+boutons ne se recouvre, qu'aucun ne sort de l'écran, que la page ne défile pas
+latéralement, et que la barre — invisible mais large — n'intercepte pas les clics dans sa
+zone vide. Mesurer plutôt qu'inspecter le CSS est délibéré : c'est le rendu qui compte.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas

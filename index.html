@@ -90,15 +90,10 @@
     font-size:0.95rem;
   }
 
-  /* Bouton son : ancré au bord droit de la colonne de contenu (760px centrés) plutôt qu'au bord de
-     l'écran, sinon il flotte seul dans la marge vide sur grand écran et passe inaperçu. */
+  /* Bouton son : poussé à droite de la barre par « margin-left:auto » (voir .top-bar), ce qui
+     l'aligne sur le bord de la colonne de contenu sans qu'il flotte seul dans la marge vide. */
   .sound-toggle{
-    position:fixed;
-    top:12px;
-    right:max(12px, calc(50% - 380px));
-    /* Au-dessus de l'écran de connexion (z-index 9000) : le carillon se déclenche au clic sur
-       « Se connecter », il faut donc pouvoir couper le son avant, et non seulement une fois entré. */
-    z-index:9500;
+    flex:0 0 auto;
     display:flex;
     align-items:center;
     justify-content:center;
@@ -120,11 +115,34 @@
   .sound-toggle.is-muted .sound-waves{display:none;}
   .sound-toggle.is-muted .sound-mute-x{display:block;}
 
-  .back-nav-btn{
+  /* Barre de commandes fixe, alignée sur la colonne de contenu (760 px). Les trois boutons sont
+     posés côte à côte par le flux flex : ils ne peuvent plus se chevaucher, même sur mobile où
+     ils se retrouvaient tous les trois calés sur le même bord.
+     Elle est au-dessus de l'écran de connexion (z-index 9000) pour que le bouton du son reste
+     accessible avant d'entrer ; les deux autres y sont de toute façon masqués. */
+  .top-bar{
     position:fixed;
-    top:12px;
-    left:12px;
-    z-index:500;
+    top:12px; left:0; right:0;
+    z-index:9500;
+    max-width:760px;
+    margin:0 auto;
+    padding:0 12px;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    /* Sans cela, la barre — invisible mais large — intercepterait les clics sur toute la largeur
+       de la page, y compris là où elle ne contient aucun bouton. */
+    pointer-events:none;
+  }
+  .top-bar > *{pointer-events:auto;}
+  /* L'ordre visuel est imposé ici, indépendamment de l'ordre du balisage : retour, compte, puis
+     le son repoussé à droite. */
+  .top-bar .back-nav-btn{order:1;}
+  .top-bar .account-menu{order:2;}
+  .top-bar .sound-toggle{order:3; margin-left:auto;}
+
+  .back-nav-btn{
+    flex:0 0 auto;
     width:40px;
     height:40px;
     border-radius:50%;
@@ -349,6 +367,11 @@
     border-radius:10px;
     padding:11px 12px;
     flex:1 1 260px;
+    /* Sans min-width:0, un élément flex refuse de descendre sous la largeur de son contenu : les
+       intitulés de questions étant longs, la liste atteignait 800 px sur un écran de 375 px et
+       faisait défiler toute la page latéralement. */
+    min-width:0;
+    max-width:100%;
   }
   select:focus, button:focus-visible{
     outline:2px solid var(--logo-blue);
@@ -843,7 +866,10 @@
 
   /* ---------- Comptes étudiants ---------- */
   /* Menu de compte : symétrique du bouton son, ancré au bord gauche du contenu. */
-  .account-menu{position:fixed; top:12px; left:max(12px, calc(50% - 380px)); z-index:500;}
+  /* Position relative — et non plus fixe : le menu déroulant s'ancre dessus, et la barre
+     ci-dessus se charge désormais du placement. min-width:0 autorise le rétrécissement du
+     bouton dans la barre flex, sinon son texte le ferait déborder sur un écran étroit. */
+  .account-menu{position:relative; min-width:0;}
   .account-btn{
     display:flex; align-items:center; gap:6px;
     height:36px; padding:0 13px 0 11px;
@@ -851,7 +877,9 @@
     background:var(--card); color:var(--logo-navy);
     font-family:inherit; font-size:0.8rem; font-weight:700; line-height:1;
     cursor:pointer; box-shadow:var(--shadow);
-    max-width:60vw; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
+    /* max-width:100% (et non plus 60vw) : dans la barre flex, c'est la place laissée par les deux
+       autres boutons qui borne la largeur. Le prénom se tronque proprement si elle manque. */
+    max-width:100%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis;
   }
   .account-btn:hover{background:var(--logo-blue-100); border-color:var(--logo-blue);}
   .account-btn svg{display:block; flex-shrink:0;}
@@ -1001,6 +1029,10 @@
 </div>
 
 <!-- Menu de compte (haut gauche) — masqué tant que personne n'est connecté -->
+<!-- Barre de commandes fixe : les trois boutons y sont posés côte à côte par le flux flex,
+     ce qui rend tout chevauchement impossible, y compris sur un écran étroit. -->
+<div class="top-bar">
+
 <div class="account-menu hidden" id="account-menu">
   <button class="account-btn" id="account-btn" type="button" aria-haspopup="true" aria-expanded="false">
     <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true">
@@ -1039,6 +1071,8 @@
     <path d="M19 12H5M5 12l6-6M5 12l6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
   </svg>
 </button>
+
+</div><!-- /top-bar -->
 
 <div class="wrap">
 
