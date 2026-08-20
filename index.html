@@ -538,6 +538,15 @@
   .tx-rationale-box{text-align:left; margin-top:10px;}
 
   /* Analyse différentielle affichée sous le verdict du diagnostic. */
+  /* Rappel discret pendant la session, quand l'interrogatoire s'allonge. */
+  .ask-nudge{
+    display:flex; gap:9px; align-items:flex-start;
+    background:var(--warn-100, rgba(217,119,6,0.12));
+    border-radius:10px; padding:10px 13px; margin:0 0 14px;
+    font-size:0.84rem; color:var(--periapical);
+  }
+  .ask-nudge b{font-weight:700;}
+
   .diag-analysis{text-align:left; margin:16px 0 0; border-radius:10px; padding:12px 14px; font-size:0.9rem;}
   .diag-analysis h4{margin:0 0 8px; font-size:0.78rem; text-transform:uppercase; letter-spacing:.03em;}
   .diag-analysis.is-diff{background:rgba(217,119,6,0.12);}
@@ -1143,6 +1152,8 @@
       <span>Questions posées</span>
       <span class="counter-badge" id="questions-counter">0 / 15</span>
     </div>
+
+    <div class="ask-nudge hidden" id="ask-nudge"></div>
 
     <div class="history-label hidden" id="history-label">Questions posées et réponses</div>
     <div class="step-history" id="step-history"></div>
@@ -3642,6 +3653,7 @@
 
   function renderCounter(){
     counterEl.textContent = askedIds.length + ' / ' + QUESTIONS.length;
+    renderNudge();
   }
 
   function renderQuestionSelect(){
@@ -3807,6 +3819,39 @@
   var DIFF_MAX_SHOWN  = 5; // au-delà, la liste cesse d'enseigner et devient un mur de texte
   var DIFF_MAX_NAMED  = 3; // signes nommés dans la phrase de conclusion
 
+  // Quatre questions suffisent toujours, à condition de choisir chacune en fonction des réponses
+  // précédentes : c'est la profondeur de l'arbre de décision optimal sur les douze tableaux, et
+  // aussi la borne théorique (log2 de 12). Au-delà de sept, l'interrogatoire n'est plus ciblé.
+  var QUESTION_TARGET = 4;
+  var QUESTION_ALERT  = 7;
+
+  // Rang de la question à partir de laquelle le diagnostic était déjà certain : on rejoue
+  // l'interrogatoire dans l'ordre où il a eu lieu, en éliminant à chaque réponse les tableaux
+  // devenus incompatibles. Renvoie null si les questions posées ne suffisaient pas à trancher.
+  function decisiveRank(realId){
+    var candidats = Object.keys(DIAGNOSES);
+    for(var i = 0; i < askedIds.length; i++){
+      var qid = askedIds[i];
+      var attendu = signValue(DIAGNOSES[realId], qid);
+      candidats = candidats.filter(function(d){ return signValue(DIAGNOSES[d], qid) === attendu; });
+      if(candidats.length === 1) return i + 1;
+    }
+    return null;
+  }
+
+  // Rappel affiché pendant la session. Il ne mentionne que la cible générale : donner ici le
+  // minimum propre au cas en cours reviendrait à souffler la réponse.
+  function renderNudge(){
+    var box = document.getElementById('ask-nudge');
+    if(!box) return;
+    if(askedIds.length < QUESTION_ALERT){ hideEl(box); return; }
+    box.innerHTML = '<span>💡</span><span><b>' + askedIds.length + ' questions posées.</b> ' +
+      'Un interrogatoire bien ciblé tranche en <b>' + QUESTION_TARGET + ' questions au maximum</b>, ' +
+      'en choisissant chaque question d\'après les réponses déjà obtenues. ' +
+      'Que cherchez-vous encore à écarter ?</span>';
+    showEl(box);
+  }
+
   function joinFr(list){
     if(list.length <= 1) return list.join('');
     return list.slice(0, -1).join(', ') + ' et ' + list[list.length - 1];
@@ -3876,18 +3921,39 @@
     var box  = document.getElementById('diag-economy');
     var mini = minimalIdentifyingSet(realId);
     var pose = askedIds.length;
+    var trop = pose >= QUESTION_ALERT;
+
+    // Au-delà du seuil, l'encadré change de ton : ce n'est plus une information, c'est un conseil.
+    box.className = 'diag-analysis ' + (trop ? 'is-diff' : 'is-eco');
 
     var html = '<h4>Économie diagnostique</h4>' +
       '<p><b>' + mini.length + ' question' + (mini.length > 1 ? 's' : '') + '</b> suffisai' +
       (mini.length > 1 ? 'ent' : 't') + ' à affirmer ce diagnostic et à écarter tous les autres : ' +
-      mini.map(questionShort).join(', ') + '.';
-
-    if(pose > mini.length){
-      html += ' Vous en avez posé ' + pose + '.';
-    } else if(pose === mini.length){
-      html += ' Vous en avez posé exactement ' + pose + ' : parfait.';
-    }
+      joinFr(mini.map(questionShort)) + '.';
+    if(pose === mini.length) html += ' Vous en avez posé exactement ' + pose + ' : parfait.';
+    else                     html += ' Vous en avez posé ' + pose + '.';
     html += '</p>';
+
+    // Le reproche générique « trop de questions » n'apprend rien. Ce qui apprend, c'est de savoir
+    // à partir de quand les réponses n'apportaient plus aucune information nouvelle.
+    if(trop){
+      var rang = decisiveRank(realId);
+      if(rang !== null && rang < pose){
+        var inutiles = pose - rang;
+        html += '<p class="da-conclusion">Vos questions auraient pu être optimisées : dès la ' +
+                '<b>' + rang + (rang === 1 ? 'ʳᵉ' : 'ᵉ') + '</b>, plus aucun autre diagnostic ' +
+                'n\'était compatible avec vos réponses. Les <b>' + inutiles + '</b> suivante' +
+                (inutiles > 1 ? 's n\'apportaient' : ' n\'apportait') + ' plus rien.</p>';
+      } else if(rang === null){
+        html += '<p class="da-conclusion">Vos questions auraient pu être mieux ciblées : même après ' +
+                'les ' + pose + ', plusieurs tableaux restaient compatibles avec vos réponses. ' +
+                'Visez les signes qui séparent les diagnostics, pas ceux qu\'ils partagent.</p>';
+      } else {
+        html += '<p class="da-conclusion">Il vous a fallu ' + pose + ' questions pour lever le doute. ' +
+                'En choisissant chacune d\'après les réponses précédentes, ' + QUESTION_TARGET +
+                ' suffisent toujours.</p>';
+      }
+    }
 
     box.innerHTML = html;
     showEl(box);

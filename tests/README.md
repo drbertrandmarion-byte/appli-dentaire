@@ -19,6 +19,7 @@ Depuis la racine du dépôt, servir l'application puis exécuter les suites :
 python3 -m http.server 9300 &
 node tests/cas-choix-therapeutique.js
 node tests/analyse-differentielle.js
+node tests/economie-diagnostique.js
 node tests/back-office.js
 ```
 
@@ -43,7 +44,8 @@ il n'a pas de verdict automatique — voir plus bas.
 | Fichier | Ce qu'il vérifie |
 |---|---|
 | `cas-choix-therapeutique.js` | Le corrigé clinique des 85 cas nommés du mode « Choix thérapeutique » |
-| `analyse-differentielle.js` | La correction du mode « Diagnostic » : signes discriminants, signe posé ou non, économie diagnostique |
+| `analyse-differentielle.js` | La correction du mode « Diagnostic » : signes discriminants, signe posé ou non |
+| `economie-diagnostique.js` | Le rappel à partir de 7 questions et le calcul du rang décisif |
 | `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion et exports CSV |
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
