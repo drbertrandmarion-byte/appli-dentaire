@@ -218,6 +218,45 @@ create policy "case_results_insert" on public.case_results
   for insert with check (user_id = auth.uid());
 
 
+-- -----------------------------------------------------------------------------
+-- 5. Cas rates conserves pour relecture
+-- -----------------------------------------------------------------------------
+-- Volontairement distincte de case_results : celle-ci ne garde que des lignes
+-- minuscules pour les statistiques, tandis qu'ici on conserve le détail d'un cas
+-- raté (énoncé, réponse donnée, réponse attendue) pour que l'étudiant puisse le
+-- revoir. L'application n'en garde que les vingt derniers par personne et efface
+-- les plus anciens : le volume reste borné.
+
+create table if not exists public.review_cases (
+  id           bigint generated always as identity primary key,
+  user_id      uuid not null references auth.users(id) on delete cascade,
+  mode         text not null check (mode in ('diagnostic', 'therapeutique')),
+  diagnosis_id text not null,
+  patient      text,   -- énoncé abrégé, pour reconnaître le cas
+  given        text,   -- ce que l'étudiant a répondu
+  expected     text,   -- ce qui était attendu
+  created_at   timestamptz not null default now()
+);
+
+alter table public.review_cases enable row level security;
+
+create index if not exists review_cases_user_idx on public.review_cases (user_id, created_at desc);
+
+drop policy if exists "review_cases_select" on public.review_cases;
+create policy "review_cases_select" on public.review_cases
+  for select using (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "review_cases_insert" on public.review_cases;
+create policy "review_cases_insert" on public.review_cases
+  for insert with check (user_id = auth.uid());
+
+-- Nécessaire pour que l'application puisse effacer ses propres cas les plus
+-- anciens et maintenir le plafond de vingt.
+drop policy if exists "review_cases_delete" on public.review_cases;
+create policy "review_cases_delete" on public.review_cases
+  for delete using (user_id = auth.uid() or public.is_admin());
+
+
 -- =============================================================================
 --  FIN DU SCRIPT PRINCIPAL
 -- =============================================================================
