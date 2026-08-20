@@ -96,20 +96,19 @@
     position:fixed;
     top:12px;
     right:max(12px, calc(50% - 380px));
-    z-index:500;
+    /* Au-dessus de l'écran de connexion (z-index 9000) : le carillon se déclenche au clic sur
+       « Se connecter », il faut donc pouvoir couper le son avant, et non seulement une fois entré. */
+    z-index:9500;
     display:flex;
     align-items:center;
-    gap:6px;
+    justify-content:center;
+    width:36px;
     height:36px;
-    padding:0 13px 0 11px;
+    padding:0;
     border-radius:999px;
     border:1.5px solid var(--logo-navy);
     background:var(--card);
     color:var(--logo-navy);
-    font-family:inherit;
-    font-size:0.8rem;
-    font-weight:700;
-    line-height:1;
     cursor:pointer;
     box-shadow:var(--shadow);
   }
@@ -1001,7 +1000,6 @@
     </g>
     <path class="sound-mute-x" d="M16 9l5.5 6M21.5 9L16 15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
   </svg>
-  <span id="sound-toggle-label">Son</span>
 </button>
 
 <button id="back-nav-btn" class="back-nav-btn hidden" type="button" title="Retour" aria-label="Retour à l'étape précédente">
@@ -1435,10 +1433,11 @@
   (function initSoundToggle(){
     var toggleBtn = document.getElementById('sound-toggle-btn');
     if(!toggleBtn) return;
-    var labelEl = document.getElementById('sound-toggle-label');
     function render(){
       toggleBtn.classList.toggle('is-muted', soundMuted);
-      if(labelEl) labelEl.textContent = soundMuted ? 'Son coupé' : 'Son';
+      // Le bouton n'affiche plus de texte : seul le dessin change (ondes ou croix). L'infobulle et
+      // l'étiquette accessible restent indispensables — elles sont le seul intitulé pour un lecteur
+      // d'écran, et la seule explication au survol.
       var label = soundMuted ? 'Activer le son' : 'Couper le son';
       toggleBtn.title = label;
       toggleBtn.setAttribute('aria-label', label);
