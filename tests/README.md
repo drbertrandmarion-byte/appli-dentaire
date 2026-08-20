@@ -55,10 +55,25 @@ posée », ni l'inverse. Il termine par `Erreurs : 0`.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas
-dépendre des données réelles des étudiants, ni risquer de les modifier. Sa sortie est à
-relire à l'œil : elle montre les promotions détectées, le tableau filtré pour chacune, et
-le contenu exact des deux fichiers CSV produits (séparateur, BOM, échappement d'un nom
-contenant un point-virgule et des guillemets).
+dépendre des données réelles des étudiants, ni risquer de les modifier.
+
+Il télécharge ensuite le classeur Excel et le contrôle : archive ZIP intègre, XML bien
+formé dans chaque partie, **compteurs de styles cohérents** (`<fonts count="4">` doit
+réellement contenir quatre polices — un écart est la cause classique du message « contenu
+illisible » d'Excel, et il passe totalement inaperçu à l'œil nu), feuilles reliées, puis
+relecture par `openpyxl` pour vérifier que les dates sont de vraies dates et les
+pourcentages de vrais nombres. Il termine par `Problèmes : 0`.
+
+Le début de sa sortie — promotions détectées et tableau filtré pour chacune — reste à
+relire à l'œil.
+
+`openpyxl` est nécessaire à ce dernier contrôle :
+
+```bash
+pip install openpyxl
+```
+
+Sans lui, le test signale que la relecture n'a pas eu lieu mais vérifie tout le reste.
 
 **Toute autre sortie signale un problème.** Les deux lignes à surveiller :
 

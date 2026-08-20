@@ -59,28 +59,70 @@ for (let i = 0; i < 4;  i++) CASES.push({ user_id:'u1', mode:'diagnostic',    di
   console.log('\n4. TCEO1 :');             (await lire()).forEach(l => console.log('   ', l));
   console.log('   note :', await page.textContent('#weak-note'));
 
-  // --- exports ---
-  const grab = async (sel) => {
-    const [dl] = await Promise.all([page.waitForEvent('download', { timeout:10000 }), page.click(sel)]);
-    const p = '/tmp/' + dl.suggestedFilename();
-    await dl.saveAs(p);
-    return { nom: dl.suggestedFilename(), txt: fs.readFileSync(p, 'utf8') };
-  };
-
-  const w = await grab('#export-weak-btn');
-  console.log('\n5. export pathologies (TCEO1) ->', w.nom);
-  console.log('   BOM present :', w.txt.charCodeAt(0) === 0xfeff);
-  w.txt.split('\r\n').forEach(l => console.log('    ', l));
-
-  const s = await grab('#export-students-btn');
-  console.log('\n6. export etudiants ->', s.nom);
-  s.txt.split('\r\n').forEach(l => console.log('    ', l));
-  console.log('   colonnes ligne 1 :', s.txt.split('\r\n')[0].split(';').length);
-  console.log('   colonnes ligne 2 :', s.txt.split('\r\n')[1].split(';').length);
-  console.log('   nom avec ; et guillemets echappe :',
-    /"Bernard; ""test"""/.test(s.txt));
+  // --- export du classeur ---
+  const [dl] = await Promise.all([
+    page.waitForEvent('download', { timeout:15000 }),
+    page.click('#export-btn')
+  ]);
+  const chemin = '/tmp/' + dl.suggestedFilename();
+  await dl.saveAs(chemin);
+  console.log('\n5. classeur exporte ->', dl.suggestedFilename());
+  console.log('   message :', (await page.textContent('#global-msg')).trim());
 
   await page.selectOption('#promo-filter', '__toutes__');
   await page.locator('.card').last().screenshot({ path:'/tmp/admin.png' });
   await browser.close();
+
+  // --- controle structurel du classeur ---
+  // Le .xlsx est ecrit a la main : on verifie ici qu'il constitue bien une archive valide et un
+  // classeur conforme. Un compteur de styles faux est la cause classique du message « contenu
+  // illisible » d'Excel, et il passerait totalement inapercu a l'oeil nu.
+  const { execFileSync } = require('child_process');
+  const script = `
+import zipfile, re, sys, xml.etree.ElementTree as ET
+f = ${JSON.stringify(chemin)}
+z = zipfile.ZipFile(f)
+pb = []
+if z.testzip() is not None: pb.append('CRC errone')
+for n in z.namelist():
+    try: ET.fromstring(z.read(n))
+    except Exception as e: pb.append('XML mal forme : %s (%s)' % (n, e))
+s = z.read('xl/styles.xml').decode()
+for tag, child in [('numFmts','numFmt'),('fonts','font'),('fills','fill'),('borders','border'),
+                   ('cellStyleXfs','xf'),('cellXfs','xf'),('cellStyles','cellStyle')]:
+    m = re.search('<%s count="(\\d+)"' % tag, s)
+    if not m: continue
+    bloc = re.search('<%s [^>]*>(.*?)</%s>' % (tag, tag), s, re.S)
+    reel = len(re.findall('<%s[ />]' % child, bloc.group(1)))
+    if int(m.group(1)) != reel:
+        pb.append('%s : compteur %s mais %d elements' % (tag, m.group(1), reel))
+rels = z.read('xl/_rels/workbook.xml.rels').decode()
+for i in (1, 2, 3):
+    if 'sheet%d.xml' % i not in rels: pb.append('feuille %d non reliee' % i)
+    if 'xl/worksheets/sheet%d.xml' % i not in z.namelist(): pb.append('feuille %d absente' % i)
+try:
+    import openpyxl
+    wb = openpyxl.load_workbook(f)
+    print('   feuilles lues :', wb.sheetnames)
+    et = wb['Etudiants'] if 'Etudiants' in wb.sheetnames else wb[wb.sheetnames[1]]
+    print('   entete figee :', et.freeze_panes, '| filtre :', et.auto_filter.ref)
+    types = set(type(r[5].value).__name__ for r in et.iter_rows(min_row=2) if r[5].value is not None)
+    print('   type des dates :', types or 'aucune ligne')
+    moy = set(type(r[8].value).__name__ for r in et.iter_rows(min_row=2) if r[8].value is not None)
+    print('   type des moyennes :', moy or 'aucune valeur')
+except ImportError:
+    print('   (openpyxl absent : lecture non verifiee)')
+except Exception as e:
+    pb.append('lecture impossible : %s' % e)
+print('\\nProblemes : %d' % len(pb))
+for x in pb: print('  ! ' + x)
+sys.exit(1 if pb else 0)
+`;
+  console.log('\n6. controle structurel du classeur :');
+  try {
+    console.log(execFileSync('python3', ['-c', script], { encoding:'utf8' }).trimEnd());
+  } catch (e) {
+    console.log((e.stdout || '') + (e.stderr || ''));
+    process.exitCode = 1;
+  }
 })();

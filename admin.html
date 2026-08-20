@@ -167,13 +167,14 @@
 
     <div class="card">
       <h2>Pathologies les plus ratées</h2>
-      <p class="hint">Choisissez une promotion pour voir ce qui mérite d'être repris en cours avec elle.</p>
+      <p class="hint">Choisissez une promotion pour voir ce qui mérite d'être repris en cours avec elle.
+        L'export produit un classeur de trois feuilles — synthèse, étudiants, et le détail
+        pathologie par pathologie pour chaque promotion.</p>
       <div class="toolbar">
         <label for="promo-filter">Promotion</label>
         <select id="promo-filter"></select>
         <span class="grow"></span>
-        <button class="btn" id="export-weak-btn" type="button">Exporter ce tableau (CSV)</button>
-        <button class="btn" id="export-students-btn" type="button">Exporter les étudiants (CSV)</button>
+        <button class="btn btn-solid" id="export-btn" type="button">⬇ Exporter tout (Excel)</button>
       </div>
       <div class="tbl-wrap"><table>
         <thead><tr>
@@ -369,8 +370,8 @@
 
   // Lignes agrégées pour la promotion sélectionnée. Sert à la fois au tableau et à l'export :
   // ce que l'enseignante exporte est exactement ce qu'elle a sous les yeux.
-  function weakRows(){
-    var promo = $('promo-filter').value || TOUTES;
+  function weakRows(promoVoulue){
+    var promo = promoVoulue || $('promo-filter').value || TOUTES;
     var byDiag = {};
     caseResults.forEach(function(c){
       if(promo !== TOUTES && promoOf(c.user_id) !== promo) return;
@@ -437,17 +438,238 @@
     $('detail-card').scrollIntoView({ behavior:'smooth', block:'start' });
   }
 
-  // ---------- export CSV ----------
-  function csvCell(v){
-    var s = (v === null || v === undefined) ? '' : String(v);
-    return /[";\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  // ---------- Écriture d'un classeur Excel, sans bibliothèque ----------
+  // Un fichier .xlsx est une archive ZIP contenant des fichiers XML. On l'assemble ici à la main
+  // pour ne pas introduire de dépendance externe : le back-office reste un fichier autonome.
+  // Les entrées sont stockées sans compression (méthode 0), ce qui évite d'implémenter DEFLATE ;
+  // les classeurs produits pèsent quelques dizaines de kilo-octets, c'est sans conséquence.
+  //
+  // Le CSV a été abandonné : selon la langue du tableur, le séparateur attendu est la virgule ou
+  // le point-virgule, et le mauvais choix entasse toute la ligne dans une seule colonne. Un vrai
+  // classeur ne laisse aucune place à cette ambiguïté.
+
+  var crcTable = null;
+  function crc32(bytes){
+    if(!crcTable){
+      crcTable = new Int32Array(256);
+      for(var n = 0; n < 256; n++){
+        var c = n;
+        for(var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+        crcTable[n] = c;
+      }
+    }
+    var crc = -1;
+    for(var i = 0; i < bytes.length; i++) crc = (crc >>> 8) ^ crcTable[(crc ^ bytes[i]) & 0xFF];
+    return (crc ^ -1) >>> 0;
   }
 
-  function downloadCsv(nom, lignes){
-    // Séparateur point-virgule et BOM UTF-8 : sans les deux, Excel en configuration française
-    // entasse toute la ligne dans une seule colonne et affiche les accents en charabia.
-    var texte = '\ufeff' + lignes.map(function(l){ return l.map(csvCell).join(';'); }).join('\r\n');
-    var url = URL.createObjectURL(new Blob([texte], { type:'text/csv;charset=utf-8;' }));
+  function zipBlob(files){
+    var enc = new TextEncoder(), parts = [], central = [], offset = 0;
+    files.forEach(function(f){
+      var name = enc.encode(f.name), data = enc.encode(f.text), crc = crc32(data);
+
+      var local = new Uint8Array(30 + name.length), lv = new DataView(local.buffer);
+      lv.setUint32(0, 0x04034b50, true);
+      lv.setUint16(4, 20, true);
+      lv.setUint16(6, 0x0800, true);   // noms de fichiers en UTF-8
+      lv.setUint16(8, 0, true);        // méthode 0 : stocké, sans compression
+      lv.setUint32(14, crc, true);
+      lv.setUint32(18, data.length, true);
+      lv.setUint32(22, data.length, true);
+      lv.setUint16(26, name.length, true);
+      local.set(name, 30);
+      parts.push(local, data);
+
+      var cen = new Uint8Array(46 + name.length), cv = new DataView(cen.buffer);
+      cv.setUint32(0, 0x02014b50, true);
+      cv.setUint16(4, 20, true); cv.setUint16(6, 20, true);
+      cv.setUint16(8, 0x0800, true);
+      cv.setUint16(10, 0, true);
+      cv.setUint32(16, crc, true);
+      cv.setUint32(20, data.length, true);
+      cv.setUint32(24, data.length, true);
+      cv.setUint16(28, name.length, true);
+      cv.setUint32(42, offset, true);
+      cen.set(name, 46);
+      central.push(cen);
+      offset += local.length + data.length;
+    });
+
+    var taille = central.reduce(function(a, c){ return a + c.length; }, 0);
+    var fin = new Uint8Array(22), fv = new DataView(fin.buffer);
+    fv.setUint32(0, 0x06054b50, true);
+    fv.setUint16(8,  files.length, true);
+    fv.setUint16(10, files.length, true);
+    fv.setUint32(12, taille, true);
+    fv.setUint32(16, offset, true);
+
+    return new Blob(parts.concat(central, [fin]),
+      { type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+
+  function xmlEsc(s){
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  // Styles disponibles dans les feuilles : indices dans <cellXfs> ci-dessous.
+  var ST = { normal:0, entete:1, pourcent:2, titre:3, date:4, dateheure:5, gras:6 };
+
+  function S(v, style){
+    return { v:(v === null || v === undefined) ? '' : String(v), t:'s', s:style || ST.normal };
+  }
+  function N(v, style){ return { v:v, t:'n', s:style || ST.normal }; }
+  // Une donnée absente laisse la cellule vide plutôt que d'y écrire un tiret : un texte dans une
+  // colonne de nombres ou de dates casserait le tri et le filtrage du tableur. Excel propose
+  // d'ailleurs « (Vides) » dans ses filtres, ce qui répond exactement à « qui ne s'est jamais
+  // connecté ? ».
+  function P(v){ return (v === null || v === undefined) ? S('') : { v:v, t:'n', s:ST.pourcent }; }
+  function H(v){ return S(v, ST.entete); }
+
+  // Excel compte les jours depuis le 30/12/1899. Écrire une vraie date plutôt qu'un texte permet
+  // de trier et de filtrer correctement dans le tableur.
+  function serial(iso){
+    if(!iso) return null;
+    var d = new Date(iso);
+    return isNaN(d.getTime()) ? null : d.getTime() / 86400000 + 25569;
+  }
+  function D(iso){ var s = serial(iso);  return s === null ? S('') : { v:s, t:'n', s:ST.date }; }
+  function DT(iso){ var s = serial(iso); return s === null ? S('') : { v:s, t:'n', s:ST.dateheure }; }
+
+  function colName(i){
+    var n = '';
+    i++;
+    while(i > 0){ var r = (i - 1) % 26; n = String.fromCharCode(65 + r) + n; i = (i - r - 1) / 26; }
+    return n;
+  }
+
+  function sheetXml(rows, largeurs, figer){
+    var body = rows.map(function(cells, ri){
+      var r = ri + 1;
+      return '<row r="' + r + '">' + cells.map(function(c, ci){
+        var ref = colName(ci) + r;
+        if(c.t === 'n' && c.v !== '' && c.v !== null && isFinite(c.v)){
+          return '<c r="' + ref + '" s="' + c.s + '"><v>' + c.v + '</v></c>';
+        }
+        if(c.v === '') return '<c r="' + ref + '" s="' + c.s + '"/>';
+        return '<c r="' + ref + '" s="' + c.s + '" t="inlineStr"><is><t xml:space="preserve">' +
+               xmlEsc(c.v) + '</t></is></c>';
+      }).join('') + '</row>';
+    }).join('');
+
+    var cols = (largeurs && largeurs.length)
+      ? '<cols>' + largeurs.map(function(w, i){
+          return '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + w + '" customWidth="1"/>';
+        }).join('') + '</cols>'
+      : '';
+
+    // L'étendue utilisée. Facultative pour la plupart des lecteurs, mais certains s'en servent pour
+    // dimensionner la feuille : la fournir coûte une ligne et évite une classe entière d'ennuis.
+    var largeurMax = rows.reduce(function(m, r){ return Math.max(m, r.length); }, 0);
+    var etendue = (rows.length && largeurMax)
+      ? '<dimension ref="A1:' + colName(largeurMax - 1) + rows.length + '"/>'
+      : '<dimension ref="A1"/>';
+
+    // L'ordre des éléments est imposé par le schéma : dimension, sheetViews, cols, sheetData,
+    // puis autoFilter.
+    var vue = figer
+      ? '<sheetViews><sheetView workbookViewId="0"><pane ySplit="' + figer + '" topLeftCell="A' +
+        (figer + 1) + '" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'
+      : '';
+    var filtre = (figer && rows.length > figer)
+      ? '<autoFilter ref="A' + figer + ':' + colName(rows[figer - 1].length - 1) + rows.length + '"/>'
+      : '';
+
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+      '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+      etendue + vue + cols + '<sheetData>' + body + '</sheetData>' + filtre + '</worksheet>';
+  }
+
+  var STYLES_XML =
+    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">' +
+    '<numFmts count="2">' +
+      '<numFmt numFmtId="164" formatCode="dd/mm/yyyy"/>' +
+      '<numFmt numFmtId="165" formatCode="dd/mm/yyyy\\ hh:mm"/>' +
+    '</numFmts>' +
+    '<fonts count="4">' +
+      '<font><sz val="11"/><name val="Calibri"/></font>' +
+      '<font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>' +
+      '<font><b/><sz val="14"/><color rgb="FF182849"/><name val="Calibri"/></font>' +
+      '<font><b/><sz val="11"/><color rgb="FF182849"/><name val="Calibri"/></font>' +
+    '</fonts>' +
+    // Excel impose que les deux premiers remplissages soient « none » puis « gray125 ».
+    '<fills count="3">' +
+      '<fill><patternFill patternType="none"/></fill>' +
+      '<fill><patternFill patternType="gray125"/></fill>' +
+      '<fill><patternFill patternType="solid"><fgColor rgb="FF182849"/>' +
+        '<bgColor indexed="64"/></patternFill></fill>' +
+    '</fills>' +
+    '<borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>' +
+    '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>' +
+    '<cellXfs count="7">' +
+      '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>' +
+      '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"' +
+        ' applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>' +
+      '<xf numFmtId="9" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>' +
+      '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>' +
+      '<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>' +
+      '<xf numFmtId="165" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>' +
+      '<xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/>' +
+    '</cellXfs>' +
+    '<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>' +
+    '</styleSheet>';
+
+  function buildWorkbook(feuilles){
+    var C = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+    var fichiers = [
+      { name:'[Content_Types].xml', text:
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">' +
+        '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>' +
+        '<Default Extension="xml" ContentType="application/xml"/>' +
+        '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-' +
+          'officedocument.spreadsheetml.sheet.main+xml"/>' +
+        feuilles.map(function(f, i){
+          return '<Override PartName="/xl/worksheets/sheet' + (i + 1) + '.xml" ContentType=' +
+                 '"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';
+        }).join('') +
+        '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-' +
+          'officedocument.spreadsheetml.styles+xml"/>' +
+        '</Types>' },
+      { name:'_rels/.rels', text:
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+        '<Relationship Id="rId1" Type="' + C + '/officeDocument" Target="xl/workbook.xml"/>' +
+        '</Relationships>' },
+      { name:'xl/workbook.xml', text:
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="' +
+          C + '"><sheets>' +
+        feuilles.map(function(f, i){
+          return '<sheet name="' + xmlEsc(f.nom) + '" sheetId="' + (i + 1) + '" r:id="rId' + (i + 1) + '"/>';
+        }).join('') + '</sheets></workbook>' },
+      { name:'xl/_rels/workbook.xml.rels', text:
+        '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+        '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+        feuilles.map(function(f, i){
+          return '<Relationship Id="rId' + (i + 1) + '" Type="' + C +
+                 '/worksheet" Target="worksheets/sheet' + (i + 1) + '.xml"/>';
+        }).join('') +
+        '<Relationship Id="rId' + (feuilles.length + 1) + '" Type="' + C +
+          '/styles" Target="styles.xml"/>' +
+        '</Relationships>' },
+      { name:'xl/styles.xml', text: STYLES_XML }
+    ];
+    feuilles.forEach(function(f, i){
+      fichiers.push({ name:'xl/worksheets/sheet' + (i + 1) + '.xml',
+                      text: sheetXml(f.rows, f.largeurs, f.figer) });
+    });
+    return zipBlob(fichiers);
+  }
+
+  function telecharger(blob, nom){
+    var url = URL.createObjectURL(blob);
     var a = document.createElement('a');
     a.href = url;
     a.download = nom;
@@ -459,55 +681,102 @@
 
   function stamp(){ return new Date().toISOString().slice(0, 10); }
 
-  function slug(s){
-    return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-                    .replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+  // ---------- Le classeur EndoDiag ----------
+  function moyenneDe(liste){
+    if(!liste.length) return null;
+    return liste.reduce(function(a, r){ return a + r.score / r.serie; }, 0) / liste.length;
   }
 
-  // Le tableau tel qu'il est affiché — même promotion, même tri.
-  function exportWeak(){
-    var promo = $('promo-filter').value || TOUTES;
-    var nom   = promo === TOUTES ? 'toutes-promotions' : slug(promo);
-    var lignes = [['Promotion', 'Pathologie', 'Cas traités',
-                   'Erreurs diagnostic (%)', 'Cas diagnostic',
-                   'Erreurs traitement (%)', 'Cas traitement',
-                   'Taux d\'erreur global (%)']];
-    weakRows().forEach(function(r){
-      lignes.push([
-        promo === TOUTES ? 'Toutes' : promo, r.label, r.total,
-        r.dRate === null ? '' : Math.round(r.dRate * 100), r.dTot,
-        r.tRate === null ? '' : Math.round(r.tRate * 100), r.tTot,
-        Math.round(r.rate * 100)
-      ]);
+  function promosApprouvees(){
+    var out = [];
+    profiles.forEach(function(p){
+      if(p.approved && p.annee && out.indexOf(p.annee) === -1) out.push(p.annee);
     });
-    if(lignes.length === 1){
-      msg('global-msg', 'Rien à exporter : aucun cas traité pour cette sélection.', 'err');
-      return;
-    }
-    downloadCsv('endodiag-pathologies-' + nom + '-' + stamp() + '.csv', lignes);
+    return out.sort();
   }
 
-  function exportStudents(){
+  function feuilleSynthese(){
     var approved = profiles.filter(function(p){ return p.approved; });
-    if(!approved.length){
+    var pending  = profiles.filter(function(p){ return !p.approved; });
+    var actifs   = approved.filter(function(p){
+      return p.last_seen_at && (Date.now() - new Date(p.last_seen_at).getTime()) < 7*24*3600*1000;
+    });
+
+    var rows = [
+      [S('EndoDiag — synthèse', ST.titre)],
+      [S('Export du', ST.gras), DT(new Date().toISOString())],
+      [],
+      [S('Comptes validés', ST.gras),    N(approved.length)],
+      [S('Comptes en attente', ST.gras), N(pending.length)],
+      [S('Actifs sur 7 jours', ST.gras), N(actifs.length)],
+      [S('Séries terminées', ST.gras),   N(results.length)],
+      [],
+      [S('Par promotion', ST.titre)],
+      [H('Promotion'), H('Étudiants validés'), H('Séries terminées'), H('Moyenne'), H('Cas traités')]
+    ];
+    promosApprouvees().forEach(function(promo){
+      var ids = approved.filter(function(p){ return p.annee === promo; }).map(function(p){ return p.id; });
+      var rs  = results.filter(function(r){ return ids.indexOf(r.user_id) !== -1; });
+      var cs  = caseResults.filter(function(c){ return ids.indexOf(c.user_id) !== -1; });
+      rows.push([S(promo), N(ids.length), N(rs.length), P(moyenneDe(rs)), N(cs.length)]);
+    });
+
+    rows.push([]);
+    rows.push([S('Pathologies — toutes promotions confondues', ST.titre)]);
+    rows.push([H('Pathologie'), H('Cas traités'), H('Erreurs diagnostic'), H('Cas diagnostic'),
+               H('Erreurs traitement'), H('Cas traitement'), H('Taux d\'erreur global')]);
+    weakRows(TOUTES).forEach(function(r){
+      rows.push([S(r.label), N(r.total), P(r.dRate), N(r.dTot), P(r.tRate), N(r.tTot), P(r.rate)]);
+    });
+
+    return { nom:'Synthèse', rows:rows, largeurs:[34, 17, 17, 12, 17, 15, 19] };
+  }
+
+  function feuilleEtudiants(){
+    var rows = [[H('Nom'), H('Prénom'), H('E-mail'), H('Promotion'), H('Faculté'),
+                 H('Inscrit le'), H('Dernière connexion'), H('Séries'), H('Moyenne')]];
+    profiles.filter(function(p){ return p.approved; }).slice()
+      .sort(function(a, b){
+        return (a.annee || '').localeCompare(b.annee || '') ||
+               (a.nom   || '').localeCompare(b.nom   || '');
+      })
+      .forEach(function(p){
+        var mine = results.filter(function(r){ return r.user_id === p.id; });
+        rows.push([S(p.nom), S(p.prenom), S(p.email), S(p.annee), S(p.faculte),
+                   D(p.created_at), DT(p.last_seen_at), N(mine.length), P(moyenneDe(mine))]);
+      });
+    return { nom:'Étudiants', rows:rows, largeurs:[20, 16, 30, 16, 26, 13, 19, 9, 11], figer:1 };
+  }
+
+  function feuillePathologies(){
+    var rows = [[H('Promotion'), H('Pathologie'), H('Cas traités'), H('Erreurs diagnostic'),
+                 H('Cas diagnostic'), H('Erreurs traitement'), H('Cas traitement'),
+                 H('Taux d\'erreur global')]];
+    // Uniquement le détail par promotion : le total toutes promotions figure sur la Synthèse.
+    // Mélanger les deux dans un même tableau exposerait à additionner deux fois les mêmes cas.
+    promosApprouvees().forEach(function(promo){
+      weakRows(promo).forEach(function(r){
+        rows.push([S(promo), S(r.label), N(r.total), P(r.dRate), N(r.dTot),
+                   P(r.tRate), N(r.tTot), P(r.rate)]);
+      });
+    });
+    return { nom:'Pathologies par promotion', rows:rows,
+             largeurs:[16, 34, 13, 18, 15, 19, 16, 19], figer:1 };
+  }
+
+  function exportWorkbook(){
+    if(!profiles.filter(function(p){ return p.approved; }).length){
       msg('global-msg', 'Rien à exporter : aucun compte validé.', 'err');
       return;
     }
-    var lignes = [['Nom', 'Prénom', 'E-mail', 'Année', 'Faculté',
-                   'Inscrit le', 'Dernière connexion', 'Séries terminées', 'Moyenne (%)']];
-    approved.slice().sort(function(a, b){
-      return (a.annee || '').localeCompare(b.annee || '') ||
-             (a.nom   || '').localeCompare(b.nom   || '');
-    }).forEach(function(p){
-      var mine = results.filter(function(r){ return r.user_id === p.id; });
-      var moy = '';
-      if(mine.length){
-        moy = Math.round(mine.reduce(function(a, r){ return a + r.score / r.serie; }, 0) / mine.length * 100);
-      }
-      lignes.push([p.nom, p.prenom, p.email, p.annee, p.faculte,
-                   fmtDate(p.created_at), fmtDateTime(p.last_seen_at), mine.length, moy]);
-    });
-    downloadCsv('endodiag-etudiants-' + stamp() + '.csv', lignes);
+    try {
+      telecharger(buildWorkbook([feuilleSynthese(), feuilleEtudiants(), feuillePathologies()]),
+                  'endodiag-' + stamp() + '.xlsx');
+      msg('global-msg', 'Classeur exporté : trois feuilles — Synthèse, Étudiants, ' +
+                        'Pathologies par promotion.', 'ok');
+    } catch(e){
+      msg('global-msg', 'Échec de l\'export : ' + esc(e.message), 'err');
+    }
   }
 
   // ---------- actions ----------
@@ -541,8 +810,7 @@
     else if((id = t.getAttribute('data-detail'))){
       showDetail(id);
     }
-    else if(t.id === 'export-weak-btn')     { exportWeak(); }
-    else if(t.id === 'export-students-btn') { exportStudents(); }
+    else if(t.id === 'export-btn') { exportWorkbook(); }
   });
 
   function doLogin(){
