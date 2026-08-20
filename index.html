@@ -4556,6 +4556,34 @@
     });
   }
 
+  // Filet de sécurité : si le compte existe mais n'a aucune fiche (compte créé avant
+  // l'installation du déclencheur, ou déclencheur ayant échoué), on la recrée à partir
+  // des métadonnées enregistrées à l'inscription. Sans cela, l'étudiant resterait
+  // indéfiniment sur l'écran d'attente sans que personne ne puisse le valider,
+  // puisqu'il n'apparaîtrait dans aucune liste du back-office.
+  function ensureProfile(){
+    if(profile) return Promise.resolve(profile);
+    return authed('/auth/v1/user').then(function(u){
+      var m = (u && u.user_metadata) || {};
+      return authed('/rest/v1/profiles', {
+        method: 'POST',
+        prefer: 'return=representation',
+        body: {
+          id:      session.user_id,
+          email:   (u && u.email) || session.email || '',
+          prenom:  m.prenom  || '',
+          nom:     m.nom     || '',
+          annee:   m.annee   || '',
+          faculte: m.faculte || ''
+        }
+      }).then(function(rows){
+        profile = (rows && rows[0]) || null;
+        if(profile) writeStore(PROFILE_KEY, profile);
+        return profile;
+      });
+    }).catch(function(){ return null; });
+  }
+
   function loadAdminFlag(){
     return authed('/rest/v1/admins?select=user_id&user_id=eq.' + session.user_id)
       .then(function(rows){ isAdmin = !!(rows && rows.length); return isAdmin; })
@@ -4592,15 +4620,26 @@
   }
 
   // Décide quoi afficher à partir de la session courante.
-  function route(){
+  function route(manual){
     if(!session){ showView('login'); return Promise.resolve(); }
     showView('loading');
     return loadProfile()
+      .then(ensureProfile)
       .then(function(){ return loadAdminFlag(); })
       .then(function(){
         offline = false;
         if(isAdmin || (profile && profile.approved)) enterApp();
-        else showPending();
+        else {
+          showPending();
+          // Sans ce retour, un clic sur « Vérifier maintenant » semble ne rien faire :
+          // l'écran d'attente se réaffiche à l'identique et l'on ignore si la
+          // vérification a réellement eu lieu.
+          if(manual){
+            msg('pending-msg',
+              'Vérification effectuée : votre compte est <b>toujours en attente</b> de validation. ' +
+              'Réessayez plus tard.', 'info');
+          }
+        }
       })
       .catch(function(err){
         // Serveur injoignable : on laisse entrer si ce navigateur avait déjà un
@@ -4734,8 +4773,9 @@
   $('acct-logout-btn').addEventListener('click', doLogout);
 
   $('pending-refresh-btn').addEventListener('click', function(){
+    msg('pending-msg', '');
     busy($('pending-refresh-btn'), true, 'Vérification…', 'Vérifier maintenant');
-    route().then(function(){ busy($('pending-refresh-btn'), false, '', 'Vérifier maintenant'); });
+    route(true).then(function(){ busy($('pending-refresh-btn'), false, '', 'Vérifier maintenant'); });
   });
 
   // Entrée au clavier dans les champs
