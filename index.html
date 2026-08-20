@@ -904,6 +904,55 @@
     .auth-loader .ld-p{animation:none; stroke-dashoffset:0;}
   }
   .auth-pending-icon{font-size:2.4rem; text-align:center; margin-bottom:8px;}
+
+  /* ---------- Panneau de progression de l'étudiant ---------- */
+  #stats-panel{
+    position:fixed; inset:0; z-index:8000;
+    background:rgba(15,60,55,0.35);
+    display:flex; align-items:flex-start; justify-content:center;
+    padding:24px 16px 48px; overflow-y:auto;
+  }
+  #stats-panel.hidden{display:none;}
+  .stats-card{
+    position:relative; width:100%; max-width:620px; margin-top:5vh;
+    background:var(--card); border-radius:var(--radius);
+    box-shadow:0 12px 40px rgba(15,60,55,0.24); padding:24px;
+  }
+  .stats-card h2{margin:0 0 3px; font-size:1.2rem; color:var(--logo-navy); padding-right:34px;}
+  .stats-card .stats-hint{margin:0 0 16px; font-size:0.84rem; color:var(--muted);}
+  .stats-close{
+    position:absolute; top:12px; right:12px;
+    width:30px; height:30px; border-radius:50%;
+    border:1px solid var(--border); background:var(--card);
+    font-size:1.1rem; line-height:1; color:var(--muted); cursor:pointer;
+  }
+  .stats-close:hover{background:var(--bg); color:var(--ink);}
+  .stats-empty{padding:26px 6px; text-align:center; color:var(--muted); font-size:0.88rem; line-height:1.6;}
+  .stats-tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:11px; margin-bottom:18px;}
+  .stats-tile{background:var(--bg); border-radius:11px; padding:12px 14px;}
+  .stats-tile .v{font-size:1.45rem; font-weight:800; color:var(--logo-navy); line-height:1.2;}
+  .stats-tile .l{font-size:0.74rem; color:var(--muted); margin-top:2px;}
+  .stats-row{
+    display:flex; align-items:center; gap:11px;
+    padding:9px 0; border-bottom:1px solid var(--border); font-size:0.88rem;
+  }
+  .stats-row:last-child{border-bottom:none;}
+  .stats-row .lbl{flex:1; min-width:0;}
+  .stats-row .val{font-weight:700; white-space:nowrap;}
+  .stats-row .when{font-size:0.75rem; color:var(--muted); white-space:nowrap;}
+  .stats-bar{height:7px; background:var(--border); border-radius:4px; overflow:hidden; width:34%; min-width:64px;}
+  .stats-bar i{display:block; height:100%;}
+  .stats-sec-title{
+    font-size:0.72rem; text-transform:uppercase; letter-spacing:0.05em;
+    color:var(--muted); font-weight:700; margin:18px 0 4px;
+  }
+  .stats-sec-title:first-child{margin-top:0;}
+  .stats-badge{
+    display:inline-block; padding:1px 8px; border-radius:999px;
+    font-size:0.7rem; font-weight:700; margin-left:6px;
+  }
+  .stats-badge.diag{background:var(--logo-blue-100); color:var(--logo-blue-dark);}
+  .stats-badge.tx{background:var(--tx-accent-100); color:var(--tx-accent-dark);}
 </style>
 </head>
 <body>
@@ -2979,6 +3028,14 @@
 
   var DIAGNOSIS_ORDER = ["saine","hyperhemie","reversible","irreversible","syndrome_mixte","necrose","parodontite","abces_aigu","abces_chronique","cellulite_sereuse","cellulite_suppuree","cellulite_diffuse"];
 
+  // Noms lisibles des pathologies, mis à disposition du module de comptes (panneaux de
+  // progression). Évite de dupliquer cette liste et de la voir diverger avec le temps.
+  window.EndoDiagLabels = (function(){
+    var m = {};
+    DIAGNOSIS_ORDER.forEach(function(id){ if(DIAGNOSES[id]) m[id] = DIAGNOSES[id].title; });
+    return m;
+  })();
+
   // Tire n cas au hasard en réduisant (sans l'annuler) la probabilité de répéter
   // un diagnostic déjà tombé dans la même série : chaque répétition supplémentaire
   // divise son poids de tirage, les autres diagnostics restent prioritaires
@@ -3352,6 +3409,11 @@
     data[seriesId] = { best: Math.max(score, prevBest), last: score, total: total };
     try{ localStorage.setItem(SCORE_STORAGE_KEY, JSON.stringify(data)); }catch(e){}
     renderScoreStats();
+    // Enregistrement sur le compte, en plus du navigateur : la progression suit
+    // ainsi l'étudiant d'un appareil à l'autre et alimente le back-office.
+    if(window.EndoStats){
+      EndoStats.recordSeries(seriesId.indexOf('tx') === 0 ? 'therapeutique' : 'diagnostic', total, score);
+    }
   }
 
   function renderScoreStats(){
@@ -3620,6 +3682,8 @@
 
     document.getElementById('result-urgence').textContent = actual.urgence;
     document.getElementById('result-final').textContent = currentVariant ? currentVariant.traitementFinal : actual.traitementFinal;
+
+    if(window.EndoStats) EndoStats.recordCase('diagnostic', caseId, correct);
 
     if(mode === 'quiz'){
       quizResults.push({caseId:caseId, guessId:guessId, correct:correct, questions:askedIds.length});
@@ -3995,6 +4059,8 @@
       hideEl(rationaleBox);
     }
 
+    if(window.EndoStats) EndoStats.recordCase('therapeutique', txCaseId, allCorrect);
+
     if(txMode === 'quiz'){
       txQuizResults.push({caseId:txCaseId, correct:allCorrect});
       if(txQuizIndex < txQuizLength - 1){
@@ -4330,6 +4396,16 @@
 })();
 </script>
 
+<!-- Panneau « Ma progression / Meilleurs scores / Points faibles » -->
+<div id="stats-panel" class="hidden">
+  <div class="stats-card">
+    <button class="stats-close" id="stats-close" type="button" aria-label="Fermer">×</button>
+    <h2 id="stats-title"></h2>
+    <p class="stats-hint" id="stats-hint"></p>
+    <div id="stats-body"></div>
+  </div>
+</div>
+
 <!-- =====================================================================
      Écran de connexion — recouvre l'application tant que le compte n'est
      pas connecté ET validé par l'enseignante.
@@ -4650,6 +4726,54 @@
       .catch(function(){ isAdmin = false; return false; });
   }
 
+  // ---------- enregistrement des résultats ----------
+  // Les résultats sont d'abord mis en file dans le navigateur, puis envoyés. Si le
+  // réseau est indisponible au moment où l'étudiant termine un cas, rien n'est perdu :
+  // la file est vidée à la prochaine connexion réussie.
+  var PENDING_KEY = 'endodiag-pending';
+
+  function queuePush(item){
+    var q = readStore(PENDING_KEY) || [];
+    q.push(item);
+    if(q.length > 500) q = q.slice(-500); // borne de sécurité
+    writeStore(PENDING_KEY, q);
+  }
+
+  function flushQueue(){
+    var q = readStore(PENDING_KEY) || [];
+    if(!q.length || !session || !session.user_id || offline) return Promise.resolve();
+    writeStore(PENDING_KEY, null);
+
+    var uid = session.user_id;
+    var cases = [], series = [];
+    q.forEach(function(i){
+      if(i.k === 'c') cases.push({user_id:uid, mode:i.mode, diagnosis_id:i.diagnosis_id, correct:i.correct});
+      else            series.push({user_id:uid, mode:i.mode, serie:i.serie, score:i.score});
+    });
+
+    var jobs = [];
+    if(cases.length)  jobs.push(authed('/rest/v1/case_results', {method:'POST', body:cases,  prefer:'return=minimal'}));
+    if(series.length) jobs.push(authed('/rest/v1/results',      {method:'POST', body:series, prefer:'return=minimal'}));
+
+    return Promise.all(jobs).catch(function(){
+      // Échec d'envoi : on remet en file pour la prochaine tentative.
+      writeStore(PENDING_KEY, q.concat(readStore(PENDING_KEY) || []));
+    });
+  }
+
+  window.EndoStats = {
+    recordCase: function(mode, diagnosisId, correct){
+      if(!session || !diagnosisId) return;
+      queuePush({k:'c', mode:mode, diagnosis_id:diagnosisId, correct:!!correct});
+      flushQueue();
+    },
+    recordSeries: function(mode, serie, score){
+      if(!session || !serie) return;
+      queuePush({k:'s', mode:mode, serie:serie, score:score});
+      flushQueue();
+    }
+  };
+
   function touchLastSeen(){
     if(!profile) return Promise.resolve();
     return authed('/rest/v1/profiles?id=eq.' + session.user_id, {
@@ -4675,7 +4799,7 @@
     $('acct-name').textContent = profile ? (profile.prenom + ' ' + profile.nom) : '';
     $('acct-sub').textContent  = profile ? (profile.annee + ' · ' + profile.faculte) : '';
     (isAdmin ? show : hide)($('acct-admin-btn'));
-    if(!offline) touchLastSeen();
+    if(!offline){ touchLastSeen(); flushQueue(); }
     window.EndoAccount = { profile: profile, isAdmin: isAdmin, offline: offline, userId: session && session.user_id };
   }
 
@@ -4859,11 +4983,188 @@
   });
   $('acct-admin-btn').addEventListener('click', function(){ window.location.href = 'admin.html'; });
 
-  ['acct-progress-btn','acct-best-btn','acct-weak-btn'].forEach(function(id){
-    $(id).addEventListener('click', function(){
-      hide(dropdown);
-      alert('Cette section arrive à la prochaine étape.');
+
+  // ---------- panneaux de progression ----------
+  var statsPanel = document.getElementById('stats-panel');
+
+  function diagLabel(id){ return (window.EndoDiagLabels && window.EndoDiagLabels[id]) || id; }
+  function pct(n){ return Math.round(n * 100) + ' %'; }
+  function fmtDay(s){
+    var d = new Date(s);
+    return d.toLocaleDateString('fr-FR', {day:'2-digit', month:'2-digit', year:'2-digit'});
+  }
+  function tile(v, l){ return '<div class="stats-tile"><div class="v">' + v + '</div><div class="l">' + l + '</div></div>'; }
+  function modeBadge(m){
+    return m === 'diagnostic'
+      ? '<span class="stats-badge diag">Diagnostic</span>'
+      : '<span class="stats-badge tx">Choix thérapeutique</span>';
+  }
+  function statsBody(html){ document.getElementById('stats-body').innerHTML = html; }
+
+  function openStats(title, hint, build){
+    document.getElementById('stats-title').textContent = title;
+    document.getElementById('stats-hint').textContent = hint;
+    statsBody('<div class="stats-empty">Chargement…</div>');
+    hide(dropdown);
+    show(statsPanel);
+
+    if(offline){
+      statsBody('<div class="stats-empty">Vous êtes hors ligne.<br>Reconnectez-vous pour consulter votre progression.</div>');
+      return;
+    }
+    Promise.all([
+      authed('/rest/v1/results?select=*&user_id=eq.' + session.user_id + '&order=created_at.desc'),
+      authed('/rest/v1/case_results?select=*&user_id=eq.' + session.user_id + '&order=created_at.desc')
+    ])
+      .then(function(r){ build(r[0] || [], r[1] || []); })
+      .catch(function(){
+        statsBody('<div class="stats-empty">Impossible de charger vos résultats.<br>Vérifiez votre connexion internet.</div>');
+      });
+  }
+
+  function buildProgress(series, cases){
+    if(!cases.length && !series.length){
+      statsBody('<div class="stats-empty">Vous n\'avez encore traité aucun cas.<br>Vos résultats apparaîtront ici au fur et à mesure.</div>');
+      return;
+    }
+    var good = cases.filter(function(c){ return c.correct; }).length;
+    var html = '<div class="stats-tiles">' +
+      tile(cases.length, cases.length > 1 ? 'cas traités' : 'cas traité') +
+      tile(cases.length ? pct(good / cases.length) : '—', 'de réussite') +
+      tile(series.length, series.length > 1 ? 'séries notées' : 'série notée') +
+      '</div>';
+
+    // Tendance : les 20 derniers cas comparés aux 20 précédents (l'ordre est décroissant).
+    if(cases.length >= 10){
+      var recent = cases.slice(0, 20);
+      var older  = cases.slice(20, 40);
+      var rRate  = recent.filter(function(c){ return c.correct; }).length / recent.length;
+      html += '<div class="stats-sec-title">Tendance</div>';
+      if(older.length >= 5){
+        var oRate = older.filter(function(c){ return c.correct; }).length / older.length;
+        var delta = Math.round((rRate - oRate) * 100);
+        html += '<div class="stats-row"><span class="lbl">' +
+          (delta > 2 ? 'En progression : ' + pct(oRate) + ' → <b>' + pct(rRate) + '</b> de réussite'
+           : delta < -2 ? 'En baisse : ' + pct(oRate) + ' → <b>' + pct(rRate) + '</b> de réussite'
+           : 'Stable, autour de <b>' + pct(rRate) + '</b> de réussite') +
+          '</span><span class="val">' + (delta > 0 ? '+' : '') + delta + ' pts</span></div>';
+      } else {
+        html += '<div class="stats-row"><span class="lbl">Sur vos ' + recent.length +
+          ' derniers cas</span><span class="val">' + pct(rRate) + '</span></div>';
+      }
+    }
+
+    if(series.length){
+      html += '<div class="stats-sec-title">Dernières séries notées</div>';
+      series.slice(0, 10).forEach(function(s){
+        html += '<div class="stats-row">' +
+          '<span class="lbl">' + modeBadge(s.mode) + '</span>' +
+          '<span class="val">' + s.score + ' / ' + s.serie + '</span>' +
+          '<span class="when">' + fmtDay(s.created_at) + '</span></div>';
+      });
+    }
+    statsBody(html);
+  }
+
+  function buildBest(series){
+    if(!series.length){
+      statsBody('<div class="stats-empty">Vous n\'avez pas encore terminé de série notée.<br>Lancez une série de 5 ou 10 cas pour commencer.</div>');
+      return;
+    }
+    // Meilleur score par catégorie (mode × longueur de série)
+    var best = {};
+    series.forEach(function(s){
+      var k = s.mode + '|' + s.serie;
+      if(!best[k] || s.score > best[k].score) best[k] = s;
     });
+    var keys = Object.keys(best).sort(function(a, b){
+      var A = best[a], B = best[b];
+      return (B.score / B.serie) - (A.score / A.serie);
+    });
+
+    var html = '<div class="stats-sec-title">Vos records</div>';
+    keys.forEach(function(k){
+      var s = best[k];
+      html += '<div class="stats-row">' +
+        '<span class="lbl">' + modeBadge(s.mode) + ' série de ' + s.serie + '</span>' +
+        '<span class="val">' + s.score + ' / ' + s.serie + '</span>' +
+        '<span class="when">' + fmtDay(s.created_at) + '</span></div>';
+    });
+
+    var worst = series.slice().sort(function(a, b){ return (a.score / a.serie) - (b.score / b.serie); })[0];
+    html += '<div class="stats-sec-title">Votre série la plus difficile</div>' +
+      '<div class="stats-row"><span class="lbl">' + modeBadge(worst.mode) + ' série de ' + worst.serie +
+      '</span><span class="val">' + worst.score + ' / ' + worst.serie +
+      '</span><span class="when">' + fmtDay(worst.created_at) + '</span></div>';
+
+    statsBody(html);
+  }
+
+  function buildWeak(cases){
+    if(!cases.length){
+      statsBody('<div class="stats-empty">Vous n\'avez encore traité aucun cas.<br>Vos points faibles apparaîtront ici une fois quelques cas terminés.</div>');
+      return;
+    }
+    var by = {};
+    cases.forEach(function(c){
+      if(!by[c.diagnosis_id]) by[c.diagnosis_id] = {total:0, wrong:0};
+      by[c.diagnosis_id].total++;
+      if(!c.correct) by[c.diagnosis_id].wrong++;
+    });
+    var rows = Object.keys(by).map(function(id){
+      var d = by[id];
+      return {id:id, total:d.total, wrong:d.wrong, rate:d.wrong / d.total};
+    }).sort(function(a, b){ return b.rate - a.rate || b.total - a.total; });
+
+    var weak = rows.filter(function(r){ return r.rate > 0; });
+    var html = '';
+
+    if(!weak.length){
+      html += '<div class="stats-empty">Aucune erreur sur les cas déjà traités. Continuez ainsi.</div>';
+    } else {
+      html += '<div class="stats-sec-title">À revoir en priorité</div>';
+      weak.forEach(function(r){
+        // On affiche le taux d'erreur, jamais « 2 / 3 » seul : dans une rubrique
+        // d'erreurs, une telle fraction se lit spontanément comme un score.
+        html += '<div class="stats-row">' +
+          '<span class="lbl">' + esc(diagLabel(r.id)) + '</span>' +
+          '<span class="stats-bar"><i style="width:' + Math.round(r.rate * 100) + '%;background:var(--ko)"></i></span>' +
+          '<span class="val" style="color:var(--ko)">' + pct(r.rate) + '</span>' +
+          '<span class="when">' + r.wrong + ' raté' + (r.wrong > 1 ? 's' : '') +
+          ' sur ' + r.total + '</span></div>';
+      });
+    }
+
+    var solid = rows.filter(function(r){ return r.rate === 0; });
+    if(solid.length){
+      html += '<div class="stats-sec-title">Maîtrisées</div>';
+      solid.forEach(function(r){
+        html += '<div class="stats-row">' +
+          '<span class="lbl">' + esc(diagLabel(r.id)) + '</span>' +
+          '<span class="val" style="color:var(--ok)">aucune erreur</span>' +
+          '<span class="when">' + r.total + ' cas</span></div>';
+      });
+    }
+    statsBody(html);
+  }
+
+  $('stats-close').addEventListener('click', function(){ hide(statsPanel); });
+  statsPanel.addEventListener('click', function(e){ if(e.target === statsPanel) hide(statsPanel); });
+  document.addEventListener('keydown', function(e){
+    if(e.key === 'Escape' && !statsPanel.classList.contains('hidden')) hide(statsPanel);
+  });
+
+  $('acct-progress-btn').addEventListener('click', function(){
+    openStats('Ma progression', 'Votre activité et son évolution.',
+      function(series, cases){ buildProgress(series, cases); });
+  });
+  $('acct-best-btn').addEventListener('click', function(){
+    openStats('Mes meilleurs scores', 'Vos records par type de série notée.',
+      function(series){ buildBest(series); });
+  });
+  $('acct-weak-btn').addEventListener('click', function(){
+    openStats('Mes points faibles', 'Les pathologies sur lesquelles vous vous trompez le plus.',
+      function(series, cases){ buildWeak(cases); });
   });
 
   // ---------- retour des liens reçus par e-mail ----------
