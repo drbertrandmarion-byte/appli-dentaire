@@ -2761,25 +2761,26 @@
       def:"Réaction pulpaire congestive, réversible et transitoire, sans inflammation pulpaire vraie.",
       signs:[
         "Sensibilité vive mais fugace au froid, qui disparaît dès l'arrêt du stimulus",
-        "Sensibilité au sucré possible, mais très légère et inconstante",
+        "Sensibilité au sucré qui cesse elle aussi dès l'arrêt du stimulus",
         "Pas de douleur spontanée",
         "Percussion non douloureuse, dent vitale"
       ],
       urgence:"Ce n'est pas une urgence dentaire à proprement parler.",
       traitementFinal:"Soin de la carie causale (obturation) ; la pulpe reste conservable.",
-      // Le sucré est ici volontairement distingué du sucré des deux pulpites : « très légère et pas
-      // tout le temps » contre « à chaque fois ». C'est le seul signe qui sépare l'hyperhémie de la
-      // pulpite réversible — sans ce niveau, les deux tableaux seraient rigoureusement identiques et
-      // aucun étudiant ne pourrait les départager autrement qu'au hasard.
-      answers:{froid:"leger", sucre:"leger", radio:"coronal"},
+      // Le froid et le sucré sont décrits par leur PERSISTANCE après l'arrêt du stimulus : c'est
+      // elle, et elle seule, qui sépare l'hyperhémie de la pulpite réversible. Ici la douleur
+      // cesse immédiatement ; dans la pulpite réversible elle se prolonge quelques secondes.
+      // Sans ces niveaux, les deux tableaux seraient rigoureusement identiques et aucun étudiant
+      // ne pourrait les départager autrement qu'au hasard.
+      answers:{froid:"immediat", sucre:"immediat", radio:"coronal"},
       quotes:{
         radio:"Très légère infiltration coronaire, à distance de la pulpe ; pas de radioclarté apicale.",
-        froid:"Positif, légèrement exacerbé, mais ça s'arrête dès l'arrêt du stimulus.",
+        froid:"Oui, ça réagit au froid, mais ça disparaît dès que le stimulus s'arrête.",
         percussion:"Non.",
         palpation:"Non.",
         dent_longue:"Non.",
         chaud:"Non, le chaud ne me fait rien.",
-        sucre:"Oui, mais très légère et pas tout le temps.",
+        sucre:"Oui, mais ça s'arrête directement à l'arrêt du stimulus.",
         mastication:"Non, je mâche normalement.",
         froid_apaise:"Non, ça ne s'applique pas, je n'ai pas mal au chaud.",
         gonflement:"Non.",
@@ -2794,22 +2795,24 @@
       title:"Pulpite réversible", category:"pulpaire",
       def:"Inflammation pulpaire légère à modérée, réversible si la cause est traitée à temps.",
       signs:[
-        "Douleur au froid, qui cesse dès l'arrêt du stimulus",
-        "Douleur systématique au sucré (ex. bonbons), à chaque exposition",
+        "Douleur au froid qui descend dans la dent et persiste quelques secondes après l'arrêt du stimulus",
+        "Douleur au sucré qui cesse elle aussi quelques secondes après l'arrêt du stimulus",
         "Pas de douleur spontanée ni nocturne",
         "Percussion non douloureuse, dent vitale"
       ],
       urgence:"Si besoin : curetage carieux d'urgence avec coiffage pulpaire (MTA, biocéramique type Biodentine) et restauration en résine composite ou CVI.",
       traitementFinal:"Soin de la carie ou reprise du soin défaillant, sur un créneau de soin classique.",
-      answers:{froid:"leger", sucre:true, radio:"coronal"},
+      // Voir l'hyperhémie : c'est la persistance de quelques secondes après l'arrêt du stimulus qui
+      // distingue ce tableau, où l'inflammation pulpaire est déjà installée.
+      answers:{froid:"quelques_secondes", sucre:"quelques_secondes", radio:"coronal"},
       quotes:{
         radio:"Présence d'une perte tissulaire dentaire modérée au niveau coronaire, encore à distance de la pulpe ; pas de radioclarté apicale.",
-        froid:"Positif, légèrement exacerbé, mais ça s'arrête dès l'arrêt du stimulus.",
+        froid:"Oui, la douleur descend dans la dent, mais elle disparaît au bout de quelques secondes après l'arrêt du stimulus.",
         percussion:"Non.",
         palpation:"Non.",
         dent_longue:"Non.",
         chaud:"Non, le chaud ne me fait rien.",
-        sucre:"Oui, à chaque fois que je mange du sucré.",
+        sucre:"Oui, mais ça s'arrête quelques secondes après l'arrêt du stimulus.",
         mastication:"Non, je mâche normalement.",
         froid_apaise:"Non, ça ne s'applique pas.",
         gonflement:"Non.",
@@ -3789,15 +3792,21 @@
   function signAnswerText(diag, qid){
     var v = signValue(diag, qid);
     if(qid === 'froid'){
-      return { non:'négatif', normal:'positif et normal',
-               leger:'positif, léger et fugace', intense:'positif et intense' }[v] || String(v);
+      return { non:'négatif',
+               normal:'positif, bref et non douloureux',
+               immediat:'positif, mais la douleur cesse dès l\'arrêt du stimulus',
+               quelques_secondes:'positif, la douleur persiste quelques secondes après l\'arrêt du stimulus',
+               intense:'positif, vif et prolongé' }[v] || String(v);
     }
     if(qid === 'radio'){
       return { normal:'sans anomalie', coronal:'atteinte coronaire, sans image apicale',
                periapical:'image radioclaire périapicale' }[v] || String(v);
     }
-    if(qid === 'sucre' && v === 'leger') return 'oui, mais légère et inconstante';
-    if(qid === 'sucre' && v)             return 'oui, à chaque exposition';
+    if(qid === 'sucre'){
+      if(v === 'immediat')          return 'oui, mais la douleur cesse dès l\'arrêt du stimulus';
+      if(v === 'quelques_secondes') return 'oui, la douleur persiste quelques secondes après l\'arrêt du stimulus';
+      return v ? 'oui, vive' : 'non';
+    }
     return v ? 'oui' : 'non';
   }
 
