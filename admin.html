@@ -53,6 +53,14 @@
   .tbl-wrap{overflow-x:auto;}
   .actions{display:flex; gap:7px; white-space:nowrap;}
 
+  .toolbar{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:0 0 14px;}
+  .toolbar label{font-size:0.82rem; font-weight:700; color:var(--logo-navy);}
+  .toolbar select{
+    border:1.5px solid var(--border); border-radius:9px; padding:7px 11px;
+    font-family:inherit; font-size:0.84rem; background:var(--card); color:inherit;
+  }
+  .toolbar .grow{flex:1 1 auto;}
+
   .tag{display:inline-block; padding:2px 9px; border-radius:999px; font-size:0.72rem; font-weight:700;}
   .tag-wait{background:var(--warn-100); color:var(--warn);}
   .tag-ok{background:var(--teal-100); color:var(--teal-700);}
@@ -159,11 +167,22 @@
 
     <div class="card">
       <h2>Pathologies les plus ratées</h2>
-      <p class="hint">Sur l'ensemble de la promotion — utile pour repérer ce qui mérite d'être repris en cours.</p>
+      <p class="hint">Choisissez une promotion pour voir ce qui mérite d'être repris en cours avec elle.</p>
+      <div class="toolbar">
+        <label for="promo-filter">Promotion</label>
+        <select id="promo-filter"></select>
+        <span class="grow"></span>
+        <button class="btn" id="export-weak-btn" type="button">Exporter ce tableau (CSV)</button>
+        <button class="btn" id="export-students-btn" type="button">Exporter les étudiants (CSV)</button>
+      </div>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Pathologie</th><th>Cas traités</th><th>Taux d'erreur</th><th style="width:35%"></th></tr></thead>
+        <thead><tr>
+          <th>Pathologie</th><th>Cas traités</th><th>Erreurs · diagnostic</th>
+          <th>Erreurs · traitement</th><th>Taux global</th><th style="width:22%"></th>
+        </tr></thead>
         <tbody id="weak-body"></tbody>
       </table></div>
+      <p class="hint" id="weak-note" style="margin-top:10px;"></p>
     </div>
   </div>
 
@@ -261,7 +280,9 @@
     return Promise.all([
       authed('/rest/v1/profiles?select=*&order=created_at.desc'),
       authed('/rest/v1/results?select=*&order=created_at.desc'),
-      authed('/rest/v1/case_results?select=diagnosis_id,correct')
+      // user_id et mode sont nécessaires pour ventiler les erreurs par promotion et distinguer
+      // ce qui est mal diagnostiqué de ce qui est mal traité.
+      authed('/rest/v1/case_results?select=user_id,mode,diagnosis_id,correct')
     ]).then(function(r){
       profiles = r[0] || []; results = r[1] || []; caseResults = r[2] || [];
       render();
@@ -320,28 +341,84 @@
         '</div></td></tr>';
     }).join('') : '<tr><td colspan="7"><div class="empty">Aucun compte validé pour le moment.</div></td></tr>';
 
-    // Pathologies les plus ratées
+    renderPromoFilter();
+    renderWeak();
+  }
+
+  // ---------- Pathologies les plus ratées, par promotion ----------
+  var TOUTES = '__toutes__';
+
+  function promoOf(userId){
+    var p = profiles.filter(function(x){ return x.id === userId; })[0];
+    return p ? p.annee : null;
+  }
+
+  function renderPromoFilter(){
+    var sel = $('promo-filter');
+    var choix = sel.value || TOUTES;
+    var promos = [];
+    profiles.forEach(function(p){
+      if(p.approved && p.annee && promos.indexOf(p.annee) === -1) promos.push(p.annee);
+    });
+    promos.sort();
+    sel.innerHTML = '<option value="' + TOUTES + '">Toutes les promotions</option>' +
+      promos.map(function(a){ return '<option value="' + esc(a) + '">' + esc(a) + '</option>'; }).join('');
+    // Conserve la promotion choisie si elle existe encore après un rechargement.
+    sel.value = promos.indexOf(choix) !== -1 ? choix : TOUTES;
+  }
+
+  // Lignes agrégées pour la promotion sélectionnée. Sert à la fois au tableau et à l'export :
+  // ce que l'enseignante exporte est exactement ce qu'elle a sous les yeux.
+  function weakRows(){
+    var promo = $('promo-filter').value || TOUTES;
     var byDiag = {};
     caseResults.forEach(function(c){
-      var k = c.diagnosis_id;
-      if(!byDiag[k]) byDiag[k] = { total:0, wrong:0 };
-      byDiag[k].total++;
-      if(!c.correct) byDiag[k].wrong++;
+      if(promo !== TOUTES && promoOf(c.user_id) !== promo) return;
+      var d = byDiag[c.diagnosis_id] ||
+              (byDiag[c.diagnosis_id] = { total:0, wrong:0, dTot:0, dErr:0, tTot:0, tErr:0 });
+      d.total++;
+      if(!c.correct) d.wrong++;
+      if(c.mode === 'therapeutique'){ d.tTot++; if(!c.correct) d.tErr++; }
+      else                          { d.dTot++; if(!c.correct) d.dErr++; }
     });
-    var rows = Object.keys(byDiag).map(function(k){
+    return Object.keys(byDiag).map(function(k){
       var d = byDiag[k];
-      return { id:k, total:d.total, rate: d.wrong / d.total };
+      return {
+        id:k, label: DIAG_LABELS[k] || k, total:d.total, rate: d.wrong / d.total,
+        dTot:d.dTot, dRate: d.dTot ? d.dErr / d.dTot : null,
+        tTot:d.tTot, tRate: d.tTot ? d.tErr / d.tTot : null
+      };
     }).sort(function(a,b){ return b.rate - a.rate; });
+  }
+
+  function pct(r){ return r === null ? '—' : Math.round(r * 100) + ' %'; }
+
+  function renderWeak(){
+    var rows  = weakRows();
+    var promo = $('promo-filter').value || TOUTES;
 
     $('weak-body').innerHTML = rows.length ? rows.map(function(r){
-      var pct = Math.round(r.rate * 100);
+      var p = Math.round(r.rate * 100);
       return '<tr>' +
-        '<td>' + esc(DIAG_LABELS[r.id] || r.id) + '</td>' +
+        '<td>' + esc(r.label) + '</td>' +
         '<td>' + r.total + '</td>' +
-        '<td><b>' + pct + ' %</b></td>' +
-        '<td><div class="bar"><i style="width:' + pct + '%"></i></div></td>' +
+        '<td>' + pct(r.dRate) + (r.dTot ? ' <span style="color:var(--muted)">(' + r.dTot + ')</span>' : '') + '</td>' +
+        '<td>' + pct(r.tRate) + (r.tTot ? ' <span style="color:var(--muted)">(' + r.tTot + ')</span>' : '') + '</td>' +
+        '<td><b>' + p + ' %</b></td>' +
+        '<td><div class="bar"><i style="width:' + p + '%"></i></div></td>' +
         '</tr>';
-    }).join('') : '<tr><td colspan="4"><div class="empty">Aucun cas traité pour le moment.</div></td></tr>';
+    }).join('')
+      : '<tr><td colspan="6"><div class="empty">Aucun cas traité' +
+        (promo === TOUTES ? '' : ' pour cette promotion') + ' pour le moment.</div></td></tr>';
+
+    // Un taux calculé sur trois cas ne veut rien dire : le rappeler évite de bâtir un cours
+    // sur un effectif qui n'en supporte pas la conclusion.
+    var faibles = rows.filter(function(r){ return r.total < 10; }).length;
+    $('weak-note').textContent = !rows.length ? ''
+      : faibles
+        ? faibles + ' pathologie' + (faibles > 1 ? 's ont' : ' a') + ' moins de 10 cas traités : ' +
+          'le taux d\'erreur y est encore peu significatif.'
+        : 'Toutes les pathologies comptent au moins 10 cas traités.';
   }
 
   function stat(v, l){ return '<div class="stat"><div class="v">' + v + '</div><div class="l">' + l + '</div></div>'; }
@@ -360,7 +437,84 @@
     $('detail-card').scrollIntoView({ behavior:'smooth', block:'start' });
   }
 
+  // ---------- export CSV ----------
+  function csvCell(v){
+    var s = (v === null || v === undefined) ? '' : String(v);
+    return /[";\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }
+
+  function downloadCsv(nom, lignes){
+    // Séparateur point-virgule et BOM UTF-8 : sans les deux, Excel en configuration française
+    // entasse toute la ligne dans une seule colonne et affiche les accents en charabia.
+    var texte = '\ufeff' + lignes.map(function(l){ return l.map(csvCell).join(';'); }).join('\r\n');
+    var url = URL.createObjectURL(new Blob([texte], { type:'text/csv;charset=utf-8;' }));
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = nom;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function stamp(){ return new Date().toISOString().slice(0, 10); }
+
+  function slug(s){
+    return String(s).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                    .replace(/[^A-Za-z0-9]+/g, '-').replace(/^-|-$/g, '').toLowerCase();
+  }
+
+  // Le tableau tel qu'il est affiché — même promotion, même tri.
+  function exportWeak(){
+    var promo = $('promo-filter').value || TOUTES;
+    var nom   = promo === TOUTES ? 'toutes-promotions' : slug(promo);
+    var lignes = [['Promotion', 'Pathologie', 'Cas traités',
+                   'Erreurs diagnostic (%)', 'Cas diagnostic',
+                   'Erreurs traitement (%)', 'Cas traitement',
+                   'Taux d\'erreur global (%)']];
+    weakRows().forEach(function(r){
+      lignes.push([
+        promo === TOUTES ? 'Toutes' : promo, r.label, r.total,
+        r.dRate === null ? '' : Math.round(r.dRate * 100), r.dTot,
+        r.tRate === null ? '' : Math.round(r.tRate * 100), r.tTot,
+        Math.round(r.rate * 100)
+      ]);
+    });
+    if(lignes.length === 1){
+      msg('global-msg', 'Rien à exporter : aucun cas traité pour cette sélection.', 'err');
+      return;
+    }
+    downloadCsv('endodiag-pathologies-' + nom + '-' + stamp() + '.csv', lignes);
+  }
+
+  function exportStudents(){
+    var approved = profiles.filter(function(p){ return p.approved; });
+    if(!approved.length){
+      msg('global-msg', 'Rien à exporter : aucun compte validé.', 'err');
+      return;
+    }
+    var lignes = [['Nom', 'Prénom', 'E-mail', 'Année', 'Faculté',
+                   'Inscrit le', 'Dernière connexion', 'Séries terminées', 'Moyenne (%)']];
+    approved.slice().sort(function(a, b){
+      return (a.annee || '').localeCompare(b.annee || '') ||
+             (a.nom   || '').localeCompare(b.nom   || '');
+    }).forEach(function(p){
+      var mine = results.filter(function(r){ return r.user_id === p.id; });
+      var moy = '';
+      if(mine.length){
+        moy = Math.round(mine.reduce(function(a, r){ return a + r.score / r.serie; }, 0) / mine.length * 100);
+      }
+      lignes.push([p.nom, p.prenom, p.email, p.annee, p.faculte,
+                   fmtDate(p.created_at), fmtDateTime(p.last_seen_at), mine.length, moy]);
+    });
+    downloadCsv('endodiag-etudiants-' + stamp() + '.csv', lignes);
+  }
+
   // ---------- actions ----------
+  document.addEventListener('change', function(e){
+    if(e.target && e.target.id === 'promo-filter') renderWeak();
+  });
+
   document.addEventListener('click', function(e){
     var t = e.target;
     if(!t || t.tagName !== 'BUTTON') return;
@@ -387,6 +541,8 @@
     else if((id = t.getAttribute('data-detail'))){
       showDetail(id);
     }
+    else if(t.id === 'export-weak-btn')     { exportWeak(); }
+    else if(t.id === 'export-students-btn') { exportStudents(); }
   });
 
   function doLogin(){

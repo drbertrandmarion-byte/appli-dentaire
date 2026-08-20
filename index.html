@@ -536,6 +536,29 @@
   .treatment-box.info h4{color:var(--muted);}
   .treatment-box p{margin:0;}
   .tx-rationale-box{text-align:left; margin-top:10px;}
+
+  /* Analyse différentielle affichée sous le verdict du diagnostic. */
+  .diag-analysis{text-align:left; margin:16px 0 0; border-radius:10px; padding:12px 14px; font-size:0.9rem;}
+  .diag-analysis h4{margin:0 0 8px; font-size:0.78rem; text-transform:uppercase; letter-spacing:.03em;}
+  .diag-analysis.is-diff{background:rgba(217,119,6,0.12);}
+  .diag-analysis.is-diff h4{color:var(--periapical);}
+  .diag-analysis.is-eco{background:var(--logo-blue-100); margin-top:10px;}
+  .diag-analysis.is-eco h4{color:var(--logo-blue-dark);}
+  .diag-analysis p{margin:0 0 8px;}
+  .diag-analysis p:last-child{margin-bottom:0;}
+  .da-signs{list-style:none; margin:0; padding:0;}
+  .da-signs li{
+    display:flex; gap:8px; align-items:baseline;
+    padding:6px 0; border-top:1px solid rgba(0,0,0,0.07);
+  }
+  .da-signs li:first-child{border-top:0;}
+  .da-signs .da-mark{flex:0 0 auto; font-weight:700; font-size:0.82rem;}
+  .da-signs .da-missed .da-mark{color:var(--ko, #b42318);}
+  .da-signs .da-seen  .da-mark{color:var(--ok);}
+  .da-signs .da-name{font-weight:600;}
+  .da-signs .da-detail{color:var(--muted);}
+  .da-conclusion{margin-top:10px; font-weight:600;}
+
   .guess-recap{
     font-size:0.9rem;
     color:var(--muted);
@@ -1150,6 +1173,9 @@
     <h2 id="result-title"></h2>
     <div class="def" id="result-def"></div>
 
+    <div class="diag-analysis is-diff hidden" id="diag-differential"></div>
+    <div class="diag-analysis is-eco hidden" id="diag-economy"></div>
+
     <div class="diagram-wrap">
       <div class="diagram-svg" id="result-diagram"></div>
       <p class="diagram-caption" id="diagram-caption"></p>
@@ -1632,21 +1658,23 @@
 
   // ---------- Les 15 questions que l'étudiant peut choisir de poser ----------
   var QUESTIONS = [
-    {id:"froid",            text:"Réponse au test au froid ?"},
-    {id:"percussion",       text:"Y a-t-il une douleur à la percussion ?"},
-    {id:"palpation",        text:"Y a-t-il une douleur à la palpation apicale (vestibulaire, en regard de l'apex) ?"},
-    {id:"dent_longue",      text:"Le patient a-t-il une sensation de dent « longue » (plus haute que les autres) ?"},
-    {id:"chaud",            text:"Y a-t-il une douleur au chaud ?"},
-    {id:"sucre",            text:"Y a-t-il une douleur au sucré ?"},
-    {id:"mastication",      text:"Y a-t-il une douleur à la mastication ?"},
-    {id:"froid_apaise",     text:"Est-ce que le froid apaise la douleur ?"},
-    {id:"gonflement",       text:"Y a-t-il un gonflement (tuméfaction) de la face ?"},
-    {id:"godet",            text:"Sur la tuméfaction, y a-t-il un signe de reflux (godet) : la dépression persiste-t-elle après une pression du doigt ?"},
-    {id:"signes_generaux",  text:"Y a-t-il de la fièvre, et/ou une dysphagie, et/ou une difficulté respiratoire, et/ou un trismus serré ?"},
-    {id:"nocturne",         text:"La douleur s'intensifie-t-elle la nuit ?"},
-    {id:"pulsation",        text:"La douleur est-elle semblable à une pulsation dans la dent ?"},
-    {id:"continue_diffuse", text:"La douleur est-elle plutôt continue et diffuse (spontanée, difficile à localiser) ?"},
-    {id:"radio",            text:"Réalisation d'une radiographie rétro-alvéolaire : que montre-t-elle ?", type:"exam"}
+    // « short » : intitulé condensé, utilisé dans l'analyse différentielle où l'on énumère plusieurs
+    // signes à la suite — la question complète y serait illisible.
+    {id:"froid",            short:"le test au froid",              text:"Réponse au test au froid ?"},
+    {id:"percussion",       short:"la douleur à la percussion",    text:"Y a-t-il une douleur à la percussion ?"},
+    {id:"palpation",        short:"la palpation apicale",          text:"Y a-t-il une douleur à la palpation apicale (vestibulaire, en regard de l'apex) ?"},
+    {id:"dent_longue",      short:"la sensation de dent « longue »", text:"Le patient a-t-il une sensation de dent « longue » (plus haute que les autres) ?"},
+    {id:"chaud",            short:"la douleur au chaud",           text:"Y a-t-il une douleur au chaud ?"},
+    {id:"sucre",            short:"la douleur au sucré",           text:"Y a-t-il une douleur au sucré ?"},
+    {id:"mastication",      short:"la douleur à la mastication",   text:"Y a-t-il une douleur à la mastication ?"},
+    {id:"froid_apaise",     short:"le soulagement par le froid",   text:"Est-ce que le froid apaise la douleur ?"},
+    {id:"gonflement",       short:"la tuméfaction de la face",     text:"Y a-t-il un gonflement (tuméfaction) de la face ?"},
+    {id:"godet",            short:"le signe du godet",             text:"Sur la tuméfaction, y a-t-il un signe de reflux (godet) : la dépression persiste-t-elle après une pression du doigt ?"},
+    {id:"signes_generaux",  short:"les signes généraux",           text:"Y a-t-il de la fièvre, et/ou une dysphagie, et/ou une difficulté respiratoire, et/ou un trismus serré ?"},
+    {id:"nocturne",         short:"la douleur nocturne",           text:"La douleur s'intensifie-t-elle la nuit ?"},
+    {id:"pulsation",        short:"la douleur pulsatile",          text:"La douleur est-elle semblable à une pulsation dans la dent ?"},
+    {id:"continue_diffuse", short:"la douleur continue et diffuse", text:"La douleur est-elle plutôt continue et diffuse (spontanée, difficile à localiser) ?"},
+    {id:"radio",            short:"la radiographie",               text:"Réalisation d'une radiographie rétro-alvéolaire : que montre-t-elle ?", type:"exam"}
   ];
 
   // ---------- Les 11 diagnostics et leur profil de réponses (true = Oui, false = Non) ----------
@@ -2694,7 +2722,11 @@
       ],
       urgence:"Ce n'est pas une urgence dentaire à proprement parler.",
       traitementFinal:"Soin de la carie causale (obturation) ; la pulpe reste conservable.",
-      answers:{froid:"leger", sucre:true, radio:"coronal"},
+      // Le sucré est ici volontairement distingué du sucré des deux pulpites : « très légère et pas
+      // tout le temps » contre « à chaque fois ». C'est le seul signe qui sépare l'hyperhémie de la
+      // pulpite réversible — sans ce niveau, les deux tableaux seraient rigoureusement identiques et
+      // aucun étudiant ne pourrait les départager autrement qu'au hasard.
+      answers:{froid:"leger", sucre:"leger", radio:"coronal"},
       quotes:{
         radio:"Très légère infiltration coronaire, à distance de la pulpe ; pas de radioclarté apicale.",
         froid:"Positif, légèrement exacerbé, mais ça s'arrête dès l'arrêt du stimulus.",
@@ -3681,6 +3713,186 @@
     renderQuestionSelect();
   }
 
+  // ---------- Analyse différentielle ----------
+  // Tout est déduit des profils de réponses déclarés plus haut : rien à maintenir en double, et la
+  // correction reste automatiquement juste si un tableau clinique est modifié un jour.
+
+  // Valeur observable d'un signe. Le froid et la radiographie ont plusieurs niveaux, le sucré en a
+  // deux (voir l'hyperhémie) ; les autres questions sont binaires. Une clé absente vaut « non ».
+  function signValue(diag, qid){
+    var v = diag.answers[qid];
+    if(qid === 'froid') return v || 'non';
+    if(qid === 'radio') return v || 'normal';
+    return v === undefined ? false : v;
+  }
+
+  function questionShort(qid){
+    var q = QUESTIONS.filter(function(x){ return x.id === qid; })[0];
+    return q ? (q.short || q.text) : qid;
+  }
+
+  // « à » + intitulé, avec la contraction française : à + le = au, à + les = aux.
+  function questionA(qid){
+    var s = questionShort(qid);
+    if(s.indexOf('les ') === 0) return 'aux ' + s.slice(4);
+    if(s.indexOf('le ')  === 0) return 'au '  + s.slice(3);
+    return 'à ' + s;
+  }
+
+  // Ce que le patient répond, en une formule courte utilisable dans une énumération.
+  function signAnswerText(diag, qid){
+    var v = signValue(diag, qid);
+    if(qid === 'froid'){
+      return { non:'négatif', normal:'positif et normal',
+               leger:'positif, léger et fugace', intense:'positif et intense' }[v] || String(v);
+    }
+    if(qid === 'radio'){
+      return { normal:'sans anomalie', coronal:'atteinte coronaire, sans image apicale',
+               periapical:'image radioclaire périapicale' }[v] || String(v);
+    }
+    if(qid === 'sucre' && v === 'leger') return 'oui, mais légère et inconstante';
+    if(qid === 'sucre' && v)             return 'oui, à chaque exposition';
+    return v ? 'oui' : 'non';
+  }
+
+  // Les signes sur lesquels deux tableaux diffèrent : ce sont eux, et eux seuls, qui les départagent.
+  function discriminatingSigns(idA, idB){
+    return QUESTIONS.filter(function(q){
+      return signValue(DIAGNOSES[idA], q.id) !== signValue(DIAGNOSES[idB], q.id);
+    }).map(function(q){ return q.id; });
+  }
+
+  // Plus petit jeu de questions dont les réponses n'appartiennent qu'à ce diagnostic. Recherche
+  // exhaustive par taille croissante : douze diagnostics et quinze questions, le coût est
+  // négligeable et le résultat est exact — ce n'est pas une approximation gloutonne.
+  var minimalSetCache = {};
+  function minimalIdentifyingSet(id){
+    if(minimalSetCache[id]) return minimalSetCache[id];
+    var qids   = QUESTIONS.map(function(q){ return q.id; });
+    var others = Object.keys(DIAGNOSES).filter(function(o){ return o !== id; });
+    function separates(combo){
+      return others.every(function(o){
+        return combo.some(function(qid){
+          return signValue(DIAGNOSES[id], qid) !== signValue(DIAGNOSES[o], qid);
+        });
+      });
+    }
+    var found = null;
+    for(var size = 1; size <= 3 && !found; size++){
+      (function walk(start, combo){
+        if(found) return;
+        if(combo.length === size){ if(separates(combo)) found = combo.slice(); return; }
+        for(var i = start; i < qids.length && !found; i++){
+          combo.push(qids[i]);
+          walk(i + 1, combo);
+          combo.pop();
+        }
+      })(0, []);
+    }
+    minimalSetCache[id] = found || qids.slice();
+    return minimalSetCache[id];
+  }
+
+  function signRow(qid, vu, actual){
+    return '<li class="' + (vu ? 'da-seen' : 'da-missed') + '">' +
+             '<span class="da-mark">' + (vu ? '✓' : '✗') + '</span>' +
+             '<span><span class="da-name">' + questionShort(qid) + '</span> — ' +
+               '<span class="da-detail">chez ce patient : ' + signAnswerText(actual, qid) +
+               (vu ? '' : ' <i>(question non posée)</i>') + '</span></span>' +
+           '</li>';
+  }
+
+  // Pourquoi la proposition de l'étudiant était fausse : les signes qui séparaient les deux
+  // tableaux, en distinguant ceux qu'il avait sous les yeux de ceux qu'il n'a jamais demandés.
+  var DIFF_MAX_SHOWN  = 5; // au-delà, la liste cesse d'enseigner et devient un mur de texte
+  var DIFF_MAX_NAMED  = 3; // signes nommés dans la phrase de conclusion
+
+  function joinFr(list){
+    if(list.length <= 1) return list.join('');
+    return list.slice(0, -1).join(', ') + ' et ' + list[list.length - 1];
+  }
+
+  function renderDifferential(guessId, realId){
+    var box = document.getElementById('diag-differential');
+    var diff = discriminatingSigns(guessId, realId);
+    if(!diff.length){ hideEl(box); return; }
+
+    var actual = DIAGNOSES[realId];
+
+    // Deux tableaux éloignés diffèrent sur dix signes : tout énumérer noierait l'essentiel. On fait
+    // donc remonter les signes qui suffisent à eux seuls à affirmer le bon diagnostic — ce sont les
+    // décisifs — et l'on tronque le reste.
+    var cles = minimalIdentifyingSet(realId);
+    var ordonnes = diff.slice().sort(function(a, b){
+      return (cles.indexOf(b) !== -1) - (cles.indexOf(a) !== -1);
+    });
+    var montres = ordonnes.slice(0, DIFF_MAX_SHOWN);
+    var reste   = ordonnes.length - montres.length;
+
+    var manques = ordonnes.filter(function(qid){ return askedIds.indexOf(qid) === -1; });
+
+    var html = '<h4>Ce qui distinguait les deux tableaux</h4>' +
+      '<p>« ' + DIAGNOSES[guessId].title + ' » et « ' + actual.title + ' » ' +
+      (diff.length === 1
+        ? 'ne diffèrent que sur <b>un seul signe</b>'
+        : diff.length <= DIFF_MAX_SHOWN
+          ? 'diffèrent sur <b>' + diff.length + ' signes</b>'
+          : 's\'opposent sur <b>' + diff.length + ' signes</b>. Les plus décisifs') + ' :</p>' +
+      '<ul class="da-signs">' +
+        montres.map(function(qid){ return signRow(qid, askedIds.indexOf(qid) !== -1, actual); }).join('') +
+      '</ul>';
+    if(reste > 0){
+      html += '<p class="da-detail" style="margin-top:8px;">… et ' + reste + ' autre' +
+              (reste > 1 ? 's signes' : ' signe') + ' encore.</p>';
+    }
+
+    // Deux erreurs très différentes, qui n'appellent pas la même remédiation : ne pas avoir
+    // recueilli le signe, ou l'avoir recueilli sans en tirer la conclusion. Comme les deux tableaux
+    // s'opposent sur chacun de ces signes, un seul d'entre eux suffisait à trancher — c'est cela
+    // qu'il faut dire, plutôt que d'énumérer tout ce qui les sépare.
+    var vus = ordonnes.filter(function(qid){ return askedIds.indexOf(qid) !== -1; });
+
+    if(vus.length){
+      var q0 = vus[0];
+      html += '<p class="da-conclusion">Vous aviez pourtant l\'information : ' + questionA(q0) +
+              ', la réponse était « ' + signAnswerText(actual, q0) + ' » — ce qui écartait ' +
+              '« ' + DIAGNOSES[guessId].title + ' ». C\'est son interprétation qui a manqué.</p>';
+    } else {
+      // On ne nomme que des signes décisifs : ceux qui suffisent aussi à écarter les dix autres
+      // tableaux. Nommer un signe partagé par la moitié des diagnostics n'apprendrait rien.
+      var decisifs = manques.filter(function(qid){ return cles.indexOf(qid) !== -1; });
+      var aNommer  = (decisifs.length ? decisifs : manques).slice(0, DIFF_MAX_NAMED).map(questionShort);
+      html += '<p class="da-conclusion">Aucune de vos questions ne séparait ces deux tableaux. ' +
+              (aNommer.length === 1 ? 'Le signe qui tranchait : ' : 'Les signes qui tranchaient : ') +
+              joinFr(aNommer) + '.</p>';
+    }
+
+    box.innerHTML = html;
+    showEl(box);
+  }
+
+  // Économie diagnostique : combien de signes suffisaient réellement à affirmer ce diagnostic.
+  function renderEconomy(realId){
+    var box  = document.getElementById('diag-economy');
+    var mini = minimalIdentifyingSet(realId);
+    var pose = askedIds.length;
+
+    var html = '<h4>Économie diagnostique</h4>' +
+      '<p><b>' + mini.length + ' question' + (mini.length > 1 ? 's' : '') + '</b> suffisai' +
+      (mini.length > 1 ? 'ent' : 't') + ' à affirmer ce diagnostic et à écarter tous les autres : ' +
+      mini.map(questionShort).join(', ') + '.';
+
+    if(pose > mini.length){
+      html += ' Vous en avez posé ' + pose + '.';
+    } else if(pose === mini.length){
+      html += ' Vous en avez posé exactement ' + pose + ' : parfait.';
+    }
+    html += '</p>';
+
+    box.innerHTML = html;
+    showEl(box);
+  }
+
   function submitGuess(){
     var guessId = diagnosisSelect.value;
     if(!guessId) return;
@@ -3710,6 +3922,12 @@
 
     document.getElementById('result-title').textContent = actual.title;
     document.getElementById('result-def').textContent = actual.def;
+
+    // L'analyse différentielle n'a de sens que sur une erreur ; l'économie diagnostique se lit
+    // dans les deux cas — y compris après une bonne réponse trouvée en trop de questions.
+    if(correct) hideEl(document.getElementById('diag-differential'));
+    else        renderDifferential(guessId, caseId);
+    renderEconomy(caseId);
 
     var diagram = DIAGRAMS[caseId];
     var restoration = detectRestoration(currentVariant ? currentVariant.radio : actual.quotes.radio);

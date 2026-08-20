@@ -13,20 +13,50 @@ npm install -g playwright        # ou : npx playwright install chromium
 
 ## Lancer les tests
 
-Depuis la racine du dépôt, servir l'application puis exécuter la suite :
+Depuis la racine du dépôt, servir l'application puis exécuter les suites :
 
 ```bash
 python3 -m http.server 9300 &
 node tests/cas-choix-therapeutique.js
+node tests/analyse-differentielle.js
+node tests/back-office.js
 ```
 
-Résultat attendu :
+Résultats attendus :
 
 ```
 Tested 85 / 85 unique named cases
 Missing (never rolled): []
 Failures: 0
 ```
+
+```
+Diagnostics rencontres : 12 / 12
+Erreurs : 0
+```
+
+Le troisième affiche des tableaux à relire (filtre par promotion, contenu des CSV) ;
+il n'a pas de verdict automatique — voir plus bas.
+
+## Les trois suites
+
+| Fichier | Ce qu'il vérifie |
+|---|---|
+| `cas-choix-therapeutique.js` | Le corrigé clinique des 85 cas nommés du mode « Choix thérapeutique » |
+| `analyse-differentielle.js` | La correction du mode « Diagnostic » : signes discriminants, signe posé ou non, économie diagnostique |
+| `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion et exports CSV |
+
+`analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
+un différentiel affiché sur une erreur et jamais sur une bonne réponse, et surtout un
+marquage exact des signes — une question posée ne doit jamais apparaître comme « non
+posée », ni l'inverse. Il termine par `Erreurs : 0`.
+
+`back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
+interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas
+dépendre des données réelles des étudiants, ni risquer de les modifier. Sa sortie est à
+relire à l'œil : elle montre les promotions détectées, le tableau filtré pour chacune, et
+le contenu exact des deux fichiers CSV produits (séparateur, BOM, échappement d'un nom
+contenant un point-virgule et des guillemets).
 
 **Toute autre sortie signale un problème.** Les deux lignes à surveiller :
 
