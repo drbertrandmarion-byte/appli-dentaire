@@ -4406,6 +4406,22 @@
       <div id="reset-msg"></div>
     </div>
 
+    <!-- Choix d'un nouveau mot de passe (retour du lien reçu par e-mail) -->
+    <div id="auth-view-newpass" class="hidden">
+      <h2>Nouveau mot de passe</h2>
+      <p class="auth-sub">Choisissez le mot de passe qui protégera désormais votre compte.</p>
+      <div class="auth-field">
+        <label for="np-password">Nouveau mot de passe (8 caractères minimum)</label>
+        <input type="password" id="np-password" autocomplete="new-password">
+      </div>
+      <div class="auth-field">
+        <label for="np-confirm">Confirmez le mot de passe</label>
+        <input type="password" id="np-confirm" autocomplete="new-password">
+      </div>
+      <button class="btn-primary" id="np-btn" type="button">Enregistrer</button>
+      <div id="np-msg"></div>
+    </div>
+
     <!-- Compte en attente de validation -->
     <div id="auth-view-pending" class="hidden">
       <div class="auth-pending-icon">⏳</div>
@@ -4610,7 +4626,7 @@
   }
 
   // ---------- affichage ----------
-  var VIEWS = ['login', 'signup', 'reset', 'pending', 'loading'];
+  var VIEWS = ['login', 'signup', 'reset', 'newpass', 'pending', 'loading'];
   function showView(name){
     VIEWS.forEach(function(v){
       var el = $('auth-view-' + v);
@@ -4815,10 +4831,99 @@
     });
   });
 
+  // ---------- retour des liens reçus par e-mail ----------
+  // Après confirmation d'inscription ou réinitialisation, Supabase renvoie sur
+  // l'application en plaçant les jetons dans la partie « # » de l'adresse.
+  function parseHash(){
+    var h = window.location.hash || '';
+    if(h.charAt(0) === '#') h = h.slice(1);
+    if(!h) return null;
+    var out = {}, found = false;
+    h.split('&').forEach(function(kv){
+      var i = kv.indexOf('=');
+      if(i > 0){ out[decodeURIComponent(kv.slice(0, i))] = decodeURIComponent(kv.slice(i + 1)); found = true; }
+    });
+    return found ? out : null;
+  }
+
+  // Les jetons ne doivent pas rester visibles dans la barre d'adresse, ni dans
+  // l'historique du navigateur.
+  function clearHash(){
+    try { history.replaceState(null, '', window.location.pathname + window.location.search); }
+    catch(e){ window.location.hash = ''; }
+  }
+
+  function adoptSession(h){
+    session = {
+      access_token:  h.access_token,
+      refresh_token: h.refresh_token,
+      expires_at:    Date.now() + ((parseInt(h.expires_in, 10) || 3600) * 1000)
+    };
+    return authed('/auth/v1/user').then(function(u){
+      session.user_id = u && u.id;
+      session.email   = u && u.email;
+      writeStore(SESSION_KEY, session);
+      return session;
+    });
+  }
+
+  function doNewPassword(){
+    var p1 = $('np-password').value || '', p2 = $('np-confirm').value || '';
+    if(p1.length < 8){ msg('np-msg', 'Le mot de passe doit contenir au moins 8 caractères.', 'err'); return; }
+    if(p1 !== p2)    { msg('np-msg', 'Les deux mots de passe ne correspondent pas.', 'err'); return; }
+    msg('np-msg', '');
+    busy($('np-btn'), true, 'Enregistrement…', 'Enregistrer');
+    authed('/auth/v1/user', { method: 'PUT', body: { password: p1 } })
+      .then(function(){
+        msg('np-msg', 'Mot de passe modifié. Vous êtes connectée.', 'ok');
+        return route();
+      })
+      .catch(function(err){ msg('np-msg', humanError(err), 'err'); })
+      .then(function(){ busy($('np-btn'), false, '', 'Enregistrer'); });
+  }
+
+  $('np-btn').addEventListener('click', doNewPassword);
+  ['np-password','np-confirm'].forEach(function(id){
+    $(id).addEventListener('keydown', function(e){ if(e.key === 'Enter') doNewPassword(); });
+  });
+
   // ---------- démarrage ----------
-  session = readStore(SESSION_KEY);
-  showView(session ? 'loading' : 'login');
-  route();
+  (function start(){
+    var h = parseHash();
+
+    // Lien expiré ou déjà utilisé
+    if(h && (h.error || h.error_description)){
+      clearHash();
+      showView('login');
+      msg('login-msg',
+        /expired/i.test(h.error_description || h.error || '')
+          ? 'Ce lien a expiré. Demandez-en un nouveau.'
+          : esc(h.error_description || h.error), 'err');
+      return;
+    }
+
+    if(h && h.access_token){
+      clearHash();
+      showView('loading');
+      adoptSession(h)
+        .then(function(){
+          // Réinitialisation : on demande le nouveau mot de passe.
+          // Confirmation d'inscription : la session est active, on poursuit normalement.
+          if(h.type === 'recovery') showView('newpass');
+          else return route();
+        })
+        .catch(function(){
+          clearSession();
+          showView('login');
+          msg('login-msg', 'Ce lien n\'est plus valide. Demandez-en un nouveau.', 'err');
+        });
+      return;
+    }
+
+    session = readStore(SESSION_KEY);
+    showView(session ? 'loading' : 'login');
+    route();
+  })();
 })();
 </script>
 </body>
