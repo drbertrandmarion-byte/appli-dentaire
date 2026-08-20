@@ -38,10 +38,10 @@ Diagnostics rencontres : 12 / 12
 Erreurs : 0
 ```
 
-Le troisième affiche des tableaux à relire (filtre par promotion, contenu des CSV) ;
-il n'a pas de verdict automatique — voir plus bas.
+Les autres suites se terminent par `Erreurs : 0` ou `Problèmes : 0`. `back-office.js`
+affiche en plus des tableaux à relire à l'œil — voir plus bas.
 
-## Les trois suites
+## Les six suites
 
 | Fichier | Ce qu'il vérifie |
 |---|---|
@@ -50,7 +50,7 @@ il n'a pas de verdict automatique — voir plus bas.
 | `economie-diagnostique.js` | Le rappel à partir de 7 questions et le calcul du rang décisif |
 | `barre-commandes.js` | Que les boutons retour / compte / son ne se chevauchent à aucune largeur d'écran |
 | `schemas-soins.js` | Que le schéma dessine bien le soin coronaire décrit par l'énoncé |
-| `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion et exports CSV |
+| `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion et export Excel |
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
 un différentiel affiché sur une erreur et jamais sur une bonne réponse, et surtout un
