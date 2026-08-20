@@ -4478,6 +4478,18 @@
   // bloquée sur « Connexion… » au lieu de basculer en mode hors ligne.
   var REQUEST_TIMEOUT_MS = 12000;
 
+  // Adresse de retour pour les liens envoyés par e-mail (confirmation d'inscription,
+  // réinitialisation de mot de passe). On la déduit de la page elle-même plutôt que de
+  // s'en remettre au « Site URL » du tableau de bord : le lien ramène ainsi toujours à
+  // l'endroit d'où l'utilisateur est parti, quel que soit ce réglage.
+  function appUrl(){
+    return window.location.origin + window.location.pathname;
+  }
+  function withRedirect(path){
+    return path + (path.indexOf('?') === -1 ? '?' : '&') +
+           'redirect_to=' + encodeURIComponent(appUrl());
+  }
+
   function request(path, opts){
     opts = opts || {};
     var headers = { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' };
@@ -4725,7 +4737,7 @@
 
     msg('signup-msg', '');
     busy($('signup-btn'), true, 'Création…', 'Créer mon compte');
-    request('/auth/v1/signup', {
+    request(withRedirect('/auth/v1/signup'), {
       method: 'POST',
       body: { email: email, password: pass, data: { prenom:prenom, nom:nom, annee:annee, faculte:faculte } }
     })
@@ -4744,7 +4756,7 @@
     if(!email){ msg('reset-msg', 'Indiquez votre adresse e-mail.', 'err'); return; }
     msg('reset-msg', '');
     busy($('reset-btn'), true, 'Envoi…', 'Envoyer le lien');
-    request('/auth/v1/recover', { method:'POST', body:{ email: email } })
+    request(withRedirect('/auth/v1/recover'), { method:'POST', body:{ email: email } })
       .then(function(){ msg('reset-msg', 'Si un compte existe avec cette adresse, un lien vient d\'être envoyé.', 'ok'); })
       .catch(function(err){ msg('reset-msg', humanError(err), 'err'); })
       .then(function(){ busy($('reset-btn'), false, '', 'Envoyer le lien'); });
