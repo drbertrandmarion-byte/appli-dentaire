@@ -1365,13 +1365,20 @@
     });
   }
 
-  function playOpeningChime(){
+  // Les notes du carillon sont calées sur le tracé du logo, trait par trait : une note au départ de
+  // chaque trait (cercle, dent, canal), puis une note de résolution. Les deux dessins n'ayant pas la
+  // même minuterie, chacun a ses propres décalages, exprimés en secondes depuis le début du tracé.
+  var SPLASH_NOTE_OFFSETS = [0, 0.35, 0.75, 1.05]; // écran d'ouverture
+  var LOADER_NOTE_OFFSETS = [0, 0.30, 0.60, 1.05]; // dessin de chargement à la connexion
+  var OPENING_NOTES = [523.25, 659.25, 783.99, 1046.50]; // Do5, Mi5, Sol5, Do6
+
+  function playOpeningChime(offsets){
     if(soundMuted) return;
     var ctx = getAudioCtx();
     if(!ctx) return;
     var t0 = ctx.currentTime + 0.01;
-    [523.25, 659.25, 783.99, 1046.50].forEach(function(freq, i){ // Do5, Mi5, Sol5, Do6
-      playPianoNote(ctx, freq, t0 + i * 0.16, 0.9, 0.11);
+    (offsets || SPLASH_NOTE_OFFSETS).forEach(function(offset, i){
+      playPianoNote(ctx, OPENING_NOTES[i], t0 + offset, 1.1, 0.11);
     });
   }
 
@@ -1382,27 +1389,35 @@
   // différée du contexte audio : une telle reprise ne se résoudrait que plus tard, au premier geste
   // de l'utilisateur où qu'il ait lieu dans l'appli, et jouerait alors le carillon hors contexte, sur
   // un bouton sans rapport avec l'écran d'ouverture.
-  function playOpeningChimeIfAllowed(){
+  function playOpeningChimeIfAllowed(offsets){
     if(openingChimePlayed) return;
     var ctx = getAudioCtx();
     if(!ctx || ctx.state !== 'running') return;
     openingChimePlayed = true;
-    playOpeningChime();
+    playOpeningChime(offsets);
   }
 
-  // Déclenchée par un vrai geste sur l'écran d'ouverture (clic ou touche pour le passer). Les notes
-  // sont programmées tout de suite, de façon synchrone dans le geste (comme le clic des boutons, qui
-  // fonctionne) : certains navigateurs (Safari/iOS notamment) n'autorisent le déblocage du son que si
-  // la programmation a lieu directement dans le geste, pas après coup dans le ".then()" d'une reprise
-  // du contexte audio — un son déjà programmé démarre de toute façon dès que le contexte est repris.
-  function playOpeningChimeOnGesture(){
+  // Déclenchée par un vrai geste (le clic sur « Se connecter »). Les notes sont programmées tout de
+  // suite, de façon synchrone dans le geste (comme le clic des boutons, qui fonctionne) : certains
+  // navigateurs (Safari/iOS notamment) n'autorisent le déblocage du son que si la programmation a
+  // lieu directement dans le geste, pas après coup dans le ".then()" d'une reprise du contexte audio
+  // — un son déjà programmé démarre de toute façon dès que le contexte est repris.
+  function playOpeningChimeOnGesture(offsets){
     if(openingChimePlayed) return;
     var ctx = getAudioCtx();
     if(!ctx) return;
     openingChimePlayed = true;
-    playOpeningChime();
+    playOpeningChime(offsets);
     if(ctx.state === 'suspended'){ ctx.resume().catch(function(){}); }
   }
+
+  // Le module des comptes vit dans un second script : il lui faut un point d'entrée nommé.
+  // « onLoaderDraw » est appelée dans le clic de connexion, au moment exact où le logo commence à se
+  // dessiner ; « ifAllowed » sert au retour d'un étudiant déjà connecté, où aucun geste n'a eu lieu.
+  window.EndoOpeningChime = {
+    onLoaderDraw: function(){ playOpeningChimeOnGesture(LOADER_NOTE_OFFSETS); },
+    ifAllowed:    function(){ playOpeningChimeIfAllowed(LOADER_NOTE_OFFSETS); }
+  };
 
   function playClickSound(){
     if(soundMuted) return;
@@ -1497,7 +1512,7 @@
       requestAnimationFrame(function(){
         requestAnimationFrame(function(){
           document.getElementById('splash-circle').style.strokeDashoffset = '0';
-          playOpeningChimeIfAllowed();
+          playOpeningChimeIfAllowed(SPLASH_NOTE_OFFSETS);
           schedule(function(){ document.getElementById('splash-tooth').style.strokeDashoffset = '0'; }, 350);
           schedule(function(){ document.getElementById('splash-canal').style.strokeDashoffset = '0'; }, 750);
           schedule(function(){ splash.classList.add('splash-text-ready'); }, 950);
@@ -1510,12 +1525,11 @@
       return;
     }
 
-    splash.addEventListener('click', function(){
-      playOpeningChimeOnGesture();
-      hideSplash();
-    });
+    // Passer l'écran d'ouverture ne déclenche volontairement aucune musique : le carillon
+    // accompagnerait alors un dessin déjà disparu, ce qui donnait précisément l'impression de son
+    // décalé. Il est reporté au dessin de chargement de la connexion, qui suit un vrai clic.
+    splash.addEventListener('click', hideSplash);
     document.addEventListener('keydown', function onKey(){
-      playOpeningChimeOnGesture();
       hideSplash();
       document.removeEventListener('keydown', onKey);
     });
@@ -4936,6 +4950,10 @@
   function route(manual){
     if(!session){ showView('login'); return Promise.resolve(); }
     showView('loading');
+    // Retour d'un étudiant déjà connecté : aucun clic n'a eu lieu, le son n'est donc joué que si le
+    // navigateur l'autorise déjà. Rien n'est mis en attente : mieux vaut pas de musique du tout
+    // qu'une musique qui se déclencherait plus tard, sur un bouton sans rapport.
+    if(window.EndoOpeningChime) window.EndoOpeningChime.ifAllowed();
     return loadProfile()
       .then(ensureProfile)
       .then(function(){ return loadAdminFlag(); })
@@ -5019,6 +5037,9 @@
     // Bascule tout de suite sur l'écran d'attente : la vérification enchaîne plusieurs
     // requêtes, mieux vaut une animation franche qu'un formulaire figé.
     showView('loading');
+    // Le carillon d'ouverture est programmé ici, dans le clic lui-même : c'est le premier instant où
+    // le navigateur autorise le son, et il coïncide avec le départ du dessin du logo.
+    if(window.EndoOpeningChime) window.EndoOpeningChime.onLoaderDraw();
     request('/auth/v1/token?grant_type=password', { method:'POST', body:{ email:email, password:pass } })
       .then(function(data){ saveSession(data); return route(); })
       .catch(function(err){ showView('login'); msg('login-msg', humanError(err), 'err'); })
