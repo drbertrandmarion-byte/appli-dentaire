@@ -28,20 +28,28 @@ const IRREVERSIBLE = {
   Mathis: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
   Corentin: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
   Aïcha: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
+  Séverine: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
+  Anaïs: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
   Thomas: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Sophie: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Jean: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Fatou: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Benoît: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Justine: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Karim: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Manon: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Michel: { urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Léa: { urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Chloé: { urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Rachid: { urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Youssef: { urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Pauline: { urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Ludovic: { urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Sabrina: { urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
 };
-['Lucas', 'Hugo', 'Emma', 'Mathis', 'Corentin', 'Aïcha', 'Thomas', 'Sophie', 'Jean', 'Fatou', 'Benoît', 'Justine', 'Michel', 'Léa', 'Chloé', 'Rachid', 'Youssef', 'Pauline'].forEach(n => {
+['Lucas', 'Hugo', 'Emma', 'Mathis', 'Corentin', 'Aïcha', 'Séverine', 'Anaïs',
+ 'Thomas', 'Sophie', 'Jean', 'Fatou', 'Benoît', 'Justine', 'Karim', 'Manon',
+ 'Michel', 'Léa', 'Chloé', 'Rachid', 'Youssef', 'Pauline', 'Ludovic', 'Sabrina'].forEach(n => {
   CASES[n + '|Pulpite aiguë irréversible'] = { title: 'Pulpite aiguë irréversible', ...IRREVERSIBLE[n] };
 });
 

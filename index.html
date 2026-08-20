@@ -1893,12 +1893,28 @@
       },
       {
         patientLine: "Corentin, 26 ans, consulte pour une douleur intense et spontanée sur une dent porteuse d'une ancienne restauration. Le diagnostic de pulpite aiguë irréversible est posé : la dépose de la restauration met en évidence une reprise carieuse profonde exposant la pulpe, avec un saignement discret, facilement contrôlable, sur un tissu pulpaire rouge rosé et vivant.",
+        radioText: "Restauration ancienne ayant perdu son étanchéité, avec reprise carieuse profonde au contact de la pulpe. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
         depth: "supra_gingival", apical: false,
         rationaleKey: 'facile',
         axes: {coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
       },
       {
         patientLine: "Aïcha, 31 ans, consulte pour une douleur intense et spontanée apparue quelques jours après la pose d'une restauration volumineuse, très proche de la pulpe. Le diagnostic de pulpite aiguë irréversible est posé : l'exposition pulpaire lors de la dépose montre un saignement modéré mais rapidement contrôlable, sur un tissu pulpaire rouge rosé et vivant.",
+        radioText: "Restauration récente, très proche de la pulpe, sans reprise carieuse. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
+        depth: "supra_gingival", apical: false,
+        rationaleKey: 'facile',
+        axes: {coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
+      },
+      {
+        patientLine: "Séverine, 34 ans, consulte pour une douleur intense et spontanée sur une dent porteuse d'une ancienne restauration volumineuse. Le diagnostic de pulpite aiguë irréversible est posé : la dépose de la restauration, dont l'étanchéité était perdue, met en évidence une reprise carieuse profonde exposant la pulpe, avec un saignement discret, facilement contrôlable, sur un tissu pulpaire rouge rosé et vivant.",
+        radioText: "Restauration ancienne ayant perdu son étanchéité, avec reprise carieuse profonde au contact de la pulpe. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
+        depth: "supra_gingival", apical: false,
+        rationaleKey: 'facile',
+        axes: {coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
+      },
+      {
+        patientLine: "Anaïs, 28 ans, consulte pour une douleur intense et spontanée apparue quelques jours après la pose d'une restauration volumineuse, très proche de la pulpe. Le diagnostic de pulpite aiguë irréversible est posé : l'exposition pulpaire lors de la dépose montre un saignement modéré mais rapidement contrôlable, sur un tissu pulpaire rouge rosé et vivant.",
+        radioText: "Restauration récente, très proche de la pulpe, sans reprise carieuse. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
         depth: "supra_gingival", apical: false,
         rationaleKey: 'facile',
         axes: {coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
@@ -1937,6 +1953,7 @@
       },
       {
         patientLine: "Benoît, 42 ans, consulte pour une douleur intense sur une dent porteuse d'une ancienne restauration volumineuse. Le diagnostic de pulpite aiguë irréversible est posé : la dépose de la restauration met en évidence une reprise carieuse profonde exposant la pulpe, avec un saignement assez important, difficile à stabiliser au niveau des entrées canalaires, mais qui finit par être contrôlé.",
+        radioText: "Restauration ancienne ayant perdu son étanchéité, avec reprise carieuse profonde au contact de la pulpe. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement doit être programmé ?",
         rationaleKey: 'difficile',
@@ -1945,8 +1962,27 @@
       },
       {
         patientLine: "Justine, 38 ans, consulte pour une douleur intense apparue quelques jours après la pose d'une restauration volumineuse, très proche de la pulpe. Le diagnostic de pulpite aiguë irréversible est posé : l'exposition pulpaire lors de la dépose montre un saignement modéré, difficile à stabiliser, mais qui reste contrôlable.",
+        radioText: "Restauration récente, très proche de la pulpe, sans reprise carieuse. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est prévu ?",
+        rationaleKey: 'difficile',
+        axes: {coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Karim, 49 ans, consulte pour une douleur intense et spontanée sur une dent porteuse d'une ancienne restauration volumineuse. Le diagnostic de pulpite aiguë irréversible est posé : la dépose de la restauration, dont l'étanchéité était perdue, met en évidence une reprise carieuse profonde exposant la pulpe, avec un saignement assez important, difficile à stabiliser au niveau des entrées canalaires, mais qui finit par être contrôlé.",
+        radioText: "Restauration ancienne ayant perdu son étanchéité, avec reprise carieuse profonde au contact de la pulpe. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
+        depth: "supra_gingival", apical: false,
+        finalLine: "Quel traitement doit être programmé ?",
+        rationaleKey: 'difficile',
+        axes: {coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Manon, 35 ans, consulte pour une douleur intense et spontanée apparue quelques jours après la pose d'une restauration volumineuse, très proche de la pulpe. Le diagnostic de pulpite aiguë irréversible est posé : l'exposition pulpaire lors de la dépose montre un saignement modéré, difficile à stabiliser au niveau des entrées canalaires, mais finalement contrôlé.",
+        radioText: "Restauration récente, très proche de la pulpe, sans reprise carieuse. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
+        depth: "supra_gingival", apical: false,
+        finalLine: "Quel traitement doit être programmé ?",
         rationaleKey: 'difficile',
         axes: {coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
@@ -1985,6 +2021,7 @@
       },
       {
         patientLine: "Youssef, 54 ans, consulte pour une douleur aiguë spontanée sur une dent porteuse d'une ancienne restauration volumineuse. Le diagnostic de pulpite aiguë irréversible est posé : la dépose de la restauration met en évidence une reprise carieuse profonde exposant la pulpe, avec un saignement canalaire très abondant et persistant, impossible à stabiliser malgré plusieurs tentatives d'hémostase.",
+        radioText: "Restauration ancienne ayant perdu son étanchéité, avec reprise carieuse profonde au contact de la pulpe. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
@@ -1993,12 +2030,31 @@
       },
       {
         patientLine: "Pauline, 47 ans, consulte pour une douleur aiguë spontanée apparue quelques jours après la pose d'une restauration volumineuse, très proche de la pulpe. Le diagnostic de pulpite aiguë irréversible est posé : l'exposition pulpaire lors de la dépose montre un saignement canalaire important, qui reprend systématiquement malgré plusieurs tentatives d'hémostase : les entrées canalaires restent impossibles à stabiliser.",
+        radioText: "Restauration récente, très proche de la pulpe, sans reprise carieuse. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
         axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
-      }
+      },
+      {
+        patientLine: "Ludovic, 57 ans, consulte pour une douleur intense et spontanée sur une dent porteuse d'une ancienne restauration volumineuse. Le diagnostic de pulpite aiguë irréversible est posé : la dépose de la restauration, dont l'étanchéité était perdue, met en évidence une reprise carieuse profonde exposant la pulpe, avec un saignement canalaire très abondant et persistant, impossible à stabiliser malgré plusieurs tentatives d'hémostase.",
+        radioText: "Restauration ancienne ayant perdu son étanchéité, avec reprise carieuse profonde au contact de la pulpe. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
+        depth: "supra_gingival", apical: false,
+        finalLine: "Quel traitement définitif est programmé ?",
+        rationaleKey: 'impossible',
+        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Sabrina, 41 ans, consulte pour une douleur intense et spontanée apparue quelques jours après la pose d'une restauration volumineuse, très proche de la pulpe. Le diagnostic de pulpite aiguë irréversible est posé : l'exposition pulpaire lors de la dépose montre un saignement canalaire important, qui reprend systématiquement malgré les mesures d'hémostase.",
+        radioText: "Restauration récente, très proche de la pulpe, sans reprise carieuse. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
+        depth: "supra_gingival", apical: false,
+        finalLine: "Quel traitement définitif est programmé ?",
+        rationaleKey: 'impossible',
+        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+      },
     ],
 
     // Pulpite réversible : curetage carieux avec/sans coiffage et résine temporaire biocompatible en
