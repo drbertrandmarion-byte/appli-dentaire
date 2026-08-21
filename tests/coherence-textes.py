@@ -44,6 +44,9 @@ PROF = {}
 for m in re.finditer(r'\n    (\w+):\s*\{depth:"(\w+)",\s*apical:\s*(true|false)', re.search(r'var TX_PROFILE = \{(.*?)\n  \};', s, re.S).group(1)):
     PROF[m.group(1)] = (m.group(2), m.group(3) == 'true')
 
+# Précision apicale propre à une pathologie, quand « avec / sans image radioclaire » ne suffit pas.
+APICAL_NOTE = dict(re.findall(r'\n    (\w+):\s*\{[^}]*?apicalNote:"([^"]*)"', s, re.S))
+
 pbs = []
 def note(mode, cas, txt):
     pbs.append("[%s] %-28s %s" % (mode, cas, txt))
@@ -103,6 +106,29 @@ for m in re.finditer(r'\n    (\w+): \{(.*?)(?=\n    \w+: \{|\Z)', dbloc, re.S):
     if dit_fistule(signes + " " + corps) != (g['fistula'] == 'true'):
         note('diagnostic', titre, "fistule : texte=%s schéma=%s" % (dit_fistule(signes), g['fistula']))
 
+    # vitalité pulpaire : un froid négatif impose une pulpe nécrosée au schéma, et réciproquement
+    froid = re.search(r'answers:\{[^}]*froid:"(\w+)"', corps)
+    froid = froid.group(1) if froid else ('non' if 'froid:' not in corps else None)
+    necrosee = 'nécros' in g['pulpLabel'].lower()
+    if froid == 'non' and not necrosee:
+        note('diagnostic', titre, "test au froid négatif mais pulpe non nécrosée au schéma (%s)" % g['pulpLabel'])
+    if froid and froid != 'non' and necrosee:
+        note('diagnostic', titre, "test au froid positif (%s) mais pulpe nécrosée au schéma" % froid)
+
+    # tuméfaction et collection : ce que le patient répond doit se voir sur le schéma
+    q_gonf = re.search(r'\n        gonflement:"([^"]*)"', corps)
+    if q_gonf:
+        oui = not q_gonf.group(1).lower().startswith('non')
+        if oui and g['swelling'] == 'none':
+            note('diagnostic', titre, "le patient décrit un gonflement, schéma sans tuméfaction")
+        if not oui and g['swelling'] != 'none':
+            note('diagnostic', titre, "schéma avec tuméfaction (%s) mais patient sans gonflement" % g['swelling'])
+    q_godet = re.search(r'\n        godet:"([^"]*)"', corps)
+    if q_godet:
+        oui = not q_godet.group(1).lower().startswith('non')
+        if oui and g['swelling'] not in ('collected', 'severe'):
+            note('diagnostic', titre, "godet positif mais schéma swelling=%s" % g['swelling'])
+
 # =============================================================================
 #  MODE CHOIX THÉRAPEUTIQUE
 # =============================================================================
@@ -126,7 +152,9 @@ for i in range(len(bornes) - 1):
             dp = re.search(r'depth: "(\w+)"', v); ap = re.search(r'apical: (true|false)', v)
             depth = dp.group(1) if dp else PROF.get(path, ('coronaire', False))[0]
             apical = (ap.group(1) == 'true') if ap else PROF.get(path, ('coronaire', False))[1]
-            rt = DEPTH.get(depth, '?') + (', avec une image radioclaire apicale.' if apical else ', sans image radioclaire apicale.')
+            note_ap = APICAL_NOTE.get(path)
+            rt = DEPTH.get(depth, '?') + ', ' + (note_ap if note_ap else
+                 ('avec une image radioclaire apicale' if apical else 'sans image radioclaire apicale')) + '.'
         cas = "%s (%s)" % (pren, path)
 
         # 1. image apicale : radiographie contre schéma
@@ -177,6 +205,89 @@ for i in range(len(bornes) - 1):
                    'restauration récente':'restauration'}[nom]
             if not re.search(cle, pl, re.I):
                 note('thérapeutique', cas, "radio décrit « %s » mais l'énoncé n'en parle pas" % nom)
+
+# =============================================================================
+#  CONTRÔLES SUPPLÉMENTAIRES
+# =============================================================================
+NIVEAUX = {'sain':0, 'carie_legere':1, 'coronaire':2, 'supra_gingival':3,
+           'juxta_gingival':4, 'infra_gingival':5, 'infra_osseux':6}
+MOTS = {'supra-gingival':'supra_gingival', 'juxta-gingival':'juxta_gingival',
+        'infra-gingival':'infra_gingival', 'infra-osseux':'infra_osseux',
+        'infra-osseuse':'infra_osseux', 'sous la crête osseuse':'infra_osseux'}
+
+def profondeur_citee(t):
+    """Profondeur explicitement nommée dans un texte, ou None."""
+    tl = t.lower()
+    trouve = [n for mot, n in MOTS.items() if mot in tl]
+    return trouve[0] if len(set(trouve)) == 1 else None
+
+for i in range(len(bornes) - 1):
+    path, d = bornes[i]
+    g = DIAG.get(path)
+    if not g: continue
+    for v in re.split(r'\n      \{', tb[d:bornes[i+1][1]])[1:]:
+        plm = re.search(r'patientLine: "(.*?)",\n', v, re.S)
+        if not plm: continue
+        pl = plm.group(1); pren = pl.split(',')[0]
+        cas = "%s (%s)" % (pren, path)
+        rtm = re.search(r'radioText: "(.*?)",\n', v, re.S)
+        if rtm:
+            rt = rtm.group(1)
+        else:
+            # Même reconstitution que dans la première boucle : sans elle, tous les cas dépourvus
+            # de texte explicite échappaient silencieusement aux contrôles ci-dessous.
+            dp = re.search(r'depth: "(\w+)"', v); ap = re.search(r'apical: (true|false)', v)
+            depth = dp.group(1) if dp else PROF.get(path, ('coronaire', False))[0]
+            apical = (ap.group(1) == 'true') if ap else PROF.get(path, ('coronaire', False))[1]
+            note_ap = APICAL_NOTE.get(path)
+            rt = DEPTH.get(depth, '?') + ', ' + (note_ap if note_ap else
+                 ('avec une image radioclaire apicale' if apical else 'sans image radioclaire apicale')) + '.'
+        txt = v.replace(' ', '')
+
+        # A0. état périapical : ce que la radiographie décrit doit être ce que le schéma dessine.
+        #     Trois états sont possibles — ligament sain, ligament élargi, lésion constituée — et
+        #     le texte les distingue explicitement. « Discrète image radioclaire » est volontairement
+        #     rattachée au ligament élargi : le schéma y dessine un petit foyer diffus, ce qui la
+        #     represente mieux que la lésion large et bien délimitée.
+        def classe_apicale(t):
+            tl = t.lower()
+            if re.search(r"ligament[^.;]*(d\'aspect sain|sans épaississement)", tl): return 'none'
+            if 'discrète image radiocl' in tl or 'discrete image radiocl' in tl: return 'widened'
+            if re.search(r"(image|zone) radiocl|radioclarté apicale|lésion radioclaire (bien|apicale)", tl) \
+               and not re.search(r"(sans|aucune|pas de) (image|lésion|zone|radioclarté)", tl): return 'defined'
+            if re.search(r"ligament[^.;]*(élargi|épaissi)", tl): return 'widened'
+            if re.search(r"(sans|aucune|pas de) (image|lésion|zone|radioclarté)", tl): return 'none'
+            return None
+
+        ov = re.search(r"periapical: \'(\w+)\'", v)
+        attendu = ov.group(1) if ov else g['periapical']
+        ca = classe_apicale(rt if rt else '')
+        # Une formulation non reconnue est SIGNALÉE, jamais ignorée : un classificateur muet
+        # laisse passer les contradictions qu'il ne sait pas lire, et donne une fausse assurance.
+        if rt and ca is None:
+            note('thérapeutique', cas, "description apicale non reconnue par l'audit — à classer\n        → " + rt[:95])
+        if ca and ca != attendu:
+            note('thérapeutique', cas, "apex : texte « %s », schéma « %s »\n        → %s" % (ca, attendu, (rt or '')[:95]))
+
+        # A. profondeur : l'énoncé et la radiographie doivent nommer la même
+        if rt:
+            pe, pr = profondeur_citee(pl), profondeur_citee(rt)
+            if pe and pr and pe != pr:
+                note('thérapeutique', cas, "énoncé dit « %s », radiographie dit « %s »" % (pe, pr))
+
+        # B. conservabilité annoncée contre acte attendu
+        dit_non = bool(re.search(r"non conservable|n'est pas conservable|pas conservable", (pl + ' ' + rt).lower()))
+        dit_oui = (not dit_non) and 'conservable' in (pl + ' ' + rt).lower()
+        extraction = "'extraction'" in txt
+        referer = "'referer'" in txt
+        if dit_non and not (extraction or referer):
+            note('thérapeutique', cas, "texte : dent NON conservable, mais aucun acte d'extraction attendu")
+        if dit_oui and extraction:
+            note('thérapeutique', cas, "texte : dent conservable, mais extraction attendue")
+
+        # Note : on ne contrôle PAS ici « pulpe nécrosée contre geste pulpaire ». « Pulpectomie
+        # d'urgence » désigne, dans la nomenclature de l'application, le parage canalaire réalisé
+        # sur une dent nécrosée — ce n'est pas une contradiction.
 
 print("Pathologies thérapeutiques auditées : %d" % len(vus))
 print("\nAnomalies : %d" % len(pbs))

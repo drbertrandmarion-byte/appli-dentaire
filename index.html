@@ -1855,7 +1855,8 @@
     irreversible:       {depth:"supra_gingival", apical:false, urgence:3, final:3},
     syndrome_mixte:     {depth:"juxta_gingival", apical:false, urgence:3, final:2},
     necrose:            {depth:"juxta_gingival", apical:false, urgence:0, final:2},
-    parodontite:        {depth:"juxta_gingival", apical:false, urgence:3, final:2},
+    parodontite:        {depth:"juxta_gingival", apical:false, urgence:3, final:2,
+                         apicalNote:"avec un ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée"},
     abces_aigu:         {depth:"infra_gingival", apical:true,  urgence:5, final:2},
     abces_chronique:    {depth:"infra_gingival", apical:true,  urgence:0, final:2},
     cellulite_sereuse:  {depth:"infra_gingival", apical:true,  urgence:6, final:2},
@@ -2175,6 +2176,7 @@
       {
         patientLine: "Léon, 44 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une importante perte tissulaire coronaire à proximité de la pulpe, avec un ligament parodontal apical d'aspect sain, sans épaississement ni lésion radioclaire.",
         radioText: "Importante perte tissulaire coronaire, à proximité de la pulpe. Ligament parodontal apical d'aspect sain, sans épaississement ni lésion radioclaire.",
+        periapical: 'none',
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'conservable',
@@ -2202,6 +2204,7 @@
       {
         patientLine: "Noémie, 29 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration ayant perdu son étanchéité, à proximité de la pulpe, avec un ligament parodontal apical d'aspect sain.",
         radioText: "Restauration ayant perdu son étanchéité, à proximité de la pulpe. Ligament parodontal apical d'aspect sain, sans épaississement ni lésion radioclaire.",
+        periapical: 'none',
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement programmez-vous ?",
         rationaleKey: 'conservable',
@@ -4279,6 +4282,9 @@
     if(txCoronal) txRestoration = null;
     else if(txVariant && txVariant.alreadyTreated && !txRestoration) txRestoration = 'infiltrated';
     var txDiagramOverrides = {};
+    // Une nécrose peut présenter un ligament radiographiquement sain : la variante peut donc
+    // corriger l'état périapical dessiné par défaut pour sa pathologie.
+    if(txVariant && txVariant.periapical) txDiagramOverrides.periapical = txVariant.periapical;
     if(txCoronal) txDiagramOverrides.coronal = txCoronal;
     if(txRestoration) txDiagramOverrides.restoration = txRestoration;
     if(txVariant && txVariant.alreadyTreated){
@@ -4332,8 +4338,13 @@
     } else {
       var radioDepth = (txVariant && txVariant.depth) ? txVariant.depth : profile.depth;
       var radioApical = (txVariant && txVariant.apical !== undefined) ? txVariant.apical : profile.apical;
+      // « apicalNote » permet à une pathologie de décrire précisément son apex quand « avec » ou
+      // « sans image radioclaire » ne suffit pas : la parodontite apicale aiguë se reconnaît à un
+      // ligament élargi SANS lésion constituée, et le schéma le dessine — le texte doit le dire.
       document.getElementById('tx-radio-text').textContent =
-        RADIO_DEPTH_LABELS[radioDepth] + (radioApical ? ', avec une image radioclaire apicale.' : ', sans image radioclaire apicale.');
+        RADIO_DEPTH_LABELS[radioDepth] + ', ' +
+        (profile.apicalNote ? profile.apicalNote
+                            : (radioApical ? 'avec une image radioclaire apicale' : 'sans image radioclaire apicale')) + '.';
     }
 
     var signsEl = document.getElementById('tx-signs');

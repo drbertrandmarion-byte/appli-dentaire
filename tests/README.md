@@ -90,10 +90,21 @@ contre lésion dessinée, tuméfaction / collection / fistule / signes générau
 l'énoncé contre schéma, et état coronaire annoncé par la radiographie contre énoncé.
 Elle termine par `Anomalies : 0`.
 
+Elle contrôle aussi l'**état périapical** : ligament sain, ligament élargi ou lésion
+constituée, tels que le texte les décrit, contre ce que le schéma dessine.
+
 Attention à ses détecteurs : ils interprètent du texte libre. Une négation non prévue
 (« pas de radioclarté », « aucune douleur ni tuméfaction ») produit un faux positif, et une
-formule trop permissive masquerait une vraie contradiction. Toute modification de leurs
-expressions régulières mérite d'être revérifiée sur le tableau complet.
+formule trop permissive masquerait une vraie contradiction. Deux garde-fous en découlent :
+
+- une formulation apicale **non reconnue est signalée**, jamais ignorée — un classificateur
+  muet donne une fausse assurance sur les cas qu'il ne sait pas lire ;
+- le texte radiographique par défaut est **reconstitué à l'identique** de l'application pour
+  les cas qui n'en déclarent pas ; sans cela ils échappaient à tous les contrôles.
+
+Après toute modification de ces expressions régulières, vérifiez qu'elles se déclenchent
+encore, en dégradant volontairement une valeur du fichier (retirer une fistule, une
+tuméfaction, une correction apicale) et en contrôlant que l'audit le signale.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas
