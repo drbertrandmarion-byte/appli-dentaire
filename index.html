@@ -2361,6 +2361,7 @@
       {
         patientLine: "Aurélie, 62 ans, consulte pour une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre une fracture du plancher pulpo-radiculaire, avec une volumineuse image radioclaire englobant la furcation : la dent n'est pas conservable.",
         radioText: "Fracture du plancher pulpo-radiculaire (plancher camérulaire). Volumineuse image radioclaire englobant la furcation inter-radiculaire. Dent jugée non conservable.",
+        diagram: 'floor_fracture',
         depth: "infra_osseux", apical: true,
         rationaleKey: 'extraction',
         axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
@@ -2477,6 +2478,7 @@
       {
         patientLine: "Inès, 55 ans, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre une fracture du plancher pulpo-radiculaire, avec une volumineuse image radioclaire englobant la furcation, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
         radioText: "Fracture du plancher pulpo-radiculaire (plancher camérulaire). Volumineuse image radioclaire englobant la furcation inter-radiculaire, foyer infectieux à l'origine de la diffusion dans les tissus mous. Dent jugée non conservable.",
+        diagram: 'floor_fracture',
         depth: "infra_osseux", apical: true,
         rationaleKey: 'extraction',
         axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
@@ -3412,6 +3414,66 @@
   }
 
   // Coupe spéciale pour le syndrome mixte : deux racines, deux états pulpaires différents.
+  // Fracture du plancher pulpo-radiculaire. Un schéma à part entière, à deux racines comme celui du
+  // syndrome mixte, parce qu'aucun des deux autres ne sait montrer ce qui fait le diagnostic : la
+  // couronne quasi entièrement détruite, le trait de fracture qui traverse le plancher et descend
+  // dans la furcation, la perte osseuse inter-radiculaire, et la gencive qui a colonisé cet espace.
+  function buildFloorFractureSVG(cfg){
+    var parts = [];
+    parts.push('<svg viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Coupe dentaire schématique : fracture du plancher pulpo-radiculaire">');
+    parts.push('<rect x="0" y="0" width="240" height="320" rx="12" fill="#fbf8f3"/>');
+
+    // --- tissus mous (la tuméfaction dépend de la pathologie qui porte le cas) ---
+    var skin;
+    if(cfg.swelling === "severe"){ skin = "M55,10 Q-25,150 -8,320"; }
+    else if(cfg.swelling === "collected"){ skin = "M60,20 Q8,150 22,300"; }
+    else if(cfg.swelling === "diffuse"){ skin = "M60,20 Q34,160 42,300"; }
+    else { skin = "M60,20 Q64,160 60,300"; }
+    parts.push('<path d="' + skin + ' L95,320 L95,10 Z" fill="' + cfg.swellColor + '" opacity="0.85"/>');
+    if(cfg.swelling === "collected"){
+      parts.push('<ellipse cx="34" cy="175" rx="20" ry="24" fill="#eeda78" stroke="#c9a93a" stroke-width="1.5"/>');
+    }
+    if(cfg.swelling === "severe"){
+      parts.push('<line x1="18" y1="246" x2="12" y2="304" stroke="#ffffff" stroke-width="4.5" stroke-linecap="round"/>');
+      parts.push('<path d="M12,318 L1,294 L23,294 Z" fill="#ffffff"/>');
+    }
+
+    // --- os alvéolaire ---
+    parts.push('<rect x="95" y="108" width="130" height="192" fill="#ecd9ab" stroke="#cbb583" stroke-width="1.5"/>');
+
+    // --- perte osseuse inter-radiculaire : dessinée avant les racines, elle n'apparaît donc que
+    //     dans la furcation et déborde à peine de part et d'autre, comme sur une radiographie ---
+    parts.push('<path d="M120,102 L180,102 L198,210 Q150,238 102,210 Z" fill="#cdb478" stroke="#8a7345" stroke-width="2"/>');
+
+    // --- couronne : il n'en reste que deux murs périphériques ---
+    parts.push('<path d="M103,92 L103,54 Q103,32 119,23 L127,33 Q114,42 114,60 L114,92 Z" fill="#f7f3e7" stroke="#c9c2ac" stroke-width="1.5" stroke-linejoin="round"/>');
+    parts.push('<path d="M197,92 L197,54 Q197,32 181,23 L173,33 Q186,42 186,60 L186,92 Z" fill="#f7f3e7" stroke="#c9c2ac" stroke-width="1.5" stroke-linejoin="round"/>');
+    // destruction coronaire quasi totale : tout le reste de la couronne est délabré
+    parts.push('<path d="M114,92 L114,62 Q122,48 150,46 Q178,48 186,62 L186,92 Z" fill="#33241a"/>');
+
+    // --- deux racines divergentes (même géométrie que le syndrome mixte) ---
+    parts.push('<path d="M130,96 L150,96 L127,232 Q118,247 109,232 Z" fill="#ecdcb8" stroke="#c9c2ac" stroke-width="1.5"/>');
+    parts.push('<path d="M150,96 L170,96 L191,232 Q182,247 173,232 Z" fill="#ecdcb8" stroke="#c9c2ac" stroke-width="1.5"/>');
+    parts.push('<path d="M141,96 L149,96 L122,228 L116,228 Z" fill="' + cfg.pulp + '"/>');
+    parts.push('<path d="M151,96 L159,96 L184,228 L178,228 Z" fill="' + cfg.pulp + '"/>');
+    parts.push('<path d="M128,96 L150,96 L125,235 Q118,250 111,235 Z" fill="none" stroke="#b97a5a" stroke-width="1.5" opacity="0.8"/>');
+    parts.push('<path d="M150,96 L172,96 L189,235 Q182,250 175,235 Z" fill="none" stroke="#b97a5a" stroke-width="1.5" opacity="0.8"/>');
+
+    // --- gencive descendue dans l'espace inter-radiculaire ---
+    // Volontairement plus étroite que la perte osseuse : il reste ainsi un liseré de lésion visible
+    // de part et d'autre, sans quoi la gencive masquerait ce qu'elle est venue combler.
+    parts.push('<path d="M144,98 L156,98 L158,158 Q150,170 142,158 Z" fill="#e6a3ab" stroke="#c97e8a" stroke-width="1"/>');
+
+    // --- gencive marginale ---
+    parts.push('<path d="M100,90 Q150,110 200,90 L200,104 Q150,126 100,104 Z" fill="#e6a3ab" stroke="#c97e8a" stroke-width="1"/>');
+
+    // --- trait de fracture : il traverse le plancher et file entre les deux racines ---
+    parts.push('<path d="M150,88 L145,106 L153,128 L146,150 L151,176" fill="none" stroke="#1a1512" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>');
+
+    parts.push('</svg>');
+    return parts.join('');
+  }
+
   function buildMixedRootSVG(cfg){
     var parts = [];
     parts.push('<svg viewBox="0 0 240 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Coupe dentaire schématique, syndrome mixte, deux racines">');
@@ -4224,8 +4286,18 @@
       txDiagramOverrides.pulpLabel = 'Obturation canalaire';
       txDiagramOverrides.caption = 'Canal obturé (gutta-percha) ; réinfection périapicale sur une dent déjà traitée par endodontie.';
     }
+    // Fracture du plancher pulpo-radiculaire : schéma dédié, à deux racines.
+    if(txVariant && txVariant.diagram === 'floor_fracture'){
+      txDiagramOverrides.floorFracture = true;
+      txDiagramOverrides.caption = 'Couronne quasi entièrement détruite ; le trait de fracture ' +
+        'traverse le plancher pulpo-radiculaire et descend dans la furcation, où l\'os a disparu ' +
+        'et où la gencive est venue combler l\'espace inter-radiculaire.';
+    }
     var txDiagramCfg = Object.keys(txDiagramOverrides).length ? Object.assign({}, diagram, txDiagramOverrides) : diagram;
-    document.getElementById('tx-diagram').innerHTML = txDiagramCfg.dualRoot ? buildMixedRootSVG(txDiagramCfg) : buildToothSVG(txDiagramCfg);
+    document.getElementById('tx-diagram').innerHTML =
+      txDiagramCfg.floorFracture ? buildFloorFractureSVG(txDiagramCfg)
+                                 : (txDiagramCfg.dualRoot ? buildMixedRootSVG(txDiagramCfg)
+                                                          : buildToothSVG(txDiagramCfg));
     document.getElementById('tx-diagram-caption').textContent = txDiagramCfg.caption;
     document.getElementById('tx-sw-pulp').style.background = txDiagramCfg.pulp;
     document.getElementById('tx-pulp-legend-label').textContent = txDiagramCfg.pulpLabel;

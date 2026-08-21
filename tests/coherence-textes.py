@@ -155,7 +155,14 @@ for i in range(len(bornes) - 1):
         if dit_generaux(pl) and g['swelling'] != 'severe':
             note('thérapeutique', cas, "énoncé décrit des signes généraux, schéma swelling=%s" % g['swelling'])
 
-        # 6. cohérence énoncé / radiographie sur l'état coronaire
+        # 6. fracture du plancher : elle exige le schéma dédié à deux racines, aucun autre
+        #    tracé ne sait montrer la furcation, sa perte osseuse et la gencive qui l'a comblée.
+        if 'fracture du plancher' in rt.lower() and "diagram: 'floor_fracture'" not in v:
+            note('thérapeutique', cas, "radio décrit une fracture du plancher sans le schéma dédié")
+        if "diagram: 'floor_fracture'" in v and 'fracture du plancher' not in rt.lower():
+            note('thérapeutique', cas, "schéma de fracture du plancher sans radio correspondante")
+
+        # 7. cohérence énoncé / radiographie sur l'état coronaire
         etats = {
             'obturation réinfiltrée': 'étanchéité' in rt.lower(),
             'couronne prothétique':   'inlay-core' in rt.lower(),
