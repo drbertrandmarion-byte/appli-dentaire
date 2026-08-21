@@ -2344,8 +2344,10 @@
       // suppriment une éventuelle voie de recontamination coronaire si la dent est conservable
       // (en attendant le retraitement) ; sinon, seuls les médicaments et l'extraction s'appliquent.
       {
-        patientLine: "Michel, 52 ans, porteur d'une dent déjà traitée par endodontie, se plaint d'une gêne à la mastication et d'une sensation de dent « plus haute » que les autres, sans tuméfaction. La radiographie montre un canal correctement obturé jusqu'à l'apex sous une obturation coronaire ayant perdu son étanchéité, avec un ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée : la dent reste conservable.",
-        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) sous une obturation coronaire ayant perdu son étanchéité ; ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée. Dent conservable : un retraitement endodontique est envisageable.",
+        patientLine: "Michel, 52 ans, porteur d'une dent déjà traitée par endodontie, se plaint d'une gêne à la mastication et d'une sensation de dent « plus haute » que les autres, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex, avec une lésion carieuse juxta-gingivale, dont les limites arrivent au niveau du rebord gingival, et un ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; lésion carieuse juxta-gingivale, limites au niveau du rebord gingival ; un ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée. Dent conservable : un retraitement endodontique est envisageable.",
+        coronal: 'caries',
+        depth: "juxta_gingival", apical: true,
         alreadyTreated: true,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
@@ -2353,10 +2355,20 @@
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Véronique, 39 ans, porteuse d'une dent déjà traitée par endodontie plusieurs années auparavant, consulte pour une douleur à la percussion et une sensation de dent longue, sans tuméfaction. La radiographie montre une obturation canalaire complète jusqu'à l'apex sous une obturation coronaire ayant perdu son étanchéité, avec un ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée : la dent reste conservable.",
-        radioText: "Obturation canalaire complète jusqu'à l'apex sous une obturation coronaire ayant perdu son étanchéité ; ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée. Dent conservable : un retraitement endodontique est envisageable.",
+        patientLine: "Véronique, 39 ans, porteuse d'une dent déjà traitée par endodontie plusieurs années auparavant, consulte pour une douleur à la percussion et une sensation de dent longue, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex, avec une obturation coronaire ayant perdu son étanchéité, et un ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; obturation coronaire ayant perdu son étanchéité ; un ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée. Dent conservable : un retraitement endodontique est envisageable.",
         alreadyTreated: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
+        rationaleKey: 'dejaTraiteeConservable',
+        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
+        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Solène, 58 ans, porteuse d'une dent déjà traitée par endodontie, se plaint d'une gêne à la mastication et d'une sensation de dent longue, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex, avec une couronne céramique scellée sur inlay-core, en place et non descellée, et un ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; couronne céramique scellée sur inlay-core, en place et non descellée ; un ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée. Dent conservable : un retraitement endodontique est envisageable.",
+        coronal: 'crown_inlay',
+        alreadyTreated: true,
+        finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
         axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
@@ -2417,8 +2429,10 @@
       // attendant le retraitement), pas encore de collection dans les tissus mous à ce stade donc pas
       // de drainage muqueux (réservé aux cellulites) ; antibiothérapie pour contrôler l'infection.
       {
-        patientLine: "Nicolas, 47 ans, porteur d'une dent déjà traitée par endodontie, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex sous une obturation coronaire ayant perdu son étanchéité, avec une zone de radioclarté bien délimitée à l'apex de la racine : la dent reste conservable.",
-        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) sous une obturation coronaire ayant perdu son étanchéité ; zone radioclaire bien délimitée à l'apex, sans collection dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        patientLine: "Nicolas, 47 ans, porteur d'une dent déjà traitée par endodontie, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex, avec une lésion carieuse supra-gingivale ayant détruit une partie de la couronne, dont les limites restent au-dessus du rebord gingival, et une zone radioclaire bien délimitée à l'apex, sans collection dans les tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; lésion carieuse supra-gingivale détruisant une partie de la couronne, limites accessibles au-dessus du rebord gingival ; une zone radioclaire bien délimitée à l'apex, sans collection dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        coronal: 'caries',
+        depth: "supra_gingival", apical: true,
         alreadyTreated: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
@@ -2426,8 +2440,9 @@
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Sandrine, 54 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une douleur constante et lancinante, très intense à la percussion et à la palpation, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex sous une obturation coronaire ayant perdu son étanchéité, avec une zone de radioclarté bien délimitée à l'apex de la racine : la dent reste conservable.",
-        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) sous une obturation coronaire ayant perdu son étanchéité ; zone radioclaire bien délimitée à l'apex, sans collection dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        patientLine: "Sandrine, 54 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une douleur constante et lancinante, très intense à la percussion et à la palpation, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex, avec une fracture coronaire juxta-gingivale, au ras du rebord gingival, et une zone radioclaire bien délimitée à l'apex, sans collection dans les tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; fracture coronaire juxta-gingivale, au ras du rebord gingival ; une zone radioclaire bien délimitée à l'apex, sans collection dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        coronal: 'fracture_juxta',
         alreadyTreated: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
@@ -2435,11 +2450,14 @@
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Thierry, 63 ans, porteur d'une dent déjà traitée par endodontie, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, sans tuméfaction. La radiographie montre une obturation canalaire incomplète sous une obturation coronaire ayant perdu son étanchéité, et une fracture radiculaire verticale, rendant la dent non conservable.",
-        radioText: "Obturation canalaire incomplète sous une obturation coronaire ayant perdu son étanchéité ; fracture radiculaire verticale visible, volumineuse zone de radioclarté apicale. Dent non conservable : le retraitement n'est pas envisageable.",
+        patientLine: "Thierry, 63 ans, porteur d'une dent déjà traitée par endodontie, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex, avec une couronne céramique scellée sur inlay-core, en place et non descellée, et une zone radioclaire bien délimitée à l'apex, sans collection dans les tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; couronne céramique scellée sur inlay-core, en place et non descellée ; une zone radioclaire bien délimitée à l'apex, sans collection dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        coronal: 'crown_inlay',
         alreadyTreated: true,
-        rationaleKey: 'dejaTraiteeExtraction',
-        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
+        finalLine: "Quel traitement définitif choisissez-vous ?",
+        rationaleKey: 'dejaTraiteeConservable',
+        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
+        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       }
     ],
 
@@ -2518,8 +2536,8 @@
       // attendant le retraitement) ; drainage muqueux si la dent reste conservable, puisque l'infection
       // a diffusé dans les tissus mous ; antibiothérapie dans tous les cas pour contrôler la diffusion.
       {
-        patientLine: "Rémi, 43 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex sous une obturation coronaire ayant perdu son étanchéité, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous : la dent reste conservable.",
-        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) sous une obturation coronaire ayant perdu son étanchéité ; image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        patientLine: "Rémi, 43 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une obturation coronaire ayant perdu son étanchéité, et une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; obturation coronaire ayant perdu son étanchéité ; une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
         alreadyTreated: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois l'épisode infectieux contrôlé ?",
         rationaleKey: 'dejaTraiteeConservable',
@@ -2527,8 +2545,9 @@
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Brigitte, 49 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex sous une obturation coronaire ayant perdu son étanchéité, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous : la dent reste conservable.",
-        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) sous une obturation coronaire ayant perdu son étanchéité ; image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        patientLine: "Brigitte, 49 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une fracture coronaire juxta-gingivale, au ras du rebord gingival, et une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; fracture coronaire juxta-gingivale, au ras du rebord gingival ; une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        coronal: 'fracture_juxta',
         alreadyTreated: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
@@ -2536,8 +2555,10 @@
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Gilbert, 66 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre une fracture radiculaire verticale sur une dent déjà traitée dont l'obturation coronaire a perdu son étanchéité, associée à une volumineuse image radioclaire apicale : la dent n'est pas conservable.",
-        radioText: "Fracture radiculaire verticale sur dent déjà traitée, obturation coronaire ayant perdu son étanchéité ; volumineuse image radioclaire apicale, foyer de la diffusion infectieuse. Dent non conservable : le retraitement n'est pas envisageable.",
+        patientLine: "Gilbert, 66 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une lésion carieuse s'étendant sous la crête osseuse, et une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous : la dent n'est pas conservable, le délabrement s'étendant sous la crête osseuse.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; lésion carieuse infra-osseuse, s'étendant sous la crête osseuse ; une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous. Dent non conservable : le délabrement s'étend sous la crête osseuse.",
+        coronal: 'caries',
+        depth: "infra_osseux", apical: true,
         alreadyTreated: true,
         rationaleKey: 'dejaTraiteeExtraction',
         axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
@@ -2581,8 +2602,8 @@
       // attendant le retraitement) ; drainage muqueux dans tous les cas puisque la collection est
       // constituée, associé à l'extraction si la dent n'est plus conservable.
       {
-        patientLine: "Fabrice, 45 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex sous une obturation coronaire ayant perdu son étanchéité, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
-        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) sous une obturation coronaire ayant perdu son étanchéité ; image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        patientLine: "Fabrice, 45 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une obturation coronaire ayant perdu son étanchéité, et une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; obturation coronaire ayant perdu son étanchéité ; une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
         alreadyTreated: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois la collection résorbée ?",
         rationaleKey: 'dejaTraiteeConservable',
@@ -2590,8 +2611,19 @@
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Ghislaine, 51 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex sous une obturation coronaire ayant perdu son étanchéité, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
-        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) sous une obturation coronaire ayant perdu son étanchéité ; image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        patientLine: "Ghislaine, 51 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une couronne céramique scellée sur inlay-core, en place et non descellée, et une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; couronne céramique scellée sur inlay-core, en place et non descellée ; une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        coronal: 'crown_inlay',
+        alreadyTreated: true,
+        finalLine: "Quelle prise en charge choisissez-vous ?",
+        rationaleKey: 'dejaTraiteeConservable',
+        axes: {coronaire:['curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
+        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+      },
+      {
+        patientLine: "Bastien, 59 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une fracture coronaire juxta-gingivale, au ras du rebord gingival, et une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; fracture coronaire juxta-gingivale, au ras du rebord gingival ; une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        coronal: 'fracture_juxta',
         alreadyTreated: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
@@ -2644,29 +2676,33 @@
       // la même urgence vitale, que la dent soit ou non conservable — sa conservabilité ne relève de
       // toute façon pas d'une décision au cabinet à ce stade.
       {
-        patientLine: "Denise, 56 ans, porteuse d'une dent déjà traitée par endodontie, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie et un trismus serré. La radiographie montre un canal obturé jusqu'à l'apex sous une obturation coronaire ayant perdu son étanchéité, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
-        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) sous une obturation coronaire ayant perdu son étanchéité ; volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        patientLine: "Denise, 56 ans, porteuse d'une dent déjà traitée par endodontie, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie et un trismus serré. La radiographie montre un canal obturé jusqu'à l'apex, avec une lésion carieuse juxta-gingivale, dont les limites arrivent au niveau du rebord gingival, et une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; lésion carieuse juxta-gingivale, limites au niveau du rebord gingival ; une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        coronal: 'caries',
+        depth: "juxta_gingival", apical: true,
         alreadyTreated: true,
         rationaleKey: 'dejaTraitee',
         axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
       },
       {
-        patientLine: "Régis, 62 ans, porteur d'une dent déjà traitée par endodontie, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex sous une obturation coronaire ayant perdu son étanchéité, avec une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
-        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) sous une obturation coronaire ayant perdu son étanchéité ; volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        patientLine: "Régis, 62 ans, porteur d'une dent déjà traitée par endodontie, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une obturation coronaire ayant perdu son étanchéité, et une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; obturation coronaire ayant perdu son étanchéité ; une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
         alreadyTreated: true,
         rationaleKey: 'dejaTraitee',
         axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
       },
       {
-        patientLine: "Bernadette, 69 ans, porteuse d'une dent déjà traitée par endodontie, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie et un trismus serré. La radiographie montre une fracture radiculaire verticale sur une dent déjà traitée dont l'obturation coronaire a perdu son étanchéité, non conservable, associée à une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
-        radioText: "Fracture radiculaire verticale sur dent déjà traitée, non conservable, obturation coronaire ayant perdu son étanchéité ; volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        patientLine: "Bernadette, 69 ans, porteuse d'une dent déjà traitée par endodontie, présente une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, une dysphagie et un trismus serré. La radiographie montre un canal obturé jusqu'à l'apex, avec une couronne céramique scellée sur inlay-core, en place et non descellée, et une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; couronne céramique scellée sur inlay-core, en place et non descellée ; une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        coronal: 'crown_inlay',
         alreadyTreated: true,
         rationaleKey: 'dejaTraitee',
         axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
       },
       {
-        patientLine: "Lucien, 74 ans, porteur d'une dent déjà traitée par endodontie, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre une fracture radiculaire verticale sur une dent déjà traitée dont l'obturation coronaire a perdu son étanchéité, non conservable, associée à une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
-        radioText: "Fracture radiculaire verticale sur dent déjà traitée, non conservable, obturation coronaire ayant perdu son étanchéité ; volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous.",
+        patientLine: "Lucien, 74 ans, porteur d'une dent déjà traitée par endodontie, consulte pour une tuméfaction extensive avec œdème s'étendant vers le cou, une fièvre élevée, un trismus serré et une dent causale très algique à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une fracture coronaire juxta-gingivale, au ras du rebord gingival, et une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous : la dent reste conservable.",
+        radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; fracture coronaire juxta-gingivale, au ras du rebord gingival ; une volumineuse image radioclaire apicale, à l'origine de l'infection extensive des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
+        coronal: 'fracture_juxta',
         alreadyTreated: true,
         rationaleKey: 'dejaTraitee',
         axes: {coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}
@@ -3360,12 +3396,31 @@
     }
 
     // --- couronne : émail, dentine, pulpe ---
-    parts.push('<path d="M118,92 L118,48 Q118,16 150,16 Q182,16 182,48 L182,92 Z" fill="#f7f3e7" stroke="#c9c2ac" stroke-width="1.5"/>');
-    parts.push('<path d="M128,92 L128,52 Q128,30 150,30 Q172,30 172,52 L172,92 Z" fill="#ecdcb8"/>');
-    parts.push('<path d="M138,92 L138,64 Q138,56 150,56 Q162,56 162,64 L162,92 Z" fill="' + cfg.pulp + '"/>');
+    if(cfg.coronal === "fracture_juxta"){
+      // Fracture coronaire juxta-gingivale : la couronne est emportée au ras du rebord gingival.
+      // Il ne reste qu'un moignon, dont le trait de fracture irrégulier affleure la gencive.
+      parts.push('<path d="M118,102 L118,90 L126,84 L134,91 L142,85 L150,92 L158,85 L166,91 L174,84 L182,90 L182,102 Z" fill="#f7f3e7" stroke="#c9c2ac" stroke-width="1.5" stroke-linejoin="round"/>');
+      parts.push('<path d="M128,102 L128,92 L136,95 L144,89 L152,95 L160,89 L168,94 L172,92 L172,102 Z" fill="#ecdcb8"/>');
+      parts.push('<path d="M140,102 L140,94 L150,92 L160,94 L160,102 Z" fill="' + cfg.pulp + '"/>');
+    } else if(cfg.coronal === "crown_inlay"){
+      // Couronne céramique scellée sur inlay-core : la céramique coiffe toute la partie coronaire.
+      // Le tenon est dessiné plus bas, après la racine, pour se superposer au canal.
+      parts.push('<path d="M116,94 L116,46 Q116,12 150,12 Q184,12 184,46 L184,94 Z" fill="#eef3f7" stroke="#7f93a3" stroke-width="2"/>');
+      parts.push('<path d="M123,94 L123,49 Q123,21 150,21 Q177,21 177,49 L177,94 Z" fill="none" stroke="#c3d2dd" stroke-width="1.2"/>');
+      parts.push('<path d="M134,44 L166,44 L160,94 L140,94 Z" fill="#9aa4ae" stroke="#5f6a75" stroke-width="1.2"/>');
+    } else {
+      parts.push('<path d="M118,92 L118,48 Q118,16 150,16 Q182,16 182,48 L182,92 Z" fill="#f7f3e7" stroke="#c9c2ac" stroke-width="1.5"/>');
+      parts.push('<path d="M128,92 L128,52 Q128,30 150,30 Q172,30 172,52 L172,92 Z" fill="#ecdcb8"/>');
+      parts.push('<path d="M138,92 L138,64 Q138,56 150,56 Q162,56 162,64 L162,92 Z" fill="' + cfg.pulp + '"/>');
+    }
 
     // --- carie ou soin (restauration) ---
-    if(cfg.restoration === "infiltrated"){
+    // Une couronne prothétique ou une couronne fracturée ne laisse plus rien voir de la face
+    // occlusale : ni carie ni obturation ne sont dessinées dans ces deux cas. La valeur « caries »,
+    // elle, laisse le dessin habituel de la lésion carieuse s'appliquer.
+    if(cfg.coronal === "crown_inlay" || cfg.coronal === "fracture_juxta"){
+      /* rien */
+    } else if(cfg.restoration === "infiltrated"){
       // Liseré d'infiltration au niveau de la dentine (autour des bords et du fond du soin, pas au
       // niveau de l'émail) : une reprise carieuse sous restauration progresse dans la dentine.
       parts.push('<path d="M133,29 L139,54 Q150,64 161,54 L167,29" fill="none" stroke="#1a1512" stroke-width="4" opacity="0.6" stroke-linecap="round"/>');
@@ -3384,6 +3439,12 @@
     parts.push('<path d="M130,96 L170,96 L157,234 Q150,248 143,234 Z" fill="#ecdcb8" stroke="#c9c2ac" stroke-width="1.5"/>');
     parts.push('<path d="M144,96 L156,96 L151,228 L149,228 Z" fill="' + cfg.pulp + '"/>');
     parts.push('<path d="M128,96 L172,96 L158,236 Q150,252 142,236 Z" fill="none" stroke="#b97a5a" stroke-width="1.5" opacity="0.8"/>');
+
+    // Tenon de l'inlay-core : dessiné ici, après le canal, pour venir s'y superposer — c'est bien
+    // dans le canal radiculaire qu'il est ancré.
+    if(cfg.coronal === "crown_inlay"){
+      parts.push('<path d="M142,96 L158,96 L153,166 L147,166 Z" fill="#9aa4ae" stroke="#5f6a75" stroke-width="1.2"/>');
+    }
 
     // --- gencive ---
     parts.push('<path d="M112,90 Q150,108 188,90 L188,102 Q150,122 112,102 Z" fill="#e6a3ab" stroke="#c97e8a" stroke-width="1"/>');
@@ -4197,8 +4258,14 @@
     // Une dent dépulpée porte forcément une obturation coronaire, et c'est justement la perte
     // d'étanchéité de celle-ci qui laisse les bactéries recoloniser le canal : sur ces cas de
     // réinfection, le schéma la représente donc toujours, même si un énoncé omettait de la décrire.
-    if(txVariant && txVariant.alreadyTreated && !txRestoration) txRestoration = 'infiltrated';
+    // « coronal » décrit l'état de la couronne quand il ne s'agit ni d'une carie ni d'une obturation :
+    // couronne prothétique sur inlay-core, ou couronne fracturée au ras de la gencive. Dans ces deux
+    // cas il n'y a pas de « soin » à représenter au sens habituel, la couronne entière est concernée.
+    var txCoronal = (txVariant && txVariant.coronal) || null;
+    if(txCoronal) txRestoration = null;
+    else if(txVariant && txVariant.alreadyTreated && !txRestoration) txRestoration = 'infiltrated';
     var txDiagramOverrides = {};
+    if(txCoronal) txDiagramOverrides.coronal = txCoronal;
     if(txRestoration) txDiagramOverrides.restoration = txRestoration;
     if(txVariant && txVariant.alreadyTreated){
       txDiagramOverrides.pulp = TX_GUTTA_COLOR;
@@ -4219,7 +4286,14 @@
       hideEl(pulpItem2);
     }
     var txRestorationItem = document.getElementById('tx-restoration-legend-item');
-    if(txRestoration){
+    if(txCoronal === 'crown_inlay' || txCoronal === 'fracture_juxta'){
+      showEl(txRestorationItem);
+      document.getElementById('tx-sw-restoration').style.background =
+        txCoronal === 'crown_inlay' ? '#9aa4ae' : '#f7f3e7';
+      document.getElementById('tx-restoration-legend-label').textContent =
+        txCoronal === 'crown_inlay' ? 'Couronne céramique sur inlay-core'
+                                    : 'Couronne fracturée au ras de la gencive';
+    } else if(txRestoration){
       showEl(txRestorationItem);
       document.getElementById('tx-sw-restoration').style.background = '#c7cdd6';
       document.getElementById('tx-restoration-legend-label').textContent = txRestoration === 'infiltrated' ? 'Soin infiltré (liseré noir)' : 'Soin récent';

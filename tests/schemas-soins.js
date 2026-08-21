@@ -41,25 +41,36 @@ const { chromium } = require('/opt/node22/lib/node_modules/playwright');
     if (vus.has(cle)) continue;
     vus.set(cle, r);
 
-    const traitee   = r.pulpe.indexOf('Obturation canalaire') !== -1;
-    const ditFuite  = /étanchéité/i.test(r.radio);
-    const ditRecent = /restauration récente/i.test(r.radio);
+    const traitee = r.pulpe.indexOf('Obturation canalaire') !== -1;
     const nom = (r.def.split(',')[0] || '?').trim();
+    const radio = r.radio.toLowerCase();
 
-    // 1. Dent déjà traitée -> obturation coronaire toujours dessinée, et infiltrée.
-    if (traitee && r.soin !== 'Soin infiltré (liseré noir)') {
-      erreurs.push(`${nom} : dent déjà traitée mais soin coronaire = ${r.soin || 'aucun'}`);
+    // Ce que l'énoncé décrit -> ce que la légende doit annoncer. Une lésion carieuse ne produit
+    // aucune entrée de légende : elle est dessinée comme une carie, pas comme un soin.
+    let attendu;
+    if (radio.includes('couronne céramique scellée sur inlay-core')) attendu = 'Couronne céramique sur inlay-core';
+    else if (radio.includes('fracture coronaire juxta-gingivale'))   attendu = 'Couronne fracturée au ras de la gencive';
+    else if (radio.includes('étanchéité'))                            attendu = 'Soin infiltré (liseré noir)';
+    else if (radio.includes('restauration récente'))                  attendu = 'Soin récent';
+    else if (radio.includes('lésion carieuse'))                       attendu = null;
+    else                                                              attendu = null;
+
+    if (r.soin !== attendu) {
+      erreurs.push(`${nom} : énoncé -> « ${attendu || 'aucun soin'} », mais légende « ${r.soin || 'aucune'} »`);
     }
-    // 2. Légende et dessin doivent aller ensemble.
-    if (!!r.soin !== r.dessine) {
-      erreurs.push(`${nom} : légende (${r.soin || 'aucune'}) et dessin (${r.dessine}) discordants`);
+
+    // Une dent déjà traitée doit toujours montrer un état coronaire explicite : obturation,
+    // couronne prothétique, couronne fracturée ou lésion carieuse. Jamais une couronne intacte.
+    if (traitee) {
+      const decrit = radio.includes('étanchéité') || radio.includes('inlay-core')
+                  || radio.includes('fracture coronaire') || radio.includes('lésion carieuse')
+                  || radio.includes('fracture radiculaire');
+      if (!decrit) erreurs.push(`${nom} : dent déjà traitée sans état coronaire décrit`);
     }
-    // 3. Le type dessiné doit correspondre à ce que dit l'énoncé.
-    if (ditFuite  && r.soin !== 'Soin infiltré (liseré noir)') erreurs.push(`${nom} : énoncé « étanchéité » mais soin = ${r.soin || 'aucun'}`);
-    if (ditRecent && r.soin !== 'Soin récent')                 erreurs.push(`${nom} : énoncé « récente » mais soin = ${r.soin || 'aucun'}`);
-    // 4. Pas de soin dessiné si l'énoncé n'en parle pas — sauf dent déjà traitée.
-    if (!traitee && !ditFuite && !ditRecent && r.soin) {
-      erreurs.push(`${nom} : soin « ${r.soin} » dessiné alors que l'énoncé n'en mentionne aucun`);
+
+    // La légende ne doit jamais annoncer un soin que le tracé ne contient pas.
+    if (attendu === 'Soin infiltré (liseré noir)' || attendu === 'Soin récent') {
+      if (!r.dessine) erreurs.push(`${nom} : légende « ${attendu} » mais aucun soin tracé`);
     }
   }
 

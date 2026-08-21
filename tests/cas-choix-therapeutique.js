@@ -63,7 +63,7 @@ CASES['Bernard'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['aucun']
 ['Céline', 'Pierre', 'Isabelle', 'Xavier', 'Valérie'].forEach(n => {
   CASES[n] = { title: 'Parodontite apicale aiguë', urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
 });
-['Michel', 'Véronique'].forEach(n => {
+['Michel', 'Véronique', 'Solène'].forEach(n => {
   CASES[n] = { title: 'Parodontite apicale aiguë', urgence: { coronaire: ['curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['antibiotiques', 'antalgique'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
 });
 ['Roger'].forEach(n => {
@@ -75,11 +75,8 @@ CASES['Bernard'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['aucun']
 ['Aurélie'].forEach(n => {
   CASES[n] = { title: 'Abcès apical aigu', urgence: { coronaire: ['aucun'], chirurgical: ['extraction'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
 });
-['Nicolas', 'Sandrine'].forEach(n => {
+['Nicolas', 'Sandrine', 'Thierry'].forEach(n => {
   CASES[n] = { title: 'Abcès apical aigu', urgence: { coronaire: ['curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['antibiotiques', 'antalgique'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
-});
-['Thierry'].forEach(n => {
-  CASES[n] = { title: 'Abcès apical aigu', urgence: { coronaire: ['aucun'], chirurgical: ['extraction'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
 });
 ['Corinne', 'Damien', 'Élodie'].forEach(n => {
   CASES[n] = { title: 'Abcès apical chronique', urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['drainage_fistulaire'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
@@ -105,7 +102,7 @@ CASES['Bernard'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['aucun']
 ['Paul'].forEach(n => {
   CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['aucun'], chirurgical: ['extraction', 'drainage_muqueuse'], medicamenteux: ['antalgique', 'antibiotiques', 'bain_bouche'] }, final: null };
 });
-['Fabrice', 'Ghislaine'].forEach(n => {
+['Fabrice', 'Ghislaine', 'Bastien'].forEach(n => {
   CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['curetage_etanche'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antibiotiques', 'antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
 });
 ['Serge'].forEach(n => {
