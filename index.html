@@ -809,7 +809,12 @@
     margin-top:5px;
   }
 
-  .hidden{display:none;}
+  /* « !important » est ici volontaire. Cette classe utilitaire est le seul moyen dont le code
+     dispose pour masquer un élément ; sans cela, n'importe quelle règle un peu plus spécifique
+     — un simple « .diagram-legend span{display:flex} » suffit — la neutralise silencieusement.
+     L'élément reste alors affiché, ou pire, invisible mais toujours cliquable. Le défaut s'est
+     déjà produit trois fois : porte de connexion, panneau de statistiques, légendes des schémas. */
+  .hidden{display:none !important;}
 
   @media (max-width:480px){
     .intro-card ul{columns:1;}
@@ -907,9 +912,6 @@
     display:flex; align-items:flex-start; justify-content:center;
     padding:24px 16px 48px;
   }
-  /* Un sélecteur d'identifiant l'emporte sur .hidden : sans cette règle, la porte
-     resterait invisible mais continuerait d'intercepter les clics de la page. */
-  #auth-gate.hidden{display:none;}
   .auth-card{
     width:100%; max-width:430px; margin-top:4vh;
     background:var(--card); border-radius:var(--radius);
@@ -971,7 +973,6 @@
     display:flex; align-items:flex-start; justify-content:center;
     padding:24px 16px 48px; overflow-y:auto;
   }
-  #stats-panel.hidden{display:none;}
   .stats-card{
     position:relative; width:100%; max-width:620px; margin-top:5vh;
     background:var(--card); border-radius:var(--radius);
@@ -1753,6 +1754,7 @@
   // ---------- Mode "choix thérapeutique" ----------
   // Échelle de profondeur du délabrement coronaire par rapport à la gencive et à l'os.
   var RADIO_DEPTH_LABELS = {
+    sain:            "Aucun délabrement coronaire : émail et dentine intacts",
     coronaire:       "Délabrement coronaire, situé au-dessus de la gencive",
     supra_gingival:  "Délabrement supra-gingival (juste au-dessus du rebord gingival)",
     juxta_gingival:  "Délabrement juxta-gingival (au niveau du rebord gingival)",
@@ -1844,7 +1846,9 @@
 
   // Profil "choix thérapeutique" par diagnostic — première version, à affiner.
   var TX_PROFILE = {
-    saine:              {depth:"coronaire",      apical:false, urgence:0, final:0},
+    // Une dent saine ne présente aucun délabrement : sans ce niveau, la boîte « Radiographie »
+    // annonçait un délabrement coronaire là où le schéma et l'énoncé décrivent une dent intacte.
+    saine:              {depth:"sain",           apical:false, urgence:0, final:0},
     hyperhemie:         {depth:"coronaire",      apical:false, urgence:0, final:1},
     reversible:         {depth:"supra_gingival", apical:false, urgence:2, final:1},
     irreversible:       {depth:"supra_gingival", apical:false, urgence:3, final:3},

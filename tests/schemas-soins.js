@@ -68,6 +68,13 @@ const { chromium } = require('/opt/node22/lib/node_modules/playwright');
       if (!decrit) erreurs.push(`${nom} : dent déjà traitée sans état coronaire décrit`);
     }
 
+    // Une dent saine ne doit annoncer aucun délabrement : l'énoncé, le schéma et la boîte
+    // « Radiographie » doivent dire la même chose.
+    const nieDelabrement = /aucun délabrement/i.test(r.radio);
+    if (r.pulpe.indexOf('saine') !== -1 && !nieDelabrement && /délabrement/i.test(r.radio)) {
+      erreurs.push(`${nom} : dent saine mais radiographie annonçant un délabrement`);
+    }
+
     // La légende ne doit jamais annoncer un soin que le tracé ne contient pas.
     if (attendu === 'Soin infiltré (liseré noir)' || attendu === 'Soin récent') {
       if (!r.dessine) erreurs.push(`${nom} : légende « ${attendu} » mais aucun soin tracé`);

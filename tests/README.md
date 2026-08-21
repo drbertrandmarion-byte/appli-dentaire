@@ -22,6 +22,7 @@ node tests/analyse-differentielle.js
 node tests/economie-diagnostique.js
 node tests/barre-commandes.js
 node tests/schemas-soins.js
+node tests/legendes-schemas.js
 node tests/back-office.js
 ```
 
@@ -41,7 +42,7 @@ Erreurs : 0
 Les autres suites se terminent par `Erreurs : 0` ou `Problèmes : 0`. `back-office.js`
 affiche en plus des tableaux à relire à l'œil — voir plus bas.
 
-## Les six suites
+## Les sept suites
 
 | Fichier | Ce qu'il vérifie |
 |---|---|
@@ -50,6 +51,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 | `economie-diagnostique.js` | Le rappel à partir de 7 questions et le calcul du rang décisif |
 | `barre-commandes.js` | Que les boutons retour / compte / son ne se chevauchent à aucune largeur d'écran |
 | `schemas-soins.js` | Que le schéma dessine bien le soin coronaire décrit par l'énoncé |
+| `legendes-schemas.js` | Que chaque entrée de légende corresponde au tracé : rien de superflu, rien de manquant |
 | `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion et export Excel |
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
@@ -69,6 +71,14 @@ dent déjà traitée porte toujours une obturation coronaire infiltrée — une 
 a forcément une, et c'est sa perte d'étanchéité qui explique la réinfection —, la légende
 et le tracé s'accordent, et aucun soin n'est dessiné si l'énoncé n'en mentionne pas.
 Il termine par `Erreurs : 0`.
+
+`legendes-schemas.js` enchaîne soixante cas **sans recharger la page** — c'est ainsi qu'une
+légende oubliée d'un cas au suivant se révèle, alors qu'un rechargement la masquerait. Il
+interroge le **rendu réel** (`getComputedStyle`) et jamais la présence de la classe
+`hidden` : c'est précisément une classe `hidden` sans effet, neutralisée par une règle plus
+spécifique, qu'il doit attraper. Il compare aussi la couleur de chaque pastille à celle du
+tracé correspondant. Il termine par `Erreurs : 0` — la version qui précédait sa création en
+signalait 156.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas
