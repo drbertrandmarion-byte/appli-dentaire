@@ -23,6 +23,7 @@ node tests/economie-diagnostique.js
 node tests/barre-commandes.js
 node tests/schemas-soins.js
 node tests/legendes-schemas.js
+python3 tests/coherence-textes.py
 node tests/back-office.js
 ```
 
@@ -42,7 +43,7 @@ Erreurs : 0
 Les autres suites se terminent par `Erreurs : 0` ou `Problèmes : 0`. `back-office.js`
 affiche en plus des tableaux à relire à l'œil — voir plus bas.
 
-## Les sept suites
+## Les huit suites
 
 | Fichier | Ce qu'il vérifie |
 |---|---|
@@ -52,6 +53,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 | `barre-commandes.js` | Que les boutons retour / compte / son ne se chevauchent à aucune largeur d'écran |
 | `schemas-soins.js` | Que le schéma dessine bien le soin coronaire décrit par l'énoncé |
 | `legendes-schemas.js` | Que chaque entrée de légende corresponde au tracé : rien de superflu, rien de manquant |
+| `coherence-textes.py` | Que l'énoncé, la radiographie et le schéma disent la même chose — **tous** les cas, sans tirage |
 | `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion et export Excel |
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
@@ -79,6 +81,19 @@ interroge le **rendu réel** (`getComputedStyle`) et jamais la présence de la c
 spécifique, qu'il doit attraper. Il compare aussi la couleur de chaque pastille à celle du
 tracé correspondant. Il termine par `Erreurs : 0` — la version qui précédait sa création en
 signalait 156.
+
+`coherence-textes.py` est la seule suite qui n'ouvre **pas de navigateur** : elle lit
+`index.html` et parcourt exhaustivement tous les cas des deux modes. C'est délibéré — un
+test qui tire des cas au hasard finit toujours par en manquer, et un cas jamais tiré n'est
+pas un cas vérifié. Elle croise, pour chacun : image apicale affirmée par la radiographie
+contre lésion dessinée, tuméfaction / collection / fistule / signes généraux décrits par
+l'énoncé contre schéma, et état coronaire annoncé par la radiographie contre énoncé.
+Elle termine par `Anomalies : 0`.
+
+Attention à ses détecteurs : ils interprètent du texte libre. Une négation non prévue
+(« pas de radioclarté », « aucune douleur ni tuméfaction ») produit un faux positif, et une
+formule trop permissive masquerait une vraie contradiction. Toute modification de leurs
+expressions régulières mérite d'être revérifiée sur le tableau complet.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas

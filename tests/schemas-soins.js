@@ -20,7 +20,10 @@ const { chromium } = require('/opt/node22/lib/node_modules/playwright');
   const vus = new Map();
   const erreurs = [];
 
-  for (let i = 0; i < 320 && vus.size < 40; i++) {
+  // On boucle jusqu'à avoir vu les DOUZE pathologies, et l'on échoue si l'une manque : s'arrêter
+  // à un nombre d'énoncés donne une fausse assurance — un cas jamais tiré n'est pas un cas vérifié.
+  const PATHOS = new Set();
+  for (let i = 0; i < 600 && (PATHOS.size < 12 || vus.size < 24); i++) {
     await page.goto('http://localhost:9300/index.html');
     await page.evaluate(() => { const s = document.getElementById('splash-screen'); if (s) s.remove(); });
     await page.waitForSelector('#auth-gate.hidden', { state:'attached', timeout:15000 });
@@ -29,14 +32,16 @@ const { chromium } = require('/opt/node22/lib/node_modules/playwright');
     await page.waitForTimeout(70);
 
     const r = await page.evaluate(() => ({
+      titre: document.getElementById('tx-title').textContent.trim(),
       def:   document.getElementById('tx-def').textContent.trim(),
       radio: document.getElementById('tx-radio-text').textContent.trim(),
       pulpe: document.getElementById('tx-pulp-legend-label').textContent.trim(),
-      soin:  document.getElementById('tx-restoration-legend-item').classList.contains('hidden')
+      soin:  getComputedStyle(document.getElementById('tx-restoration-legend-item')).display === 'none'
              ? null : document.getElementById('tx-restoration-legend-label').textContent.trim(),
       dessine: /#c7cdd6/i.test(document.getElementById('tx-diagram').innerHTML)
     }));
 
+    PATHOS.add(r.titre);
     const cle = r.radio.slice(0, 90);
     if (vus.has(cle)) continue;
     vus.set(cle, r);
@@ -88,6 +93,8 @@ const { chromium } = require('/opt/node22/lib/node_modules/playwright');
     else if (r.soin === 'Soin récent') recents++;
     else sans++;
   }
+  console.log(`Pathologies rencontrées : ${PATHOS.size} / 12`);
+  if (PATHOS.size < 12) erreurs.push(`couverture incomplète : ${12 - PATHOS.size} pathologie(s) jamais tirée(s)`);
   console.log(`Énoncés radiographiques distincts rencontrés : ${vus.size}`);
   console.log(`  dents déjà traitées : ${traitees}`);
   console.log(`  soin infiltré dessiné : ${infiltres}`);

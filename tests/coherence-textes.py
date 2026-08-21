@@ -1,0 +1,177 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""Cohérence entre l'énoncé clinique, le texte radiographique et le schéma.
+
+Contrairement aux autres suites, celle-ci n'ouvre pas de navigateur : elle lit directement
+index.html et parcourt EXHAUSTIVEMENT tous les cas des deux modes. C'est délibéré — un test
+qui tire des cas au hasard finit toujours par en manquer, et un cas jamais tiré n'est pas un
+cas vérifié.
+
+Ce qu'elle contrôle, cas par cas :
+  - le texte radiographique affirme une image apicale <-> le schéma en dessine une ;
+  - l'énoncé décrit une tuméfaction, une collection (godet), une fistule ou des signes
+    généraux <-> le schéma les représente ;
+  - l'état coronaire décrit par la radiographie (obturation réinfiltrée, couronne sur
+    inlay-core, fracture coronaire, restauration récente) est aussi présent dans l'énoncé.
+
+Usage :  python3 tests/coherence-textes.py
+Sortie attendue : « Anomalies : 0 ». Code de retour non nul si une contradiction subsiste.
+"""
+import re, sys
+
+import os
+RACINE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+s = open(os.path.join(RACINE, 'index.html'), encoding='utf-8').read()
+
+# ---------- schémas ----------
+bloc = re.search(r'var DIAGRAMS = \{(.*?)\n  \};', s, re.S).group(1)
+DIAG = {}
+for m in re.finditer(r'\n    (\w+): \{(.*?)\n    \}', bloc, re.S):
+    cfg = m.group(2); d = {}
+    for k in ['caries','periapical','fistula','swelling','pulpLabel','dualRoot']:
+        r = re.search(k + r':\s*("[^"]*"|true|false)', cfg)
+        # Une clé absente vaut la valeur par défaut du traceur, pas « inconnu ».
+        defaut = {'caries':'large','periapical':'none','fistula':'false','swelling':'none',
+                  'pulpLabel':'', 'dualRoot':'false'}[k]
+        d[k] = r.group(1).strip('"') if r else defaut
+    DIAG[m.group(1)] = d
+
+# ---------- libellés de profondeur ----------
+DEPTH = dict(re.findall(r'\n    (\w+):\s*"([^"]*)"', re.search(r'var RADIO_DEPTH_LABELS = \{(.*?)\n  \};', s, re.S).group(1)))
+
+# ---------- profils thérapeutiques ----------
+PROF = {}
+for m in re.finditer(r'\n    (\w+):\s*\{depth:"(\w+)",\s*apical:\s*(true|false)', re.search(r'var TX_PROFILE = \{(.*?)\n  \};', s, re.S).group(1)):
+    PROF[m.group(1)] = (m.group(2), m.group(3) == 'true')
+
+pbs = []
+def note(mode, cas, txt):
+    pbs.append("[%s] %-28s %s" % (mode, cas, txt))
+
+# --- helpers d'interprétation du texte ---
+def dit_apical(t):
+    """True = affirme une image apicale, False = la nie, None = muet."""
+    tl = t.lower()
+    if re.search(r"(sans|aucune|pas de|pas d')\s*(image|lésion|zone|radioclarté)", tl):
+        return False
+    if re.search(r"(image|zone) radiocl|radioclarté apicale|lésion radioclaire", tl):
+        return True
+    return None
+
+def dit_ligament_elargi(t):
+    return 'ligament' in t.lower() and ('élargi' in t.lower() or 'épaissi' in t.lower())
+
+def dit_tumefaction(t):
+    tl = t.lower()
+    if re.search(r"(sans|aucune?|ni)\s+(douleur\s+ni\s+)?tuméfaction|pas de tuméfaction|ni tuméfaction", tl):
+        return False
+    return bool(re.search(r"tuméfaction|gonflement|œdème|oedème", tl))
+
+def dit_collection(t):
+    tl = t.lower()
+    return bool(re.search(r"godet positif|collection fluctuante|signe du godet \(positif\)", tl))
+
+def dit_fistule(t):
+    tl = t.lower()
+    return bool(re.search(r"petit bouton|fistule|parulie", tl))
+
+def dit_generaux(t):
+    tl = t.lower()
+    return bool(re.search(r"fièvre|dysphagie|trismus|s'étendant vers le cou", tl))
+
+# =============================================================================
+#  MODE DIAGNOSTIC : fiche de correction
+# =============================================================================
+dbloc = s[s.index('var DIAGNOSES = {'):s.index('\n  };', s.index('var DIAGNOSES = {'))]
+for m in re.finditer(r'\n    (\w+): \{(.*?)(?=\n    \w+: \{|\Z)', dbloc, re.S):
+    did, corps = m.group(1), m.group(2)
+    if did not in DIAG: continue
+    g = DIAG[did]
+    titre = re.search(r'title:"([^"]*)"', corps).group(1)
+    radios = [re.search(r'\n        radio:"([^"]*)"', corps)]
+    radios = [r.group(1) for r in radios if r]
+    radios += re.findall(r'radio: "([^"]*)"', corps)          # variantes
+    radios += re.findall(r'"(Perte de substance[^"]*|Restauration[^"]*|Délabrement[^"]*)"', corps)
+    signes = " ".join(re.findall(r'\n        "([^"]*)",?', corps))
+    for rt in set(radios):
+        a = dit_apical(rt)
+        if a is True and g['periapical'] in ('none',):
+            note('diagnostic', titre, "radio affirme une image apicale, schéma periapical=none\n        → " + rt[:90])
+        if a is False and g['periapical'] in ('defined', 'diffuse'):
+            note('diagnostic', titre, "radio nie l'image apicale, schéma periapical=%s\n        → %s" % (g['periapical'], rt[:90]))
+    # fistule
+    if dit_fistule(signes + " " + corps) != (g['fistula'] == 'true'):
+        note('diagnostic', titre, "fistule : texte=%s schéma=%s" % (dit_fistule(signes), g['fistula']))
+
+# =============================================================================
+#  MODE CHOIX THÉRAPEUTIQUE
+# =============================================================================
+tb = s[s.index('var TX_MULTISTEP_CASES = {'):s.index('\n  var TX_RECAP_TYPES')]
+bornes = sorted({m.group(1): m.start() for m in re.finditer(r'\n    (\w+): \[', tb)}.items(), key=lambda x: x[1]) + [('FIN', len(tb))]
+vus = set()
+for i in range(len(bornes) - 1):
+    path, d = bornes[i]
+    vus.add(path)
+    g = DIAG.get(path)
+    if not g: continue
+    for v in re.split(r'\n      \{', tb[d:bornes[i+1][1]])[1:]:
+        pl = re.search(r'patientLine: "(.*?)",\n', v, re.S)
+        if not pl: continue
+        pl = pl.group(1)
+        pren = pl.split(',')[0]
+        rtm = re.search(r'radioText: "(.*?)",\n', v, re.S)
+        if rtm:
+            rt = rtm.group(1)
+        else:
+            dp = re.search(r'depth: "(\w+)"', v); ap = re.search(r'apical: (true|false)', v)
+            depth = dp.group(1) if dp else PROF.get(path, ('coronaire', False))[0]
+            apical = (ap.group(1) == 'true') if ap else PROF.get(path, ('coronaire', False))[1]
+            rt = DEPTH.get(depth, '?') + (', avec une image radioclaire apicale.' if apical else ', sans image radioclaire apicale.')
+        cas = "%s (%s)" % (pren, path)
+
+        # 1. image apicale : radiographie contre schéma
+        a = dit_apical(rt)
+        if a is True and g['periapical'] == 'none':
+            note('thérapeutique', cas, "radio affirme une image apicale, schéma periapical=none")
+        if a is False and g['periapical'] in ('defined', 'diffuse'):
+            note('thérapeutique', cas, "radio nie l'image apicale, schéma periapical=%s\n        → %s" % (g['periapical'], rt[:95]))
+
+        # 2. tuméfaction : énoncé contre schéma
+        t = dit_tumefaction(pl)
+        if t and g['swelling'] == 'none':
+            note('thérapeutique', cas, "énoncé décrit une tuméfaction, schéma swelling=none")
+        if not t and g['swelling'] != 'none':
+            note('thérapeutique', cas, "schéma swelling=%s mais énoncé sans tuméfaction" % g['swelling'])
+
+        # 3. collection (godet) : réservée aux schémas collected/severe
+        if dit_collection(pl) and g['swelling'] not in ('collected', 'severe'):
+            note('thérapeutique', cas, "énoncé décrit une collection (godet), schéma swelling=%s" % g['swelling'])
+
+        # 4. fistule
+        if dit_fistule(pl) != (g['fistula'] == 'true'):
+            note('thérapeutique', cas, "fistule : énoncé=%s schéma=%s" % (dit_fistule(pl), g['fistula']))
+
+        # 5. signes généraux : uniquement la cellulite diffuse
+        if dit_generaux(pl) and g['swelling'] != 'severe':
+            note('thérapeutique', cas, "énoncé décrit des signes généraux, schéma swelling=%s" % g['swelling'])
+
+        # 6. cohérence énoncé / radiographie sur l'état coronaire
+        etats = {
+            'obturation réinfiltrée': 'étanchéité' in rt.lower(),
+            'couronne prothétique':   'inlay-core' in rt.lower(),
+            'fracture coronaire':     'fracture coronaire' in rt.lower(),
+            'restauration récente':   'restauration récente' in rt.lower(),
+        }
+        for nom, dans_radio in etats.items():
+            if not dans_radio: continue
+            cle = {'obturation réinfiltrée':'restauration|obturation coronaire|soin',
+                   'couronne prothétique':'couronne',
+                   'fracture coronaire':'fracture',
+                   'restauration récente':'restauration'}[nom]
+            if not re.search(cle, pl, re.I):
+                note('thérapeutique', cas, "radio décrit « %s » mais l'énoncé n'en parle pas" % nom)
+
+print("Pathologies thérapeutiques auditées : %d" % len(vus))
+print("\nAnomalies : %d" % len(pbs))
+for p in pbs: print("  ! " + p)
+sys.exit(1 if pbs else 0)
