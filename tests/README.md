@@ -29,7 +29,7 @@ node tests/back-office.js
 Résultats attendus :
 
 ```
-Tested 85 / 85 unique named cases
+Tested 86 / 86 unique named cases
 Missing (never rolled): []
 Failures: 0
 ```
@@ -46,7 +46,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 
 | Fichier | Ce qu'il vérifie |
 |---|---|
-| `cas-choix-therapeutique.js` | Le corrigé clinique des 85 cas nommés du mode « Choix thérapeutique » |
+| `cas-choix-therapeutique.js` | Le corrigé clinique des 86 cas nommés du mode « Choix thérapeutique » |
 | `analyse-differentielle.js` | La correction du mode « Diagnostic » : signes discriminants, signe posé ou non |
 | `economie-diagnostique.js` | Le rappel à partir de 7 questions et le calcul du rang décisif |
 | `barre-commandes.js` | Que les boutons retour / compte / son ne se chevauchent à aucune largeur d'écran |
