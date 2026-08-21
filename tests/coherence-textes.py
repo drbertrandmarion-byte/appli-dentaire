@@ -269,6 +269,13 @@ for i in range(len(bornes) - 1):
         if ca and ca != attendu:
             note('thérapeutique', cas, "apex : texte « %s », schéma « %s »\n        → %s" % (ca, attendu, (rt or '')[:95]))
 
+        # A1. La pulpotomie thérapeutique est réservée aux patients de moins de 30 ans : au-delà,
+        #     le potentiel de cicatrisation de la pulpe radiculaire ne permet plus de la conserver.
+        age = re.search(r'patientLine: "[^,]+, (\d+) ans', v)
+        if age and 'pulpotomie_therapeutique' in txt and int(age.group(1)) >= 30:
+            note('thérapeutique', cas,
+                 "pulpotomie thérapeutique attendue chez un patient de %s ans (réservée aux moins de 30 ans)" % age.group(1))
+
         # A. profondeur : l'énoncé et la radiographie doivent nommer la même
         if rt:
             pe, pr = profondeur_citee(pl), profondeur_citee(rt)
