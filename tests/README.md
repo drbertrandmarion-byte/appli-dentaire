@@ -97,6 +97,17 @@ Elle termine par `Anomalies : 0`.
 Elle contrôle aussi l'**état périapical** : ligament sain, ligament élargi ou lésion
 constituée, tels que le texte les décrit, contre ce que le schéma dessine.
 
+Elle contrôle aussi les deux signes de la tuméfaction, qui ne disent pas la même chose : le **godet**
+se creuse dans un œdème d'infiltration (cellulite séreuse, cellulite diffuse), le **reflux** purulent
+signe une collection constituée (cellulite suppurée), et une collection sous tension ne prend pas le
+godet. L'audit vérifie donc que seul le reflux correspond à un schéma collecté, qu'aucun diagnostic
+n'affirme les deux à la fois, et qu'aucun ne reste sans réponse au reflux — une question sans corrigé
+ne serait jamais notée.
+
+Attention en particulier à `dit_collection` : la formule « sans reflux purulent » des cellulites
+séreuses la faisait conclure à une collection, faute de gérer la négation. C'est l'exemple type du
+faux positif décrit plus bas.
+
 Elle contrôle aussi qu'une **restauration récente — donc étanche** — n'appelle ni curetage (aucune
 carie) ni reconstitution provisoire (l'étanchéité est déjà assurée), tant qu'aucun geste pulpaire
 n'est réalisé. Les pulpites irréversibles survenues sous une restauration récente ouvrent la dent et

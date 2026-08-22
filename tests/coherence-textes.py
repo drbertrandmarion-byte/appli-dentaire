@@ -9,7 +9,7 @@ cas vérifié.
 
 Ce qu'elle contrôle, cas par cas :
   - le texte radiographique affirme une image apicale <-> le schéma en dessine une ;
-  - l'énoncé décrit une tuméfaction, une collection (godet), une fistule ou des signes
+  - l'énoncé décrit une tuméfaction, une collection (reflux), une fistule ou des signes
     généraux <-> le schéma les représente ;
   - l'état coronaire décrit par la radiographie (obturation réinfiltrée, couronne sur
     inlay-core, fracture coronaire, restauration récente) est aussi présent dans l'énoncé.
@@ -92,8 +92,26 @@ def dit_tumefaction(t):
     return bool(re.search(r"tuméfaction|gonflement|œdème|oedème", tl))
 
 def dit_collection(t):
+    """Ce qui signe une collection constituée, c'est le REFLUX purulent — pas le godet.
+    Le godet se creuse dans un œdème d'infiltration (cellulite séreuse, cellulite diffuse) ; une
+    collection sous tension, elle, ne le prend pas. Confondre les deux, comme le faisait la version
+    précédente de ce détecteur, revient à annoncer une collection là où il n'y en a pas."""
     tl = t.lower()
-    return bool(re.search(r"godet positif|collection fluctuante|signe du godet \(positif\)", tl))
+    # Une collection fluctuante est affirmée en tant que telle : rien ne la nie ensuite.
+    if 'collection fluctuante' in tl:
+        return True
+    # « sans reflux purulent » écarte au contraire la collection. Sans ce garde-fou, la mention même
+    # du mot suffisait à conclure — et les énoncés de cellulite séreuse, qui NIENT le reflux, étaient
+    # lus comme s'ils l'affirmaient.
+    if re.search(r"sans (aucun )?reflux|pas de reflux|reflux négatif", tl):
+        return False
+    return bool(re.search(r"reflux purulent|signe du reflux", tl))
+
+def dit_godet(t):
+    tl = t.lower()
+    if re.search(r"sans (signe de |signe du )?godet|ne prenant pas le godet|godet négatif", tl):
+        return False
+    return bool(re.search(r"godet", tl))
 
 def dit_fistule(t):
     tl = t.lower()
@@ -144,11 +162,23 @@ for m in re.finditer(r'\n    (\w+): \{(.*?)(?=\n    \w+: \{|\Z)', dbloc, re.S):
             note('diagnostic', titre, "le patient décrit un gonflement, schéma sans tuméfaction")
         if not oui and g['swelling'] != 'none':
             note('diagnostic', titre, "schéma avec tuméfaction (%s) mais patient sans gonflement" % g['swelling'])
-    q_godet = re.search(r'\n        godet:"([^"]*)"', corps)
-    if q_godet:
-        oui = not q_godet.group(1).lower().startswith('non')
+    # Le reflux purulent signe la collection : lui seul doit correspondre à un schéma collecté.
+    q_reflux = re.search(r'\n        reflux:"([^"]*)"', corps)
+    if q_reflux:
+        oui = not q_reflux.group(1).lower().startswith('non')
         if oui and g['swelling'] not in ('collected', 'severe'):
-            note('diagnostic', titre, "godet positif mais schéma swelling=%s" % g['swelling'])
+            note('diagnostic', titre, "reflux positif mais schéma swelling=%s" % g['swelling'])
+        if not oui and g['swelling'] == 'collected':
+            note('diagnostic', titre, "schéma collecté mais réponse « pas de reflux »")
+    else:
+        note('diagnostic', titre, "aucune réponse au signe du reflux : la question resterait sans corrigé")
+    # Godet et reflux s'excluent : un œdème qui se creuse n'est pas une collection sous tension.
+    q_godet = re.search(r'\n        godet:"([^"]*)"', corps)
+    if q_godet and q_reflux:
+        g_oui = not q_godet.group(1).lower().startswith('non')
+        r_oui = not q_reflux.group(1).lower().startswith('non')
+        if g_oui and r_oui:
+            note('diagnostic', titre, "godet ET reflux positifs : une collection sous tension ne prend pas le godet")
 
 # =============================================================================
 #  MODE CHOIX THÉRAPEUTIQUE
@@ -192,9 +222,13 @@ for i in range(len(bornes) - 1):
         if not t and g['swelling'] != 'none':
             note('thérapeutique', cas, "schéma swelling=%s mais énoncé sans tuméfaction" % g['swelling'])
 
-        # 3. collection (godet) : réservée aux schémas collected/severe
+        # 3. collection (reflux purulent) : réservée aux schémas collected/severe
         if dit_collection(pl) and g['swelling'] not in ('collected', 'severe'):
-            note('thérapeutique', cas, "énoncé décrit une collection (godet), schéma swelling=%s" % g['swelling'])
+            note('thérapeutique', cas, "énoncé décrit une collection (reflux), schéma swelling=%s" % g['swelling'])
+
+        # 3bis. godet et reflux ne peuvent pas être positifs ensemble dans un même énoncé.
+        if dit_godet(pl) and dit_collection(pl):
+            note('thérapeutique', cas, "énoncé annonce à la fois le godet et une collection qui reflue")
 
         # 4. fistule
         if dit_fistule(pl) != (g['fistula'] == 'true'):

@@ -1727,7 +1727,8 @@
     {id:"mastication",      short:"la douleur à la mastication",   text:"Y a-t-il une douleur à la mastication ?"},
     {id:"froid_apaise",     short:"le soulagement par le froid",   text:"Est-ce que le froid apaise la douleur ?"},
     {id:"gonflement",       short:"la tuméfaction de la face",     text:"Y a-t-il un gonflement (tuméfaction) de la face ?"},
-    {id:"godet",            short:"le signe du godet",             text:"Sur la tuméfaction, y a-t-il un signe de reflux (godet) : la dépression persiste-t-elle après une pression du doigt ?"},
+    {id:"godet",            short:"le signe du godet",             text:"À la pression du doigt sur la tuméfaction, la dépression laissée persiste-t-elle quelques instants (signe du godet) ?"},
+    {id:"reflux",           short:"le signe du reflux",            text:"À la pression de la tuméfaction, du pus reflue-t-il par le sillon gingival ou par une fistule (signe du reflux) ?"},
     {id:"signes_generaux",  short:"les signes généraux",           text:"Y a-t-il de la fièvre, et/ou une dysphagie, et/ou une difficulté respiratoire, et/ou un trismus serré ?"},
     {id:"nocturne",         short:"la douleur nocturne",           text:"La douleur s'intensifie-t-elle la nuit ?"},
     {id:"pulsation",        short:"la douleur pulsatile",          text:"La douleur est-elle semblable à une pulsation dans la dent ?"},
@@ -2482,7 +2483,7 @@
     // est infra-osseux. Pas de collection à ce stade : aucun drainage, même à l'extraction.
     cellulite_sereuse: [
       {
-        patientLine: "Julien, 26 ans, présente une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, une sensation de dent longue, et une douleur constante apaisée par le froid. La radiographie montre un délabrement supra-gingival, juste au-dessus du rebord gingival, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
+        patientLine: "Julien, 26 ans, présente une tuméfaction discrète de la joue prenant le godet, sans reflux purulent, avec une dent causale très douloureuse à la percussion et à la palpation, une sensation de dent longue, et une douleur constante apaisée par le froid. La radiographie montre un délabrement supra-gingival, juste au-dessus du rebord gingival, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
         depth: "supra_gingival", apical: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois l'épisode infectieux contrôlé ?",
         rationaleKey: 'conservable',
@@ -2490,7 +2491,7 @@
         finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Nadia, 33 ans, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
+        patientLine: "Nadia, 33 ans, consulte pour une tuméfaction discrète de la joue prenant le godet, sans reflux purulent, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
         depth: "juxta_gingival", apical: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'conservable',
@@ -2498,7 +2499,7 @@
         finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Marc, 48 ans, présente une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
+        patientLine: "Marc, 48 ans, présente une tuméfaction discrète de la joue prenant le godet, sans reflux purulent, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement choisissez-vous, une fois l'épisode infectieux contrôlé ?",
         rationaleKey: 'conservable',
@@ -2506,7 +2507,7 @@
         finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Inès, 55 ans, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre une fracture du plancher pulpo-radiculaire, avec une volumineuse image radioclaire englobant la furcation, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
+        patientLine: "Inès, 55 ans, consulte pour une tuméfaction discrète de la joue prenant le godet, sans reflux purulent, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre une fracture du plancher pulpo-radiculaire, avec une volumineuse image radioclaire englobant la furcation, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
         radioText: "Fracture du plancher pulpo-radiculaire (plancher camérulaire). Volumineuse image radioclaire englobant la furcation inter-radiculaire, foyer infectieux à l'origine de la diffusion dans les tissus mous. Dent jugée non conservable.",
         diagram: 'floor_fracture',
         depth: "infra_osseux", apical: true,
@@ -2518,7 +2519,7 @@
       // attendant le retraitement) ; drainage muqueux si la dent reste conservable, puisque l'infection
       // a diffusé dans les tissus mous ; antibiothérapie dans tous les cas pour contrôler la diffusion.
       {
-        patientLine: "Rémi, 43 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une obturation coronaire ayant perdu son étanchéité, et une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous : la dent reste conservable.",
+        patientLine: "Rémi, 43 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction discrète de la joue prenant le godet, sans reflux purulent, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une obturation coronaire ayant perdu son étanchéité, et une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous : la dent reste conservable.",
         radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; obturation coronaire ayant perdu son étanchéité ; une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
         alreadyTreated: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois l'épisode infectieux contrôlé ?",
@@ -2527,7 +2528,7 @@
         finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Brigitte, 49 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une fracture coronaire juxta-gingivale, au ras du rebord gingival, et une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous : la dent reste conservable.",
+        patientLine: "Brigitte, 49 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une tuméfaction discrète de la joue prenant le godet, sans reflux purulent, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une fracture coronaire juxta-gingivale, au ras du rebord gingival, et une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous : la dent reste conservable.",
         radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; fracture coronaire juxta-gingivale, au ras du rebord gingival ; une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
         coronal: 'fracture_juxta',
         alreadyTreated: true,
@@ -2537,7 +2538,7 @@
         finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Gilbert, 66 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une lésion carieuse s'étendant sous la crête osseuse, et une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous : la dent n'est pas conservable, le délabrement s'étendant sous la crête osseuse.",
+        patientLine: "Gilbert, 66 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction discrète de la joue prenant le godet, sans reflux purulent, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une lésion carieuse s'étendant sous la crête osseuse, et une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous : la dent n'est pas conservable, le délabrement s'étendant sous la crête osseuse.",
         radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; lésion carieuse infra-osseuse, s'étendant sous la crête osseuse ; une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous. Dent non conservable : le délabrement s'étend sous la crête osseuse.",
         coronal: 'caries',
         depth: "infra_osseux", apical: true,
@@ -2550,7 +2551,7 @@
     // Cellulite suppurée (collectée) : même logique que la cellulite séreuse.
     cellulite_suppuree: [
       {
-        patientLine: "Victor, 29 ans, présente une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement supra-gingival, juste au-dessus du rebord gingival, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
+        patientLine: "Victor, 29 ans, présente une tuméfaction avec collection fluctuante, ne prenant pas le godet, avec un reflux purulent au sillon gingival, une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement supra-gingival, juste au-dessus du rebord gingival, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
         depth: "supra_gingival", apical: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois la collection résorbée ?",
         rationaleKey: 'conservable',
@@ -2558,7 +2559,7 @@
         finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Laura, 41 ans, consulte pour une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
+        patientLine: "Laura, 41 ans, consulte pour une tuméfaction avec collection fluctuante, ne prenant pas le godet, avec un reflux purulent au sillon gingival, une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
         depth: "juxta_gingival", apical: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'conservable',
@@ -2566,7 +2567,7 @@
         finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Hakim, 53 ans, présente une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
+        patientLine: "Hakim, 53 ans, présente une tuméfaction avec collection fluctuante, ne prenant pas le godet, avec un reflux purulent au sillon gingival, une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement choisissez-vous, une fois la collection résorbée ?",
         rationaleKey: 'conservable',
@@ -2574,7 +2575,7 @@
         finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Paul, 59 ans, consulte pour une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de la collection purulente des tissus mous.",
+        patientLine: "Paul, 59 ans, consulte pour une tuméfaction avec collection fluctuante, ne prenant pas le godet, avec un reflux purulent au sillon gingival, une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de la collection purulente des tissus mous.",
         depth: "infra_osseux", apical: true,
         rationaleKey: 'extraction',
         axes: {coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
@@ -2584,7 +2585,7 @@
       // attendant le retraitement) ; drainage muqueux dans tous les cas puisque la collection est
       // constituée, associé à l'extraction si la dent n'est plus conservable.
       {
-        patientLine: "Fabrice, 45 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une obturation coronaire ayant perdu son étanchéité, et une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
+        patientLine: "Fabrice, 45 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction avec collection fluctuante, ne prenant pas le godet, avec un reflux purulent au sillon gingival, une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une obturation coronaire ayant perdu son étanchéité, et une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
         radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; obturation coronaire ayant perdu son étanchéité ; une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
         alreadyTreated: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois la collection résorbée ?",
@@ -2593,7 +2594,7 @@
         finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Ghislaine, 51 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une couronne céramique scellée sur inlay-core, en place et non descellée, et une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
+        patientLine: "Ghislaine, 51 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une tuméfaction avec collection fluctuante, ne prenant pas le godet, avec un reflux purulent au sillon gingival, une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une couronne céramique scellée sur inlay-core, en place et non descellée, et une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
         radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; couronne céramique scellée sur inlay-core, en place et non descellée ; une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
         coronal: 'crown_inlay',
         alreadyTreated: true,
@@ -2603,7 +2604,7 @@
         finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Bastien, 59 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une fracture coronaire juxta-gingivale, au ras du rebord gingival, et une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
+        patientLine: "Bastien, 59 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction avec collection fluctuante, ne prenant pas le godet, avec un reflux purulent au sillon gingival, une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une fracture coronaire juxta-gingivale, au ras du rebord gingival, et une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
         radioText: "Canal obturé jusqu'à l'apex (gutta-percha) ; fracture coronaire juxta-gingivale, au ras du rebord gingival ; une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous. Dent conservable : un retraitement endodontique est envisageable.",
         coronal: 'fracture_juxta',
         alreadyTreated: true,
@@ -2613,7 +2614,7 @@
         finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
-        patientLine: "Serge, 64 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre une fracture radiculaire verticale sur une dent déjà traitée dont l'obturation coronaire a perdu son étanchéité, associée à une volumineuse image radioclaire apicale : la dent n'est pas conservable.",
+        patientLine: "Serge, 64 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction avec collection fluctuante, ne prenant pas le godet, avec un reflux purulent au sillon gingival, une douleur constante très intense à la percussion et à la palpation. La radiographie montre une fracture radiculaire verticale sur une dent déjà traitée dont l'obturation coronaire a perdu son étanchéité, associée à une volumineuse image radioclaire apicale : la dent n'est pas conservable.",
         radioText: "Fracture radiculaire verticale sur dent déjà traitée, obturation coronaire ayant perdu son étanchéité ; volumineuse image radioclaire apicale, à l'origine de la collection purulente des tissus mous. Dent non conservable : le retraitement n'est pas envisageable.",
         alreadyTreated: true,
         rationaleKey: 'dejaTraiteeExtraction',
@@ -2795,7 +2796,7 @@
     cellulite_suppuree: { byKey: {
       dejaTraiteeFracture: "La dent est déjà traitée par endodontie et sa couronne est fracturée au ras de la gencive : aucun curetage n'a lieu d'être, seule une reconstitution provisoire étanche est réalisée. La collection purulente déjà constituée impose en plus le drainage muqueux, une antibiothérapie, un antalgique et un bain de bouche. Le retraitement endodontique est programmé une fois la collection résorbée.",
       dejaTraiteeCouronne: "La dent est déjà traitée par endodontie et porte une couronne scellée sur inlay-core, en place et non descellée : aucun geste coronaire n'a lieu d'être à l'urgence, il n'y a ni carie à cureter ni restauration à reprendre. La collection purulente est en revanche déjà constituée dans les tissus mous, d'où le drainage muqueux associé à une antibiothérapie, un antalgique et un bain de bouche (voie muqueuse ouverte). Le retraitement endodontique, par un accès à travers la couronne, est programmé une fois la collection résorbée.",
-      conservable: "La collection purulente est déjà constituée dans les tissus mous (signe du godet positif) : il faut à la fois traiter la cause — la pulpectomie d'urgence, qui supprime le foyer infectieux pulpaire — et évacuer le pus par un drainage muqueux, associé à un antalgique, une antibiothérapie et un bain de bouche (la voie muqueuse étant une plaie ouverte). Le traitement endodontique complet, avec un antalgique, est réalisé une fois la collection résorbée.",
+      conservable: "La collection purulente est déjà constituée dans les tissus mous (signe du reflux positif, godet négatif) : il faut à la fois traiter la cause — la pulpectomie d'urgence, qui supprime le foyer infectieux pulpaire — et évacuer le pus par un drainage muqueux, associé à un antalgique, une antibiothérapie et un bain de bouche (la voie muqueuse étant une plaie ouverte). Le traitement endodontique complet, avec un antalgique, est réalisé une fois la collection résorbée.",
       extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, mais la collection purulente déjà constituée impose en plus un drainage par voie muqueuse, un antalgique, une antibiothérapie et un bain de bouche, pour évacuer le pus et contrôler l'infection des tissus mous.",
       dejaTraiteeConservable: "La dent est déjà traitée par endodontie : le canal n'est pas rouvert en urgence, mais un curetage carieux et une restauration transitoire étanche sont réalisés pour supprimer une éventuelle voie de recontamination coronaire en attendant le retraitement. La collection purulente est déjà constituée dans les tissus mous, d'où le drainage muqueux associé à une antibiothérapie, un antalgique et un bain de bouche (voie muqueuse ouverte). Le retraitement endodontique, avec un antalgique, est ensuite programmé une fois la collection résorbée.",
       dejaTraiteeExtraction: "La dent est déjà traitée par endodontie mais n'est plus conservable : aucun geste coronaire n'a de sens. L'extraction reste le geste d'urgence, mais la collection purulente déjà constituée impose en plus un drainage par voie muqueuse et un bain de bouche ; l'infection restant localisée et évacuée, une antibiothérapie n'est pas nécessaire — seul un antalgique complète la prise en charge."
@@ -2839,6 +2840,7 @@
         froid_apaise:"Non, je n'ai pas mal, je n'ai pas besoin de ça.",
         gonflement:"Non, mon visage est normal.",
         godet:"Non.",
+        reflux:"Non.",
         signes_generaux:"Non, je me sens bien, pas de fièvre.",
         nocturne:"Non, je dors très bien.",
         pulsation:"Non, je ne sens rien battre dans la dent.",
@@ -2874,6 +2876,7 @@
         froid_apaise:"Non, ça ne s'applique pas, je n'ai pas mal au chaud.",
         gonflement:"Non.",
         godet:"Non.",
+        reflux:"Non.",
         signes_generaux:"Non.",
         nocturne:"Non, je dors bien.",
         pulsation:"Non.",
@@ -2906,6 +2909,7 @@
         froid_apaise:"Non, ça ne s'applique pas.",
         gonflement:"Non.",
         godet:"Non.",
+        reflux:"Non.",
         signes_generaux:"Non.",
         nocturne:"Non, je dors bien.",
         pulsation:"Non, ce n'est pas une pulsation.",
@@ -2939,6 +2943,7 @@
         froid_apaise:"Non, le froid ne calme rien.",
         gonflement:"Non.",
         godet:"Non.",
+        reflux:"Non.",
         signes_generaux:"Non.",
         nocturne:"Oui, complètement insomniante.",
         pulsation:"Oui, comme un cœur.",
@@ -2973,6 +2978,7 @@
         froid_apaise:"Non.",
         gonflement:"Non.",
         godet:"Non.",
+        reflux:"Non.",
         signes_generaux:"Non.",
         nocturne:"Oui, ça peut m'empêcher de dormir.",
         pulsation:"Oui, par moments, ça pulse comme un cœur dans la dent.",
@@ -3003,6 +3009,7 @@
         froid_apaise:"Non, ça ne s'applique pas, je n'ai pas mal.",
         gonflement:"Non.",
         godet:"Non.",
+        reflux:"Non.",
         signes_generaux:"Non.",
         nocturne:"Non, je dors bien.",
         pulsation:"Non.",
@@ -3033,6 +3040,7 @@
         froid_apaise:"Non, je n'ai pas ce genre de douleur.",
         gonflement:"Non, pas de gonflement.",
         godet:"Non.",
+        reflux:"Non.",
         signes_generaux:"Non.",
         nocturne:"Non.",
         pulsation:"Non.",
@@ -3067,6 +3075,7 @@
         froid_apaise:"Oui, je mets des packs de glace dessus.",
         gonflement:"Non, pas encore de gonflement.",
         godet:"Non.",
+        reflux:"Non.",
         signes_generaux:"Non.",
         nocturne:"Non.",
         pulsation:"Non.",
@@ -3102,6 +3111,7 @@
         froid_apaise:"Non.",
         gonflement:"Non.",
         godet:"Non.",
+        reflux:"Non.",
         signes_generaux:"Non.",
         nocturne:"Non.",
         pulsation:"Non.",
@@ -3112,7 +3122,7 @@
       title:"Cellulite séreuse", category:"cellulite",
       def:"Premier stade de diffusion de l'infection dans les tissus mous péri-maxillaires, sans collection purulente franche.",
       signs:[
-        "Tuméfaction du visage, sans signe du godet ni signes généraux marqués",
+        "Tuméfaction du visage avec signe du godet, sans reflux purulent ni signes généraux marqués",
         "Dent causale très douloureuse à la percussion et à la palpation, sensation de dent longue",
         "Douleur constante, apaisée par le froid ; mastication impossible"
       ],
@@ -3122,7 +3132,7 @@
         "Traitement endodontique complet une fois l'épisode infectieux contrôlé.",
         "Extraction de la dent (non conservable), une fois l'épisode infectieux contrôlé."
       ),
-      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, continue_diffuse:true, radio:"periapical"},
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante, voire destruction massive de la couronne dentaire ; radioclarté apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
         froid:"Négatif, aucune réaction, je ne ressens rien du tout.",
@@ -3134,7 +3144,8 @@
         mastication:"Oui, impossible de manger dessus.",
         froid_apaise:"Oui, je mets des packs de glace.",
         gonflement:"Oui, j'ai le visage déformé.",
-        godet:"Non.",
+        godet:"Oui, quand on appuie la marque du doigt reste un moment.",
+        reflux:"Non, rien ne s'écoule.",
         signes_generaux:"Non.",
         nocturne:"Non.",
         pulsation:"Non.",
@@ -3145,7 +3156,7 @@
       title:"Cellulite suppurée (collectée)", category:"cellulite",
       def:"Stade de collection purulente localisée dans les tissus mous.",
       signs:[
-        "Tuméfaction avec collection fluctuante (signe du godet positif)",
+        "Tuméfaction avec collection fluctuante : signe du reflux positif, godet négatif",
         "Dent causale très douloureuse à la percussion et à la palpation",
         "Douleur constante, apaisée par le froid",
         "Pas de signes généraux marqués (pas de fièvre élevée, pas de trismus)"
@@ -3156,7 +3167,7 @@
         "Traitement endodontique complet une fois la collection résorbée.",
         "Extraction de la dent (non conservable), une fois la collection résorbée."
       ),
-      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, godet:true, continue_diffuse:true, radio:"periapical"},
+      answers:{percussion:true, palpation:true, dent_longue:true, mastication:true, froid_apaise:true, gonflement:true, reflux:true, continue_diffuse:true, radio:"periapical"},
       quotes:{
         radio:"Grosse perte tissulaire coronaire, avec une proximité pulpaire très importante, voire destruction massive de la couronne dentaire ; radioclarté apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
         froid:"Négatif, aucune réaction, je ne ressens rien du tout.",
@@ -3168,7 +3179,8 @@
         mastication:"Oui, impossible de manger dessus.",
         froid_apaise:"Oui, je mets des packs de glace.",
         gonflement:"Oui, j'ai le visage avec une collection fluctuante.",
-        godet:"Oui.",
+        godet:"Non, c'est tendu et ça roule sous le doigt, la marque ne reste pas.",
+        reflux:"Oui, en appuyant il remonte du pus par le sillon de la gencive.",
         signes_generaux:"Non.",
         nocturne:"Non.",
         pulsation:"Non.",
@@ -3179,7 +3191,7 @@
       title:"Cellulite diffuse", category:"urgence",
       def:"Forme grave et extensive de l'infection, à progression rapide dans plusieurs espaces celluleux, sans tendance à la collection.",
       signs:[
-        "Tuméfaction extensive avec collection, œdème s'étendant vers le cou",
+        "Tuméfaction extensive avec signe du godet, œdème s'étendant vers le cou, sans collection",
         "Fièvre élevée (39°C), dysphagie, difficulté respiratoire, trismus serré (impossible d'ouvrir la bouche)",
         "Douleur constante, dent causale très algique à la percussion et à la palpation",
         "Risque d'atteinte des voies aériennes (angine de Ludwig)"
@@ -3201,8 +3213,9 @@
         sucre:"Non.",
         mastication:"Oui, impossible de manger dessus.",
         froid_apaise:"Oui, je mets des packs de glace.",
-        gonflement:"Oui, j'ai le visage avec une collection fluctuante.",
-        godet:"Oui, avec un gonflement et un œdème qui s'étendent vers le cou et le haut du corps.",
+        gonflement:"Oui, tout le côté du visage est gonflé et l'œdème descend vers le cou.",
+        godet:"Oui, la marque du doigt reste ; le gonflement et l'œdème s'étendent vers le cou et le haut du corps.",
+        reflux:"Non, rien ne s'écoule : l'infection ne se collecte pas.",
         signes_generaux:"Oui, je suis à 39°C, j'ai du mal à manger et à respirer, je n'arrive plus à ouvrir la bouche.",
         nocturne:"Non.",
         pulsation:"Non.",

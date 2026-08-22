@@ -7,7 +7,7 @@ const SCENARIOS = [
   { nom: 'court (3 questions)',  qs: ['froid', 'percussion', 'radio'] },
   { nom: 'seuil (7 questions)',  qs: ['froid', 'percussion', 'radio', 'palpation', 'chaud', 'sucre', 'nocturne'] },
   { nom: 'peu cible (9 quest.)', qs: ['chaud', 'sucre', 'nocturne', 'pulsation', 'dent_longue',
-                                      'mastication', 'godet', 'signes_generaux', 'froid_apaise'] }
+                                      'mastication', 'godet', 'reflux', 'signes_generaux'] }
 ];
 
 (async () => {
