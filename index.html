@@ -2319,8 +2319,8 @@
         coronal: 'crown_inlay',
         alreadyTreated: true,
         finalLine: "Quel traitement définitif programmez-vous ?",
-        rationaleKey: 'dejaTraiteeConservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
+        rationaleKey: 'dejaTraiteeCouronne',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
@@ -2406,8 +2406,8 @@
         coronal: 'crown_inlay',
         alreadyTreated: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
-        rationaleKey: 'dejaTraiteeConservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
+        rationaleKey: 'dejaTraiteeCouronne',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       }
     ],
@@ -2577,8 +2577,8 @@
         coronal: 'crown_inlay',
         alreadyTreated: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
-        rationaleKey: 'dejaTraiteeConservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
+        rationaleKey: 'dejaTraiteeCouronne',
+        axes: {coronaire:['aucun'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
@@ -2689,11 +2689,13 @@
       {condition:"Dent non conservable (limite infra-osseuse)", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}}
     ],
     parodontite: [
+      {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
       {condition:"Dent jamais traitée", axes:{coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
       {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
       {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     abces_aigu: [
+      {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null},
       {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
@@ -2711,6 +2713,7 @@
       {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_suppuree: [
+      {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
       {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null},
       {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
@@ -2741,11 +2744,13 @@
       nonconservable: "La dent n'est pas symptomatique et le délabrement infra-osseux la rend non conservable : il n'y a donc rien à faire en urgence, ni geste ni médicament, puisqu'aucune infection active ne le justifie dans l'immédiat. L'extraction est programmée comme traitement final, associée à un antalgique et un bain de bouche pour la gestion post-opératoire de la plaie d'extraction — l'antibiothérapie et les AINS ne sont pas nécessaires puisqu'il n'y a pas d'infection à traiter."
     }},
     parodontite: { byKey: {
+      dejaTraiteeCouronne: "La dent est déjà traitée par endodontie et porte une couronne scellée sur inlay-core, en place et non descellée : il n'y a ni lésion carieuse à cureter, ni restauration à refaire. Aucun geste coronaire n'est donc réalisé à l'urgence — déposer la couronne n'apporterait rien à ce stade et compromettrait une reconstitution encore parfaitement fonctionnelle. L'inflammation périapicale traduit une réinfection sans collection constituée : une antibiothérapie et un antalgique suffisent. Le retraitement endodontique, qui imposera l'accès à travers la couronne, est ensuite programmé.",
       "default": "La pulpe est déjà nécrosée et l'inflammation a gagné le ligament parodontal apical, d'où la douleur à la percussion et la sensation de dent longue. Il n'y a pas encore de collection purulente : le geste d'urgence est donc une pulpectomie, pour éliminer le contenu canalaire infecté et désamorcer l'inflammation apicale, avant de réaliser le traitement endodontique complet.",
       dejaTraiteeConservable: "La dent est déjà traitée par endodontie : le canal n'est pas rouvert en urgence, mais un curetage carieux et une restauration transitoire étanche sont réalisés pour supprimer une éventuelle voie de recontamination coronaire en attendant le retraitement. L'inflammation périapicale (douleur à la percussion, sensation de dent longue) traduit une réinfection sans collection constituée ; une antibiothérapie et un antalgique suffisent en urgence, la dent restant conservable. Le retraitement endodontique, avec un antalgique, est ensuite programmé pour reprendre le canal.",
       dejaTraiteeExtraction: "La dent est déjà traitée par endodontie mais n'est plus conservable (fracture radiculaire, échec du traitement initial) : aucun retraitement n'est possible, aucun geste coronaire n'a donc de sens. L'extraction est le geste d'urgence, associée à un antalgique et un bain de bouche pour la gestion post-opératoire de la plaie ; l'infection restant localisée, une antibiothérapie n'est pas nécessaire."
     }},
     abces_aigu: { byKey: {
+      dejaTraiteeCouronne: "La dent est déjà traitée par endodontie et porte une couronne scellée sur inlay-core, en place et non descellée : il n'y a ni lésion carieuse à cureter, ni restauration à refaire, donc aucun geste coronaire à l'urgence. La collection périapicale débute mais ne s'est pas propagée aux tissus mous (pas de drainage muqueux à ce stade) : une antibiothérapie et un antalgique suffisent, la dent restant conservable. Le retraitement endodontique, par un accès à travers la couronne, est ensuite programmé.",
       conservable: "La collection purulente périapicale débute mais la dent reste conservable (limite infra-gingivale) : le geste d'urgence associe la pulpectomie à un drainage par transfixion apicale, c'est-à-dire le passage volontaire d'un instrument au-delà de l'apex pour créer une voie d'évacuation du pus et lever la pression responsable de la douleur intense — accompagné d'un antalgique (la transfixion reste une voie intracanalaire, pas une plaie muqueuse : pas de bain de bouche nécessaire ; l'infection restant localisée et désormais drainée, une antibiothérapie n'est pas justifiée). Le traitement endodontique complet, avec un antalgique pour cette séance, peut ensuite être réalisé dès que la douleur est contrôlée.",
       extraction: "Que ce soit un délabrement carieux atteignant la limite infra-osseuse ou une fracture du plancher pulpo-radiculaire avec une lésion englobant la furcation, la dent n'est plus conservable : aucun traitement endodontique ne peut restaurer un support suffisant. Le geste d'urgence est alors l'extraction elle-même, qui traite à la fois la cause de la douleur et supprime définitivement la dent — il n'y a donc pas de traitement différé à programmer. L'extraction ouvrant une plaie muqueuse, elle s'accompagne d'un antalgique et d'un bain de bouche ; l'infection restant localisée et désormais évacuée par l'alvéole, une antibiothérapie n'est pas nécessaire.",
       dejaTraiteeConservable: "La dent est déjà traitée par endodontie : le canal n'est pas rouvert en urgence, mais un curetage carieux et une restauration transitoire étanche sont réalisés pour supprimer une éventuelle voie de recontamination coronaire en attendant le retraitement. La collection périapicale débute mais ne s'est pas encore propagée aux tissus mous (pas de drainage muqueux à ce stade) : une antibiothérapie et un antalgique suffisent, la dent restant conservable. Le retraitement endodontique, avec un antalgique, est ensuite programmé.",
@@ -2763,6 +2768,7 @@
       dejaTraiteeExtraction: "La dent est déjà traitée par endodontie mais n'est plus conservable : aucun geste coronaire n'a de sens, et l'extraction devient le geste d'urgence, associée à un antalgique et un bain de bouche pour la plaie d'extraction ; l'infection restant localisée et évacuée par l'alvéole, une antibiothérapie n'est pas nécessaire."
     }},
     cellulite_suppuree: { byKey: {
+      dejaTraiteeCouronne: "La dent est déjà traitée par endodontie et porte une couronne scellée sur inlay-core, en place et non descellée : aucun geste coronaire n'a lieu d'être à l'urgence, il n'y a ni carie à cureter ni restauration à reprendre. La collection purulente est en revanche déjà constituée dans les tissus mous, d'où le drainage muqueux associé à une antibiothérapie, un antalgique et un bain de bouche (voie muqueuse ouverte). Le retraitement endodontique, par un accès à travers la couronne, est programmé une fois la collection résorbée.",
       conservable: "La collection purulente est déjà constituée dans les tissus mous (signe du godet positif) : il faut à la fois traiter la cause — la pulpectomie d'urgence, qui supprime le foyer infectieux pulpaire — et évacuer le pus par un drainage muqueux, associé à un antalgique, une antibiothérapie et un bain de bouche (la voie muqueuse étant une plaie ouverte). Le traitement endodontique complet, avec un antalgique, est réalisé une fois la collection résorbée.",
       extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, mais la collection purulente déjà constituée impose en plus un drainage par voie muqueuse, un antalgique, une antibiothérapie et un bain de bouche, pour évacuer le pus et contrôler l'infection des tissus mous.",
       dejaTraiteeConservable: "La dent est déjà traitée par endodontie : le canal n'est pas rouvert en urgence, mais un curetage carieux et une restauration transitoire étanche sont réalisés pour supprimer une éventuelle voie de recontamination coronaire en attendant le retraitement. La collection purulente est déjà constituée dans les tissus mous, d'où le drainage muqueux associé à une antibiothérapie, un antalgique et un bain de bouche (voie muqueuse ouverte). Le retraitement endodontique, avec un antalgique, est ensuite programmé une fois la collection résorbée.",

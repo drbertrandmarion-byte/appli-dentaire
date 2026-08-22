@@ -301,6 +301,17 @@ for i in range(len(bornes) - 1):
                         note('thérapeutique', cas,
                              "%d ans + hémostase %s -> attendu « %s », corrigé « %s »" % (a, hemo, att, reel))
 
+        # A2. Dent porteuse d'une couronne scellée sur inlay-core : aucun geste coronaire à
+        #     l'urgence. Il n'y a ni lésion carieuse à cureter ni restauration à refaire, et déposer
+        #     une couronne intacte n'apporterait rien à ce stade — l'accès au canal se fera au
+        #     retraitement, à travers elle.
+        if "coronal: 'crown_inlay'" in v:
+            ax = re.search(r"coronaire:\[([^\]]*)\]", v)
+            reel = ax.group(1).replace("'", "").replace(" ", "") if ax else '?'
+            if reel != 'aucun':
+                note('thérapeutique', cas,
+                     "dent couronnée mais geste coronaire attendu « %s » (doit être « aucun »)" % reel)
+
         # A. profondeur : l'énoncé et la radiographie doivent nommer la même
         if rt:
             pe, pr = profondeur_citee(pl), profondeur_citee(rt)
