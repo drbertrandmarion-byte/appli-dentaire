@@ -13,11 +13,11 @@ const CASES = {
   Robert: { title: 'Hyperhémie pulpaire', urgence: { coronaire: ['aucun'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['curetage'], coronaire: ['restauration_definitive'], medicamenteux: ['aucun'] } },
   Sylvie: { title: 'Hyperhémie pulpaire', urgence: { coronaire: ['aucun'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['curetage'], coronaire: ['restauration_definitive'], medicamenteux: ['aucun'] } },
   // reversible
-  Élise: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['curetage'], coronaire: ['restauration_definitive'], medicamenteux: ['aucun'] } },
-  Thomas: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['curetage'], coronaire: ['restauration_definitive'], medicamenteux: ['aucun'] } },
-  Sophie: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['curetage'], coronaire: ['restauration_definitive'], medicamenteux: ['aucun'] } },
-  Lucas: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['curetage'], coronaire: ['restauration_definitive'], medicamenteux: ['aucun'] } },
-  Camille: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['curetage'], coronaire: ['restauration_definitive'], medicamenteux: ['aucun'] } },
+  Élise: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['rien'], coronaire: ['restauration_definitive'], medicamenteux: ['aucun'] } },
+  Thomas: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['rien'], coronaire: ['restauration_definitive'], medicamenteux: ['aucun'] } },
+  Sophie: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['rien'], coronaire: ['restauration_definitive'], medicamenteux: ['aucun'] } },
+  Lucas: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['rien'], coronaire: ['restauration_definitive'], medicamenteux: ['aucun'] } },
+  Camille: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['rien'], coronaire: ['restauration_definitive'], medicamenteux: ['aucun'] } },
 };
 
 // irreversible has name collisions with reversible (Lucas, Thomas, Sophie) -- disambiguate via title

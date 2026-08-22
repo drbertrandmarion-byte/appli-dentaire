@@ -1829,7 +1829,7 @@
     {id:'bain_bouche', label:"Bain de bouche (chlorhexidine)"}
   ];
   var TX_FINAL_GESTE_OPTIONS = [
-    {id:'rien', label:"Aucun traitement nécessaire"},
+    {id:'rien', label:"Aucun geste"},
     {id:'curetage', label:"Curetage carieux"},
     {id:'endo_complet', label:"Traitement endodontique complet"},
     {id:'retraitement', label:"Retraitement endodontique (dépose et reprise du traitement canalaire)"},
@@ -2035,7 +2035,7 @@
         finalLine: "Quel traitement définitif prévoyez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
+        finalAxes: {geste:['rien'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Thomas, 28 ans, consulte pour une sensibilité au froid sur une dent présentant une carie. La douleur est courte, localisée et disparaît en quelques secondes après retrait du stimulus. Le diagnostic de pulpite réversible est posé.",
@@ -2043,7 +2043,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
+        finalAxes: {geste:['rien'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Sophie, 42 ans, consulte pour une douleur provoquée par le froid au niveau d'une molaire. La douleur est immédiate mais très brève et cesse spontanément dès que le stimulus disparaît. Le diagnostic de pulpite réversible est posé. La radiographie montre une carie dentinaire sans signe d'atteinte périapicale. Il n'existe pas de douleur spontanée ni de douleur nocturne.",
@@ -2051,7 +2051,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
+        finalAxes: {geste:['rien'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Lucas, 12 ans, consulte pour une douleur provoquée par les boissons froides et les aliments sucrés. La douleur est courte et disparaît immédiatement après l'arrêt du stimulus. Le diagnostic de pulpite réversible est posé. La dent présente une carie profonde proche de la pulpe, mais aucun signe clinique d'atteinte pulpaire irréversible.",
@@ -2059,7 +2059,7 @@
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
+        finalAxes: {geste:['rien'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Camille, 35 ans, consulte pour une sensibilité au froid sur une prémolaire présentant une restauration ancienne défectueuse. La douleur est déclenchée uniquement par le froid, reste faible et disparaît rapidement après retrait du stimulus. Le diagnostic de pulpite réversible est posé. L'ancienne restauration est infiltrée et doit être remplacée. Aucun signe de nécrose ou de pulpite irréversible n'est retrouvé.",
@@ -2067,7 +2067,7 @@
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
+        finalAxes: {geste:['rien'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       }
     ],
 
@@ -2697,7 +2697,7 @@
   var TX_RECAP_TYPES = {
     saine:              [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['rien'], coronaire:['aucune'], medicamenteux:['aucun']}} ],
     hyperhemie:         [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}} ],
-    reversible:         [ {condition:null, axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}} ],
+    reversible:         [ {condition:null, axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['rien'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}} ],
     irreversible: [
       {condition:"Moins de 30 ans, saignement facilement contrôlé", axes:{coronaire:['curetage', 'pulpotomie_therapeutique', 'reconstitution_definitive'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:null},
       {condition:"Moins de 30 ans, saignement important mais maîtrisé", axes:{coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
@@ -4488,7 +4488,7 @@
         // Le groupe porte une clé DOM distincte de celle de l'urgence : les deux étapes ne sont
         // jamais affichées ensemble, mais un nom partagé ferait lire l'un pour l'autre au premier
         // remaniement de l'enchaînement.
-        html += txCheckboxGroupHtml('Traitement final', TX_FINAL_GESTE_OPTIONS, 'geste') +
+        html += txCheckboxGroupHtml('Geste sur la dent', TX_FINAL_GESTE_OPTIONS, 'geste') +
           txCheckboxGroupHtml('Restauration coronaire définitive', TX_FINAL_CORONAIRE_OPTIONS, 'coronaire_final') +
           txCheckboxGroupHtml('Geste médicamenteux (traitement final)', TX_MEDIC_OPTIONS, 'medicamenteux') +
           '<div class="result-actions"><button class="btn-primary" id="tx-step-submit-btn">Valider</button></div>';
@@ -4634,7 +4634,7 @@
       recapEl.appendChild(txCheckboxCorrectionRow('Geste chirurgical', TX_CHIRURGICAL_OPTIONS, txStepAnswers.urgence1Sets.chirurgical, txVariant.axes.chirurgical));
       recapEl.appendChild(txCheckboxCorrectionRow('Geste médicamenteux (urgence)', TX_MEDIC_OPTIONS, txStepAnswers.urgence1Sets.medicamenteux, txVariant.axes.medicamenteux));
       if(txVariant.finalAxes){
-        recapEl.appendChild(txCheckboxCorrectionRow('Traitement final', TX_FINAL_GESTE_OPTIONS, txStepAnswers.finalSets.geste, txVariant.finalAxes.geste));
+        recapEl.appendChild(txCheckboxCorrectionRow('Geste sur la dent', TX_FINAL_GESTE_OPTIONS, txStepAnswers.finalSets.geste, txVariant.finalAxes.geste));
         recapEl.appendChild(txCheckboxCorrectionRow('Restauration coronaire définitive', TX_FINAL_CORONAIRE_OPTIONS, txStepAnswers.finalSets.coronaire, txVariant.finalAxes.coronaire));
         recapEl.appendChild(txCheckboxCorrectionRow('Geste médicamenteux (traitement final)', TX_MEDIC_OPTIONS, txStepAnswers.finalSets.medicamenteux, txVariant.finalAxes.medicamenteux));
       }

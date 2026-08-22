@@ -95,8 +95,11 @@ Elle termine par `Anomalies : 0`.
 Elle contrôle aussi l'**état périapical** : ligament sain, ligament élargi ou lésion
 constituée, tels que le texte les décrit, contre ce que le schéma dessine.
 
-Et la **restauration coronaire du traitement final** : toute dent traitée ou retraitée doit être
-reconstituée, aucune dent extraite ne doit l'être. La règle est appliquée aux 86 cas et aux 22
+Et la **restauration coronaire du traitement final**. La règle ne se déduit pas du seul geste final :
+une pulpite réversible n'a plus rien à faire sur la dent ce jour-là — le curetage a eu lieu à
+l'urgence — et doit pourtant être restaurée définitivement. Ce qui est contrôlé est donc ce qui a été
+fait à la dent en tout, urgence comprise : dent extraite ou dent jamais touchée, rien à reconstituer ;
+dans tous les autres cas, restauration définitive. La règle est appliquée aux 86 cas et aux 22
 lignes de la fiche récapitulative imprimable — c'est elle que l'étudiant relit chez lui, et une
 ligne qui contredirait le corrigé y enseignerait durablement l'inverse. Un traitement final qui ne
 déclarerait aucune restauration est signalé au même titre qu'une restauration fausse : sans clé

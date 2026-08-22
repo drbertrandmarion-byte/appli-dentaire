@@ -98,14 +98,14 @@ const LIRE_CORRECTION = () => {
     'Geste coronaire': 'coronaire',
     'Geste chirurgical': 'chirurgical',
     'Geste médicamenteux (urgence)': 'medicamenteux',
-    'Traitement final': 'geste',
+    'Geste sur la dent': 'geste',
     'Restauration coronaire définitive': 'coronaire_final',
     'Geste médicamenteux (traitement final)': 'medicamenteux'
   };
   Array.prototype.slice.call(document.querySelectorAll('#tx-result-recap .score-row'))
     .forEach(function(row){
       const titre = row.querySelector('.real').textContent.trim();
-      const etape = (titre === 'Traitement final' || titre === 'Restauration coronaire définitive'
+      const etape = (titre === 'Geste sur la dent' || titre === 'Restauration coronaire définitive'
                      || titre.indexOf('traitement final') !== -1) ? 'final' : 'urgence';
       const g = cle[titre];
       if (!g) return;

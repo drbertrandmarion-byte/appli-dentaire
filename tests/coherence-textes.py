@@ -48,18 +48,25 @@ for m in re.finditer(r'\n    (\w+):\s*\{depth:"(\w+)",\s*apical:\s*(true|false)'
 APICAL_NOTE = dict(re.findall(r'\n    (\w+):\s*\{[^}]*?apicalNote:"([^"]*)"', s, re.S))
 
 
-# Restauration coronaire attendue au rendez-vous de soins, selon le geste final. Un geste non prévu
-# renvoie None : il sera signalé, jamais passé sous silence — un classificateur muet donnerait une
-# fausse assurance sur les cas qu'il ne sait pas lire.
-RESTAURATION = {
-    'endo_complet': 'restauration_definitive',
-    'retraitement': 'restauration_definitive',
-    'curetage':     'restauration_definitive',   # hyperhémie et pulpite réversible
-    'extraction':   'aucune',
-    'rien':         'aucune',
-}
-def restauration_attendue(geste):
-    return RESTAURATION.get(geste)
+# Restauration coronaire attendue au rendez-vous de soins. Elle ne se déduit pas du seul geste
+# final : une pulpite réversible n'a plus rien à faire sur la dent ce jour-là — le curetage a été
+# réalisé à l'urgence — et doit pourtant être restaurée définitivement. La règle porte donc sur ce
+# qui a été fait à la dent en tout, urgence comprise :
+#   dent extraite            -> rien à reconstituer ;
+#   dent à laquelle on n'a jamais touché (saine) -> rien à reconstituer ;
+#   dans tous les autres cas -> restauration définitive.
+GESTES_FINAUX = {'endo_complet', 'retraitement', 'curetage', 'extraction', 'rien'}
+
+def restauration_attendue(geste_final, coronaire_urgence):
+    """None pour un geste non prévu : il sera signalé, jamais passé sous silence — un
+    classificateur muet donnerait une fausse assurance sur les cas qu'il ne sait pas lire."""
+    if geste_final not in GESTES_FINAUX:
+        return None
+    if geste_final == 'extraction':
+        return 'aucune'
+    if geste_final == 'rien' and coronaire_urgence == 'aucun':
+        return 'aucune'
+    return 'restauration_definitive'
 
 pbs = []
 def note(mode, cas, txt):
@@ -358,7 +365,9 @@ for i in range(len(bornes) - 1):
             else:
                 geste = fa.group(1)
                 reel = fa.group(2).replace("'", "").replace(" ", "")
-                att = restauration_attendue(geste)
+                axu = re.search(r"coronaire:\[([^\]]*)\]", v)
+                urg = axu.group(1).replace("'", "").replace(" ", "") if axu else '?'
+                att = restauration_attendue(geste, urg)
                 if att is None:
                     note('thérapeutique', cas,
                          "geste final « %s » inconnu de la règle de restauration" % geste)
@@ -378,10 +387,11 @@ for i in range(len(bornes) - 1):
 # corrigé y enseignerait durablement l'inverse de l'application.
 rb = s[s.index('var TX_RECAP_TYPES'):s.index('\n  };', s.index('var TX_RECAP_TYPES'))]
 lignes = 0
-for m in re.finditer(r"finalAxes:\{geste:\['(\w+)'\],\s*coronaire:\[([^\]]*)\]", rb):
+for m in re.finditer(r"axes:\{coronaire:\[([^\]]*)\].*?finalAxes:\{geste:\['(\w+)'\],\s*coronaire:\[([^\]]*)\]", rb):
     lignes += 1
-    geste, reel = m.group(1), m.group(2).replace("'", "").replace(" ", "")
-    att = restauration_attendue(geste)
+    urg = m.group(1).replace("'", "").replace(" ", "")
+    geste, reel = m.group(2), m.group(3).replace("'", "").replace(" ", "")
+    att = restauration_attendue(geste, urg)
     if att is None:
         note('récapitulatif', geste, "geste final inconnu de la règle de restauration")
     elif reel != att:
