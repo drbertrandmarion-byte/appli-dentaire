@@ -95,6 +95,12 @@ Elle termine par `Anomalies : 0`.
 Elle contrôle aussi l'**état périapical** : ligament sain, ligament élargi ou lésion
 constituée, tels que le texte les décrit, contre ce que le schéma dessine.
 
+Elle contrôle aussi qu'une **restauration récente — donc étanche** — n'appelle ni curetage (aucune
+carie) ni reconstitution provisoire (l'étanchéité est déjà assurée), tant qu'aucun geste pulpaire
+n'est réalisé. Les pulpites irréversibles survenues sous une restauration récente ouvrent la dent et
+restent volontairement hors de ce contrôle : la limite est écrite dans le fichier plutôt que tue,
+car une règle dont on ignore la portée donne une fausse assurance sur les cas qu'elle ne couvre pas.
+
 Et la **restauration coronaire du traitement final**. La règle ne se déduit pas du seul geste final :
 une pulpite réversible n'a plus rien à faire sur la dent ce jour-là — le curetage a eu lieu à
 l'urgence — et doit pourtant être restaurée définitivement. Ce qui est contrôlé est donc ce qui a été

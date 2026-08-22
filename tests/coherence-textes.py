@@ -336,6 +336,28 @@ for i in range(len(bornes) - 1):
                 note('thérapeutique', cas,
                      "dent couronnée mais geste coronaire attendu « %s » (doit être « aucun »)" % reel)
 
+        # A3. Restauration récente, donc étanche et sans reprise carieuse. Il n'y a alors rien à
+        #     cureter — aucune carie — et rien à reconstituer — l'étanchéité coronaire est déjà
+        #     assurée : ouvrir la dent n'exposerait le système canalaire sans aucun bénéfice.
+        #
+        #     La règle ne s'applique qu'aux cas où AUCUN geste pulpaire n'est réalisé en urgence.
+        #     Les pulpites irréversibles survenues sous une restauration récente (Aïcha, Justine,
+        #     Pauline, Sabrina) ouvrent la dent pour la pulpotomie ou la pulpectomie : la question de
+        #     savoir si « curetage carieux » y a encore un sens — l'énoncé dit « sans reprise
+        #     carieuse » — reste posée à l'enseignant, et ces cas sont donc hors de ce contrôle.
+        #     Cette limite est écrite ici plutôt que tue : une règle dont on ignore la portée donne
+        #     une fausse assurance sur les cas qu'elle ne couvre pas.
+        etanche = re.search(r"restauration récente|soin récent", (pl + ' ' + rt), re.I) \
+                  and not re.search(r"perdu son étanchéité|infiltrée|réinfiltrée", (pl + ' ' + rt), re.I)
+        geste_pulpaire = re.search(r"pulpotomie|pulpectomie", v)
+        if etanche and not geste_pulpaire:
+            ax = re.search(r"coronaire:\[([^\]]*)\]", v)
+            reel = ax.group(1).replace("'", "").replace(" ", "") if ax else '?'
+            if reel != 'aucun':
+                note('thérapeutique', cas,
+                     "restauration récente (étanche) et aucun geste pulpaire, mais geste coronaire "
+                     "attendu « %s » (doit être « aucun » : rien à cureter, rien à reconstituer)" % reel)
+
         # A. profondeur : l'énoncé et la radiographie doivent nommer la même
         if rt:
             pe, pr = profondeur_citee(pl), profondeur_citee(rt)

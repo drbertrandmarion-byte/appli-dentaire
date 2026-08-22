@@ -48,8 +48,15 @@ const IRREVERSIBLE = {
 ['Frédéric', 'Amandine', 'Bruno', 'Nathalie', 'Olivier'].forEach(n => {
   CASES[n] = { title: 'Syndrome mixte', urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['antalgique'] }, final: { geste: ['endo_complet'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
 });
-['Léon', 'Margaux', 'Étienne', 'Noémie', 'Romain', 'Agathe'].forEach(n => {
+// Lésion carieuse ou restauration infiltrée : il y a de quoi cureter, et l'étanchéité est à refaire.
+['Léon', 'Étienne', 'Noémie', 'Romain'].forEach(n => {
   CASES[n + '|Nécrose pulpaire'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['endo_complet'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
+});
+// Restauration récente, donc étanche et sans reprise carieuse : rien à cureter, rien à reconstituer.
+// Ces deux-là sont séparés du groupe précédent à dessein — regroupés, une erreur sur leur corrigé
+// passerait inaperçue, comme c'est déjà arrivé sur les fractures coronaires.
+['Margaux', 'Agathe'].forEach(n => {
+  CASES[n + '|Nécrose pulpaire'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['aucun'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['endo_complet'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
 });
 CASES['Bernard'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['aucun'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['extraction'], coronaire: ['aucune'], medicamenteux: ['antalgique', 'bain_bouche'] } };
 ['Céline', 'Pierre', 'Isabelle', 'Xavier', 'Valérie'].forEach(n => {

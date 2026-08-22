@@ -2215,8 +2215,8 @@
         radioText: "Restauration récente, à proximité de la pulpe. Ligament parodontal apical légèrement épaissi, sans lésion radioclaire constituée.",
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle prise en charge programmez-vous ?",
-        rationaleKey: 'conservable',
-        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        rationaleKey: 'conservableEtanche',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
@@ -2252,8 +2252,8 @@
         radioText: "Restauration récente, à proximité de la pulpe. Présence d'une discrète image radioclaire apicale.",
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement choisissez-vous ?",
-        rationaleKey: 'conservable',
-        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        rationaleKey: 'conservableEtanche',
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
@@ -2706,7 +2706,8 @@
     ],
     syndrome_mixte:     [ {condition:null, axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}} ],
     necrose: [
-      {condition:"Dent conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"Dent conservable, sous une lésion carieuse ou une restauration infiltrée", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"Dent conservable, sous une restauration étanche : rien à cureter ni à reconstituer", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Dent non conservable (limite infra-osseuse)", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['extraction'], coronaire:['aucune'], medicamenteux:['antalgique', 'bain_bouche']}}
     ],
     parodontite: [
@@ -2762,6 +2763,7 @@
     syndrome_mixte: "La dent est pluriradiculée avec un état pulpaire mixte : un canal encore vivant et en inflammation aiguë, un autre déjà nécrosé et potentiellement infecté. Comme il est impossible de traiter différemment chaque canal en urgence, on réalise une pulpectomie d'urgence sur l'ensemble des canaux, y compris le canal encore vital, pour lever la douleur et éviter la prolifération bactérienne depuis le canal nécrosé. Le traitement endodontique complet, à programmer, traite ensuite chaque canal selon son propre état (vital ou nécrosé).",
     necrose: { byKey: {
       conservable: "La dent n'est pas symptomatique : elle ne nécessite pas de geste endodontique ni de médicament en urgence. On réalise cependant un curetage carieux avec une reconstitution coronaire provisoire, dans le double but de diminuer la charge bactérienne coronaire et de redonner à la dent un peu de fonctionnalité mécanique, afin d'éviter une fracture secondaire qui mettrait en jeu sa conservabilité en attendant le traitement endodontique complet. Celui-ci est ensuite programmé sur un créneau classique, avec un antalgique pour la séance de traitement, en expliquant au patient les risques d'une absence de traitement — l'évolution vers une infection périapicale — tout en lui indiquant de revenir consulter en urgence si des symptômes apparaissent.",
+      conservableEtanche: "La dent n'est pas symptomatique : elle ne nécessite ni geste ni médicament en urgence. La restauration en place est récente et étanche, sans reprise carieuse : il n'y a rien à cureter, et rien à reconstituer puisque l'étanchéité coronaire est déjà assurée — ouvrir la dent aujourd'hui ne ferait qu'exposer le système canalaire sans aucun bénéfice. Le traitement endodontique complet est donc programmé sur un créneau classique, avec un antalgique pour la séance ; c'est à son issue que la restauration définitive sera refaite, l'accès endodontique ayant traversé la restauration existante. On explique au patient le risque d'évolution vers une infection périapicale en l'absence de traitement, en lui indiquant de revenir consulter en urgence si des symptômes apparaissent.",
       nonconservable: "La dent n'est pas symptomatique et le délabrement infra-osseux la rend non conservable : il n'y a donc rien à faire en urgence, ni geste ni médicament, puisqu'aucune infection active ne le justifie dans l'immédiat. L'extraction est programmée comme traitement final, associée à un antalgique et un bain de bouche pour la gestion post-opératoire de la plaie d'extraction — l'antibiothérapie et les AINS ne sont pas nécessaires puisqu'il n'y a pas d'infection à traiter."
     }},
     parodontite: { byKey: {
