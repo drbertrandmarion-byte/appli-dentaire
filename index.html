@@ -159,6 +159,14 @@
   .back-nav-btn svg{display:block;}
   .back-nav-btn:hover{border-color:var(--tx-accent);}
 
+  /* Confettis du sans-faute : une couche qui recouvre toute la page, au-dessus de la barre de
+     commandes (9500) et sous l'écran d'ouverture (9999). « pointer-events:none » est essentiel —
+     sans lui, la couche avalerait le clic sur « Recommencer une série » pendant l'animation. */
+  #confetti-layer{
+    position:fixed; inset:0; z-index:9600;
+    pointer-events:none;
+  }
+
   /* Animation d'ouverture : reprend le logo, disparaît une fois jouée (ou immédiatement si l'utilisateur clique / appuie sur une touche, ou si le système demande de réduire les animations). */
   #splash-screen{
     position:fixed; inset:0; z-index:9999;
@@ -1649,6 +1657,10 @@
   // état voulu même en cas d'appels rapprochés.
   function hideEl(el){
     if(!el || (el.__fadeTarget || (el.classList.contains('hidden') ? 'hidden' : 'visible')) === 'hidden') return;
+    // Les confettis appartiennent à l'écran de score : dès qu'il s'efface — série relancée, retour,
+    // accueil — ils s'arrêtent. Les rattacher ici plutôt qu'à chacun de ces chemins évite d'en
+    // oublier un le jour où un nouveau bouton quittera cet écran.
+    if(el.classList.contains('quiz-score-card') && window.EndoConfetti) window.EndoConfetti.stop();
     if(el.__fadeTimer) clearTimeout(el.__fadeTimer);
     trackFade(el);
     el.__fadeTarget = 'hidden';
@@ -4733,6 +4745,119 @@
     txResultCard.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
+  // ---------------------------------------------------------------------------
+  //  Confettis du sans-faute
+  // ---------------------------------------------------------------------------
+  // Un sans-faute — 5/5 ou 10/10 — fait tomber des confettis par-dessus la page. Le tracé se fait
+  // sur un <canvas> créé pour l'occasion et retiré à la fin : rien ne subsiste entre deux séries,
+  // et aucune image n'est chargée. Le canvas est préféré à des <div> animés en CSS parce qu'une
+  // centaine d'éléments positionnés ferait ramer les téléphones sur lesquels l'application tourne.
+  var EndoConfetti = (function(){
+    var COULEURS = ['#0f9488', '#14b8a6', '#3f66d8', '#e8532e', '#f2b134', '#be185d', '#7c3aed'];
+    var DUREE = 4.2;          // secondes, fondu de sortie compris
+    var GRAVITE = 45;         // px/s² : volontairement faible, le papier freine en tombant
+
+    var canvas = null, ctx = null, raf = 0, particules = [], t0 = 0, tPrec = 0;
+
+    function dimensionner(){
+      if(!canvas) return;
+      // Le canvas est dessiné à la résolution de l'écran puis affiché à la taille CSS, sinon les
+      // confettis sont flous sur les écrans à forte densité. Plafonné à 2 : au-delà, le coût de
+      // remplissage grimpe sans gain visible.
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width  = Math.floor(window.innerWidth  * dpr);
+      canvas.height = Math.floor(window.innerHeight * dpr);
+      canvas.style.width  = window.innerWidth + 'px';
+      canvas.style.height = window.innerHeight + 'px';
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function semer(nombre){
+      var large = window.innerWidth, haut = window.innerHeight;
+      var out = [];
+      for(var i = 0; i < nombre; i++){
+        out.push({
+          x: Math.random() * large,
+          // Échelonnés au-dessus de l'écran : ils entrent par vagues au lieu de tomber en bloc.
+          y: -20 - Math.random() * haut * 0.9,
+          vx: (Math.random() - 0.5) * 40,
+          vy: 90 + Math.random() * 130,
+          larg: 3 + Math.random() * 3,
+          haut: 6 + Math.random() * 7,
+          rot: Math.random() * Math.PI,
+          vrot: (Math.random() - 0.5) * 6,
+          phase: Math.random() * Math.PI * 2,
+          balance: 14 + Math.random() * 26,
+          couleur: COULEURS[(Math.random() * COULEURS.length) | 0]
+        });
+      }
+      return out;
+    }
+
+    function pas(t){
+      if(!ctx) return;
+      if(!t0){ t0 = t; tPrec = t; }
+      var age = (t - t0) / 1000;
+      // dt borné : après un passage en arrière-plan, l'onglet rend un écart de plusieurs secondes
+      // qui téléporterait tous les confettis d'un coup sous l'écran.
+      var dt = Math.min((t - tPrec) / 1000, 0.05);
+      tPrec = t;
+
+      var large = window.innerWidth, haut = window.innerHeight;
+      ctx.clearRect(0, 0, large, haut);
+      ctx.globalAlpha = age > DUREE - 1 ? Math.max(0, DUREE - age) : 1;
+
+      var vivants = 0;
+      for(var i = 0; i < particules.length; i++){
+        var p = particules[i];
+        p.vy += GRAVITE * dt;
+        p.y += p.vy * dt;
+        p.x += (p.vx + Math.sin(age * 2.4 + p.phase) * p.balance) * dt;
+        p.rot += p.vrot * dt;
+        if(p.y > haut + 40) continue;   // sorti par le bas : plus rien à dessiner
+        vivants++;
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        // Le papier se présente tantôt de face, tantôt de profil : c'est ce battement, plus que la
+        // rotation, qui fait lire le confetti comme une feuille et non comme un carré qui tourne.
+        ctx.scale(1, Math.cos(age * 4 + p.phase));
+        ctx.fillStyle = p.couleur;
+        ctx.fillRect(-p.larg / 2, -p.haut / 2, p.larg, p.haut);
+        ctx.restore();
+      }
+
+      if(!vivants || age > DUREE){ stop(); return; }
+      raf = requestAnimationFrame(pas);
+    }
+
+    function stop(){
+      if(raf){ cancelAnimationFrame(raf); raf = 0; }
+      window.removeEventListener('resize', dimensionner);
+      if(canvas && canvas.parentNode) canvas.parentNode.removeChild(canvas);
+      canvas = null; ctx = null; particules = []; t0 = 0; tPrec = 0;
+    }
+
+    function lancer(total){
+      // Le système peut demander de réduire les animations : on respecte ce réglage, comme le fait
+      // déjà l'écran d'ouverture.
+      if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+      stop();                                   // une série relancée très vite ne doit pas empiler deux pluies
+      canvas = document.createElement('canvas');
+      canvas.id = 'confetti-layer';
+      canvas.setAttribute('aria-hidden', 'true');   // purement décoratif : rien à annoncer au lecteur d'écran
+      document.body.appendChild(canvas);
+      ctx = canvas.getContext('2d');
+      dimensionner();
+      window.addEventListener('resize', dimensionner);
+      particules = semer(total >= 10 ? 110 : 70);
+      raf = requestAnimationFrame(pas);
+    }
+
+    return { lancer: lancer, stop: stop };
+  })();
+  window.EndoConfetti = EndoConfetti;
+
   var SCORE_JOKES_5 = [
     "Même la petite souris fait mieux.",
     "Une dent de sagesse... mais pas encore sortie.",
@@ -4783,6 +4908,7 @@
     });
 
     quizScoreCard.scrollIntoView({behavior:'smooth', block:'start'});
+    if(scoreCount === quizLength) EndoConfetti.lancer(quizLength);
   }
 
   var TX_SCORE_JOKES_5 = [
@@ -4834,6 +4960,7 @@
     });
 
     txQuizScoreCard.scrollIntoView({behavior:'smooth', block:'start'});
+    if(scoreCount === txQuizLength) EndoConfetti.lancer(txQuizLength);
   }
 
   // Pour les diagnostics dont le pronostic (donc le traitement) dépend de la limite du délabrement,

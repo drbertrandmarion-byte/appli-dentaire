@@ -25,6 +25,7 @@ node tests/schemas-soins.js
 node tests/legendes-schemas.js
 python3 tests/coherence-textes.py
 node tests/back-office.js
+node tests/confettis.js
 ```
 
 Résultats attendus :
@@ -43,7 +44,7 @@ Erreurs : 0
 Les autres suites se terminent par `Erreurs : 0` ou `Problèmes : 0`. `back-office.js`
 affiche en plus des tableaux à relire à l'œil — voir plus bas.
 
-## Les huit suites
+## Les neuf suites
 
 | Fichier | Ce qu'il vérifie |
 |---|---|
@@ -55,6 +56,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 | `legendes-schemas.js` | Que chaque entrée de légende corresponde au tracé : rien de superflu, rien de manquant |
 | `coherence-textes.py` | Que l'énoncé, la radiographie et le schéma disent la même chose — **tous** les cas, sans tirage |
 | `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion et export Excel |
+| `confettis.js` | Que les confettis tombent sur un sans-faute, et **seulement** sur un sans-faute |
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
 un différentiel affiché sur une erreur et jamais sur une bonne réponse, et surtout un
@@ -105,6 +107,26 @@ formule trop permissive masquerait une vraie contradiction. Deux garde-fous en d
 Après toute modification de ces expressions régulières, vérifiez qu'elles se déclenchent
 encore, en dégradant volontairement une valeur du fichier (retirer une fistule, une
 tuméfaction, une correction apicale) et en contrôlant que l'audit le signale.
+
+`confettis.js` joue de vraies séries jusqu'au bout dans les deux modes : ce qui peut casser n'est
+pas le tracé de l'animation, c'est la condition qui la déclenche. Obtenir un sans-faute suppose de
+connaître le corrigé de cas tirés au hasard ; plutôt que d'en recopier une table — qui se périmerait
+à la première modification de l'application —, le test **remplace `Math.random` par un générateur
+déterministe** et joue chaque série deux fois : au premier passage il répond n'importe quoi et lit
+les bonnes réponses dans la correction affichée, au second il rejoue la même série — identique,
+puisque le tirage l'est — en répondant juste. Un rejeu qui n'atteint pas le sans-faute fait échouer
+le test : sans cela, il ne prouverait rien.
+
+Il contrôle ensuite le rendu réel du canvas, pas sa seule présence : les confettis doivent
+**descendre** (le centre de gravité des pixels dessinés s'abaisse d'une mesure à l'autre) et la
+pluie doit s'étoffer. Il vérifie aussi que la couche ne se met pas en travers — le clic au centre du
+bouton « Recommencer une série » doit l'atteindre, lui et non le canvas —, qu'elle disparaît quand on
+quitte l'écran de score comme à la fin de l'animation, et que rien ne tombe si le système demande de
+réduire les animations. Il termine par `Erreurs : 0`.
+
+Ses six mutations de contrôle : neutraliser le déclencheur de chaque mode, retirer
+`pointer-events:none`, ignorer `prefers-reduced-motion`, supprimer l'arrêt au départ de l'écran de
+score, et ne jamais retirer le canvas. Les six sont bien signalées.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas
