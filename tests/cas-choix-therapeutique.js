@@ -13,31 +13,31 @@ const CASES = {
   Robert: { title: 'Hyperhémie pulpaire', urgence: { coronaire: ['aucun'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['soin'], medicamenteux: ['aucun'] } },
   Sylvie: { title: 'Hyperhémie pulpaire', urgence: { coronaire: ['aucun'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['soin'], medicamenteux: ['aucun'] } },
   // reversible
-  Élise: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['soin'], medicamenteux: ['aucun'] } },
-  Thomas: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['soin'], medicamenteux: ['aucun'] } },
-  Sophie: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['soin'], medicamenteux: ['aucun'] } },
-  Lucas: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['soin'], medicamenteux: ['aucun'] } },
-  Camille: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['soin'], medicamenteux: ['aucun'] } },
+  Élise: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['soin'], medicamenteux: ['aucun'] } },
+  Thomas: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['soin'], medicamenteux: ['aucun'] } },
+  Sophie: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['soin'], medicamenteux: ['aucun'] } },
+  Lucas: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['soin'], medicamenteux: ['aucun'] } },
+  Camille: { title: 'Pulpite réversible', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['soin'], medicamenteux: ['aucun'] } },
 };
 
 // irreversible has name collisions with reversible (Lucas, Thomas, Sophie) -- disambiguate via title
 const IRREVERSIBLE = {
-  Lucas: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
-  Hugo: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
-  Emma: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
-  Corentin: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
-  Aïcha: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
-  Séverine: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
-  Thomas: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
-  Sophie: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
-  Jean: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
-  Benoît: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
-  Justine: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
-  Michel: { urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
-  Léa: { urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
-  Youssef: { urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
-  Pauline: { urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
-  Sabrina: { urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Lucas: { urgence: { coronaire: ['curetage', 'pulpotomie_therapeutique', 'reconstitution_definitive'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
+  Hugo: { urgence: { coronaire: ['curetage', 'pulpotomie_therapeutique', 'reconstitution_definitive'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
+  Emma: { urgence: { coronaire: ['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Corentin: { urgence: { coronaire: ['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Aïcha: { urgence: { coronaire: ['curetage', 'pulpotomie_therapeutique', 'reconstitution_definitive'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
+  Séverine: { urgence: { coronaire: ['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Thomas: { urgence: { coronaire: ['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Sophie: { urgence: { coronaire: ['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Jean: { urgence: { coronaire: ['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Benoît: { urgence: { coronaire: ['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Justine: { urgence: { coronaire: ['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Michel: { urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Léa: { urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Youssef: { urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Pauline: { urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Sabrina: { urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
 };
 ['Lucas', 'Hugo', 'Emma', 'Corentin', 'Aïcha', 'Séverine',
  'Thomas', 'Sophie', 'Jean', 'Benoît', 'Justine',
@@ -46,59 +46,74 @@ const IRREVERSIBLE = {
 });
 
 ['Frédéric', 'Amandine', 'Bruno', 'Nathalie', 'Olivier'].forEach(n => {
-  CASES[n] = { title: 'Syndrome mixte', urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
+  CASES[n] = { title: 'Syndrome mixte', urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
 });
 ['Léon', 'Margaux', 'Étienne', 'Noémie', 'Romain', 'Agathe'].forEach(n => {
-  CASES[n + '|Nécrose pulpaire'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
+  CASES[n + '|Nécrose pulpaire'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
 });
 CASES['Bernard'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['aucun'], chirurgical: ['aucun'], medicamenteux: ['aucun'] }, final: { geste: ['extraction'], medicamenteux: ['antalgique', 'bain_bouche'] } };
 ['Céline', 'Pierre', 'Isabelle', 'Xavier', 'Valérie'].forEach(n => {
-  CASES[n] = { title: 'Parodontite apicale aiguë', urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
+  CASES[n] = { title: 'Parodontite apicale aiguë', urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
 });
 ['Michel', 'Véronique'].forEach(n => {
-  CASES[n] = { title: 'Parodontite apicale aiguë', urgence: { coronaire: ['curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['antibiotiques', 'antalgique'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
+  CASES[n] = { title: 'Parodontite apicale aiguë', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['antibiotiques', 'antalgique'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
 });
 ['Roger'].forEach(n => {
   CASES[n] = { title: 'Parodontite apicale aiguë', urgence: { coronaire: ['aucun'], chirurgical: ['extraction'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
 });
 ['Denis', 'Martine', 'Fabien'].forEach(n => {
-  CASES[n] = { title: 'Abcès apical aigu', urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['drainage_transfixion'], medicamenteux: ['antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
+  CASES[n] = { title: 'Abcès apical aigu', urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['drainage_transfixion'], medicamenteux: ['antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
 });
 ['Aurélie'].forEach(n => {
   CASES[n] = { title: 'Abcès apical aigu', urgence: { coronaire: ['aucun'], chirurgical: ['extraction'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
 });
-['Nicolas', 'Sandrine'].forEach(n => {
-  CASES[n] = { title: 'Abcès apical aigu', urgence: { coronaire: ['curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['antibiotiques', 'antalgique'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
+// Dent déjà traitée avec reprise carieuse ou obturation réinfiltrée : on cure et on rescelle.
+['Nicolas'].forEach(n => {
+  CASES[n] = { title: 'Abcès apical aigu', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['antibiotiques', 'antalgique'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
+});
+// Couronne fracturée juxta-gingivale : rien à cureter, seule l'étanchéité est à rétablir.
+['Sandrine'].forEach(n => {
+  CASES[n] = { title: 'Abcès apical aigu', urgence: { coronaire: ['reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['antibiotiques', 'antalgique'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
 });
 ['Corinne', 'Damien', 'Élodie'].forEach(n => {
-  CASES[n] = { title: 'Abcès apical chronique', urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['drainage_fistulaire'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
+  CASES[n] = { title: 'Abcès apical chronique', urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['drainage_fistulaire'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
 });
 ['Maryse'].forEach(n => {
-  CASES[n] = { title: 'Abcès apical chronique', urgence: { coronaire: ['curetage_etanche'], chirurgical: ['drainage_fistulaire'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
+  CASES[n] = { title: 'Abcès apical chronique', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['drainage_fistulaire'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
 });
 ['Grégoire'].forEach(n => {
   CASES[n] = { title: 'Abcès apical chronique', urgence: { coronaire: ['aucun'], chirurgical: ['extraction'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
 });
 ['Julien', 'Nadia', 'Marc'].forEach(n => {
-  CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['antalgique', 'antibiotiques'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
+  CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['antalgique', 'antibiotiques'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
 });
 ['Inès'].forEach(n => {
   CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['aucun'], chirurgical: ['extraction'], medicamenteux: ['antalgique', 'antibiotiques', 'bain_bouche'] }, final: null };
 });
-['Rémi', 'Brigitte'].forEach(n => {
-  CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['curetage_etanche'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antibiotiques', 'antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
+// Dent déjà traitée avec reprise carieuse ou obturation réinfiltrée : on cure et on rescelle.
+['Rémi'].forEach(n => {
+  CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antibiotiques', 'antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
+});
+// Couronne fracturée juxta-gingivale : rien à cureter, seule l'étanchéité est à rétablir.
+['Brigitte'].forEach(n => {
+  CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['reconstitution_provisoire'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antibiotiques', 'antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
 });
 ['Gilbert'].forEach(n => {
   CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['aucun'], chirurgical: ['extraction'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
 });
 ['Victor', 'Laura', 'Hakim'].forEach(n => {
-  CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['pulpectomie_urgence', 'curetage_etanche'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antalgique', 'antibiotiques', 'bain_bouche'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
+  CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antalgique', 'antibiotiques', 'bain_bouche'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } };
 });
 ['Paul'].forEach(n => {
   CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['aucun'], chirurgical: ['extraction', 'drainage_muqueuse'], medicamenteux: ['antalgique', 'antibiotiques', 'bain_bouche'] }, final: null };
 });
-['Fabrice', 'Bastien'].forEach(n => {
-  CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['curetage_etanche'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antibiotiques', 'antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
+// Dent déjà traitée avec reprise carieuse ou obturation réinfiltrée : on cure et on rescelle.
+['Fabrice'].forEach(n => {
+  CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antibiotiques', 'antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
+});
+// Couronne fracturée juxta-gingivale : rien à cureter, seule l'étanchéité est à rétablir.
+['Bastien'].forEach(n => {
+  CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['reconstitution_provisoire'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antibiotiques', 'antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], medicamenteux: ['antalgique'] } };
 });
 ['Serge'].forEach(n => {
   CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['aucun'], chirurgical: ['extraction', 'drainage_muqueuse'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };

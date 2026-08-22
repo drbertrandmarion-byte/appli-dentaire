@@ -292,9 +292,12 @@ for i in range(len(bornes) - 1):
                     hemo = None
                     note('thérapeutique', cas, "hémostase non reconnue par l'audit — à classer")
                 if hemo:
-                    if hemo == 'difficile':      att = "pulpectomie_urgence,curetage_etanche"
-                    elif a < 30 and hemo == 'facile': att = "pulpotomie_therapeutique"
-                    else:                        att = "pulpotomie_urgence,curetage_etanche"
+                    if hemo == 'difficile':
+                        att = "curetage,pulpectomie_urgence,reconstitution_provisoire"
+                    elif a < 30 and hemo == 'facile':
+                        att = "curetage,pulpotomie_therapeutique,reconstitution_definitive"
+                    else:
+                        att = "curetage,pulpotomie_urgence,reconstitution_provisoire"
                     ax = re.search(r"coronaire:\[([^\]]*)\]", v)
                     reel = ax.group(1).replace("'", "").replace(" ", "") if ax else '?'
                     if reel != att:

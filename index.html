@@ -1793,12 +1793,13 @@
   // Couleur du schéma pour une dent déjà traitée par endodontie (canal obturé à la gutta-percha).
   var TX_GUTTA_COLOR = '#e0895a';
   var TX_CORONAIRE_OPTIONS = [
-    {id:'aucun', label:"Aucun geste coronaire"},
-    {id:'curetage', label:"Curetage carieux avec coiffage (résine temporaire biocompatible, digue obligatoire)"},
+    {id:'aucun',                    label:"Aucun geste coronaire"},
+    {id:'curetage',                 label:"Curetage carieux"},
     {id:'pulpotomie_therapeutique', label:"Pulpotomie thérapeutique (digue obligatoire)"},
-    {id:'pulpotomie_urgence', label:"Pulpotomie d'urgence (digue obligatoire)"},
-    {id:'pulpectomie_urgence', label:"Pulpectomie d'urgence (digue obligatoire)"},
-    {id:'curetage_etanche', label:"Curetage carieux et restauration transitoire étanche"}
+    {id:'pulpotomie_urgence',       label:"Pulpotomie d'urgence (digue obligatoire)"},
+    {id:'pulpectomie_urgence',      label:"Pulpectomie d'urgence (digue obligatoire)"},
+    {id:'reconstitution_provisoire', label:"Reconstitution provisoire étanche (avec coiffage pulpaire si nécessaire)"},
+    {id:'reconstitution_definitive', label:"Reconstitution définitive"}
   ];
   var TX_CHIRURGICAL_OPTIONS = [
     {id:'aucun', label:"Aucun geste chirurgical"},
@@ -1877,20 +1878,20 @@
         patientLine: "Lucas, 15 ans, consulte pour une douleur intense et spontanée. Le diagnostic de pulpite aiguë irréversible est posé. L'exposition pulpaire carieuse montre un saignement discret, facilement contrôlable, sur un tissu pulpaire rouge rosé et vivant.",
         depth: "supra_gingival", apical: false,
         rationaleKey: 'facile',
-        axes: {coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
+        axes: {coronaire:['curetage', 'pulpotomie_therapeutique', 'reconstitution_definitive'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
       },
       {
         patientLine: "Hugo, 18 ans, consulte pour une douleur aiguë spontanée. Le diagnostic de pulpite aiguë irréversible est posé. L'exposition pulpaire carieuse montre un saignement modéré mais rapidement contrôlable, sur un tissu pulpaire rouge rosé et vivant.",
         depth: "supra_gingival", apical: false,
         rationaleKey: 'facile',
-        axes: {coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
+        axes: {coronaire:['curetage', 'pulpotomie_therapeutique', 'reconstitution_definitive'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
       },
       {
         patientLine: "Emma, 36 ans, présente une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement modéré, contrôlable en quelques minutes, sur un tissu pulpaire rouge rosé et vivant.",
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'age',
-        axes: {coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1899,7 +1900,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'difficile',
-        axes: {coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1907,7 +1908,7 @@
         radioText: "Restauration récente, très proche de la pulpe, sans reprise carieuse. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
         depth: "supra_gingival", apical: false,
         rationaleKey: 'facile',
-        axes: {coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
+        axes: {coronaire:['curetage', 'pulpotomie_therapeutique', 'reconstitution_definitive'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
       },
       {
         patientLine: "Séverine, 44 ans, consulte pour une douleur intense et spontanée sur une dent porteuse d'une ancienne restauration volumineuse. Le diagnostic de pulpite aiguë irréversible est posé : la dépose de la restauration, dont l'étanchéité était perdue, met en évidence une reprise carieuse profonde exposant la pulpe, avec un saignement discret, facilement contrôlable, sur un tissu pulpaire rouge rosé et vivant.",
@@ -1915,7 +1916,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'age',
-        axes: {coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1923,7 +1924,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement doit être programmé ?",
         rationaleKey: 'difficile',
-        axes: {coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1931,7 +1932,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est prévu ?",
         rationaleKey: 'difficile',
-        axes: {coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1939,7 +1940,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'difficile',
-        axes: {coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1948,7 +1949,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement doit être programmé ?",
         rationaleKey: 'difficile',
-        axes: {coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1957,7 +1958,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est prévu ?",
         rationaleKey: 'difficile',
-        axes: {coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1965,7 +1966,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1973,7 +1974,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1982,7 +1983,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -1991,7 +1992,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2000,7 +2001,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
     ],
@@ -2013,7 +2014,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif prévoyez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       },
       {
@@ -2021,7 +2022,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       },
       {
@@ -2029,7 +2030,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       },
       {
@@ -2037,7 +2038,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       },
       {
@@ -2045,7 +2046,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['soin'], medicamenteux:['aucun']}
       }
     ],
@@ -2129,7 +2130,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2137,7 +2138,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2145,7 +2146,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2153,7 +2154,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2161,7 +2162,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       }
     ],
@@ -2186,7 +2187,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2195,7 +2196,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle prise en charge programmez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2204,7 +2205,7 @@
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2214,7 +2215,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement programmez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2223,7 +2224,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2232,7 +2233,7 @@
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2254,7 +2255,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2262,7 +2263,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2270,7 +2271,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2278,7 +2279,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2286,7 +2287,7 @@
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'default',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       // Parodontite apicale aiguë sur dent déjà traitée par endodontie (réinfection) : le canal n'est
@@ -2301,7 +2302,7 @@
         alreadyTreated: true,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
@@ -2310,7 +2311,7 @@
         alreadyTreated: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
@@ -2348,7 +2349,7 @@
         depth: "infra_gingival", apical: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2356,7 +2357,7 @@
         depth: "infra_gingival", apical: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2364,7 +2365,7 @@
         depth: "infra_gingival", apical: true,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2387,7 +2388,7 @@
         alreadyTreated: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
@@ -2396,8 +2397,8 @@
         coronal: 'fracture_juxta',
         alreadyTreated: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
-        rationaleKey: 'dejaTraiteeConservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
+        rationaleKey: 'dejaTraiteeFracture',
+        axes: {coronaire:['reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
@@ -2420,7 +2421,7 @@
         depth: "infra_gingival", apical: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2428,7 +2429,7 @@
         depth: "infra_gingival", apical: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2436,7 +2437,7 @@
         depth: "infra_gingival", apical: true,
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2445,7 +2446,7 @@
         alreadyTreated: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
@@ -2465,7 +2466,7 @@
         depth: "supra_gingival", apical: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois l'épisode infectieux contrôlé ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2473,7 +2474,7 @@
         depth: "juxta_gingival", apical: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2481,7 +2482,7 @@
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement choisissez-vous, une fois l'épisode infectieux contrôlé ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2502,7 +2503,7 @@
         alreadyTreated: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois l'épisode infectieux contrôlé ?",
         rationaleKey: 'dejaTraiteeConservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
@@ -2511,8 +2512,8 @@
         coronal: 'fracture_juxta',
         alreadyTreated: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
-        rationaleKey: 'dejaTraiteeConservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
+        rationaleKey: 'dejaTraiteeFracture',
+        axes: {coronaire:['reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
@@ -2533,7 +2534,7 @@
         depth: "supra_gingival", apical: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois la collection résorbée ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2541,7 +2542,7 @@
         depth: "juxta_gingival", apical: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2549,7 +2550,7 @@
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement choisissez-vous, une fois la collection résorbée ?",
         rationaleKey: 'conservable',
-        axes: {coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
+        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
         finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
       },
       {
@@ -2568,7 +2569,7 @@
         alreadyTreated: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois la collection résorbée ?",
         rationaleKey: 'dejaTraiteeConservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
+        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
@@ -2587,8 +2588,8 @@
         coronal: 'fracture_juxta',
         alreadyTreated: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
-        rationaleKey: 'dejaTraiteeConservable',
-        axes: {coronaire:['curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
+        rationaleKey: 'dejaTraiteeFracture',
+        axes: {coronaire:['reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
         finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
       },
       {
@@ -2676,47 +2677,47 @@
   var TX_RECAP_TYPES = {
     saine:              [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['rien'], medicamenteux:['aucun']}} ],
     hyperhemie:         [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['soin'], medicamenteux:['aucun']}} ],
-    reversible:         [ {condition:null, axes:{coronaire:['curetage'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['soin'], medicamenteux:['aucun']}} ],
+    reversible:         [ {condition:null, axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['soin'], medicamenteux:['aucun']}} ],
     irreversible: [
-      {condition:"Moins de 30 ans, saignement facilement contrôlé", axes:{coronaire:['pulpotomie_therapeutique'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:null},
-      {condition:"Moins de 30 ans, saignement important mais maîtrisé", axes:{coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"30 ans et plus, saignement maîtrisé — facilement contrôlé ou non : la cicatrisation pulpaire ne permet plus de conserver la pulpe radiculaire", axes:{coronaire:['pulpotomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"Saignement impossible à stabiliser, à tout âge", axes:{coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}}
+      {condition:"Moins de 30 ans, saignement facilement contrôlé", axes:{coronaire:['curetage', 'pulpotomie_therapeutique', 'reconstitution_definitive'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:null},
+      {condition:"Moins de 30 ans, saignement important mais maîtrisé", axes:{coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"30 ans et plus, saignement maîtrisé — facilement contrôlé ou non : la cicatrisation pulpaire ne permet plus de conserver la pulpe radiculaire", axes:{coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Saignement impossible à stabiliser, à tout âge", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}}
     ],
-    syndrome_mixte:     [ {condition:null, axes:{coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}} ],
+    syndrome_mixte:     [ {condition:null, axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}} ],
     necrose: [
-      {condition:"Dent conservable", axes:{coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Dent conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
       {condition:"Dent non conservable (limite infra-osseuse)", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}}
     ],
     parodontite: [
       {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
-      {condition:"Dent jamais traitée", axes:{coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Dent jamais traitée", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
       {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     abces_aigu: [
       {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
-      {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null},
-      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
       {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     abces_chronique: [
-      {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage_etanche'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_sereuse: [
-      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null},
-      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
       {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_suppuree: [
       {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
-      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['pulpectomie_urgence', 'curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null},
-      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage_etanche'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
       {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_diffuse: [
@@ -2733,7 +2734,7 @@
     hyperhemie: "La réaction pulpaire est congestive et transitoire, pas une inflammation vraie : le stimulus déclenche une sensation brève qui s'arrête dès son retrait, sans douleur spontanée. Aucun geste d'urgence n'est donc justifié. Il suffit de traiter la cause — la carie superficielle à l'origine de l'irritation — par une obturation définitive, pour permettre à la pulpe de récupérer complètement.",
     reversible: "L'inflammation pulpaire reste légère et réversible si la cause est traitée à temps : la douleur au froid ou au sucré cesse dès l'arrêt du stimulus, sans douleur spontanée ni nocturne. Le geste d'urgence — curetage carieux avec coiffage pulpaire et restauration temporaire biocompatible — élimine le tissu carieux infecté tout en protégeant la pulpe, pour lui permettre de cicatriser. Le traitement définitif (obturation en résine) peut ensuite être réalisé sur un rendez-vous classique.",
     irreversible: { byKey: {
-      facile: "Le saignement à l'ouverture pulpaire est discret et facilement contrôlable : l'inflammation reste localisée à la chambre pulpaire coronaire, sans avoir gagné les canaux radiculaires. On peut donc se limiter à une pulpotomie thérapeutique — l'ablation de la pulpe camérale enflammée, en préservant la pulpe radiculaire saine, coiffée par un matériau biocéramique. C'est un geste conservateur qui constitue à lui seul le traitement définitif, sans étape supplémentaire à programmer. Il suppose en outre un patient de moins de 30 ans : au-delà, le potentiel de cicatrisation de la pulpe radiculaire n'est plus suffisant pour la conserver, et l'on ne retient plus la pulpotomie thérapeutique. Un AINS et un antalgique accompagnent le geste, l'inflammation pulpaire aiguë justifiant les deux.",
+      facile: "Le saignement à l'ouverture pulpaire est discret et facilement contrôlable : l'inflammation reste localisée à la chambre pulpaire coronaire, sans avoir gagné les canaux radiculaires. Après élimination du tissu carié, on peut donc se limiter à une pulpotomie thérapeutique — l'ablation de la pulpe camérale enflammée, en préservant la pulpe radiculaire saine, coiffée par un matériau biocéramique — puis restaurer la dent de façon définitive dans la même séance : curetage, pulpotomie et reconstitution définitive sont les trois temps du geste. C'est un geste conservateur qui constitue à lui seul le traitement définitif, sans étape supplémentaire à programmer. Il suppose en outre un patient de moins de 30 ans : au-delà, le potentiel de cicatrisation de la pulpe radiculaire n'est plus suffisant pour la conserver, et l'on ne retient plus la pulpotomie thérapeutique. Un AINS et un antalgique accompagnent le geste, l'inflammation pulpaire aiguë justifiant les deux.",
       age: "Le saignement à l'ouverture pulpaire est pourtant discret et facilement contrôlable : la pulpe camérale seule est enflammée. Mais le patient a plus de 30 ans, et le potentiel de cicatrisation de la pulpe radiculaire n'est plus suffisant pour espérer la conserver — une pulpotomie thérapeutique exposerait à un échec. On réalise donc une pulpotomie d'urgence, geste palliatif qui soulage la douleur, associée à un curetage carieux et à une restauration transitoire étanche, en s'orientant d'emblée vers la dévitalisation : le traitement endodontique complet est programmé, avec un AINS et un antalgique à l'urgence. C'est ici l'âge, et non le saignement, qui commande le choix.",
       difficile: "Le saignement à l'ouverture pulpaire est plus important et difficile à stabiliser, ce qui traduit une inflammation ayant probablement débordé au-delà de la chambre pulpaire vers les entrées canalaires. Une simple pulpotomie thérapeutique ne suffit plus à garantir un tissu résiduel sain : on réalise donc une pulpotomie d'urgence, un geste palliatif pour soulager la douleur et stabiliser le saignement, associé à un AINS et un antalgique, qui doit impérativement être complété par un traitement endodontique complet à distance (avec un antalgique pour cette séance), une fois l'épisode aigu passé.",
       impossible: "Lorsque le saignement canalaire n'est pas maîtrisable, cela traduit une inflammation profonde de la pulpe, qui a gagné les canaux radiculaires. Il faut alors réaliser un parage canalaire (pulpectomie d'urgence) : l'irrigation à l'hypochlorite de sodium désorganise les tissus vasculaires et provoque une nécrose tissulaire contrôlée, ce qui stoppe le saignement. Ce geste évite une remise sous pression de la dent et la réapparition de signes de pulpite qui imposeraient un second passage en urgence, et s'accompagne d'un AINS et d'un antalgique. Un traitement endodontique complet, avec un antalgique pour cette séance, est ensuite programmé pour finaliser la désinfection et l'obturation canalaire."
@@ -2750,6 +2751,7 @@
       dejaTraiteeExtraction: "La dent est déjà traitée par endodontie mais n'est plus conservable (fracture radiculaire, échec du traitement initial) : aucun retraitement n'est possible, aucun geste coronaire n'a donc de sens. L'extraction est le geste d'urgence, associée à un antalgique et un bain de bouche pour la gestion post-opératoire de la plaie ; l'infection restant localisée, une antibiothérapie n'est pas nécessaire."
     }},
     abces_aigu: { byKey: {
+      dejaTraiteeFracture: "La dent est déjà traitée par endodontie et sa couronne est fracturée au ras de la gencive : il n'y a pas de tissu carié à éliminer, mais la perte de substance laisse le canal exposé. Le geste d'urgence se limite donc à une reconstitution provisoire étanche, qui rétablit la barrière contre la recontamination. La collection périapicale débute sans s'être propagée aux tissus mous : antibiothérapie et antalgique suffisent. Le retraitement endodontique est ensuite programmé, la dent restant conservable.",
       dejaTraiteeCouronne: "La dent est déjà traitée par endodontie et porte une couronne scellée sur inlay-core, en place et non descellée : il n'y a ni lésion carieuse à cureter, ni restauration à refaire, donc aucun geste coronaire à l'urgence. La collection périapicale débute mais ne s'est pas propagée aux tissus mous (pas de drainage muqueux à ce stade) : une antibiothérapie et un antalgique suffisent, la dent restant conservable. Le retraitement endodontique, par un accès à travers la couronne, est ensuite programmé.",
       conservable: "La collection purulente périapicale débute mais la dent reste conservable (limite infra-gingivale) : le geste d'urgence associe la pulpectomie à un drainage par transfixion apicale, c'est-à-dire le passage volontaire d'un instrument au-delà de l'apex pour créer une voie d'évacuation du pus et lever la pression responsable de la douleur intense — accompagné d'un antalgique (la transfixion reste une voie intracanalaire, pas une plaie muqueuse : pas de bain de bouche nécessaire ; l'infection restant localisée et désormais drainée, une antibiothérapie n'est pas justifiée). Le traitement endodontique complet, avec un antalgique pour cette séance, peut ensuite être réalisé dès que la douleur est contrôlée.",
       extraction: "Que ce soit un délabrement carieux atteignant la limite infra-osseuse ou une fracture du plancher pulpo-radiculaire avec une lésion englobant la furcation, la dent n'est plus conservable : aucun traitement endodontique ne peut restaurer un support suffisant. Le geste d'urgence est alors l'extraction elle-même, qui traite à la fois la cause de la douleur et supprime définitivement la dent — il n'y a donc pas de traitement différé à programmer. L'extraction ouvrant une plaie muqueuse, elle s'accompagne d'un antalgique et d'un bain de bouche ; l'infection restant localisée et désormais évacuée par l'alvéole, une antibiothérapie n'est pas nécessaire.",
@@ -2762,12 +2764,14 @@
       extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable, même si ce n'est pas une urgence vraie compte tenu de la symptomatologie discrète et du drainage fistulaire déjà en place : l'extraction, à programmer, reste le seul geste utile — aucun traitement endodontique ne serait durable sur une dent non conservable. Un antalgique et un bain de bouche accompagnent l'extraction ; pas d'antibiothérapie, l'infection étant déjà drainée."
     }},
     cellulite_sereuse: { byKey: {
+      dejaTraiteeFracture: "La dent est déjà traitée par endodontie et sa couronne est fracturée au ras de la gencive : rien à cureter, mais une reconstitution provisoire étanche s'impose pour fermer la voie de recontamination. L'infection ayant diffusé dans les tissus mous, on y associe le drainage muqueux, une antibiothérapie, un antalgique et un bain de bouche. Le retraitement endodontique est programmé une fois l'épisode infectieux maîtrisé.",
       conservable: "L'infection a diffusé dans les tissus mous mais reste au stade séreux, sans collection purulente constituée — il n'y a donc rien à drainer. Le geste d'urgence associe la pulpectomie, pour supprimer le foyer infectieux pulpaire à l'origine de la diffusion, à un antalgique et une antibiothérapie pour contrôler l'infection des tissus mous. Le traitement endodontique complet, avec un antalgique, est réalisé une fois l'épisode infectieux maîtrisé.",
       extraction: "Que ce soit un délabrement carieux atteignant la limite infra-osseuse ou une fracture du plancher pulpo-radiculaire avec une lésion englobant la furcation, la dent n'est plus conservable : on réalise l'extraction, associée à un antalgique et une antibiothérapie pour contrôler la diffusion infectieuse dans les tissus mous, ainsi qu'à un bain de bouche du fait de la plaie d'extraction. Le stade restant séreux, sans collection constituée, aucun drainage supplémentaire n'est nécessaire.",
       dejaTraiteeConservable: "La dent est déjà traitée par endodontie : le canal n'est pas rouvert en urgence, mais un curetage carieux et une restauration transitoire étanche sont réalisés pour supprimer une éventuelle voie de recontamination coronaire en attendant le retraitement. L'infection a diffusé dans les tissus mous, d'où le drainage muqueux associé à une antibiothérapie et un antalgique, et un bain de bouche du fait de la plaie muqueuse ouverte. Le retraitement endodontique, avec un antalgique, est ensuite programmé une fois l'épisode infectieux maîtrisé.",
       dejaTraiteeExtraction: "La dent est déjà traitée par endodontie mais n'est plus conservable : aucun geste coronaire n'a de sens, et l'extraction devient le geste d'urgence, associée à un antalgique et un bain de bouche pour la plaie d'extraction ; l'infection restant localisée et évacuée par l'alvéole, une antibiothérapie n'est pas nécessaire."
     }},
     cellulite_suppuree: { byKey: {
+      dejaTraiteeFracture: "La dent est déjà traitée par endodontie et sa couronne est fracturée au ras de la gencive : aucun curetage n'a lieu d'être, seule une reconstitution provisoire étanche est réalisée. La collection purulente déjà constituée impose en plus le drainage muqueux, une antibiothérapie, un antalgique et un bain de bouche. Le retraitement endodontique est programmé une fois la collection résorbée.",
       dejaTraiteeCouronne: "La dent est déjà traitée par endodontie et porte une couronne scellée sur inlay-core, en place et non descellée : aucun geste coronaire n'a lieu d'être à l'urgence, il n'y a ni carie à cureter ni restauration à reprendre. La collection purulente est en revanche déjà constituée dans les tissus mous, d'où le drainage muqueux associé à une antibiothérapie, un antalgique et un bain de bouche (voie muqueuse ouverte). Le retraitement endodontique, par un accès à travers la couronne, est programmé une fois la collection résorbée.",
       conservable: "La collection purulente est déjà constituée dans les tissus mous (signe du godet positif) : il faut à la fois traiter la cause — la pulpectomie d'urgence, qui supprime le foyer infectieux pulpaire — et évacuer le pus par un drainage muqueux, associé à un antalgique, une antibiothérapie et un bain de bouche (la voie muqueuse étant une plaie ouverte). Le traitement endodontique complet, avec un antalgique, est réalisé une fois la collection résorbée.",
       extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable : on réalise l'extraction, mais la collection purulente déjà constituée impose en plus un drainage par voie muqueuse, un antalgique, une antibiothérapie et un bain de bouche, pour évacuer le pus et contrôler l'infection des tissus mous.",
