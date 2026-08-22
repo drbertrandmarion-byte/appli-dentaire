@@ -95,6 +95,13 @@ Elle termine par `Anomalies : 0`.
 Elle contrôle aussi l'**état périapical** : ligament sain, ligament élargi ou lésion
 constituée, tels que le texte les décrit, contre ce que le schéma dessine.
 
+Et la **restauration coronaire du traitement final** : toute dent traitée ou retraitée doit être
+reconstituée, aucune dent extraite ne doit l'être. La règle est appliquée aux 86 cas et aux 22
+lignes de la fiche récapitulative imprimable — c'est elle que l'étudiant relit chez lui, et une
+ligne qui contredirait le corrigé y enseignerait durablement l'inverse. Un traitement final qui ne
+déclarerait aucune restauration est signalé au même titre qu'une restauration fausse : sans clé
+déclarée, la réponse de l'étudiant ne serait jamais corrigée.
+
 Attention à ses détecteurs : ils interprètent du texte libre. Une négation non prévue
 (« pas de radioclarté », « aucune douleur ni tuméfaction ») produit un faux positif, et une
 formule trop permissive masquerait une vraie contradiction. Deux garde-fous en découlent :

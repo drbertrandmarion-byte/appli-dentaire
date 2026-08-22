@@ -47,6 +47,20 @@ for m in re.finditer(r'\n    (\w+):\s*\{depth:"(\w+)",\s*apical:\s*(true|false)'
 # Précision apicale propre à une pathologie, quand « avec / sans image radioclaire » ne suffit pas.
 APICAL_NOTE = dict(re.findall(r'\n    (\w+):\s*\{[^}]*?apicalNote:"([^"]*)"', s, re.S))
 
+
+# Restauration coronaire attendue au rendez-vous de soins, selon le geste final. Un geste non prévu
+# renvoie None : il sera signalé, jamais passé sous silence — un classificateur muet donnerait une
+# fausse assurance sur les cas qu'il ne sait pas lire.
+RESTAURATION = {
+    'endo_complet': 'restauration_definitive',
+    'retraitement': 'restauration_definitive',
+    'curetage':     'restauration_definitive',   # hyperhémie et pulpite réversible
+    'extraction':   'aucune',
+    'rien':         'aucune',
+}
+def restauration_attendue(geste):
+    return RESTAURATION.get(geste)
+
 pbs = []
 def note(mode, cas, txt):
     pbs.append("[%s] %-28s %s" % (mode, cas, txt))
@@ -331,9 +345,53 @@ for i in range(len(bornes) - 1):
         if dit_oui and extraction:
             note('thérapeutique', cas, "texte : dent conservable, mais extraction attendue")
 
+
+        # C. restauration coronaire du traitement final. Une dent traitée ou retraitée doit toujours
+        #    être reconstituée — c'est cette reconstitution, davantage que le traitement canalaire,
+        #    qui décide de sa survie à long terme. Une dent extraite n'a rien à reconstituer, une
+        #    dent saine non plus.
+        if re.search(r"finalAxes:\s*\{", v):
+            fa = re.search(r"finalAxes:\s*\{geste:\['(\w+)'\],\s*coronaire:\[([^\]]*)\]", v)
+            if not fa:
+                note('thérapeutique', cas,
+                     "traitement final sans restauration coronaire déclarée : elle ne serait jamais corrigée")
+            else:
+                geste = fa.group(1)
+                reel = fa.group(2).replace("'", "").replace(" ", "")
+                att = restauration_attendue(geste)
+                if att is None:
+                    note('thérapeutique', cas,
+                         "geste final « %s » inconnu de la règle de restauration" % geste)
+                elif reel != att:
+                    note('thérapeutique', cas,
+                         "geste final « %s » -> restauration attendue « %s », corrigé « %s »" % (geste, att, reel))
+
         # Note : on ne contrôle PAS ici « pulpe nécrosée contre geste pulpaire ». « Pulpectomie
         # d'urgence » désigne, dans la nomenclature de l'application, le parage canalaire réalisé
         # sur une dent nécrosée — ce n'est pas une contradiction.
+
+
+# =============================================================================
+#  FICHE RÉCAPITULATIVE : même règle de restauration que les cas joués
+# =============================================================================
+# Le récapitulatif imprimable est ce que l'étudiant relit chez lui : une ligne qui contredirait le
+# corrigé y enseignerait durablement l'inverse de l'application.
+rb = s[s.index('var TX_RECAP_TYPES'):s.index('\n  };', s.index('var TX_RECAP_TYPES'))]
+lignes = 0
+for m in re.finditer(r"finalAxes:\{geste:\['(\w+)'\],\s*coronaire:\[([^\]]*)\]", rb):
+    lignes += 1
+    geste, reel = m.group(1), m.group(2).replace("'", "").replace(" ", "")
+    att = restauration_attendue(geste)
+    if att is None:
+        note('récapitulatif', geste, "geste final inconnu de la règle de restauration")
+    elif reel != att:
+        note('récapitulatif', geste, "restauration attendue « %s », fiche « %s »" % (att, reel))
+# Une ligne à traitement final qui n'aurait pas de restauration déclarée échapperait à tout contrôle.
+declares = len(re.findall(r"finalAxes:\{geste:", rb))
+if declares != lignes:
+    note('récapitulatif', '-', "%d ligne(s) de traitement final sans restauration coronaire" % (declares - lignes))
+
+print("Lignes de récapitulatif auditées : %d" % lignes)
 
 print("Pathologies thérapeutiques auditées : %d" % len(vus))
 print("\nAnomalies : %d" % len(pbs))

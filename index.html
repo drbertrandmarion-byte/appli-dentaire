@@ -1830,10 +1830,18 @@
   ];
   var TX_FINAL_GESTE_OPTIONS = [
     {id:'rien', label:"Aucun traitement nécessaire"},
-    {id:'soin', label:"Soin de la lésion carieuse (résine définitive)"},
+    {id:'curetage', label:"Curetage carieux"},
     {id:'endo_complet', label:"Traitement endodontique complet"},
     {id:'retraitement', label:"Retraitement endodontique (dépose et reprise du traitement canalaire)"},
     {id:'extraction', label:"Extraction de la dent (non conservable)"}
+  ];
+  // Restauration coronaire du rendez-vous de soins. Elle est séparée du geste endodontique parce
+  // qu'elle s'y ajoute : une dent traitée ou retraitée doit toujours être reconstituée, et c'est
+  // cette étape — et non le traitement canalaire — qui décide de sa survie à long terme. Une dent
+  // extraite, elle, n'a rien à reconstituer.
+  var TX_FINAL_CORONAIRE_OPTIONS = [
+    {id:'aucune', label:"Aucune restauration définitive"},
+    {id:'restauration_definitive', label:"Restauration définitive (composite, onlay ou couronne)"}
   ];
 
   function txAxesSetsEqual(a, b){
@@ -1904,7 +1912,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'age',
         axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Corentin, 26 ans, consulte pour une douleur intense et spontanée sur une dent porteuse d'une ancienne restauration. Le diagnostic de pulpite aiguë irréversible est posé : la dépose de la restauration met en évidence une reprise carieuse profonde exposant la pulpe, avec un saignement assez important, difficile à stabiliser au niveau des entrées canalaires, mais qui finit par être contrôlé, sur un tissu pulpaire rouge rosé et vivant.",
@@ -1913,7 +1921,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'difficile',
         axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Aïcha, 24 ans, consulte pour une douleur intense et spontanée apparue quelques jours après la pose d'une restauration volumineuse, très proche de la pulpe. Le diagnostic de pulpite aiguë irréversible est posé : l'exposition pulpaire lors de la dépose montre un saignement modéré mais rapidement contrôlable, sur un tissu pulpaire rouge rosé et vivant.",
@@ -1929,7 +1937,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'age',
         axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Thomas, 32 ans, consulte pour une douleur intense. Le diagnostic de pulpite aiguë irréversible est posé. L'exposition pulpaire carieuse montre un saignement assez important, difficile à stabiliser au niveau des entrées canalaires, mais qui finit par être contrôlé.",
@@ -1937,7 +1945,7 @@
         finalLine: "Quel traitement doit être programmé ?",
         rationaleKey: 'difficile',
         axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Sophie, 45 ans, consulte pour une douleur caractéristique d'une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement modéré, difficile à stabiliser compte tenu de l'âge de la patiente, mais qui reste contrôlable.",
@@ -1945,7 +1953,7 @@
         finalLine: "Quel traitement définitif est prévu ?",
         rationaleKey: 'difficile',
         axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Jean, 68 ans, consulte pour une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement initialement important ; l'hémostase, difficile compte tenu de l'âge du patient, finit par être obtenue.",
@@ -1953,7 +1961,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'difficile',
         axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Benoît, 42 ans, consulte pour une douleur intense sur une dent porteuse d'une ancienne restauration volumineuse. Le diagnostic de pulpite aiguë irréversible est posé : la dépose de la restauration met en évidence une reprise carieuse profonde exposant la pulpe, avec un saignement assez important, difficile à stabiliser au niveau des entrées canalaires, mais qui finit par être contrôlé.",
@@ -1962,7 +1970,7 @@
         finalLine: "Quel traitement doit être programmé ?",
         rationaleKey: 'difficile',
         axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Justine, 38 ans, consulte pour une douleur intense apparue quelques jours après la pose d'une restauration volumineuse, très proche de la pulpe. Le diagnostic de pulpite aiguë irréversible est posé : l'exposition pulpaire lors de la dépose montre un saignement modéré, difficile à stabiliser, mais qui reste contrôlable.",
@@ -1971,7 +1979,7 @@
         finalLine: "Quel traitement définitif est prévu ?",
         rationaleKey: 'difficile',
         axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Michel, 60 ans, consulte pour une douleur aiguë spontanée compatible avec une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement canalaire très abondant et persistant, impossible à stabiliser malgré plusieurs tentatives d'hémostase.",
@@ -1979,7 +1987,7 @@
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Léa, 24 ans, présente une pulpite aiguë irréversible. L'exposition pulpaire carieuse montre un saignement canalaire important, qui reprend systématiquement malgré plusieurs tentatives d'hémostase : les entrées canalaires restent impossibles à stabiliser.",
@@ -1987,7 +1995,7 @@
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Youssef, 54 ans, consulte pour une douleur aiguë spontanée sur une dent porteuse d'une ancienne restauration volumineuse. Le diagnostic de pulpite aiguë irréversible est posé : la dépose de la restauration met en évidence une reprise carieuse profonde exposant la pulpe, avec un saignement canalaire très abondant et persistant, impossible à stabiliser malgré plusieurs tentatives d'hémostase.",
@@ -1996,7 +2004,7 @@
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Pauline, 47 ans, consulte pour une douleur aiguë spontanée apparue quelques jours après la pose d'une restauration volumineuse, très proche de la pulpe. Le diagnostic de pulpite aiguë irréversible est posé : l'exposition pulpaire lors de la dépose montre un saignement canalaire important, qui reprend systématiquement malgré plusieurs tentatives d'hémostase : les entrées canalaires restent impossibles à stabiliser.",
@@ -2005,7 +2013,7 @@
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Sabrina, 41 ans, consulte pour une douleur intense et spontanée apparue quelques jours après la pose d'une restauration volumineuse, très proche de la pulpe. Le diagnostic de pulpite aiguë irréversible est posé : l'exposition pulpaire lors de la dépose montre un saignement canalaire important, qui reprend systématiquement malgré les mesures d'hémostase.",
@@ -2014,7 +2022,7 @@
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
     ],
 
@@ -2027,7 +2035,7 @@
         finalLine: "Quel traitement définitif prévoyez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
+        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Thomas, 28 ans, consulte pour une sensibilité au froid sur une dent présentant une carie. La douleur est courte, localisée et disparaît en quelques secondes après retrait du stimulus. Le diagnostic de pulpite réversible est posé.",
@@ -2035,7 +2043,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
+        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Sophie, 42 ans, consulte pour une douleur provoquée par le froid au niveau d'une molaire. La douleur est immédiate mais très brève et cesse spontanément dès que le stimulus disparaît. Le diagnostic de pulpite réversible est posé. La radiographie montre une carie dentinaire sans signe d'atteinte périapicale. Il n'existe pas de douleur spontanée ni de douleur nocturne.",
@@ -2043,7 +2051,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
+        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Lucas, 12 ans, consulte pour une douleur provoquée par les boissons froides et les aliments sucrés. La douleur est courte et disparaît immédiatement après l'arrêt du stimulus. Le diagnostic de pulpite réversible est posé. La dent présente une carie profonde proche de la pulpe, mais aucun signe clinique d'atteinte pulpaire irréversible.",
@@ -2051,7 +2059,7 @@
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
+        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Camille, 35 ans, consulte pour une sensibilité au froid sur une prémolaire présentant une restauration ancienne défectueuse. La douleur est déclenchée uniquement par le froid, reste faible et disparaît rapidement après retrait du stimulus. Le diagnostic de pulpite réversible est posé. L'ancienne restauration est infiltrée et doit être remplacée. Aucun signe de nécrose ou de pulpite irréversible n'est retrouvé.",
@@ -2059,7 +2067,7 @@
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
+        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       }
     ],
 
@@ -2071,7 +2079,7 @@
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['rien'], medicamenteux:['aucun']}
+        finalAxes: {geste:['rien'], coronaire:['aucune'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Ethan, 25 ans, consulte dans le cadre d'un bilan préorthodontique. Aucune plainte, examen clinique normal ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
@@ -2079,7 +2087,7 @@
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['rien'], medicamenteux:['aucun']}
+        finalAxes: {geste:['rien'], coronaire:['aucune'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Gabriel, 60 ans, consulte pour un bilan buccodentaire général. La dent examinée est asymptomatique ; la radiographie ne montre aucun délabrement coronaire, sans image radioclaire apicale.",
@@ -2087,7 +2095,7 @@
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['rien'], medicamenteux:['aucun']}
+        finalAxes: {geste:['rien'], coronaire:['aucune'], medicamenteux:['aucun']}
       }
     ],
 
@@ -2099,7 +2107,7 @@
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
+        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Théo, 14 ans, signale une sensibilité très légère et inconstante au froid sur une molaire, qui disparaît immédiatement à l'arrêt du stimulus. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
@@ -2107,7 +2115,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
+        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Chiara, 40 ans, a remarqué une petite gêne fugace au froid depuis quelques jours, sans autre symptôme. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
@@ -2115,7 +2123,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
+        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Robert, 52 ans, décrit une sensibilité discrète et passagère au contact du froid sur une prémolaire. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
@@ -2123,7 +2131,7 @@
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
+        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       },
       {
         patientLine: "Sylvie, 29 ans, rapporte une gêne très légère et occasionnelle au sucré, sans douleur spontanée. La radiographie montre une très légère infiltration carieuse coronaire, à distance de la pulpe, sans image radioclaire apicale.",
@@ -2131,7 +2139,7 @@
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['soin'], medicamenteux:['aucun']}
+        finalAxes: {geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}
       }
     ],
 
@@ -2143,7 +2151,7 @@
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Amandine, 31 ans, consulte pour une douleur spontanée intense et irradiante sur une molaire pluriradiculée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
@@ -2151,7 +2159,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Bruno, 58 ans, présente une douleur nocturne et pulsatile par moments sur une molaire pluriradiculée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
@@ -2159,7 +2167,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Nathalie, 27 ans, consulte pour une douleur vive à la percussion sur une molaire pluriradiculée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
@@ -2167,7 +2175,7 @@
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Olivier, 39 ans, présente une sensation de dent longue et une gêne inconstante au chaud sur une molaire pluriradiculée. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
@@ -2175,7 +2183,7 @@
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       }
     ],
 
@@ -2200,7 +2208,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Margaux, 37 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration récente à proximité de la pulpe, avec un ligament parodontal apical légèrement épaissi, sans lésion radioclaire constituée.",
@@ -2209,7 +2217,7 @@
         finalLine: "Quelle prise en charge programmez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Étienne, 52 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration ayant perdu son étanchéité, à proximité de la pulpe, avec une discrète image radioclaire apicale.",
@@ -2218,7 +2226,7 @@
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Noémie, 29 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration ayant perdu son étanchéité, à proximité de la pulpe, avec un ligament parodontal apical d'aspect sain.",
@@ -2228,7 +2236,7 @@
         finalLine: "Quel traitement programmez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Romain, 61 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une importante perte tissulaire coronaire à proximité de la pulpe, avec un ligament parodontal apical légèrement épaissi.",
@@ -2237,7 +2245,7 @@
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Agathe, 34 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration récente à proximité de la pulpe, avec une discrète image radioclaire apicale.",
@@ -2246,7 +2254,7 @@
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Bernard, 58 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre un délabrement infra-osseux majeur, sous la crête osseuse, avec un ligament parodontal apical légèrement épaissi : la dent n'est pas conservable.",
@@ -2255,7 +2263,7 @@
         finalLine: "La dent n'étant pas conservable, quel traitement définitif programmez-vous ?",
         rationaleKey: 'nonconservable',
         axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']},
-        finalAxes: {geste:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
+        finalAxes: {geste:['extraction'], coronaire:['aucune'], medicamenteux:['antalgique', 'bain_bouche']}
       }
     ],
 
@@ -2268,7 +2276,7 @@
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Pierre, 19 ans, se plaint d'une gêne à la mastication et d'une sensation de dent longue, sur une dent porteuse d'une carie profonde évoluant depuis plusieurs mois. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
@@ -2276,7 +2284,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Isabelle, 47 ans, consulte pour une douleur récente à la percussion et une sensation de dent longue, sur une dent porteuse d'une carie ancienne et volumineuse. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
@@ -2284,7 +2292,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Xavier, 55 ans, présente une gêne franche à la mastication et une sensation de dent longue, sur une dent porteuse d'une volumineuse carie proche de la pulpe. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
@@ -2292,7 +2300,7 @@
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Valérie, 24 ans, consulte pour une douleur vive à la percussion et à la palpation apicale, sur une dent porteuse d'une carie profonde évoluant depuis plusieurs mois. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : le ligament parodontal apical est légèrement élargi, sans lésion arrondie constituée.",
@@ -2300,7 +2308,7 @@
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'default',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       // Parodontite apicale aiguë sur dent déjà traitée par endodontie (réinfection) : le canal n'est
       // pas rouvert en urgence, mais un curetage carieux et une restauration transitoire étanche
@@ -2315,7 +2323,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
-        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Véronique, 39 ans, porteuse d'une dent déjà traitée par endodontie plusieurs années auparavant, consulte pour une douleur à la percussion et une sensation de dent longue, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex, avec une obturation coronaire ayant perdu son étanchéité, et un ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée : la dent reste conservable.",
@@ -2324,7 +2332,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
-        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Solène, 58 ans, porteuse d'une dent déjà traitée par endodontie, se plaint d'une gêne à la mastication et d'une sensation de dent longue, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex, avec une couronne céramique scellée sur inlay-core, en place et non descellée, et un ligament parodontal apical légèrement élargi, sans lésion radioclaire constituée : la dent reste conservable.",
@@ -2334,7 +2342,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'dejaTraiteeCouronne',
         axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
-        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Roger, 61 ans, porteur d'une dent déjà traitée par endodontie, se plaint d'une gêne à la mastication et d'une sensation de dent longue, sans tuméfaction. La radiographie montre une obturation canalaire ancienne sous une obturation coronaire ayant perdu son étanchéité, associée à une fracture radiculaire verticale, rendant la dent non conservable : aucun retraitement n'est envisageable.",
@@ -2362,7 +2370,7 @@
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Martine, 36 ans, consulte pour une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une zone de radioclarté bien délimitée à l'apex de la racine.",
@@ -2370,7 +2378,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Fabien, 50 ans, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une zone de radioclarté bien délimitée à l'apex de la racine.",
@@ -2378,7 +2386,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Aurélie, 62 ans, consulte pour une douleur constante et lancinante, très intense à la percussion et à la palpation, apaisée par le froid. La radiographie montre une fracture du plancher pulpo-radiculaire, avec une volumineuse image radioclaire englobant la furcation : la dent n'est pas conservable.",
@@ -2401,7 +2409,7 @@
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
-        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Sandrine, 54 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une douleur constante et lancinante, très intense à la percussion et à la palpation, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex, avec une fracture coronaire juxta-gingivale, au ras du rebord gingival, et une zone radioclaire bien délimitée à l'apex, sans collection dans les tissus mous : la dent reste conservable.",
@@ -2411,7 +2419,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'dejaTraiteeFracture',
         axes: {coronaire:['reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
-        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Thierry, 63 ans, porteur d'une dent déjà traitée par endodontie, présente une douleur constante et lancinante, très intense à la percussion et à la palpation, sans tuméfaction. La radiographie montre un canal obturé jusqu'à l'apex, avec une couronne céramique scellée sur inlay-core, en place et non descellée, et une zone radioclaire bien délimitée à l'apex, sans collection dans les tissus mous : la dent reste conservable.",
@@ -2421,7 +2429,7 @@
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'dejaTraiteeCouronne',
         axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
-        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       }
     ],
 
@@ -2434,7 +2442,7 @@
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Damien, 38 ans, consulte pour un léger inconfort à la percussion et un petit bouton visible sur la gencive en regard de l'apex, sans douleur franche. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée et arrondie.",
@@ -2442,7 +2450,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Élodie, 30 ans, présente une gêne légère à la mastication, avec un petit bouton visible sur la gencive en regard de l'apex, sans douleur franche. La radiographie montre un délabrement infra-gingival, sous le rebord gingival mais au-dessus de la crête osseuse, avec une image radioclaire apicale bien limitée et arrondie.",
@@ -2450,7 +2458,7 @@
         finalLine: "Quel traitement définitif programmez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Maryse, 62 ans, porteuse d'une dent déjà traitée par endodontie, présente une gêne discrète à la mastication, sans douleur franche, avec un petit bouton visible sur la gencive en regard de l'apex. La radiographie montre un canal obturé jusqu'à l'apex, avec une obturation coronaire ayant perdu son étanchéité, et une image radioclaire apicale bien limitée et arrondie : la dent reste conservable.",
@@ -2459,7 +2467,7 @@
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'dejaTraiteeConservable',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']},
-        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Grégoire, 57 ans, consulte pour un petit bouton visible sur la gencive en regard de l'apex, sans douleur franche. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale bien limitée (image de granulome/kyste).",
@@ -2479,7 +2487,7 @@
         finalLine: "Quel traitement définitif programmez-vous, une fois l'épisode infectieux contrôlé ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Nadia, 33 ans, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
@@ -2487,7 +2495,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Marc, 48 ans, présente une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
@@ -2495,7 +2503,7 @@
         finalLine: "Quel traitement choisissez-vous, une fois l'épisode infectieux contrôlé ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Inès, 55 ans, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre une fracture du plancher pulpo-radiculaire, avec une volumineuse image radioclaire englobant la furcation, foyer infectieux à l'origine de la diffusion dans les tissus mous.",
@@ -2516,7 +2524,7 @@
         finalLine: "Quel traitement définitif programmez-vous, une fois l'épisode infectieux contrôlé ?",
         rationaleKey: 'dejaTraiteeConservable',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
-        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Brigitte, 49 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une fracture coronaire juxta-gingivale, au ras du rebord gingival, et une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous : la dent reste conservable.",
@@ -2526,7 +2534,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'dejaTraiteeFracture',
         axes: {coronaire:['reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
-        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Gilbert, 66 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction discrète de la joue, sans signe de godet, avec une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une lésion carieuse s'étendant sous la crête osseuse, et une image radioclaire apicale bien limitée, foyer de la diffusion infectieuse dans les tissus mous : la dent n'est pas conservable, le délabrement s'étendant sous la crête osseuse.",
@@ -2547,7 +2555,7 @@
         finalLine: "Quel traitement définitif programmez-vous, une fois la collection résorbée ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Laura, 41 ans, consulte pour une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
@@ -2555,7 +2563,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Hakim, 53 ans, présente une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, avec une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous.",
@@ -2563,7 +2571,7 @@
         finalLine: "Quel traitement choisissez-vous, une fois la collection résorbée ?",
         rationaleKey: 'conservable',
         axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']},
-        finalAxes: {geste:['endo_complet'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Paul, 59 ans, consulte pour une tuméfaction avec collection fluctuante (signe du godet positif), une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de la collection purulente des tissus mous.",
@@ -2582,7 +2590,7 @@
         finalLine: "Quel traitement définitif programmez-vous, une fois la collection résorbée ?",
         rationaleKey: 'dejaTraiteeConservable',
         axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
-        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Ghislaine, 51 ans, porteuse d'une dent déjà traitée par endodontie, consulte pour une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une couronne céramique scellée sur inlay-core, en place et non descellée, et une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
@@ -2592,7 +2600,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'dejaTraiteeCouronne',
         axes: {coronaire:['aucun'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
-        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Bastien, 59 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre un canal obturé jusqu'à l'apex, avec une fracture coronaire juxta-gingivale, au ras du rebord gingival, et une image radioclaire apicale bien limitée, à l'origine de la collection purulente des tissus mous : la dent reste conservable.",
@@ -2602,7 +2610,7 @@
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'dejaTraiteeFracture',
         axes: {coronaire:['reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
-        finalAxes: {geste:['retraitement'], medicamenteux:['antalgique']}
+        finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
         patientLine: "Serge, 64 ans, porteur d'une dent déjà traitée par endodontie, présente une tuméfaction avec collection fluctuante (signe du godet positif), une douleur constante très intense à la percussion et à la palpation. La radiographie montre une fracture radiculaire verticale sur une dent déjà traitée dont l'obturation coronaire a perdu son étanchéité, associée à une volumineuse image radioclaire apicale : la dent n'est pas conservable.",
@@ -2687,49 +2695,49 @@
   // Fiche récapitulative du mode "choix thérapeutique" : pas tous les cas nommés, seulement les
   // différentes situations thérapeutiques distinctes rencontrées pour chaque diagnostic.
   var TX_RECAP_TYPES = {
-    saine:              [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['rien'], medicamenteux:['aucun']}} ],
-    hyperhemie:         [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['soin'], medicamenteux:['aucun']}} ],
-    reversible:         [ {condition:null, axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['soin'], medicamenteux:['aucun']}} ],
+    saine:              [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['rien'], coronaire:['aucune'], medicamenteux:['aucun']}} ],
+    hyperhemie:         [ {condition:null, axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}} ],
+    reversible:         [ {condition:null, axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['curetage'], coronaire:['restauration_definitive'], medicamenteux:['aucun']}} ],
     irreversible: [
       {condition:"Moins de 30 ans, saignement facilement contrôlé", axes:{coronaire:['curetage', 'pulpotomie_therapeutique', 'reconstitution_definitive'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:null},
-      {condition:"Moins de 30 ans, saignement important mais maîtrisé", axes:{coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"30 ans et plus, saignement maîtrisé — facilement contrôlé ou non : la cicatrisation pulpaire ne permet plus de conserver la pulpe radiculaire", axes:{coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"Saignement impossible à stabiliser, à tout âge", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}}
+      {condition:"Moins de 30 ans, saignement important mais maîtrisé", axes:{coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"30 ans et plus, saignement maîtrisé — facilement contrôlé ou non : la cicatrisation pulpaire ne permet plus de conserver la pulpe radiculaire", axes:{coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"Saignement impossible à stabiliser, à tout âge", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}}
     ],
-    syndrome_mixte:     [ {condition:null, axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}} ],
+    syndrome_mixte:     [ {condition:null, axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}} ],
     necrose: [
-      {condition:"Dent conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"Dent non conservable (limite infra-osseuse)", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}}
+      {condition:"Dent conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"Dent non conservable (limite infra-osseuse)", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['aucun']}, finalAxes:{geste:['extraction'], coronaire:['aucune'], medicamenteux:['antalgique', 'bain_bouche']}}
     ],
     parodontite: [
-      {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
-      {condition:"Dent jamais traitée", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"Dent jamais traitée", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     abces_aigu: [
-      {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
-      {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null},
-      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     abces_chronique: [
-      {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
-      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_sereuse: [
-      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null},
-      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_suppuree: [
-      {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
-      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null},
-      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_diffuse: [
@@ -4477,7 +4485,11 @@
         if(txVariant.finalLine){
           html += '<p class="tx-patient-line">' + txVariant.finalLine + '</p>';
         }
+        // Le groupe porte une clé DOM distincte de celle de l'urgence : les deux étapes ne sont
+        // jamais affichées ensemble, mais un nom partagé ferait lire l'un pour l'autre au premier
+        // remaniement de l'enchaînement.
         html += txCheckboxGroupHtml('Traitement final', TX_FINAL_GESTE_OPTIONS, 'geste') +
+          txCheckboxGroupHtml('Restauration coronaire définitive', TX_FINAL_CORONAIRE_OPTIONS, 'coronaire_final') +
           txCheckboxGroupHtml('Geste médicamenteux (traitement final)', TX_MEDIC_OPTIONS, 'medicamenteux') +
           '<div class="result-actions"><button class="btn-primary" id="tx-step-submit-btn">Valider</button></div>';
       }
@@ -4529,8 +4541,8 @@
           showTxMultistepResult();
         }
       } else if(txStage === 'final'){
-        var fAnswers = {geste: txReadCheckboxGroup('geste'), medicamenteux: txReadCheckboxGroup('medicamenteux')};
-        if(fAnswers.geste.length === 0) return;
+        var fAnswers = {geste: txReadCheckboxGroup('geste'), coronaire: txReadCheckboxGroup('coronaire_final'), medicamenteux: txReadCheckboxGroup('medicamenteux')};
+        if(fAnswers.geste.length === 0 || fAnswers.coronaire.length === 0) return;
         txStepAnswers.finalSets = fAnswers;
         showTxMultistepResult();
       }
@@ -4623,6 +4635,7 @@
       recapEl.appendChild(txCheckboxCorrectionRow('Geste médicamenteux (urgence)', TX_MEDIC_OPTIONS, txStepAnswers.urgence1Sets.medicamenteux, txVariant.axes.medicamenteux));
       if(txVariant.finalAxes){
         recapEl.appendChild(txCheckboxCorrectionRow('Traitement final', TX_FINAL_GESTE_OPTIONS, txStepAnswers.finalSets.geste, txVariant.finalAxes.geste));
+        recapEl.appendChild(txCheckboxCorrectionRow('Restauration coronaire définitive', TX_FINAL_CORONAIRE_OPTIONS, txStepAnswers.finalSets.coronaire, txVariant.finalAxes.coronaire));
         recapEl.appendChild(txCheckboxCorrectionRow('Geste médicamenteux (traitement final)', TX_MEDIC_OPTIONS, txStepAnswers.finalSets.medicamenteux, txVariant.finalAxes.medicamenteux));
       }
     } else {
@@ -5062,6 +5075,7 @@
         if(t.axes){
           var finalAxesText = t.finalAxes
             ? txAxesSummaryText(t.finalAxes.geste, TX_FINAL_GESTE_OPTIONS) +
+              ' + ' + txAxesSummaryText(t.finalAxes.coronaire, TX_FINAL_CORONAIRE_OPTIONS) +
               (t.finalAxes.medicamenteux.length ? ' + ' + txAxesSummaryText(t.finalAxes.medicamenteux, TX_MEDIC_OPTIONS) : '')
             : 'Le geste d\'urgence est déjà le traitement définitif.';
           return '<div class="recap-variant">' +

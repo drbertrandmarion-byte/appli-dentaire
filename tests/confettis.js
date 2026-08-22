@@ -99,13 +99,14 @@ const LIRE_CORRECTION = () => {
     'Geste chirurgical': 'chirurgical',
     'Geste médicamenteux (urgence)': 'medicamenteux',
     'Traitement final': 'geste',
+    'Restauration coronaire définitive': 'coronaire_final',
     'Geste médicamenteux (traitement final)': 'medicamenteux'
   };
   Array.prototype.slice.call(document.querySelectorAll('#tx-result-recap .score-row'))
     .forEach(function(row){
       const titre = row.querySelector('.real').textContent.trim();
-      const etape = (titre === 'Traitement final' || titre.indexOf('traitement final') !== -1)
-        ? 'final' : 'urgence';
+      const etape = (titre === 'Traitement final' || titre === 'Restauration coronaire définitive'
+                     || titre.indexOf('traitement final') !== -1) ? 'final' : 'urgence';
       const g = cle[titre];
       if (!g) return;
       const attendus = [];
@@ -135,7 +136,7 @@ async function jouerSerieTx(page, longueur, corriges){
         getComputedStyle(document.getElementById('tx-case-card')).display !== 'none');
       if (!enCours) break;
       const etape = etapeIdx === 0 ? 'urgence' : 'final';
-      for (const g of ['coronaire', 'chirurgical', 'medicamenteux', 'geste']){
+      for (const g of ['coronaire', 'chirurgical', 'medicamenteux', 'geste', 'coronaire_final']){
         const voulus = c ? (c[etape + '.' + g] || []) : [];
         await page.evaluate(COCHER, [g, voulus]);
       }
@@ -144,7 +145,7 @@ async function jouerSerieTx(page, longueur, corriges){
         // d'urgence dont le geste coronaire OU le geste chirurgical est vide, et une étape finale
         // sans geste. Le premier item de chaque groupe suffit.
         await page.evaluate(() => {
-          ['coronaire', 'chirurgical', 'geste'].forEach(function(g){
+          ['coronaire', 'chirurgical', 'geste', 'coronaire_final'].forEach(function(g){
             const c = document.querySelector('input[data-group="' + g + '"]');
             if (c) c.checked = true;
           });
