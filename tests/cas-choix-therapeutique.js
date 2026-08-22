@@ -24,10 +24,10 @@ const CASES = {
 const IRREVERSIBLE = {
   Lucas: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
   Hugo: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
-  Emma: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
-  Corentin: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
+  Emma: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
+  Corentin: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Aïcha: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
-  Séverine: { urgence: { coronaire: ['pulpotomie_therapeutique'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: null },
+  Séverine: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Thomas: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Sophie: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },
   Jean: { urgence: { coronaire: ['pulpotomie_urgence', 'curetage_etanche'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], medicamenteux: ['antalgique'] } },

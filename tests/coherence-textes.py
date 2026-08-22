@@ -269,12 +269,37 @@ for i in range(len(bornes) - 1):
         if ca and ca != attendu:
             note('thérapeutique', cas, "apex : texte « %s », schéma « %s »\n        → %s" % (ca, attendu, (rt or '')[:95]))
 
-        # A1. La pulpotomie thérapeutique est réservée aux patients de moins de 30 ans : au-delà,
-        #     le potentiel de cicatrisation de la pulpe radiculaire ne permet plus de la conserver.
-        age = re.search(r'patientLine: "[^,]+, (\d+) ans', v)
-        if age and 'pulpotomie_therapeutique' in txt and int(age.group(1)) >= 30:
-            note('thérapeutique', cas,
-                 "pulpotomie thérapeutique attendue chez un patient de %s ans (réservée aux moins de 30 ans)" % age.group(1))
+        # A1. Pulpite aiguë irréversible : le geste coronaire se déduit de DEUX axes, l'âge et
+        #     l'hémostase. Moins de 30 ans et saignement facilement contrôlé -> pulpotomie
+        #     thérapeutique seule ; saignement impossible à stabiliser -> pulpectomie d'urgence à
+        #     tout âge ; tout le reste -> pulpotomie d'urgence, associée au curetage carieux et à
+        #     une restauration transitoire étanche. Au-delà de 30 ans, la cicatrisation de la pulpe
+        #     radiculaire ne permet plus de la conserver, même si le saignement est facile.
+        if path == 'irreversible':
+            age = re.search(r'patientLine: "[^,]+, (\d+) ans', v)
+            if not age:
+                note('thérapeutique', cas, "âge du patient introuvable dans l'énoncé")
+            else:
+                a = int(age.group(1))
+                pll = pl.lower()
+                if re.search(r"impossible à stabiliser|reprend systématiquement|très abondant et persistant", pll):
+                    hemo = 'difficile'
+                elif re.search(r"assez important|initialement important|difficile à stabiliser", pll):
+                    hemo = 'important'
+                elif re.search(r"discret|facilement contrôlable|rapidement contrôlable|contrôlable en quelques minutes", pll):
+                    hemo = 'facile'
+                else:
+                    hemo = None
+                    note('thérapeutique', cas, "hémostase non reconnue par l'audit — à classer")
+                if hemo:
+                    if hemo == 'difficile':      att = "pulpectomie_urgence,curetage_etanche"
+                    elif a < 30 and hemo == 'facile': att = "pulpotomie_therapeutique"
+                    else:                        att = "pulpotomie_urgence,curetage_etanche"
+                    ax = re.search(r"coronaire:\[([^\]]*)\]", v)
+                    reel = ax.group(1).replace("'", "").replace(" ", "") if ax else '?'
+                    if reel != att:
+                        note('thérapeutique', cas,
+                             "%d ans + hémostase %s -> attendu « %s », corrigé « %s »" % (a, hemo, att, reel))
 
         # A. profondeur : l'énoncé et la radiographie doivent nommer la même
         if rt:
