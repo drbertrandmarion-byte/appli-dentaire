@@ -67,6 +67,17 @@ create table if not exists public.profiles (
   last_seen_at timestamptz
 );
 
+-- Session unique : identifiant du navigateur qui détient la session en cours, et date de sa
+-- revendication. L'accès étant une récompense pour les étudiants présents en cours, un compte
+-- ouvert sur cinq appareils lui ôterait sa valeur.
+--
+-- Ces deux colonnes ne figurent PAS dans protect_profile_fields() : l'étudiant doit pouvoir les
+-- écrire lui-même, c'est tout le mécanisme. La règle "profiles_update" le limite déjà à sa propre
+-- fiche (id = auth.uid()), il ne peut donc pas fermer la session d'un camarade ; et
+-- "profiles_select" l'empêche de lire l'identifiant de quiconque.
+alter table public.profiles add column if not exists active_session    text;
+alter table public.profiles add column if not exists active_session_at timestamptz;
+
 alter table public.profiles enable row level security;
 
 create index if not exists profiles_approved_idx on public.profiles (approved, created_at desc);

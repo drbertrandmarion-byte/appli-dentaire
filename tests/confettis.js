@@ -35,6 +35,10 @@ async function ouvrir(browser, graine, reduitMouvement){
     localStorage.setItem('endodiag-profile', JSON.stringify({
       id:'u', email:'e@e.fr', prenom:'T', nom:'A', annee:'TCEO1',
       faculte:'UFR Odontologie Dijon', approved:true }));
+    // Le repli hors ligne exige un passage en ligne de moins de 24 h : sans cette date, il
+    // refuserait d'ouvrir l'application et aucune suite ne pourrait plus rien tester.
+    localStorage.setItem('endodiag-last-online', JSON.stringify(Date.now()));
+
   });
   await page.goto(URL);
   await page.evaluate(() => { const s = document.getElementById('splash-screen'); if (s) s.remove(); });

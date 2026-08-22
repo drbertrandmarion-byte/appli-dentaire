@@ -165,6 +165,10 @@ async function run() {
       id: 'test-user', email: 'test@example.com', prenom: 'Test', nom: 'Auto',
       annee: 'TCEO1', faculte: 'UFR Odontologie Dijon', approved: true
     }));
+    // Le repli hors ligne exige un passage en ligne de moins de 24 h : sans cette date, il
+    // refuserait d'ouvrir l'application et aucune suite ne pourrait plus rien tester.
+    localStorage.setItem('endodiag-last-online', JSON.stringify(Date.now()));
+
   });
 
   // Build lookup by "name|title" first (for collision cases), fallback to plain name

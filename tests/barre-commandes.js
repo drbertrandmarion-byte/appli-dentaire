@@ -26,6 +26,10 @@ function chevauche(a, b){
         localStorage.setItem('endodiag-profile', JSON.stringify({
           id:'u', email:'e@e.fr', prenom:p, nom:'Bertrand', annee:'TCEO1',
           faculte:'UFR Odontologie Dijon', approved:true }));
+        // Le repli hors ligne exige un passage en ligne de moins de 24 h : sans cette date, il
+        // refuserait d'ouvrir l'application et aucune suite ne pourrait plus rien tester.
+        localStorage.setItem('endodiag-last-online', JSON.stringify(Date.now()));
+
       }, [prenom]);
 
       await page.goto('http://localhost:9300/index.html');
@@ -88,6 +92,10 @@ function chevauche(a, b){
     localStorage.setItem('endodiag-profile', JSON.stringify({
       id:'u', email:'e@e.fr', prenom:'Marion', nom:'B', annee:'TCEO1',
       faculte:'UFR Odontologie Dijon', approved:true }));
+    // Le repli hors ligne exige un passage en ligne de moins de 24 h : sans cette date, il
+    // refuserait d'ouvrir l'application et aucune suite ne pourrait plus rien tester.
+    localStorage.setItem('endodiag-last-online', JSON.stringify(Date.now()));
+
   });
   await page.goto('http://localhost:9300/index.html');
   await page.evaluate(() => { const s = document.getElementById('splash-screen'); if (s) s.remove(); });

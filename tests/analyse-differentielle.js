@@ -19,6 +19,10 @@ const GUESS  = 'necrose';                 // proposition fixe : fausse la plupar
       id: 'test-user', email: 'test@example.com', prenom: 'Test', nom: 'Auto',
       annee: 'TCEO1', faculte: 'UFR Odontologie Dijon', approved: true
     }));
+    // Le repli hors ligne exige un passage en ligne de moins de 24 h : sans cette date, il
+    // refuserait d'ouvrir l'application et aucune suite ne pourrait plus rien tester.
+    localStorage.setItem('endodiag-last-online', JSON.stringify(Date.now()));
+
   });
 
   const vus = new Map();

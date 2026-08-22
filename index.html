@@ -5308,6 +5308,13 @@
 
   var SESSION_KEY = 'endodiag-session';
   var PROFILE_KEY = 'endodiag-profile';
+  // Identifiant tiré au hasard à chaque connexion : c'est lui qui désigne, parmi tous les
+  // navigateurs où le compte a été ouvert, celui qui détient la session en cours.
+  var CLAIM_KEY   = 'endodiag-session-id';
+  // Horodatage de la dernière vérification réussie auprès du serveur. Le repli hors ligne s'y
+  // adosse : sans passage en ligne récent, l'application redemande une connexion.
+  var ONLINE_KEY  = 'endodiag-last-online';
+  var OFFLINE_MAX_MS = 24 * 60 * 60 * 1000;   // 24 h
 
   var gate       = document.getElementById('auth-gate');
   var menu       = document.getElementById('account-menu');
@@ -5517,6 +5524,8 @@
       if(!session || !serie) return;
       queuePush({k:'s', mode:mode, serie:serie, score:score});
       flushQueue();
+      // Fin de série : le moment naturel pour constater qu'un autre appareil a pris la main.
+      checkSingleSession();
     },
 
     // Conserve le détail d'un cas raté, pour que l'étudiant puisse le revoir.
@@ -5572,6 +5581,78 @@
       }).catch(function(){});
   }
 
+  // ---------- une seule session ouverte à la fois ----------
+  // L'accès est une récompense pour les étudiants qui viennent en cours : un compte ouvert sur cinq
+  // appareils lui ôterait sa valeur. À chaque connexion, le navigateur tire un identifiant et
+  // l'inscrit dans la fiche de l'étudiant ; les autres navigateurs constatent qu'il a changé et se
+  // referment. Le dernier connecté l'emporte — c'est le seul sens qui ne verrouille pas dehors un
+  // étudiant ayant perdu son téléphone.
+  //
+  // Ce contrôle vit dans une page publique : un étudiant compétent peut le neutraliser en copiant le
+  // fichier. Il décourage le partage ordinaire, il ne prétend pas à davantage.
+  function newClaim(){
+    if(window.crypto && window.crypto.randomUUID) return window.crypto.randomUUID();
+    return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
+  }
+
+  function claimSession(){
+    if(!session || !session.user_id) return Promise.resolve();
+    var id = newClaim();
+    writeStore(CLAIM_KEY, id);
+    return authed('/rest/v1/profiles?id=eq.' + session.user_id, {
+      method: 'PATCH', prefer: 'return=minimal',
+      body: { active_session: id, active_session_at: new Date().toISOString() }
+    }).catch(function(){});
+  }
+
+  function evictSession(){
+    clearSession();
+    writeStore(CLAIM_KEY, null);
+    showView('login');
+    msg('login-msg',
+      'Votre compte vient d\'être ouvert sur un autre appareil. ' +
+      'Une seule session peut rester active à la fois : reconnectez-vous pour reprendre ici.', 'err');
+  }
+
+  // Renvoie true si ce navigateur détient toujours la session.
+  function ownsSession(distant){
+    var local = readStore(CLAIM_KEY);
+    // Aucun identifiant local (premier lancement après cette mise à jour) ou aucun identifiant
+    // distant (fiche jamais revendiquée) : on revendique plutôt que de déconnecter. Les autres
+    // navigateurs du compte se refermeront à leur prochaine vérification.
+    if(!local || !distant){ claimSession(); return true; }
+    if(local === distant) return true;
+    evictSession();
+    return false;
+  }
+
+  // Vérification légère, appelée quand l'étudiant se manifeste. Un échec réseau ne déconnecte
+  // jamais : sur une connexion capricieuse, ce serait le contrôle lui-même qui chasserait
+  // l'étudiant de l'application.
+  function checkSingleSession(){
+    if(!session || !session.user_id || offline) return Promise.resolve(true);
+    return authed('/rest/v1/profiles?select=active_session&id=eq.' + session.user_id)
+      .then(function(rows){
+        markOnline();
+        return ownsSession(rows && rows[0] && rows[0].active_session);
+      })
+      .catch(function(){ return true; });
+  }
+
+  function markOnline(){ writeStore(ONLINE_KEY, Date.now()); }
+
+  // Le repli hors ligne laisse réviser sans connexion, mais il ne doit pas devenir une porte
+  // dérobée : sans lui, il suffirait de couper le réseau pour échapper au contrôle de session.
+  function offlineStillAllowed(){
+    var t = readStore(ONLINE_KEY);
+    return typeof t === 'number' && (Date.now() - t) < OFFLINE_MAX_MS;
+  }
+
+  // Le retour sur l'onglet est le moment le plus probable d'une reprise sur un autre appareil.
+  document.addEventListener('visibilitychange', function(){
+    if(!document.hidden) checkSingleSession();
+  });
+
   function touchLastSeen(){
     if(!profile) return Promise.resolve();
     return authed('/rest/v1/profiles?id=eq.' + session.user_id, {
@@ -5615,6 +5696,9 @@
       .then(function(){ return loadAdminFlag(); })
       .then(function(){
         offline = false;
+        markOnline();
+        // La fiche vient d'être lue : la vérification de session est ici gratuite.
+        if(profile && !ownsSession(profile.active_session)) return;
         if(isAdmin || (profile && profile.approved)) enterApp();
         else {
           showPending();
@@ -5633,13 +5717,17 @@
         // compte validé — un étudiant peut ainsi réviser sans connexion, sans
         // pour autant ouvrir l'application à un inconnu.
         var cached = readStore(PROFILE_KEY);
-        if(isNetworkError(err) && cached && cached.approved){
+        if(isNetworkError(err) && cached && cached.approved && offlineStillAllowed()){
           profile = cached; offline = true; enterApp();
           return;
         }
         if(isNetworkError(err)){
           showView('login');
-          msg('login-msg', 'Serveur injoignable. Vérifiez votre connexion internet.', 'err');
+          msg('login-msg', offlineStillAllowed() || !cached
+            ? 'Serveur injoignable. Vérifiez votre connexion internet.'
+            : 'Vous n\'avez pas été connecté depuis plus de 24 heures. ' +
+              'L\'application a besoin d\'un passage en ligne pour rouvrir votre accès : ' +
+              'vérifiez votre connexion internet.', 'err');
         } else {
           clearSession(); showView('login');
         }
@@ -5697,7 +5785,10 @@
     // le navigateur autorise le son, et il coïncide avec le départ du dessin du logo.
     if(window.EndoOpeningChime) window.EndoOpeningChime.onLoaderDraw();
     request('/auth/v1/token?grant_type=password', { method:'POST', body:{ email:email, password:pass } })
-      .then(function(data){ saveSession(data); return route(); })
+      // La revendication précède route() : c'est elle qui fait de ce navigateur le détenteur de la
+      // session, faute de quoi route() constaterait aussitôt qu'il ne l'est pas et se déconnecterait.
+      .then(function(data){ saveSession(data); markOnline(); return claimSession(); })
+      .then(function(){ return route(); })
       .catch(function(err){ showView('login'); msg('login-msg', humanError(err), 'err'); })
       .then(function(){ busy($('login-btn'), false, '', 'Se connecter'); });
   }

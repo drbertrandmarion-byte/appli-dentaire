@@ -26,6 +26,7 @@ node tests/legendes-schemas.js
 python3 tests/coherence-textes.py
 node tests/back-office.js
 node tests/confettis.js
+node tests/session-unique.js
 ```
 
 Résultats attendus :
@@ -44,7 +45,7 @@ Erreurs : 0
 Les autres suites se terminent par `Erreurs : 0` ou `Problèmes : 0`. `back-office.js`
 affiche en plus des tableaux à relire à l'œil — voir plus bas.
 
-## Les neuf suites
+## Les dix suites
 
 | Fichier | Ce qu'il vérifie |
 |---|---|
@@ -57,6 +58,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 | `coherence-textes.py` | Que l'énoncé, la radiographie et le schéma disent la même chose — **tous** les cas, sans tirage |
 | `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion et export Excel |
 | `confettis.js` | Que les confettis tombent sur un sans-faute, et **seulement** sur un sans-faute |
+| `session-unique.js` | Qu'un compte ne reste ouvert que sur un appareil, et que le repli hors ligne expire |
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
 un différentiel affiché sur une erreur et jamais sur une bonne réponse, et surtout un
@@ -143,6 +145,23 @@ réduire les animations. Il termine par `Erreurs : 0`.
 Ses six mutations de contrôle : neutraliser le déclencheur de chaque mode, retirer
 `pointer-events:none`, ignorer `prefers-reduced-motion`, supprimer l'arrêt au départ de l'écran de
 score, et ne jamais retirer le canvas. Les six sont bien signalées.
+
+`session-unique.js` rejoue le partage de compte sur une base **simulée partagée entre deux
+navigateurs** — c'est exactement ce que voit le serveur quand deux appareils ouvrent le même compte.
+Il vérifie que le second évince le premier, et surtout les deux façons dont ce garde-fou pourrait se
+retourner contre un étudiant honnête : une panne réseau pendant la vérification ne doit jamais le
+déconnecter, et une reconnexion après déconnexion propre ne doit pas le rejeter à l'instant où il
+vient de taper son mot de passe. Il éprouve enfin le repli hors ligne de part et d'autre de sa
+limite — 2 h et 23 h passent, 25 h est refusé, et un profil copié dans un navigateur jamais passé en
+ligne n'ouvre rien. Il termine par `Erreurs : 0`.
+
+Sa fonction de connexion n'exige délibérément pas d'entrer dans l'application : plusieurs scénarios
+vérifient précisément qu'on n'y entre pas. Attendre la levée de la porte y ferait échouer le test
+par un plantage muet, au lieu du message qui nomme le problème.
+
+Ses six mutations de contrôle : supprimer l'éviction, supprimer la revendication faite à la
+connexion, déconnecter sur une panne réseau, retirer la limite du repli hors ligne, et la porter à
+48 h. Toutes sont signalées.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas
