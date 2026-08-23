@@ -1928,8 +1928,8 @@
         patientLine: "Aïcha, 24 ans, consulte pour une douleur intense et spontanée apparue quelques jours après la pose d'une restauration volumineuse, très proche de la pulpe. Le diagnostic de pulpite aiguë irréversible est posé : l'exposition pulpaire lors de la dépose montre un saignement modéré mais rapidement contrôlable, sur un tissu pulpaire rouge rosé et vivant.",
         radioText: "Restauration récente, très proche de la pulpe, sans reprise carieuse. Ligament parodontal apical d'aspect sain, sans lésion radioclaire.",
         depth: "supra_gingival", apical: false,
-        rationaleKey: 'facile',
-        axes: {coronaire:['curetage', 'pulpotomie_therapeutique', 'reconstitution_definitive'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
+        rationaleKey: 'facileEtanche',
+        axes: {coronaire:['pulpotomie_therapeutique', 'reconstitution_definitive'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}
       },
       {
         patientLine: "Séverine, 44 ans, consulte pour une douleur intense et spontanée sur une dent porteuse d'une ancienne restauration volumineuse. Le diagnostic de pulpite aiguë irréversible est posé : la dépose de la restauration, dont l'étanchéité était perdue, met en évidence une reprise carieuse profonde exposant la pulpe, avec un saignement discret, facilement contrôlable, sur un tissu pulpaire rouge rosé et vivant.",
@@ -1979,7 +1979,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est prévu ?",
         rationaleKey: 'difficile',
-        axes: {coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
@@ -2013,7 +2013,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
-        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
@@ -2022,7 +2022,7 @@
         depth: "supra_gingival", apical: false,
         finalLine: "Quel traitement définitif est programmé ?",
         rationaleKey: 'impossible',
-        axes: {coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
+        axes: {coronaire:['pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']},
         finalAxes: {geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
     ],
@@ -2703,7 +2703,10 @@
       {condition:"Moins de 30 ans, saignement facilement contrôlé", axes:{coronaire:['curetage', 'pulpotomie_therapeutique', 'reconstitution_definitive'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:null},
       {condition:"Moins de 30 ans, saignement important mais maîtrisé", axes:{coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"30 ans et plus, saignement maîtrisé — facilement contrôlé ou non : la cicatrisation pulpaire ne permet plus de conserver la pulpe radiculaire", axes:{coronaire:['curetage', 'pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
-      {condition:"Saignement impossible à stabiliser, à tout âge", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}}
+      {condition:"Saignement impossible à stabiliser, à tout âge", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"Sous une restauration récente et étanche, sans reprise carieuse — moins de 30 ans, saignement facilement contrôlé : rien à cureter", axes:{coronaire:['pulpotomie_therapeutique', 'reconstitution_definitive'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:null},
+      {condition:"Sous une restauration récente et étanche, sans reprise carieuse — saignement important mais maîtrisé", axes:{coronaire:['pulpotomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"Sous une restauration récente et étanche, sans reprise carieuse — saignement impossible à stabiliser", axes:{coronaire:['pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['ains', 'antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}}
     ],
     syndrome_mixte:     [ {condition:null, axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}} ],
     necrose: [
@@ -2757,6 +2760,7 @@
     reversible: "L'inflammation pulpaire reste légère et réversible si la cause est traitée à temps : la douleur au froid ou au sucré cesse dès l'arrêt du stimulus, sans douleur spontanée ni nocturne. Le geste d'urgence — curetage carieux avec coiffage pulpaire et restauration temporaire biocompatible — élimine le tissu carieux infecté tout en protégeant la pulpe, pour lui permettre de cicatriser. Le traitement définitif (obturation en résine) peut ensuite être réalisé sur un rendez-vous classique.",
     irreversible: { byKey: {
       facile: "Le saignement à l'ouverture pulpaire est discret et facilement contrôlable : l'inflammation reste localisée à la chambre pulpaire coronaire, sans avoir gagné les canaux radiculaires. Après élimination du tissu carié, on peut donc se limiter à une pulpotomie thérapeutique — l'ablation de la pulpe camérale enflammée, en préservant la pulpe radiculaire saine, coiffée par un matériau biocéramique — puis restaurer la dent de façon définitive dans la même séance : curetage, pulpotomie et reconstitution définitive sont les trois temps du geste. C'est un geste conservateur qui constitue à lui seul le traitement définitif, sans étape supplémentaire à programmer. Il suppose en outre un patient de moins de 30 ans : au-delà, le potentiel de cicatrisation de la pulpe radiculaire n'est plus suffisant pour la conserver, et l'on ne retient plus la pulpotomie thérapeutique. Un AINS et un antalgique accompagnent le geste, l'inflammation pulpaire aiguë justifiant les deux.",
+      facileEtanche: "Le saignement à l'ouverture pulpaire est discret et facilement contrôlable : l'inflammation reste localisée à la chambre pulpaire coronaire, sans avoir gagné les canaux radiculaires. La restauration en place est récente et étanche, sans reprise carieuse : il n'y a donc aucun tissu carié à éliminer — c'est la dépose de cette restauration, très proche de la pulpe, qui a exposé le tissu pulpaire, et non une carie. Le geste se limite à une pulpotomie thérapeutique — l'ablation de la pulpe camérale enflammée, en préservant la pulpe radiculaire saine, coiffée par un matériau biocéramique — puis à la reconstitution définitive dans la même séance. Il suppose un patient de moins de 30 ans : au-delà, le potentiel de cicatrisation de la pulpe radiculaire n'est plus suffisant pour la conserver, et l'on ne retient plus la pulpotomie thérapeutique. Un AINS et un antalgique accompagnent le geste, l'inflammation pulpaire aiguë justifiant les deux.",
       age: "Le saignement à l'ouverture pulpaire est pourtant discret et facilement contrôlable : la pulpe camérale seule est enflammée. Mais le patient a plus de 30 ans, et le potentiel de cicatrisation de la pulpe radiculaire n'est plus suffisant pour espérer la conserver — une pulpotomie thérapeutique exposerait à un échec. On réalise donc une pulpotomie d'urgence, geste palliatif qui soulage la douleur, associée à un curetage carieux et à une restauration transitoire étanche, en s'orientant d'emblée vers la dévitalisation : le traitement endodontique complet est programmé, avec un AINS et un antalgique à l'urgence. C'est ici l'âge, et non le saignement, qui commande le choix.",
       difficile: "Le saignement à l'ouverture pulpaire est plus important et difficile à stabiliser, ce qui traduit une inflammation ayant probablement débordé au-delà de la chambre pulpaire vers les entrées canalaires. Une simple pulpotomie thérapeutique ne suffit plus à garantir un tissu résiduel sain : on réalise donc une pulpotomie d'urgence, un geste palliatif pour soulager la douleur et stabiliser le saignement, associé à un AINS et un antalgique, qui doit impérativement être complété par un traitement endodontique complet à distance (avec un antalgique pour cette séance), une fois l'épisode aigu passé.",
       impossible: "Lorsque le saignement canalaire n'est pas maîtrisable, cela traduit une inflammation profonde de la pulpe, qui a gagné les canaux radiculaires. Il faut alors réaliser un parage canalaire (pulpectomie d'urgence) : l'irrigation à l'hypochlorite de sodium désorganise les tissus vasculaires et provoque une nécrose tissulaire contrôlée, ce qui stoppe le saignement. Ce geste évite une remise sous pression de la dent et la réapparition de signes de pulpite qui imposeraient un second passage en urgence, et s'accompagne d'un AINS et d'un antalgique. Un traitement endodontique complet, avec un antalgique pour cette séance, est ensuite programmé pour finaliser la désinfection et l'obturation canalaire."
@@ -4351,6 +4355,13 @@
       txDiagramOverrides.caption = 'Couronne quasi entièrement détruite ; le trait de fracture ' +
         'traverse le plancher pulpo-radiculaire et descend dans la furcation, où l\'os a disparu ' +
         'et où la gencive est venue combler l\'espace inter-radiculaire.';
+    }
+    // Le libellé du schéma décrit la lésion carieuse habituelle. Quand le dessin porte à la place une
+    // restauration récente, il ne peut pas continuer à parler d'une carie : c'est justement son
+    // absence que l'étudiant doit lire, puisqu'il n'y a rien à cureter.
+    if(txRestoration === 'recent' && /carie/i.test(diagram.caption)){
+      txDiagramOverrides.caption = 'Restauration récente et étanche, très proche de la pulpe, sans reprise carieuse ; '
+        + diagram.caption.replace(/^[^;]*;\s*/, '');
     }
     var txDiagramCfg = Object.keys(txDiagramOverrides).length ? Object.assign({}, diagram, txDiagramOverrides) : diagram;
     document.getElementById('tx-diagram').innerHTML =

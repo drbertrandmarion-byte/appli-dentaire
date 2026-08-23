@@ -108,11 +108,12 @@ Attention en particulier à `dit_collection` : la formule « sans reflux purulen
 séreuses la faisait conclure à une collection, faute de gérer la négation. C'est l'exemple type du
 faux positif décrit plus bas.
 
-Elle contrôle aussi qu'une **restauration récente — donc étanche** — n'appelle ni curetage (aucune
-carie) ni reconstitution provisoire (l'étanchéité est déjà assurée), tant qu'aucun geste pulpaire
-n'est réalisé. Les pulpites irréversibles survenues sous une restauration récente ouvrent la dent et
-restent volontairement hors de ce contrôle : la limite est écrite dans le fichier plutôt que tue,
-car une règle dont on ignore la portée donne une fausse assurance sur les cas qu'elle ne couvre pas.
+Elle contrôle aussi qu'une **restauration récente — donc étanche, sans reprise carieuse** — n'appelle
+jamais de curetage : il n'y a pas de carie à cureter, y compris quand la dent est ouverte pour une
+pulpotomie ou une pulpectomie — ouvrir la chambre n'est pas cureter. Et si aucun geste pulpaire n'est
+réalisé, elle n'appelle pas non plus de reconstitution : l'étanchéité est déjà assurée. La règle
+s'applique aux 86 cas et aux lignes du récapitulatif : une fiche qui annoncerait un curetage sous une
+restauration étanche enseignerait durablement l'inverse du corrigé.
 
 Et la **restauration coronaire du traitement final**. La règle ne se déduit pas du seul geste final :
 une pulpite réversible n'a plus rien à faire sur la dent ce jour-là — le curetage a eu lieu à

@@ -113,6 +113,11 @@ def dit_godet(t):
         return False
     return bool(re.search(r"godet", tl))
 
+def restauration_etanche(t):
+    """Restauration récente : étanche et sans reprise carieuse. Rien à cureter."""
+    return bool(re.search(r"restauration récente|soin récent", t, re.I)) \
+       and not re.search(r"perdu son étanchéité|infiltrée|réinfiltrée", t, re.I)
+
 def dit_fistule(t):
     tl = t.lower()
     return bool(re.search(r"petit bouton|fistule|parulie", tl))
@@ -347,12 +352,16 @@ for i in range(len(bornes) - 1):
                     hemo = None
                     note('thérapeutique', cas, "hémostase non reconnue par l'audit — à classer")
                 if hemo:
+                    # Le curetage carieux ne fait partie de la réponse que s'il y a une carie. Sous
+                    # une restauration récente — étanche, sans reprise carieuse — il n'y a rien à
+                    # cureter : seul le geste pulpaire et la reconstitution demeurent.
+                    cur = "" if restauration_etanche(pl + ' ' + rt) else "curetage,"
                     if hemo == 'difficile':
-                        att = "curetage,pulpectomie_urgence,reconstitution_provisoire"
+                        att = cur + "pulpectomie_urgence,reconstitution_provisoire"
                     elif a < 30 and hemo == 'facile':
-                        att = "curetage,pulpotomie_therapeutique,reconstitution_definitive"
+                        att = cur + "pulpotomie_therapeutique,reconstitution_definitive"
                     else:
-                        att = "curetage,pulpotomie_urgence,reconstitution_provisoire"
+                        att = cur + "pulpotomie_urgence,reconstitution_provisoire"
                     ax = re.search(r"coronaire:\[([^\]]*)\]", v)
                     reel = ax.group(1).replace("'", "").replace(" ", "") if ax else '?'
                     if reel != att:
@@ -374,20 +383,24 @@ for i in range(len(bornes) - 1):
         #     cureter — aucune carie — et rien à reconstituer — l'étanchéité coronaire est déjà
         #     assurée : ouvrir la dent n'exposerait le système canalaire sans aucun bénéfice.
         #
-        #     La règle ne s'applique qu'aux cas où AUCUN geste pulpaire n'est réalisé en urgence.
-        #     Les pulpites irréversibles survenues sous une restauration récente (Aïcha, Justine,
-        #     Pauline, Sabrina) ouvrent la dent pour la pulpotomie ou la pulpectomie : la question de
-        #     savoir si « curetage carieux » y a encore un sens — l'énoncé dit « sans reprise
-        #     carieuse » — reste posée à l'enseignant, et ces cas sont donc hors de ce contrôle.
-        #     Cette limite est écrite ici plutôt que tue : une règle dont on ignore la portée donne
-        #     une fausse assurance sur les cas qu'elle ne couvre pas.
-        etanche = re.search(r"restauration récente|soin récent", (pl + ' ' + rt), re.I) \
-                  and not re.search(r"perdu son étanchéité|infiltrée|réinfiltrée", (pl + ' ' + rt), re.I)
+        #     La règle vaut pour TOUS les cas, y compris ceux où la dent est ouverte pour un geste
+        #     pulpaire : ouvrir la chambre n'est pas cureter une carie, et l'énoncé dit lui-même
+        #     « sans reprise carieuse ». Ce qui change alors, c'est seulement la reconstitution :
+        #     une dent ouverte doit être refermée, une dent non ouverte n'a rien à recevoir.
+        etanche = restauration_etanche(pl + ' ' + rt)
         geste_pulpaire = re.search(r"pulpotomie|pulpectomie", v)
-        if etanche and not geste_pulpaire:
-            ax = re.search(r"coronaire:\[([^\]]*)\]", v)
-            reel = ax.group(1).replace("'", "").replace(" ", "") if ax else '?'
-            if reel != 'aucun':
+        ax = re.search(r"coronaire:\[([^\]]*)\]", v)
+        reel = ax.group(1).replace("'", "").replace(" ", "") if ax else '?'
+        if etanche:
+            # Aucune carie sous une restauration étanche : le curetage n'a jamais lieu d'être, que
+            # l'on ouvre la dent pour un geste pulpaire ou non.
+            if 'curetage' in reel:
+                note('thérapeutique', cas,
+                     "restauration récente (étanche, sans reprise carieuse) mais curetage attendu : "
+                     "il n'y a pas de carie à cureter — corrigé « %s »" % reel)
+            # Et si en plus aucun geste pulpaire n'est réalisé, il n'y a rien non plus à reconstituer :
+            # l'étanchéité coronaire est déjà assurée.
+            if not geste_pulpaire and reel != 'aucun':
                 note('thérapeutique', cas,
                      "restauration récente (étanche) et aucun geste pulpaire, mais geste coronaire "
                      "attendu « %s » (doit être « aucun » : rien à cureter, rien à reconstituer)" % reel)
@@ -453,6 +466,17 @@ for m in re.finditer(r"axes:\{coronaire:\[([^\]]*)\].*?finalAxes:\{geste:\['(\w+
     elif reel != att:
         note('récapitulatif', geste, "restauration attendue « %s », fiche « %s »" % (att, reel))
 # Une ligne à traitement final qui n'aurait pas de restauration déclarée échapperait à tout contrôle.
+# La même règle du curetage vaut pour la fiche : une ligne qui annoncerait un curetage sous une
+# restauration étanche enseignerait précisément ce que le corrigé vient de corriger.
+etancheite = 0
+for m in re.finditer(r"\{condition:\"([^\"]*)\", axes:\{coronaire:\[([^\]]*)\]", rb):
+    if not restauration_etanche(m.group(1)):
+        continue
+    etancheite += 1
+    if 'curetage' in m.group(2):
+        note('récapitulatif', m.group(1)[:40], "curetage annoncé sous une restauration étanche")
+print("Lignes « restauration étanche » auditées : %d" % etancheite)
+
 declares = len(re.findall(r"finalAxes:\{geste:", rb))
 if declares != lignes:
     note('récapitulatif', '-', "%d ligne(s) de traitement final sans restauration coronaire" % (declares - lignes))
