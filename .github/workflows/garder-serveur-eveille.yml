@@ -1,0 +1,83 @@
+name: Garder le serveur éveillé
+
+# La formule gratuite de Supabase met un projet en pause après environ une semaine sans la moindre
+# requête. Cela arrive mécaniquement pendant les vacances ou une interruption de cours, et les
+# étudiants trouvent alors un « serveur injoignable » — c'est exactement ce qui s'est produit en
+# octobre 2026. Cette tâche interroge la base tous les deux jours pour qu'elle reste active.
+#
+# Trois choses à savoir si elle cesse un jour de remplir son rôle :
+#
+#   - une tâche planifiée ne s'exécute QUE depuis la branche par défaut du dépôt (ici EndoDiag) ;
+#     la placer sur une autre branche ne déclenche rien, sans aucun message d'erreur ;
+#   - GitHub désactive les tâches planifiées d'un dépôt resté 60 jours sans activité. Il prévient
+#     par e-mail, et le moindre commit les réactive ;
+#   - l'horaire planifié n'est pas garanti à la minute près : GitHub décale les exécutions quand ses
+#     files sont chargées. Deux jours d'intervalle laissent une marge confortable face à une limite
+#     qui se compte en semaine.
+
+on:
+  schedule:
+    # Tous les deux jours. La minute est volontairement décalée de l'heure pile : les tâches
+    # planifiées à :00 sont les plus nombreuses, donc les plus retardées.
+    - cron: '17 6 */2 * *'
+  # Permet aussi de la lancer à la main depuis l'onglet « Actions » du dépôt.
+  workflow_dispatch:
+
+jobs:
+  reveiller:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Interroger la base
+        run: |
+          set -uo pipefail
+
+          # L'adresse et la clé sont relues dans l'application elle-même : une seule source de
+          # vérité, et rien à mettre à jour ici le jour où le projet changerait. La clé publiable
+          # est publique par conception — elle figure déjà dans le code servi aux navigateurs.
+          URL=$(grep -oE "https://[a-z0-9]+\.supabase\.co" index.html | head -1)
+          KEY=$(grep -oE "sb_publishable_[A-Za-z0-9_]+" index.html | head -1)
+
+          if [ -z "$URL" ] || [ -z "$KEY" ]; then
+            echo "::error::Adresse ou clé introuvable dans index.html : la tâche ne sait plus quoi interroger."
+            exit 1
+          fi
+          echo "Serveur interrogé : $URL"
+
+          # La réponse est écrite hors du dépôt : une tâche de surveillance n'a aucune raison de
+          # déposer un fichier dans la copie de travail.
+          REP="${RUNNER_TEMP:-/tmp}/reponse-supabase.json"
+          # Vidé d'emblée : quand la connexion échoue, curl n'écrit rien, et le journal afficherait
+          # sinon la réponse d'une exécution précédente comme si elle venait d'arriver.
+          : > "$REP"
+
+          # Trois tentatives espacées : un projet qui sort de veille met une minute ou deux à
+          # recharger son cache de schéma, et répondrait un 404 passager à la première requête.
+          code=""
+          for essai in 1 2 3; do
+            code=$(curl -sS -o "$REP" -w '%{http_code}' --max-time 30 \
+                     -H "apikey: $KEY" -H "Authorization: Bearer $KEY" \
+                     "$URL/rest/v1/profiles?select=id&limit=1" 2>/dev/null) || code="000"
+            echo "Tentative $essai — code HTTP : $code"
+            [ "$code" = "200" ] && break
+            [ "$essai" -lt 3 ] && sleep 20
+          done
+
+          # Utile au diagnostic : ce service répond même quand le cache de schéma n'est pas prêt,
+          # ce qui permet de distinguer « projet en pause » de « projet réveillé mais incomplet ».
+          auth=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 30 \
+                   -H "apikey: $KEY" "$URL/auth/v1/health" 2>/dev/null) || auth="000"
+          echo "Service d'authentification — code HTTP : $auth"
+
+          if [ "$code" = "200" ]; then
+            echo "Base interrogée avec succès : le projet reste actif."
+            exit 0
+          fi
+
+          echo "Réponse reçue :"
+          head -c 400 "$REP" 2>/dev/null || true
+          echo
+          echo "::error::Le serveur n'a pas répondu correctement (REST $code, auth $auth)."
+          echo "::error::S'il est en pause, ouvrez https://supabase.com/dashboard et cliquez sur « Resume project »."
+          exit 1
