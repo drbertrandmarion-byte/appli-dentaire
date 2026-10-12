@@ -1817,6 +1817,7 @@
   var TX_CHIRURGICAL_OPTIONS = [
     {id:'aucun', label:"Aucun geste chirurgical"},
     {id:'extraction', label:"Extraction"},
+    {id:'curetage_granulome', label:"Curetage du granulome"},
     {id:'drainage_transfixion', label:"Drainage par transfixion apicale"},
     {id:'drainage_fistulaire', label:"Drainage par voie fistulaire"},
     {id:'drainage_muqueuse', label:"Drainage par voie muqueuse"},
@@ -2395,7 +2396,7 @@
         diagram: 'floor_fracture',
         depth: "infra_osseux", apical: true,
         rationaleKey: 'extraction',
-        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
+        axes: {coronaire:['aucun'], chirurgical:['extraction', 'curetage_granulome'], medicamenteux:['antalgique', 'bain_bouche']}
       },
       // Abcès apical aigu sur dent déjà traitée par endodontie (réinfection) : le canal n'est pas rouvert
       // en urgence (curetage carieux et restauration transitoire étanche si la dent est conservable, en
@@ -2474,7 +2475,7 @@
         patientLine: "Grégoire, 57 ans, consulte pour un petit bouton visible sur la gencive en regard de l'apex, sans douleur franche. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale bien limitée (image de granulome/kyste).",
         depth: "infra_osseux", apical: true,
         rationaleKey: 'extraction',
-        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
+        axes: {coronaire:['aucun'], chirurgical:['extraction', 'drainage_fistulaire', 'curetage_granulome'], medicamenteux:['antalgique', 'bain_bouche']}
       }
     ],
 
@@ -2512,7 +2513,7 @@
         diagram: 'floor_fracture',
         depth: "infra_osseux", apical: true,
         rationaleKey: 'extraction',
-        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
+        axes: {coronaire:['aucun'], chirurgical:['extraction', 'curetage_granulome'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
       },
       // Cellulite séreuse sur dent déjà traitée par endodontie (réinfection) : le canal n'est pas rouvert
       // en urgence (curetage carieux et restauration transitoire étanche si la dent est conservable, en
@@ -2544,7 +2545,7 @@
         depth: "infra_osseux", apical: true,
         alreadyTreated: true,
         rationaleKey: 'dejaTraiteeExtraction',
-        axes: {coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}
+        axes: {coronaire:['aucun'], chirurgical:['extraction', 'curetage_granulome'], medicamenteux:['antalgique', 'bain_bouche']}
       }
     ],
 
@@ -2578,7 +2579,7 @@
         patientLine: "Paul, 59 ans, consulte pour une tuméfaction avec collection fluctuante, ne prenant pas le godet, avec un reflux purulent au sillon gingival, une dent causale très douloureuse à la percussion et à la palpation, et une douleur constante apaisée par le froid. La radiographie montre un délabrement infra-osseux, sous la crête osseuse, avec une volumineuse image radioclaire apicale, à l'origine de la collection purulente des tissus mous.",
         depth: "infra_osseux", apical: true,
         rationaleKey: 'extraction',
-        axes: {coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
+        axes: {coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse', 'curetage_granulome'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}
       },
       // Cellulite suppurée sur dent déjà traitée par endodontie (réinfection) : le canal n'est pas rouvert
       // en urgence (curetage carieux et restauration transitoire étanche si la dent est conservable, en
@@ -2618,7 +2619,7 @@
         radioText: "Fracture radiculaire verticale sur dent déjà traitée, obturation coronaire ayant perdu son étanchéité ; volumineuse image radioclaire apicale, à l'origine de la collection purulente des tissus mous. Dent non conservable : le retraitement n'est pas envisageable.",
         alreadyTreated: true,
         rationaleKey: 'dejaTraiteeExtraction',
-        axes: {coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'bain_bouche']}
+        axes: {coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse', 'curetage_granulome'], medicamenteux:['antalgique', 'bain_bouche']}
       }
     ],
 
@@ -2723,27 +2724,27 @@
     abces_aigu: [
       {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_transfixion'], medicamenteux:['antalgique']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
-      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null},
+      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'curetage_granulome'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null},
       {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
-      {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
+      {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction', 'curetage_granulome'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     abces_chronique: [
       {condition:"Limite infra-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_fistulaire'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
-      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
+      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_fistulaire', 'curetage_granulome'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_sereuse: [
       {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
-      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null},
+      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'curetage_granulome'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null},
       {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
-      {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
+      {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction', 'curetage_granulome'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_suppuree: [
       {condition:"Dent déjà traitée, porteuse d'une couronne : aucun geste coronaire", axes:{coronaire:['aucun'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
-      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null},
+      {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse', 'curetage_granulome'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null},
       {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
-      {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
+      {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction', 'drainage_muqueuse', 'curetage_granulome'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_diffuse: [
       {condition:"Dent jamais traitée ou déjà traitée", axes:{coronaire:['aucun'], chirurgical:['referer'], medicamenteux:['aucun']}, finalAxes:null}

@@ -329,6 +329,39 @@ for i in range(len(bornes) - 1):
         if ca and ca != attendu:
             note('thérapeutique', cas, "apex : texte « %s », schéma « %s »\n        → %s" % (ca, attendu, (rt or '')[:95]))
 
+        # A0bis. Ce qui accompagne obligatoirement une extraction.
+        #
+        #   - Le granulome ou le kyste apical ne part pas avec la dent : si on ne le curette pas,
+        #     il reste dans l'os et donne un kyste résiduel. Toute extraction d'une dent portant une
+        #     radioclarté constituée appelle donc son curetage. Une dent conservée, elle, n'en relève
+        #     pas : sa lésion guérit après le traitement endodontique, et la cureter serait de la
+        #     chirurgie apicale, pas un geste d'urgence.
+        #   - Une fistule doit être nettoyée même quand la dent part : le trajet fistuleux ne se
+        #     draine pas tout seul.
+        chir = re.search(r"chirurgical:\[([^\]]*)\]", v)
+        chir = chir.group(1).replace("'", "").replace(" ", "") if chir else ''
+        extrait = 'extraction' in chir
+
+        if extrait and ca == 'defined' and 'curetage_granulome' not in chir:
+            note('thérapeutique', cas,
+                 "extraction d'une dent portant une radioclarté constituée, sans curetage du "
+                 "granulome — corrigé « %s »" % chir)
+        if not extrait and 'curetage_granulome' in chir:
+            note('thérapeutique', cas,
+                 "curetage du granulome attendu sans extraction : sur une dent conservée, la lésion "
+                 "guérit après le traitement endodontique")
+        # Et réciproquement : sans radioclarté constituée, il n'y a aucun granulome à cureter. Sans
+        # cette moitié de règle, on pourrait en ajouter un là où il n'y a rien, sans que rien ne le
+        # signale — c'est le cas de la parodontite apicale aiguë, ligament élargi mais lésion absente.
+        if extrait and ca != 'defined' and 'curetage_granulome' in chir:
+            note('thérapeutique', cas,
+                 "curetage du granulome attendu alors que la radiographie ne décrit aucune lésion "
+                 "constituée (apex classé « %s »)" % ca)
+        if extrait and dit_fistule(pl) and 'drainage_fistulaire' not in chir:
+            note('thérapeutique', cas,
+                 "l'énoncé décrit une fistule et la dent est extraite, mais aucun drainage "
+                 "fistulaire n'est attendu — corrigé « %s »" % chir)
+
         # A1. Pulpite aiguë irréversible : le geste coronaire se déduit de DEUX axes, l'âge et
         #     l'hémostase. Moins de 30 ans et saignement facilement contrôlé -> pulpotomie
         #     thérapeutique seule ; saignement impossible à stabiliser -> pulpectomie d'urgence à
@@ -476,6 +509,14 @@ for m in re.finditer(r"\{condition:\"([^\"]*)\", axes:\{coronaire:\[([^\]]*)\]",
     if 'curetage' in m.group(2):
         note('récapitulatif', m.group(1)[:40], "curetage annoncé sous une restauration étanche")
 print("Lignes « restauration étanche » auditées : %d" % etancheite)
+
+# Le curetage du granulome n'a de sens qu'accompagné d'une extraction : c'est l'alvéole que l'on
+# curette. Une ligne qui l'annoncerait sur une dent conservée enseignerait une chirurgie apicale
+# d'urgence qui n'existe pas.
+for m in re.finditer(r"chirurgical:\[([^\]]*)\]", rb):
+    axe = m.group(1).replace("'", "").replace(" ", "")
+    if 'curetage_granulome' in axe and 'extraction' not in axe:
+        note('récapitulatif', axe, "curetage du granulome annoncé sans extraction")
 
 declares = len(re.findall(r"finalAxes:\{geste:", rb))
 if declares != lignes:

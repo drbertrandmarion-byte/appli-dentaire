@@ -72,7 +72,7 @@ CASES['Bernard'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['aucun']
   CASES[n] = { title: 'Abcès apical aigu', urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['drainage_transfixion'], medicamenteux: ['antalgique'] }, final: { geste: ['endo_complet'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
 });
 ['Aurélie'].forEach(n => {
-  CASES[n] = { title: 'Abcès apical aigu', urgence: { coronaire: ['aucun'], chirurgical: ['extraction'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
+  CASES[n] = { title: 'Abcès apical aigu', urgence: { coronaire: ['aucun'], chirurgical: ['extraction', 'curetage_granulome'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
 });
 // Dent déjà traitée avec reprise carieuse ou obturation réinfiltrée : on cure et on rescelle.
 ['Nicolas'].forEach(n => {
@@ -89,13 +89,13 @@ CASES['Bernard'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['aucun']
   CASES[n] = { title: 'Abcès apical chronique', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['drainage_fistulaire'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
 });
 ['Grégoire'].forEach(n => {
-  CASES[n] = { title: 'Abcès apical chronique', urgence: { coronaire: ['aucun'], chirurgical: ['extraction'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
+  CASES[n] = { title: 'Abcès apical chronique', urgence: { coronaire: ['aucun'], chirurgical: ['extraction', 'drainage_fistulaire', 'curetage_granulome'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
 });
 ['Julien', 'Nadia', 'Marc'].forEach(n => {
   CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['antalgique', 'antibiotiques'] }, final: { geste: ['endo_complet'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
 });
 ['Inès'].forEach(n => {
-  CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['aucun'], chirurgical: ['extraction'], medicamenteux: ['antalgique', 'antibiotiques', 'bain_bouche'] }, final: null };
+  CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['aucun'], chirurgical: ['extraction', 'curetage_granulome'], medicamenteux: ['antalgique', 'antibiotiques', 'bain_bouche'] }, final: null };
 });
 // Dent déjà traitée avec reprise carieuse ou obturation réinfiltrée : on cure et on rescelle.
 ['Rémi'].forEach(n => {
@@ -106,13 +106,13 @@ CASES['Bernard'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['aucun']
   CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['reconstitution_provisoire'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antibiotiques', 'antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
 });
 ['Gilbert'].forEach(n => {
-  CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['aucun'], chirurgical: ['extraction'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
+  CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['aucun'], chirurgical: ['extraction', 'curetage_granulome'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
 });
 ['Victor', 'Laura', 'Hakim'].forEach(n => {
   CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antalgique', 'antibiotiques', 'bain_bouche'] }, final: { geste: ['endo_complet'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
 });
 ['Paul'].forEach(n => {
-  CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['aucun'], chirurgical: ['extraction', 'drainage_muqueuse'], medicamenteux: ['antalgique', 'antibiotiques', 'bain_bouche'] }, final: null };
+  CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['aucun'], chirurgical: ['extraction', 'drainage_muqueuse', 'curetage_granulome'], medicamenteux: ['antalgique', 'antibiotiques', 'bain_bouche'] }, final: null };
 });
 // Dent déjà traitée avec reprise carieuse ou obturation réinfiltrée : on cure et on rescelle.
 ['Fabrice'].forEach(n => {
@@ -123,7 +123,7 @@ CASES['Bernard'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['aucun']
   CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['reconstitution_provisoire'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antibiotiques', 'antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
 });
 ['Serge'].forEach(n => {
-  CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['aucun'], chirurgical: ['extraction', 'drainage_muqueuse'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
+  CASES[n] = { title: 'Cellulite suppurée (collectée)', urgence: { coronaire: ['aucun'], chirurgical: ['extraction', 'drainage_muqueuse', 'curetage_granulome'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
 });
 ['Solène'].forEach(n => {
   CASES[n] = { title: 'Parodontite apicale aiguë', urgence: { coronaire: ['aucun'], chirurgical: ['aucun'], medicamenteux: ['antibiotiques', 'antalgique'] }, final: { geste: ['retraitement'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };

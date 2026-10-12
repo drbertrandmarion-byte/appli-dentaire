@@ -97,6 +97,14 @@ Elle termine par `Anomalies : 0`.
 Elle contrôle aussi l'**état périapical** : ligament sain, ligament élargi ou lésion
 constituée, tels que le texte les décrit, contre ce que le schéma dessine.
 
+Elle contrôle aussi ce qui **accompagne obligatoirement une extraction** : le granulome ou le kyste
+apical ne part pas avec la dent — sans curetage il reste dans l'os et donne un kyste résiduel —, et
+une fistule doit être nettoyée même quand la dent est enlevée. La règle est bidirectionnelle : sans
+radioclarté constituée il n'y a rien à cureter, et sur une dent conservée la lésion guérit après le
+traitement endodontique, de sorte qu'un curetage y relèverait de la chirurgie apicale et non d'un
+geste d'urgence. Cette seconde moitié n'est pas décorative : c'est elle qui couvre la parodontite
+apicale aiguë, dont le ligament est élargi sans lésion constituée.
+
 Elle contrôle aussi les deux signes de la tuméfaction, qui ne disent pas la même chose : le **godet**
 se creuse dans un œdème d'infiltration (cellulite séreuse, cellulite diffuse), le **reflux** purulent
 signe une collection constituée (cellulite suppurée), et une collection sous tension ne prend pas le
