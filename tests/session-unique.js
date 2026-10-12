@@ -155,7 +155,34 @@ async function revenirSurLOnglet(page){
   console.log(`5. reconnexion après déconnexion propre : ${revenu ? 'dans l’application' : 'ÉVINCÉ AUSSITÔT'}`);
   await premier.close(); await second.close();
 
-  // ===== 3. Une connexion capricieuse ne doit jamais déconnecter =====
+  // ===== 3. Session individuelle : l'éviction a lieu dès le cas validé =====
+  // C'est le cas qui échappait au contrôle : en « Session individuelle », on enchaîne les cas sans
+  // jamais terminer de série ni quitter l'onglet. Sans vérification à chaque cas, un compte repris
+  // ailleurs pouvait continuer à travailler indéfiniment.
+  const baseI = nouvelleBase();
+  const etatI = { panne:false };
+  const travaille = await brancher(browser, baseI, etatI);
+  const repreneur = await brancher(browser, baseI, etatI);
+
+  await seConnecter(travaille);
+  await travaille.click('#hub-diagnostic-btn');
+  await travaille.click('#start-single-btn');
+  await travaille.waitForTimeout(300);
+
+  // Un autre appareil prend la main pendant qu'il travaille.
+  await seConnecter(repreneur);
+
+  // Il valide son cas SANS avoir quitté l'onglet : aucun retour d'onglet, aucune fin de série.
+  await travaille.selectOption('#diagnosis-select', 'necrose');
+  await travaille.click('#guess-btn');
+  await travaille.waitForTimeout(1200);
+
+  const encoreLa = await travaille.evaluate(DANS_L_APP);
+  exiger(!encoreLa, 'en session individuelle, le compte repris ailleurs continue de travailler : le cas validé ne déclenche aucun contrôle');
+  console.log(`\n6. session individuelle, cas validé : ${encoreLa ? 'TOUJOURS DEDANS' : 'refermé'}`);
+  await travaille.close(); await repreneur.close();
+
+  // ===== 4. Une connexion capricieuse ne doit jamais déconnecter =====
   const base2 = nouvelleBase();
   const etat2 = { panne:false };
   const seul = await brancher(browser, base2, etat2);
@@ -164,14 +191,14 @@ async function revenirSurLOnglet(page){
   await revenirSurLOnglet(seul);
   const survecu = await seul.evaluate(DANS_L_APP);
   exiger(survecu, 'une simple panne réseau déconnecte l’étudiant — le garde-fou se retourne contre lui');
-  console.log(`\n6. réseau coupé pendant la vérification : ${survecu ? 'maintenu dans l’application' : 'ÉVINCÉ'}`);
+  console.log(`7. réseau coupé pendant la vérification : ${survecu ? 'maintenu dans l’application' : 'ÉVINCÉ'}`);
   await seul.close();
 
-  // ===== 4. Repli hors ligne : jamais refusé, quel que soit le temps écoulé =====
+  // ===== 5. Repli hors ligne : jamais refusé, quel que soit le temps écoulé =====
   // Une panne du serveur ne doit JAMAIS priver un étudiant de ses révisions — c'est arrivé en
   // octobre 2026, et une limite de 24 h posée ici aurait transformé une panne de trois jours en
   // blocage général. Ce test interdit qu'une telle limite réapparaisse.
-  let etape = 6;   // les six premières étapes sont numérotées à la main plus haut
+  let etape = 7;   // les sept premières étapes sont numérotées à la main plus haut
   async function replieHorsLigne(etiquette, avecIdentifiant){
     const page = await browser.newPage({ viewport:{ width:900, height:900 } });
     await page.route('**://*.supabase.co/**', r => r.abort('failed'));

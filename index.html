@@ -5538,14 +5538,20 @@
       if(!session || !diagnosisId) return;
       queuePush({k:'c', mode:mode, diagnosis_id:diagnosisId, correct:!!correct});
       flushQueue();
+      // Chaque cas validé, dans les deux modes, série ou cas isolé : c'est le seul endroit par
+      // lequel passe forcément un étudiant qui travaille. Contrôler ici plutôt qu'en fin de série
+      // ferme le cas de la « session individuelle », où l'on peut enchaîner les cas indéfiniment
+      // sans jamais quitter l'onglet ni terminer de série — et donc, auparavant, sans jamais être
+      // vérifié. L'exposition maximale tombe à un cas.
+      checkSingleSession();
     },
 
     recordSeries: function(mode, serie, score){
       if(!session || !serie) return;
       queuePush({k:'s', mode:mode, serie:serie, score:score});
       flushQueue();
-      // Fin de série : le moment naturel pour constater qu'un autre appareil a pris la main.
-      checkSingleSession();
+      // Pas de contrôle de session ici : le dernier cas de la série vient de le déclencher, à
+      // quelques secondes près. Deux requêtes identiques coup sur coup n'apporteraient rien.
     },
 
     // Conserve le détail d'un cas raté, pour que l'étudiant puisse le revoir.

@@ -160,8 +160,10 @@ score, et ne jamais retirer le canvas. Les six sont bien signalées.
 
 `session-unique.js` rejoue le partage de compte sur une base **simulée partagée entre deux
 navigateurs** — c'est exactement ce que voit le serveur quand deux appareils ouvrent le même compte.
-Il vérifie que le second évince le premier, et surtout les deux façons dont ce garde-fou pourrait se
-retourner contre un étudiant honnête : une panne réseau pendant la vérification ne doit jamais le
+Il vérifie que le second évince le premier — y compris en « Session individuelle », où l'on enchaîne
+les cas sans jamais terminer de série ni quitter l'onglet : c'est le cas qui échappait au contrôle
+tant que celui-ci n'avait lieu qu'en fin de série. Et surtout les deux façons dont ce garde-fou
+pourrait se retourner contre un étudiant honnête : une panne réseau pendant la vérification ne doit jamais le
 déconnecter, et une reconnexion après déconnexion propre ne doit pas le rejeter à l'instant où il
 vient de taper son mot de passe. Il éprouve enfin le repli hors ligne, qui n'est borné par **aucun délai** : une panne du serveur ne
 doit jamais priver un étudiant de ses révisions — c'est arrivé en octobre 2026, et une limite de 24 h
@@ -179,8 +181,8 @@ vérifient précisément qu'on n'y entre pas. Attendre la levée de la porte y f
 par un plantage muet, au lieu du message qui nomme le problème.
 
 Ses mutations de contrôle : supprimer l'éviction, supprimer la revendication faite à la connexion,
-déconnecter sur une panne réseau, refuser le repli hors ligne, et y laisser entrer un compte non
-validé. Toutes sont signalées.
+supprimer le contrôle en fin de cas, déconnecter sur une panne réseau, refuser le repli hors ligne,
+et y laisser entrer un compte non validé. Toutes sont signalées.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas
