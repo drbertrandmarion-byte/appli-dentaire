@@ -344,18 +344,18 @@ for i in range(len(bornes) - 1):
 
         if extrait and ca == 'defined' and 'curetage_granulome' not in chir:
             note('thérapeutique', cas,
-                 "extraction d'une dent portant une radioclarté constituée, sans curetage du "
-                 "granulome — corrigé « %s »" % chir)
+                 "extraction d'une dent portant une radioclarté constituée, sans curetage du tissu "
+                 "granuleux — corrigé « %s »" % chir)
         if not extrait and 'curetage_granulome' in chir:
             note('thérapeutique', cas,
-                 "curetage du granulome attendu sans extraction : sur une dent conservée, la lésion "
+                 "curetage du tissu granuleux attendu sans extraction : sur une dent conservée, la lésion "
                  "guérit après le traitement endodontique")
         # Et réciproquement : sans radioclarté constituée, il n'y a aucun granulome à cureter. Sans
         # cette moitié de règle, on pourrait en ajouter un là où il n'y a rien, sans que rien ne le
         # signale — c'est le cas de la parodontite apicale aiguë, ligament élargi mais lésion absente.
         if extrait and ca != 'defined' and 'curetage_granulome' in chir:
             note('thérapeutique', cas,
-                 "curetage du granulome attendu alors que la radiographie ne décrit aucune lésion "
+                 "curetage du tissu granuleux attendu alors que la radiographie ne décrit aucune lésion "
                  "constituée (apex classé « %s »)" % ca)
         if extrait and dit_fistule(pl) and 'drainage_fistulaire' not in chir:
             note('thérapeutique', cas,
@@ -516,7 +516,7 @@ print("Lignes « restauration étanche » auditées : %d" % etancheite)
 for m in re.finditer(r"chirurgical:\[([^\]]*)\]", rb):
     axe = m.group(1).replace("'", "").replace(" ", "")
     if 'curetage_granulome' in axe and 'extraction' not in axe:
-        note('récapitulatif', axe, "curetage du granulome annoncé sans extraction")
+        note('récapitulatif', axe, "curetage du tissu granuleux annoncé sans extraction")
 
 declares = len(re.findall(r"finalAxes:\{geste:", rb))
 if declares != lignes:
