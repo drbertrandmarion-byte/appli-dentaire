@@ -58,7 +58,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 | `coherence-textes.py` | Que l'énoncé, la radiographie et le schéma disent la même chose — **tous** les cas, sans tirage |
 | `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion et export Excel |
 | `confettis.js` | Que les confettis tombent sur un sans-faute, et **seulement** sur un sans-faute |
-| `session-unique.js` | Qu'un compte ne reste ouvert que sur un appareil, et que le repli hors ligne expire |
+| `session-unique.js` | Qu'un compte ne reste ouvert que sur un appareil, sans jamais bloquer la révision hors ligne |
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
 un différentiel affiché sur une erreur et jamais sur une bonne réponse, et surtout un
@@ -163,17 +163,24 @@ navigateurs** — c'est exactement ce que voit le serveur quand deux appareils o
 Il vérifie que le second évince le premier, et surtout les deux façons dont ce garde-fou pourrait se
 retourner contre un étudiant honnête : une panne réseau pendant la vérification ne doit jamais le
 déconnecter, et une reconnexion après déconnexion propre ne doit pas le rejeter à l'instant où il
-vient de taper son mot de passe. Il éprouve enfin le repli hors ligne de part et d'autre de sa
-limite — 2 h et 23 h passent, 25 h est refusé, et un profil copié dans un navigateur jamais passé en
-ligne n'ouvre rien. Il termine par `Erreurs : 0`.
+vient de taper son mot de passe. Il éprouve enfin le repli hors ligne, qui n'est borné par **aucun délai** : une panne du serveur ne
+doit jamais priver un étudiant de ses révisions — c'est arrivé en octobre 2026, et une limite de 24 h
+posée là aurait transformé une panne de trois jours en blocage général. Le test interdit qu'une telle
+limite réapparaisse. Un compte **non validé**, lui, reste refusé même hors ligne. Il termine par
+`Erreurs : 0`.
+
+Ce repli laisse subsister une échappatoire au contrôle de session : rester hors ligne. Elle se paie —
+hors ligne, aucun score n'est enregistré, aucune statistique ne remonte, aucun cas à revoir n'est
+conservé — et c'est précisément ce que l'accès récompense. Le choix est assumé : mieux vaut une
+échappatoire coûteuse qu'un étudiant honnête bloqué un jour de panne.
 
 Sa fonction de connexion n'exige délibérément pas d'entrer dans l'application : plusieurs scénarios
 vérifient précisément qu'on n'y entre pas. Attendre la levée de la porte y ferait échouer le test
 par un plantage muet, au lieu du message qui nomme le problème.
 
-Ses six mutations de contrôle : supprimer l'éviction, supprimer la revendication faite à la
-connexion, déconnecter sur une panne réseau, retirer la limite du repli hors ligne, et la porter à
-48 h. Toutes sont signalées.
+Ses mutations de contrôle : supprimer l'éviction, supprimer la revendication faite à la connexion,
+déconnecter sur une panne réseau, refuser le repli hors ligne, et y laisser entrer un compte non
+validé. Toutes sont signalées.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas

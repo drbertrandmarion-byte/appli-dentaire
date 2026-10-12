@@ -167,43 +167,39 @@ async function revenirSurLOnglet(page){
   console.log(`\n6. réseau coupé pendant la vérification : ${survecu ? 'maintenu dans l’application' : 'ÉVINCÉ'}`);
   await seul.close();
 
-  // ===== 4. Repli hors ligne : autorisé sous 24 h, refusé au-delà =====
-  async function replieHorsLigne(ageHeures){
+  // ===== 4. Repli hors ligne : jamais refusé, quel que soit le temps écoulé =====
+  // Une panne du serveur ne doit JAMAIS priver un étudiant de ses révisions — c'est arrivé en
+  // octobre 2026, et une limite de 24 h posée ici aurait transformé une panne de trois jours en
+  // blocage général. Ce test interdit qu'une telle limite réapparaisse.
+  let etape = 6;   // les six premières étapes sont numérotées à la main plus haut
+  async function replieHorsLigne(etiquette, avecIdentifiant){
     const page = await browser.newPage({ viewport:{ width:900, height:900 } });
     await page.route('**://*.supabase.co/**', r => r.abort('failed'));
-    await page.addInitScript(([age]) => {
+    await page.addInitScript(([avecId]) => {
       localStorage.setItem('endodiag-session', JSON.stringify({
         access_token:'t', refresh_token:'t', expires_at:Date.now()+36e5, user_id:'u1', email:'e@x.fr' }));
       localStorage.setItem('endodiag-profile', JSON.stringify({
         id:'u1', email:'e@x.fr', prenom:'T', nom:'A', annee:'TCEO1',
         faculte:'UFR Odontologie Dijon', approved:true }));
-      localStorage.setItem('endodiag-session-id', JSON.stringify('claim-local'));
-      localStorage.setItem('endodiag-last-online', JSON.stringify(Date.now() - age * 3600 * 1000));
-    }, [ageHeures]);
+      if (avecId) localStorage.setItem('endodiag-session-id', JSON.stringify('claim-local'));
+    }, [avecIdentifiant]);
     await page.goto(URL);
     await page.evaluate(() => { const s = document.getElementById('splash-screen'); if (s) s.remove(); });
     await page.waitForTimeout(1500);
-    const r = { dedans: await page.evaluate(DANS_L_APP), texte: await page.evaluate(MESSAGE) };
+    const dedans = await page.evaluate(DANS_L_APP);
     await page.close();
-    return r;
+    exiger(dedans, `le repli hors ligne refuse un étudiant (${etiquette}) : une panne du serveur le priverait de ses révisions`);
+    console.log(`${String(++etape).padStart(2)}. hors ligne, ${etiquette.padEnd(30)} : ${dedans ? 'révision autorisée' : 'REFUSÉ'}`);
+    return dedans;
   }
 
-  const recent = await replieHorsLigne(2);
-  exiger(recent.dedans, 'le repli hors ligne refuse un étudiant connecté il y a 2 h');
-  console.log(`\n7. hors ligne, dernière connexion il y a  2 h : ${recent.dedans ? 'révision autorisée' : 'REFUSÉ'}`);
+  console.log('');
+  await replieHorsLigne('session déjà revendiquée', true);
+  await replieHorsLigne('aucun identifiant de session', false);
 
-  const limite = await replieHorsLigne(23);
-  exiger(limite.dedans, 'le repli hors ligne refuse un étudiant connecté il y a 23 h');
-  console.log(`8. hors ligne, dernière connexion il y a 23 h : ${limite.dedans ? 'révision autorisée' : 'REFUSÉ'}`);
-
-  const vieux = await replieHorsLigne(25);
-  exiger(!vieux.dedans, 'le repli hors ligne laisse entrer au-delà de 24 h : le contrôle de session est contournable en coupant le réseau');
-  exiger(vieux.texte && /24 heures/.test(vieux.texte),
-    `au-delà de 24 h, le message n’explique pas ce qu’il faut faire : ${JSON.stringify(vieux.texte)}`);
-  console.log(`9. hors ligne, dernière connexion il y a 25 h : ${vieux.dedans ? 'ENTRÉ' : 'refusé'} — « ${(vieux.texte || '').slice(0, 70)}… »`);
-
-  // ===== 5. Un navigateur jamais passé en ligne ne doit pas entrer =====
-  const jamais = await (async () => {
+  // Un compte NON validé ne doit pas entrer, même hors ligne : le repli n'ouvre l'application
+  // qu'aux comptes que l'enseignante a déjà approuvés.
+  const pasValide = await (async () => {
     const page = await browser.newPage({ viewport:{ width:900, height:900 } });
     await page.route('**://*.supabase.co/**', r => r.abort('failed'));
     await page.addInitScript(() => {
@@ -211,7 +207,7 @@ async function revenirSurLOnglet(page){
         access_token:'t', refresh_token:'t', expires_at:Date.now()+36e5, user_id:'u1', email:'e@x.fr' }));
       localStorage.setItem('endodiag-profile', JSON.stringify({
         id:'u1', email:'e@x.fr', prenom:'T', nom:'A', annee:'TCEO1',
-        faculte:'UFR Odontologie Dijon', approved:true }));
+        faculte:'UFR Odontologie Dijon', approved:false }));
     });
     await page.goto(URL);
     await page.evaluate(() => { const s = document.getElementById('splash-screen'); if (s) s.remove(); });
@@ -220,8 +216,8 @@ async function revenirSurLOnglet(page){
     await page.close();
     return d;
   })();
-  exiger(!jamais, 'un profil copié dans un navigateur jamais passé en ligne ouvre l’application');
-  console.log(`10. profil copié, jamais passé en ligne        : ${jamais ? 'ENTRÉ' : 'refusé'}`);
+  exiger(!pasValide, 'un compte non validé entre dans l’application par le repli hors ligne');
+  console.log(`${String(++etape).padStart(2)}. hors ligne, ${'compte NON validé'.padEnd(30)} : ${pasValide ? 'ENTRÉ' : 'refusé'}`);
 
   console.log(`\nErreurs : ${erreurs.length}`);
   erreurs.forEach(e => console.log('  ! ' + e));

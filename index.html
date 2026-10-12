@@ -5335,10 +5335,6 @@
   // Identifiant tiré au hasard à chaque connexion : c'est lui qui désigne, parmi tous les
   // navigateurs où le compte a été ouvert, celui qui détient la session en cours.
   var CLAIM_KEY   = 'endodiag-session-id';
-  // Horodatage de la dernière vérification réussie auprès du serveur. Le repli hors ligne s'y
-  // adosse : sans passage en ligne récent, l'application redemande une connexion.
-  var ONLINE_KEY  = 'endodiag-last-online';
-  var OFFLINE_MAX_MS = 24 * 60 * 60 * 1000;   // 24 h
 
   var gate       = document.getElementById('auth-gate');
   var menu       = document.getElementById('account-menu');
@@ -5657,19 +5653,9 @@
     if(!session || !session.user_id || offline) return Promise.resolve(true);
     return authed('/rest/v1/profiles?select=active_session&id=eq.' + session.user_id)
       .then(function(rows){
-        markOnline();
         return ownsSession(rows && rows[0] && rows[0].active_session);
       })
       .catch(function(){ return true; });
-  }
-
-  function markOnline(){ writeStore(ONLINE_KEY, Date.now()); }
-
-  // Le repli hors ligne laisse réviser sans connexion, mais il ne doit pas devenir une porte
-  // dérobée : sans lui, il suffirait de couper le réseau pour échapper au contrôle de session.
-  function offlineStillAllowed(){
-    var t = readStore(ONLINE_KEY);
-    return typeof t === 'number' && (Date.now() - t) < OFFLINE_MAX_MS;
   }
 
   // Le retour sur l'onglet est le moment le plus probable d'une reprise sur un autre appareil.
@@ -5720,7 +5706,6 @@
       .then(function(){ return loadAdminFlag(); })
       .then(function(){
         offline = false;
-        markOnline();
         // La fiche vient d'être lue : la vérification de session est ici gratuite.
         if(profile && !ownsSession(profile.active_session)) return;
         if(isAdmin || (profile && profile.approved)) enterApp();
@@ -5737,21 +5722,22 @@
         }
       })
       .catch(function(err){
-        // Serveur injoignable : on laisse entrer si ce navigateur avait déjà un
-        // compte validé — un étudiant peut ainsi réviser sans connexion, sans
-        // pour autant ouvrir l'application à un inconnu.
+        // Serveur injoignable : on laisse entrer si ce navigateur avait déjà un compte validé — un
+        // étudiant peut ainsi réviser sans connexion, sans pour autant ouvrir l'application à un
+        // inconnu. Ce repli n'est volontairement borné par aucun délai : une panne du serveur ne
+        // doit jamais priver un étudiant de ses révisions, et c'est arrivé.
+        //
+        // Il laisse donc subsister une échappatoire au contrôle de session : rester hors ligne.
+        // Elle se paie — hors ligne, aucun score n'est enregistré, aucune statistique ne remonte,
+        // aucun cas à revoir n'est conservé — et c'est précisément ce que l'accès récompense.
         var cached = readStore(PROFILE_KEY);
-        if(isNetworkError(err) && cached && cached.approved && offlineStillAllowed()){
+        if(isNetworkError(err) && cached && cached.approved){
           profile = cached; offline = true; enterApp();
           return;
         }
         if(isNetworkError(err)){
           showView('login');
-          msg('login-msg', offlineStillAllowed() || !cached
-            ? 'Serveur injoignable. Vérifiez votre connexion internet.'
-            : 'Vous n\'avez pas été connecté depuis plus de 24 heures. ' +
-              'L\'application a besoin d\'un passage en ligne pour rouvrir votre accès : ' +
-              'vérifiez votre connexion internet.', 'err');
+          msg('login-msg', 'Serveur injoignable. Vérifiez votre connexion internet.', 'err');
         } else {
           clearSession(); showView('login');
         }
@@ -5811,7 +5797,7 @@
     request('/auth/v1/token?grant_type=password', { method:'POST', body:{ email:email, password:pass } })
       // La revendication précède route() : c'est elle qui fait de ce navigateur le détenteur de la
       // session, faute de quoi route() constaterait aussitôt qu'il ne l'est pas et se déconnecterait.
-      .then(function(data){ saveSession(data); markOnline(); return claimSession(); })
+      .then(function(data){ saveSession(data); return claimSession(); })
       .then(function(){ return route(); })
       .catch(function(err){ showView('login'); msg('login-msg', humanError(err), 'err'); })
       .then(function(){ busy($('login-btn'), false, '', 'Se connecter'); });
