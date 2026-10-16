@@ -185,6 +185,36 @@ for m in re.finditer(r'\n    (\w+): \{(.*?)(?=\n    \w+: \{|\Z)', dbloc, re.S):
         if g_oui and r_oui:
             note('diagnostic', titre, "godet ET reflux positifs : une collection sous tension ne prend pas le godet")
 
+# -----------------------------------------------------------------------------
+#  Le test au froid : aucun diagnostic ne doit rester sans réponse
+# -----------------------------------------------------------------------------
+# La réponse au froid est structurée — normal, quasi_normal, quelques_secondes, intense, non — et
+# c'est elle qui sert à la correction et au différentiel. Une valeur absente vaut « non » : c'est
+# le défaut que signValue() applique dans l'application, et le reproduire ici est indispensable,
+# sans quoi les six diagnostics à pulpe nécrosée, qui ne déclarent rien, seraient signalés à tort.
+#
+# Ce qui n'est PAS contrôlé, délibérément : que deux diagnostics partageant la même valeur la
+# formulent dans les mêmes termes. C'est le cas de la pulpite irréversible et du syndrome mixte,
+# tous deux en « intense », dont les citations diffèrent — « se prolongeant jusqu'à l'oreille »
+# contre « pas extrêmement intense ». L'enseignante a choisi de conserver cette nuance clinique.
+# La conséquence est connue et assumée : sur ces deux-là, les mots en disent un peu plus que la
+# valeur classée, et le différentiel tient le froid pour non discriminant. L'écrire ici évite de
+# redécouvrir le point comme s'il s'agissait d'un oubli.
+froids = {}
+for m in re.finditer(r'\n    (\w+): \{(.*?)(?=\n    \w+: \{|\Z)', dbloc, re.S):
+    corps = m.group(2)
+    t = re.search(r'title:"([^"]*)"', corps)
+    if not t:
+        continue
+    val = re.search(r'answers:\{[^\n]*?froid:"(\w+)"', corps)
+    cite = re.search(r'\n        froid:"([^"]*)"', corps)
+    if not cite:
+        note('diagnostic', t.group(1), "aucune citation pour le test au froid : le patient ne répondrait rien")
+        continue
+    froids.setdefault(val.group(1) if val else 'non', []).append(t.group(1))
+
+print("Valeurs du test au froid auditées : %d" % len(froids))
+
 # =============================================================================
 #  MODE CHOIX THÉRAPEUTIQUE
 # =============================================================================
