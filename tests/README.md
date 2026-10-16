@@ -97,6 +97,12 @@ Elle termine par `Anomalies : 0`.
 Elle contrôle aussi l'**état périapical** : ligament sain, ligament élargi ou lésion
 constituée, tels que le texte les décrit, contre ce que le schéma dessine.
 
+Elle contrôle aussi la **durée de la douleur après l'arrêt du froid**, seul point qui sépare
+l'hyperhémie de la pulpite réversible : la première s'arrête immédiatement, la seconde est vive puis
+s'arrête en quelques secondes. Le contrôle porte sur les énoncés des cas **et** sur les
+justifications affichées après coup — c'est par ces dernières que l'erreur était revenue, celle de
+la pulpite réversible décrivant mot pour mot le tableau de l'hyperhémie.
+
 Elle contrôle aussi ce qui **accompagne obligatoirement une extraction** : le granulome ou le kyste
 apical ne part pas avec la dent — sans curetage il reste dans l'os et donne un kyste résiduel —, et
 une fistule doit être nettoyée même quand la dent est enlevée. La règle est bidirectionnelle : sans

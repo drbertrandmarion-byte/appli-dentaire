@@ -68,6 +68,12 @@ def restauration_attendue(geste_final, coronaire_urgence):
         return 'aucune'
     return 'restauration_definitive'
 
+# Les deux formules qui séparent l'hyperhémie de la pulpite réversible. Elles servent aussi bien
+# aux énoncés des cas qu'aux justifications affichées après coup : partout où l'une des deux
+# pathologies est décrite, elle doit l'être dans ses propres termes.
+CESSE_AUSSITOT = r"dès (l'arrêt|que le stimulus|qu'on retire|l'application)|immédiatement après|immédiatement à l'arrêt|aussitôt"
+QUELQUES_SEC   = r"quelques secondes"
+
 pbs = []
 def note(mode, cas, txt):
     pbs.append("[%s] %-28s %s" % (mode, cas, txt))
@@ -397,8 +403,6 @@ for i in range(len(bornes) - 1):
         #        réversible est vive sur le moment et régresse en quelques secondes. Un énoncé qui
         #        emprunte la formule de l'autre enseigne exactement l'inverse du différentiel — et
         #        c'est arrivé deux fois, sur Sophie et sur Lucas, sans que rien ne le signale.
-        CESSE_AUSSITOT = r"dès (l'arrêt|que le stimulus|qu'on retire|l'application)|immédiatement après|aussitôt"
-        QUELQUES_SEC   = r"quelques secondes"
         if path == 'reversible' and re.search(CESSE_AUSSITOT, pl) and not re.search(QUELQUES_SEC, pl):
             note('thérapeutique', cas,
                  "énoncé de pulpite réversible décrivant une douleur qui cesse dès le retrait du "
@@ -527,6 +531,28 @@ for i in range(len(bornes) - 1):
         # d'urgence » désigne, dans la nomenclature de l'application, le parage canalaire réalisé
         # sur une dent nécrosée — ce n'est pas une contradiction.
 
+
+# -----------------------------------------------------------------------------
+#  Les justifications affichées après un cas
+# -----------------------------------------------------------------------------
+# Elles échappaient à tout contrôle, et c'est par elles que l'erreur est revenue : celle de la
+# pulpite réversible affirmait que « la douleur au froid ou au sucré cesse dès l'arrêt du
+# stimulus » — mot pour mot le tableau de l'hyperhémie, et l'inverse du différentiel que
+# l'application affiche par ailleurs. L'étudiant qui se trompe lit cette justification : elle doit
+# dire la même chose que tout le reste.
+rat = s[s.index('var TX_RATIONALE'):s.index('\n  };', s.index('var TX_RATIONALE'))]
+for nom, interdit, pourquoi in [
+        ('reversible', CESSE_AUSSITOT, "la douleur y est vive puis s'arrête en quelques secondes"),
+        ('hyperhemie', QUELQUES_SEC,   "la douleur y s'arrête immédiatement")]:
+    m = re.search(r'\n    %s: "([^"]*)"' % nom, rat)
+    if not m:
+        note('justification', nom, "justification introuvable : elle ne serait jamais relue")
+        continue
+    if re.search(interdit, m.group(1)):
+        note('justification', nom,
+             "la justification emprunte la formule de l'autre tableau — %s" % pourquoi)
+
+print("Justifications auditées : 2")
 
 # =============================================================================
 #  FICHE RÉCAPITULATIVE : même règle de restauration que les cas joués
