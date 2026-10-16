@@ -2215,6 +2215,7 @@
       {
         patientLine: "Margaux, 37 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration récente à proximité de la pulpe, avec un ligament parodontal apical légèrement épaissi, sans lésion radioclaire constituée.",
         radioText: "Restauration récente, à proximité de la pulpe. Ligament parodontal apical légèrement épaissi, sans lésion radioclaire constituée.",
+        periapical: 'widened',
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle prise en charge programmez-vous ?",
         rationaleKey: 'conservableEtanche',
@@ -2224,6 +2225,7 @@
       {
         patientLine: "Étienne, 52 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration ayant perdu son étanchéité, à proximité de la pulpe, avec une discrète image radioclaire apicale.",
         radioText: "Restauration ayant perdu son étanchéité, à proximité de la pulpe. Présence d'une discrète image radioclaire apicale.",
+        periapical: 'widened',
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement définitif choisissez-vous ?",
         rationaleKey: 'conservable',
@@ -2243,6 +2245,7 @@
       {
         patientLine: "Romain, 61 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une importante perte tissulaire coronaire à proximité de la pulpe, avec un ligament parodontal apical légèrement épaissi.",
         radioText: "Importante perte tissulaire coronaire, à proximité de la pulpe. Ligament parodontal apical légèrement épaissi, sans lésion radioclaire constituée.",
+        periapical: 'widened',
         depth: "juxta_gingival", apical: false,
         finalLine: "Quelle stratégie thérapeutique choisissez-vous ?",
         rationaleKey: 'conservable',
@@ -2252,6 +2255,7 @@
       {
         patientLine: "Agathe, 34 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre une restauration récente à proximité de la pulpe, avec une discrète image radioclaire apicale.",
         radioText: "Restauration récente, à proximité de la pulpe. Présence d'une discrète image radioclaire apicale.",
+        periapical: 'widened',
         depth: "juxta_gingival", apical: true,
         finalLine: "Quel traitement choisissez-vous ?",
         rationaleKey: 'conservableEtanche',
@@ -2261,6 +2265,7 @@
       {
         patientLine: "Bernard, 58 ans, ne présente aucune douleur ni tuméfaction. Le test de sensibilité au froid est négatif. La radiographie montre un délabrement infra-osseux majeur, sous la crête osseuse, avec un ligament parodontal apical légèrement épaissi : la dent n'est pas conservable.",
         radioText: "Délabrement infra-osseux majeur, sous la crête osseuse. Ligament parodontal apical légèrement épaissi, sans lésion radioclaire constituée. Dent jugée non conservable.",
+        periapical: 'widened',
         depth: "infra_osseux", apical: false,
         finalLine: "La dent n'étant pas conservable, quel traitement définitif programmez-vous ?",
         rationaleKey: 'nonconservable',
@@ -2998,13 +3003,13 @@
         "Absence totale de douleur spontanée ou provoquée",
         "Aucun gonflement, aucune tuméfaction",
         "Absence de réponse à tous les tests de sensibilité pulpaire (froid, chaud, électrique)",
-        "Radiographie variable : ligament parodontal apical sain, épaissi, ou siège d'une discrète lésion radioclaire selon l'ancienneté de la nécrose"
+        "Radiographie : ligament parodontal apical d'aspect sain, sans élargissement ni lésion radioclaire"
       ],
       urgence:"Aucun traitement d'urgence nécessaire en l'absence de signe de diffusion infectieuse ; ne pas toucher à la dent si elle n'est pas symptomatique.",
       traitementFinal:"Traitement endodontique complet à programmer sur un créneau de soin prévu.",
       answers:{froid:"non", radio:"coronal"},
       quotes:{
-        radio:"Perte de substance coronaire importante à proximité de la pulpe (ou restauration récente, ou restauration ayant perdu son étanchéité) ; le ligament parodontal apical peut apparaître sain, légèrement épaissi, ou montrer une discrète image radioclaire selon l'ancienneté.",
+        radio:"Perte de substance coronaire importante à proximité de la pulpe (ou restauration récente, ou restauration ayant perdu son étanchéité) ; ligament parodontal apical d'aspect sain, sans élargissement ni image radioclaire.",
         froid:"Négatif, aucune réaction, je ne ressens rien du tout.",
         percussion:"Non, ça ne me fait pas mal quand on tape dessus.",
         palpation:"Non, je peux appuyer sur la gencive sans problème.",
@@ -3328,9 +3333,9 @@
       caption:"Dent à deux racines : un canal encore vivant et enflammé, un canal déjà nécrosé, sans lésion périapicale constituée."
     },
     necrose: {
-      caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"widened", fistula:false, swelling:"none",
+      caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"none", fistula:false, swelling:"none",
       swellColor:"#f5e3e3", swellLabel:"Tissus mous (normaux)",
-      caption:"Pulpe nécrosée, asymptomatique ; le ligament parodontal apical peut être sain, épaissi ou le siège d'une discrète lésion selon l'ancienneté."
+      caption:"Pulpe nécrosée, asymptomatique ; ligament parodontal apical d'aspect sain, sans élargissement ni lésion radioclaire."
     },
     parodontite: {
       caries:"large", pulp:"#5a4a42", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"widened", fistula:false, swelling:"none",

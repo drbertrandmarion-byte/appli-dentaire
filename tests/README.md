@@ -95,7 +95,14 @@ l'énoncé contre schéma, et état coronaire annoncé par la radiographie contr
 Elle termine par `Anomalies : 0`.
 
 Elle contrôle aussi l'**état périapical** : ligament sain, ligament élargi ou lésion
-constituée, tels que le texte les décrit, contre ce que le schéma dessine.
+constituée, tels que le texte les décrit, contre ce que le schéma dessine. Les trois états sont
+vérifiés dans les **deux modes**. Le mode Diagnostic ne distinguait auparavant que « lésion » de
+« pas de lésion » : un schéma dessinant un ligament élargi sous un texte affirmant un apex sain y
+passait inaperçu, et c'est exactement ce qui était en ligne pour la nécrose pulpaire.
+
+Le contrôle du mode thérapeutique lit la **surcharge propre au cas** quand il y en a une, et non le
+seul défaut de sa pathologie — juger le défaut revient à juger un dessin que l'étudiant ne verra
+jamais.
 
 Elle contrôle aussi la **durée de la douleur après l'arrêt du froid**, seul point qui sépare
 l'hyperhémie de la pulpite réversible : la première s'arrête immédiatement, la seconde est vive puis

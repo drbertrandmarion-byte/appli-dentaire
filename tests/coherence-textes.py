@@ -80,12 +80,30 @@ def note(mode, cas, txt):
 
 # --- helpers d'interprétation du texte ---
 def dit_apical(t):
-    """True = affirme une image apicale, False = la nie, None = muet."""
+    """True = affirme une image apicale, False = la nie, None = muet.
+
+    La négation se dit de plusieurs façons, et une seule oubliée suffit à faire lire un démenti
+    comme une affirmation. « Sans épaississement NI lésion radioclaire » ne commence pas par
+    « sans lésion » — le motif d'origine ne le voyait pas et concluait à une image apicale.
+    """
     tl = t.lower()
-    if re.search(r"(sans|aucune|pas de|pas d')\s*(image|lésion|zone|radioclarté)", tl):
+    if re.search(r"(sans|aucune?|pas de|pas d'|ni)\s+(image|lésion|zone|radioclarté)", tl):
         return False
     if re.search(r"(image|zone) radiocl|radioclarté apicale|lésion radioclaire", tl):
         return True
+    return None
+
+def classe_apicale(t):
+    tl = t.lower()
+    if re.search(r"ligament[^.;]*(d\'aspect sain|sans épaississement)", tl): return 'none'
+    if 'discrète image radiocl' in tl or 'discrete image radiocl' in tl: return 'widened'
+    # « zone DE radioclarté bien délimitée à l'apex » ne commençait par aucun des motifs prévus :
+    # le classificateur se taisait, et le mode Diagnostic signalait l'abcès apical aigu comme
+    # non classable. Un silence vaut mieux qu'une erreur, mais un motif complet vaut mieux encore.
+    if re.search(r"(image|zone) (de )?radiocl|radioclarté[^.;]*(apicale|à l'apex)|lésion radioclaire (bien|apicale)", tl) \
+       and not re.search(r"(sans|aucune|pas de) (image|lésion|zone|radioclarté)", tl): return 'defined'
+    if re.search(r"ligament[^.;]*(élargi|épaissi)", tl): return 'widened'
+    if re.search(r"(sans|aucune|pas de) (image|lésion|zone|radioclarté)", tl): return 'none'
     return None
 
 def dit_ligament_elargi(t):
@@ -147,11 +165,16 @@ for m in re.finditer(r'\n    (\w+): \{(.*?)(?=\n    \w+: \{|\Z)', dbloc, re.S):
     radios += re.findall(r'"(Perte de substance[^"]*|Restauration[^"]*|Délabrement[^"]*)"', corps)
     signes = " ".join(re.findall(r'\n        "([^"]*)",?', corps))
     for rt in set(radios):
-        a = dit_apical(rt)
-        if a is True and g['periapical'] in ('none',):
-            note('diagnostic', titre, "radio affirme une image apicale, schéma periapical=none\n        → " + rt[:90])
-        if a is False and g['periapical'] in ('defined', 'diffuse'):
-            note('diagnostic', titre, "radio nie l'image apicale, schéma periapical=%s\n        → %s" % (g['periapical'], rt[:90]))
+        # Les trois états — ligament sain, ligament élargi, lésion constituée — sont contrôlés ici
+        # comme ils le sont pour le mode thérapeutique. La version qui précédait ne distinguait que
+        # « lésion » de « pas de lésion » : un schéma dessinant un ligament élargi sous un texte qui
+        # affirme un apex sain passait inaperçu, et c'est exactement ce qui était en ligne pour la
+        # nécrose pulpaire.
+        ca = classe_apicale(rt)
+        if ca is None:
+            note('diagnostic', titre, "description apicale non reconnue par l'audit — à classer\n        → " + rt[:90])
+        elif ca != g['periapical']:
+            note('diagnostic', titre, "apex : texte « %s », schéma « %s »\n        → %s" % (ca, g['periapical'], rt[:90]))
     # fistule
     if dit_fistule(signes + " " + corps) != (g['fistula'] == 'true'):
         note('diagnostic', titre, "fistule : texte=%s schéma=%s" % (dit_fistule(signes), g['fistula']))
@@ -249,12 +272,16 @@ for i in range(len(bornes) - 1):
                  ('avec une image radioclaire apicale' if apical else 'sans image radioclaire apicale')) + '.'
         cas = "%s (%s)" % (pren, path)
 
-        # 1. image apicale : radiographie contre schéma
+        # 1. image apicale : radiographie contre schéma. Le cas peut surcharger l'état périapical
+        #    du schéma de sa pathologie ; lire le défaut sans tenir compte de la surcharge revient à
+        #    juger un dessin que l'étudiant ne verra jamais.
+        ap_case = re.search(r"periapical: '(\w+)'", v)
+        peri = ap_case.group(1) if ap_case else g['periapical']
         a = dit_apical(rt)
-        if a is True and g['periapical'] == 'none':
+        if a is True and peri == 'none':
             note('thérapeutique', cas, "radio affirme une image apicale, schéma periapical=none")
-        if a is False and g['periapical'] in ('defined', 'diffuse'):
-            note('thérapeutique', cas, "radio nie l'image apicale, schéma periapical=%s\n        → %s" % (g['periapical'], rt[:95]))
+        if a is False and peri in ('defined', 'diffuse'):
+            note('thérapeutique', cas, "radio nie l'image apicale, schéma periapical=%s\n        → %s" % (peri, rt[:95]))
 
         # 2. tuméfaction : énoncé contre schéma
         t = dit_tumefaction(pl)
@@ -345,15 +372,7 @@ for i in range(len(bornes) - 1):
         #     le texte les distingue explicitement. « Discrète image radioclaire » est volontairement
         #     rattachée au ligament élargi : le schéma y dessine un petit foyer diffus, ce qui la
         #     represente mieux que la lésion large et bien délimitée.
-        def classe_apicale(t):
-            tl = t.lower()
-            if re.search(r"ligament[^.;]*(d\'aspect sain|sans épaississement)", tl): return 'none'
-            if 'discrète image radiocl' in tl or 'discrete image radiocl' in tl: return 'widened'
-            if re.search(r"(image|zone) radiocl|radioclarté apicale|lésion radioclaire (bien|apicale)", tl) \
-               and not re.search(r"(sans|aucune|pas de) (image|lésion|zone|radioclarté)", tl): return 'defined'
-            if re.search(r"ligament[^.;]*(élargi|épaissi)", tl): return 'widened'
-            if re.search(r"(sans|aucune|pas de) (image|lésion|zone|radioclarté)", tl): return 'none'
-            return None
+        # classe_apicale est définie au niveau du fichier : le mode Diagnostic l'utilise aussi.
 
         ov = re.search(r"periapical: \'(\w+)\'", v)
         attendu = ov.group(1) if ov else g['periapical']
