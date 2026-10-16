@@ -2856,7 +2856,7 @@
       title:"Hyperhémie pulpaire", category:"pulpaire",
       def:"Réaction pulpaire congestive, réversible et transitoire, sans inflammation pulpaire vraie.",
       signs:[
-        "Petite douleur très brève au froid, qui cesse dès le retrait du stimulus ; test de vitalité positif",
+        "Petite douleur au froid, qui s'arrête immédiatement à l'arrêt du stimulus ; test de vitalité positif",
         "Pas de sensibilité au sucré",
         "Pas de douleur spontanée",
         "Percussion non douloureuse, dent vitale"
@@ -2871,7 +2871,7 @@
       answers:{froid:"quasi_normal", radio:"coronal"},
       quotes:{
         radio:"Très légère infiltration coronaire, à distance de la pulpe ; pas de radioclarté apicale.",
-        froid:"Oui, une petite douleur, très brève, qui s'arrête dès qu'on retire le stimulus ; le test de vitalité est bien positif.",
+        froid:"Oui, une petite douleur qui s'arrête immédiatement à l'arrêt du stimulus ; le test de vitalité est bien positif.",
         percussion:"Non.",
         palpation:"Non.",
         dent_longue:"Non.",
@@ -2892,7 +2892,7 @@
       title:"Pulpite réversible", category:"pulpaire",
       def:"Inflammation pulpaire légère à modérée, réversible si la cause est traitée à temps.",
       signs:[
-        "Sensibilité vive au froid au moment du test, qui descend dans la dent et régresse en quelques secondes après l'arrêt du stimulus",
+        "Sensibilité vive au froid au moment du test, qui descend dans la dent et s'arrête rapidement, quelques secondes après l'arrêt du stimulus",
         "Douleur au sucré qui cesse elle aussi quelques secondes après l'arrêt du stimulus",
         "Pas de douleur spontanée ni nocturne",
         "Percussion non douloureuse, dent vitale"
@@ -2904,7 +2904,7 @@
       answers:{froid:"quelques_secondes", sucre:"quelques_secondes", radio:"coronal"},
       quotes:{
         radio:"Présence d'une perte tissulaire dentaire modérée au niveau coronaire, encore à distance de la pulpe ; pas de radioclarté apicale.",
-        froid:"Oui, une sensibilité vive au moment du test, qui descend dans la dent, mais qui régresse en quelques secondes après l'arrêt du stimulus.",
+        froid:"Oui, une sensibilité vive au moment du test, qui descend dans la dent, mais qui s'arrête rapidement, quelques secondes après l'arrêt du stimulus.",
         percussion:"Non.",
         palpation:"Non.",
         dent_longue:"Non.",
@@ -3986,9 +3986,9 @@
     if(qid === 'froid'){
       return { non:'négatif',
                normal:'positif, bref et non douloureux',
-               quasi_normal:'positif, petite douleur très brève qui cesse dès le retrait du stimulus',
+               quasi_normal:'positif, petite douleur qui s\'arrête immédiatement à l\'arrêt du stimulus',
                immediat:'positif, mais la douleur cesse dès l\'arrêt du stimulus',
-               quelques_secondes:'positif et vif, la douleur régresse en quelques secondes après l\'arrêt du stimulus',
+               quelques_secondes:'positif et vif, la douleur s\'arrête rapidement, quelques secondes après l\'arrêt du stimulus',
                intense:'positif, vif et prolongé' }[v] || String(v);
     }
     if(qid === 'radio'){
