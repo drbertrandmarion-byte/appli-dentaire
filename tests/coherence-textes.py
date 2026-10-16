@@ -392,6 +392,22 @@ for i in range(len(bornes) - 1):
                  "l'énoncé décrit une fistule et la dent est extraite, mais aucun drainage "
                  "fistulaire n'est attendu — corrigé « %s »" % chir)
 
+        # A0ter. Hyperhémie et pulpite réversible ne se séparent que sur UN point : la durée de la
+        #        douleur après le retrait du froid. L'hyperhémie cesse dès le retrait ; la pulpite
+        #        réversible est vive sur le moment et régresse en quelques secondes. Un énoncé qui
+        #        emprunte la formule de l'autre enseigne exactement l'inverse du différentiel — et
+        #        c'est arrivé deux fois, sur Sophie et sur Lucas, sans que rien ne le signale.
+        CESSE_AUSSITOT = r"dès (l'arrêt|que le stimulus|qu'on retire|l'application)|immédiatement après|aussitôt"
+        QUELQUES_SEC   = r"quelques secondes"
+        if path == 'reversible' and re.search(CESSE_AUSSITOT, pl) and not re.search(QUELQUES_SEC, pl):
+            note('thérapeutique', cas,
+                 "énoncé de pulpite réversible décrivant une douleur qui cesse dès le retrait du "
+                 "stimulus : c'est la formule de l'hyperhémie")
+        if path == 'hyperhemie' and re.search(QUELQUES_SEC, pl):
+            note('thérapeutique', cas,
+                 "énoncé d'hyperhémie décrivant une douleur qui dure quelques secondes : c'est la "
+                 "formule de la pulpite réversible")
+
         # A1. Pulpite aiguë irréversible : le geste coronaire se déduit de DEUX axes, l'âge et
         #     l'hémostase. Moins de 30 ans et saignement facilement contrôlé -> pulpotomie
         #     thérapeutique seule ; saignement impossible à stabiliser -> pulpectomie d'urgence à
