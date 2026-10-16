@@ -2145,7 +2145,8 @@
       }
     ],
 
-    // Syndrome mixte : dent pluriradiculée, un canal encore vivant et enflammé, l'autre nécrosé, sans lésion périapicale constituée.
+    // Syndrome mixte : dent pluriradiculée, un ou plusieurs canaux en état inflammatoire irréversible,
+    // un ou plusieurs en état de nécrose, sans lésion périapicale constituée.
     syndrome_mixte: [
       {
         patientLine: "Frédéric, 45 ans, présente une molaire pluriradiculée très douloureuse. La radiographie montre un délabrement juxta-gingival, au niveau du rebord gingival, sans image radioclaire apicale : un des canaux reste vivant et en inflammation aiguë, l'autre est déjà nécrosé.",
@@ -2771,7 +2772,7 @@
       difficile: "Le saignement à l'ouverture pulpaire est plus important et difficile à stabiliser, ce qui traduit une inflammation ayant probablement débordé au-delà de la chambre pulpaire vers les entrées canalaires. Une simple pulpotomie thérapeutique ne suffit plus à garantir un tissu résiduel sain : on réalise donc une pulpotomie d'urgence, un geste palliatif pour soulager la douleur et stabiliser le saignement, associé à un AINS et un antalgique, qui doit impérativement être complété par un traitement endodontique complet à distance (avec un antalgique pour cette séance), une fois l'épisode aigu passé.",
       impossible: "Lorsque le saignement canalaire n'est pas maîtrisable, cela traduit une inflammation profonde de la pulpe, qui a gagné les canaux radiculaires. Il faut alors réaliser un parage canalaire (pulpectomie d'urgence) : l'irrigation à l'hypochlorite de sodium désorganise les tissus vasculaires et provoque une nécrose tissulaire contrôlée, ce qui stoppe le saignement. Ce geste évite une remise sous pression de la dent et la réapparition de signes de pulpite qui imposeraient un second passage en urgence, et s'accompagne d'un AINS et d'un antalgique. Un traitement endodontique complet, avec un antalgique pour cette séance, est ensuite programmé pour finaliser la désinfection et l'obturation canalaire."
     }},
-    syndrome_mixte: "La dent est pluriradiculée avec un état pulpaire mixte : un canal encore vivant et en inflammation aiguë, un autre déjà nécrosé et potentiellement infecté. Comme il est impossible de traiter différemment chaque canal en urgence, on réalise une pulpectomie d'urgence sur l'ensemble des canaux, y compris le canal encore vital, pour lever la douleur et éviter la prolifération bactérienne depuis le canal nécrosé. Le traitement endodontique complet, à programmer, traite ensuite chaque canal selon son propre état (vital ou nécrosé).",
+    syndrome_mixte: "La dent est pluriradiculée avec un état pulpaire mixte : un ou plusieurs canaux en état inflammatoire irréversible, un ou plusieurs autres en état de nécrose et potentiellement infectés. Comme il est impossible de traiter différemment chaque canal en urgence, on réalise une pulpectomie d'urgence sur l'ensemble des canaux, y compris ceux encore vitaux, pour lever la douleur et éviter la prolifération bactérienne depuis le canal nécrosé. Le traitement endodontique complet, à programmer, traite ensuite chaque canal selon son propre état, inflammatoire ou nécrosé.",
     necrose: { byKey: {
       conservable: "La dent n'est pas symptomatique : elle ne nécessite pas de geste endodontique ni de médicament en urgence. On réalise cependant un curetage carieux avec une reconstitution coronaire provisoire, dans le double but de diminuer la charge bactérienne coronaire et de redonner à la dent un peu de fonctionnalité mécanique, afin d'éviter une fracture secondaire qui mettrait en jeu sa conservabilité en attendant le traitement endodontique complet. Celui-ci est ensuite programmé sur un créneau classique, avec un antalgique pour la séance de traitement, en expliquant au patient les risques d'une absence de traitement — l'évolution vers une infection périapicale — tout en lui indiquant de revenir consulter en urgence si des symptômes apparaissent.",
       conservableEtanche: "La dent n'est pas symptomatique : elle ne nécessite ni geste ni médicament en urgence. La restauration en place est récente et étanche, sans reprise carieuse : il n'y a rien à cureter, et rien à reconstituer puisque l'étanchéité coronaire est déjà assurée — ouvrir la dent aujourd'hui ne ferait qu'exposer le système canalaire sans aucun bénéfice. Le traitement endodontique complet est donc programmé sur un créneau classique, avec un antalgique pour la séance ; c'est à son issue que la restauration définitive sera refaite, l'accès endodontique ayant traversé la restauration existante. On explique au patient le risque d'évolution vers une infection périapicale en l'absence de traitement, en lui indiquant de revenir consulter en urgence si des symptômes apparaissent.",
@@ -2963,18 +2964,18 @@
     },
     syndrome_mixte: {
       title:"Syndrome mixte", category:"mixte",
-      def:"Dent pluriradiculée à l'état pulpaire mixte : un canal encore vivant et en inflammation aiguë (pulpite irréversible), un autre déjà nécrosé, sans lésion périapicale constituée.",
+      def:"Dent pluriradiculée : présence d'un ou plusieurs canaux en état inflammatoire irréversible et d'un ou plusieurs canaux en état de nécrose — voire de début de parodontite apicale aiguë en cas d'élargissement ligamentaire.",
       signs:[
-        "Douleur spontanée très intense et irradiante (canal encore vivant et enflammé)",
+        "Douleur spontanée très intense et irradiante (canal en état inflammatoire irréversible)",
         "Douleur à la percussion, palpation apicale non douloureuse",
         "Sensibilité au chaud, au sucré et à la mastication : présentes mais inconstantes et peu marquées",
         "Douleur nocturne, pulsatile par moments, parfois lancinante",
         "Pas de tuméfaction ni de signe général"
       ],
-      urgence:"Pose de la digue obligatoire. Pulpectomie d'urgence sur l'ensemble des canaux : le canal encore vivant et enflammé comme le canal nécrosé.",
-      traitementFinal:"Traitement endodontique complet de tous les canaux (canal encore vital traité comme une pulpite irréversible, canal nécrosé traité comme un canal infecté).",
+      urgence:"Pose de la digue obligatoire. Pulpectomie d'urgence sur l'ensemble des canaux : ceux en état inflammatoire comme ceux en état de nécrose.",
+      traitementFinal:"Traitement endodontique complet de tous les canaux : ceux en état inflammatoire traités comme une pulpite irréversible, ceux en état de nécrose comme des canaux infectés.",
       radioVariants: makeRadioVariantsNoApical(
-        "Traitement endodontique complet de tous les canaux (canal encore vital traité comme une pulpite irréversible, canal nécrosé traité comme un canal infecté)."
+        "Traitement endodontique complet de tous les canaux : ceux en état inflammatoire traités comme une pulpite irréversible, ceux en état de nécrose comme des canaux infectés."
       ),
       answers:{froid:"intense", percussion:true, dent_longue:true, chaud:true, mastication:true, nocturne:true, pulsation:true, continue_diffuse:true, radio:"coronal"},
       quotes:{
@@ -3327,10 +3328,10 @@
     },
     syndrome_mixte: {
       dualRoot:true,
-      pulp:"#b8283a", pulpLabel:"Canal vivant, inflammé (pulpite irréversible)",
-      pulp2:"#4a3d36", pulpLabel2:"Canal nécrosé",
+      pulp:"#b8283a", pulpLabel:"Canal en état inflammatoire (pulpite irréversible)",
+      pulp2:"#4a3d36", pulpLabel2:"Canal en état de nécrose",
       swellColor:"#f5e3e3", swellLabel:"Tissus mous (normaux)",
-      caption:"Dent à deux racines : un canal encore vivant et enflammé, un canal déjà nécrosé, sans lésion périapicale constituée."
+      caption:"Dent à deux racines : un canal en état inflammatoire irréversible, un canal en état de nécrose, sans lésion périapicale constituée."
     },
     necrose: {
       caries:"large", pulp:"#4a3d36", pulpLabel:"Pulpe / nerf (nécrosée)", periapical:"none", fistula:false, swelling:"none",
