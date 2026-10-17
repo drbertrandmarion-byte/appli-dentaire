@@ -1869,19 +1869,12 @@
   }
 
   // L'axe médicamenteux est le dernier d'une énumération sans libellés — « Curetage carieux +
-  // Restauration définitive + Aucun ». Ce « Aucun » final se lit alors comme un acte de plus, dont
-  // on ne sait pas de quoi il parle : un étudiant l'a signalé sur les fiches récapitulatives. Là où
-  // les axes sont enchaînés, on nomme donc ce dont il n'y a aucun.
-  // Sur la fiche récapitulative, le troisième segment du traitement final n'est affiché que s'il y a
-  // réellement un médicament à prescrire : « Restauration définitive + Aucun » se lisait comme un
-  // acte de plus sans objet. Les deux autres axes, eux, sont toujours affichés — ils portent un
-  // geste, dont l'absence est une décision à part entière.
-  function txMedicPrescrit(ids){
-    return !!(ids && ids.length && !(ids.length === 1 && ids[0] === 'aucun'));
-  }
-
+  // Restauration définitive + Aucun ». Ce « Aucun » final se lisait comme un acte de plus, dont on
+  // ne savait pas de quoi il parlait : un étudiant l'a signalé sur les fiches récapitulatives.
+  // L'absence de prescription est une information à part entière, qu'il faut donc énoncer plutôt
+  // que taire : là où les axes sont enchaînés, elle se nomme en toutes lettres.
   function txMedicSummaryText(ids){
-    if(ids && ids.length === 1 && ids[0] === 'aucun') return 'aucun médicament';
+    if(ids && ids.length === 1 && ids[0] === 'aucun') return 'Aucun traitement médicamenteux';
     return txAxesSummaryText(ids, TX_MEDIC_OPTIONS);
   }
 
@@ -5128,7 +5121,7 @@
           var finalAxesText = t.finalAxes
             ? txAxesSummaryText(t.finalAxes.geste, TX_FINAL_GESTE_OPTIONS) +
               ' + ' + txAxesSummaryText(t.finalAxes.coronaire, TX_FINAL_CORONAIRE_OPTIONS) +
-              (txMedicPrescrit(t.finalAxes.medicamenteux) ? ' + ' + txAxesSummaryText(t.finalAxes.medicamenteux, TX_MEDIC_OPTIONS) : '')
+              ' + ' + txMedicSummaryText(t.finalAxes.medicamenteux)
             : 'Le geste d\'urgence est déjà le traitement définitif.';
           return '<div class="recap-variant">' +
             (t.condition ? '<div class="recap-variant-label">' + t.condition + '</div>' : '') +
