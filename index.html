@@ -1868,6 +1868,15 @@
     }).join(', ');
   }
 
+  // L'axe médicamenteux est le dernier d'une énumération sans libellés — « Curetage carieux +
+  // Restauration définitive + Aucun ». Ce « Aucun » final se lit alors comme un acte de plus, dont
+  // on ne sait pas de quoi il parle : un étudiant l'a signalé sur les fiches récapitulatives. Là où
+  // les axes sont enchaînés, on nomme donc ce dont il n'y a aucun.
+  function txMedicSummaryText(ids){
+    if(ids && ids.length === 1 && ids[0] === 'aucun') return 'aucun médicament';
+    return txAxesSummaryText(ids, TX_MEDIC_OPTIONS);
+  }
+
   // Profil "choix thérapeutique" par diagnostic — première version, à affiner.
   var TX_PROFILE = {
     // Une dent saine ne présente aucun délabrement : sans ce niveau, la boîte « Radiographie »
@@ -4506,7 +4515,7 @@
         html += txHistoryRowHtml('Traitement d\'urgence', uCorrect,
           txAxesSummaryText(txStepAnswers.urgence1Sets.coronaire, TX_CORONAIRE_OPTIONS) + ' · ' +
           txAxesSummaryText(txStepAnswers.urgence1Sets.chirurgical, TX_CHIRURGICAL_OPTIONS) + ' · ' +
-          txAxesSummaryText(txStepAnswers.urgence1Sets.medicamenteux, TX_MEDIC_OPTIONS));
+          txMedicSummaryText(txStepAnswers.urgence1Sets.medicamenteux));
       }
 
       if(txStage === 'urgence1'){
@@ -4711,10 +4720,10 @@
       if(!allCorrect && checkboxMode){
         var donne = txAxesSummaryText(txStepAnswers.urgence1Sets.coronaire, TX_CORONAIRE_OPTIONS) + ' · ' +
                     txAxesSummaryText(txStepAnswers.urgence1Sets.chirurgical, TX_CHIRURGICAL_OPTIONS) + ' · ' +
-                    txAxesSummaryText(txStepAnswers.urgence1Sets.medicamenteux, TX_MEDIC_OPTIONS);
+                    txMedicSummaryText(txStepAnswers.urgence1Sets.medicamenteux);
         var attendu = txAxesSummaryText(txVariant.axes.coronaire, TX_CORONAIRE_OPTIONS) + ' · ' +
                       txAxesSummaryText(txVariant.axes.chirurgical, TX_CHIRURGICAL_OPTIONS) + ' · ' +
-                      txAxesSummaryText(txVariant.axes.medicamenteux, TX_MEDIC_OPTIONS);
+                      txMedicSummaryText(txVariant.axes.medicamenteux);
         EndoStats.recordReview('therapeutique', txCaseId, txVariant.patientLine, donne, attendu);
       }
     }
@@ -5111,7 +5120,7 @@
           var finalAxesText = t.finalAxes
             ? txAxesSummaryText(t.finalAxes.geste, TX_FINAL_GESTE_OPTIONS) +
               ' + ' + txAxesSummaryText(t.finalAxes.coronaire, TX_FINAL_CORONAIRE_OPTIONS) +
-              (t.finalAxes.medicamenteux.length ? ' + ' + txAxesSummaryText(t.finalAxes.medicamenteux, TX_MEDIC_OPTIONS) : '')
+              (t.finalAxes.medicamenteux.length ? ' + ' + txMedicSummaryText(t.finalAxes.medicamenteux) : '')
             : 'Le geste d\'urgence est déjà le traitement définitif.';
           return '<div class="recap-variant">' +
             (t.condition ? '<div class="recap-variant-label">' + t.condition + '</div>' : '') +

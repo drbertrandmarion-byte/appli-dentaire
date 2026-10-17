@@ -49,7 +49,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 
 | Fichier | Ce qu'il vérifie |
 |---|---|
-| `cas-choix-therapeutique.js` | Le corrigé clinique des 86 cas nommés du mode « Choix thérapeutique » |
+| `cas-choix-therapeutique.js` | Le corrigé clinique des 86 cas nommés du mode « Choix thérapeutique », et la fiche récapitulative imprimable |
 | `analyse-differentielle.js` | La correction du mode « Diagnostic » : signes discriminants, signe posé ou non |
 | `economie-diagnostique.js` | Le rappel à partir de 7 questions et le calcul du rang décisif |
 | `barre-commandes.js` | Que les boutons retour / compte / son ne se chevauchent à aucune largeur d'écran |
@@ -234,6 +234,12 @@ Sans lui, le test signale que la relecture n'a pas eu lieu mais vérifie tout le
 - `Failures` > 0 → la réponse attendue par le test diffère de celle de
   l'application. Le détail indique la pathologie, ce qui était attendu et ce qui a
   été refusé.
+
+`cas-choix-therapeutique.js` contrôle en outre la **fiche récapitulative imprimable** : ses trois
+axes y sont enchaînés par des « + » sans libellé, et un « Aucun » isolé en fin de ligne s'y lit comme
+un acte de plus dont on ignore l'objet. C'est un étudiant qui l'a signalé, pas un test — d'où ce
+garde-fou sur le symptôme exact. Il échoue si aucune ligne n'est rendue : un contrôle qui ne voit
+rien ne prouve rien.
 
 ## Fonctionnement
 

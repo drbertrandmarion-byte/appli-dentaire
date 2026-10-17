@@ -230,6 +230,28 @@ async function run() {
     }
   }
 
+  // --- La fiche recapitulative imprimable ---
+  // Ses trois axes y sont enchaines par des « + » sans libelle. Un « Aucun » isole en fin de ligne
+  // s'y lit comme un acte de plus, dont on ne sait pas de quoi il parle : c'est un etudiant qui l'a
+  // signale, pas un test. On garde donc le symptome exact sous surveillance.
+  await page.goto('http://localhost:9300/index.html');
+  await page.evaluate(() => { const s = document.getElementById('splash-screen'); if (s) s.remove(); });
+  await page.waitForSelector('#auth-gate.hidden', { state: 'attached', timeout: 15000 });
+  await page.click('#hub-tx-btn');
+  await page.waitForTimeout(150);
+  await page.click('#tx-recap-btn');
+  await page.waitForTimeout(700);
+  const lignesFiche = await page.$$eval('.recap-tx', ns => ns.map(n => n.textContent.trim()));
+  if (!lignesFiche.length) {
+    results.push('FICHE RECAP : aucune ligne rendue — le controle ci-dessous ne prouverait rien');
+  }
+  lignesFiche.forEach(l => {
+    if (/[+·]\s*Aucun\s*$/.test(l)) {
+      results.push('FICHE RECAP : ligne se terminant par un « Aucun » sans sujet — ' + l.slice(0, 120));
+    }
+  });
+  console.log('Fiche recapitulative :', lignesFiche.length, 'lignes controlees');
+
   console.log('Tested', seen.size, '/', allKeys.length, 'unique named cases');
   const missing = allKeys.filter(k => !seen.has(k));
   console.log('Missing (never rolled):', missing);
