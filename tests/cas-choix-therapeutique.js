@@ -198,6 +198,23 @@ async function run() {
     if (!matchKey || seen.has(matchKey)) continue;
     seen.add(matchKey);
 
+    // Le rappel sur le Cavit ne doit apparaitre que la ou la pulpe reste integralement vivante.
+    // Ailleurs — pulpotomie, pulpectomie, dent deja depulpee — il n'a plus d'objet, et un rappel
+    // affiche partout est un rappel que l'etudiant apprend a ne plus lire.
+    const PULPE_VIVANTE = ['Hyperhémie pulpaire', 'Pulpite réversible'];
+    const libelle = await page.$$eval('input[data-group="coronaire"][value="reconstitution_provisoire"]',
+      es => es.map(e => e.parentNode.textContent.trim()));
+    if (!libelle.length) {
+      results.push(matchKey + ': item « reconstitution provisoire » absent du groupe coronaire');
+    } else {
+      const porteLeRappel = /Cavit/.test(libelle[0]);
+      const devrait = PULPE_VIVANTE.indexOf(title) !== -1;
+      if (porteLeRappel !== devrait) {
+        results.push(matchKey + ': rappel Cavit ' + (porteLeRappel ? 'present' : 'absent')
+          + ' alors qu\'il devrait etre ' + (devrait ? 'present' : 'absent') + ' sur « ' + title + ' »');
+      }
+    }
+
     await checkBoxes(page, 'coronaire', entry.urgence.coronaire);
     await checkBoxes(page, 'chirurgical', entry.urgence.chirurgical);
     await checkBoxes(page, 'medicamenteux', entry.urgence.medicamenteux);

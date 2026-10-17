@@ -235,6 +235,12 @@ Sans lui, le test signale que la relecture n'a pas eu lieu mais vérifie tout le
   l'application. Le détail indique la pathologie, ce qui était attendu et ce qui a
   été refusé.
 
+`cas-choix-therapeutique.js` vérifie aussi, sur chacun des 86 cas, que le rappel « pas de Cavit sur
+dent vivante » n'apparaît **que** sur l'hyperhémie pulpaire et la pulpite réversible — les deux seuls
+tableaux où la pulpe reste intégralement vivante. Le contrôle joue dans les deux sens : un rappel
+affiché ailleurs est signalé, un rappel manquant sur ces deux-là aussi. Un rappel présent partout est
+un rappel que l'étudiant apprend à ne plus lire.
+
 `cas-choix-therapeutique.js` contrôle en outre la **fiche récapitulative imprimable** : ses trois
 axes y sont enchaînés par des « + » sans libellé, et un « Aucun » isolé en fin de ligne s'y lit comme
 un acte de plus dont on ignore l'objet. C'est un étudiant qui l'a signalé, pas un test — d'où ce

@@ -1811,7 +1811,7 @@
     {id:'pulpotomie_therapeutique', label:"Pulpotomie thérapeutique (digue obligatoire)"},
     {id:'pulpotomie_urgence',       label:"Pulpotomie d'urgence (digue obligatoire)"},
     {id:'pulpectomie_urgence',      label:"Pulpectomie d'urgence (digue obligatoire)"},
-    {id:'reconstitution_provisoire', label:"Reconstitution provisoire étanche (avec coiffage pulpaire si nécessaire ; pas de Cavit sur dent vivante)"},
+    {id:'reconstitution_provisoire', label:"Reconstitution provisoire étanche (avec coiffage pulpaire si nécessaire)"},
     {id:'reconstitution_definitive', label:"Reconstitution définitive"}
   ];
   var TX_CHIRURGICAL_OPTIONS = [
@@ -1845,6 +1845,23 @@
     {id:'aucune', label:"Aucune restauration définitive"},
     {id:'restauration_definitive', label:"Restauration définitive (composite, onlay ou couronne)"}
   ];
+
+  // Le rappel sur le Cavit ne vaut que là où la pulpe reste INTÉGRALEMENT vivante : hyperhémie
+  // pulpaire et pulpite réversible. Partout ailleurs — pulpotomie, pulpectomie, dent déjà dépulpée
+  // — la pulpe camérale est déposée ou déjà morte, et la mise en garde n'aurait plus d'objet.
+  // L'afficher quand même y ajouterait un bruit que l'étudiant apprendrait à ne plus lire.
+  var TX_PULPE_INTACTE = ['hyperhemie', 'reversible'];
+  var TX_PROVISOIRE_PULPE_VIVANTE =
+    "Reconstitution provisoire étanche (avec coiffage pulpaire si nécessaire ; pas de Cavit sur dent vivante)";
+
+  function txCoronaireOptions(pathoId){
+    if(TX_PULPE_INTACTE.indexOf(pathoId) === -1) return TX_CORONAIRE_OPTIONS;
+    return TX_CORONAIRE_OPTIONS.map(function(o){
+      return o.id === 'reconstitution_provisoire'
+        ? {id: o.id, label: TX_PROVISOIRE_PULPE_VIVANTE}
+        : o;
+    });
+  }
 
   function txAxesSetsEqual(a, b){
     var as = (a || []).slice().sort();
@@ -4514,14 +4531,14 @@
       if(txStepAnswers.urgence1Sets){
         var uCorrect = txAxesAllCorrect(txStepAnswers.urgence1Sets, txVariant.axes);
         html += txHistoryRowHtml('Traitement d\'urgence', uCorrect,
-          txAxesSummaryText(txStepAnswers.urgence1Sets.coronaire, TX_CORONAIRE_OPTIONS) + ' · ' +
+          txAxesSummaryText(txStepAnswers.urgence1Sets.coronaire, txCoronaireOptions(txCaseId)) + ' · ' +
           txAxesSummaryText(txStepAnswers.urgence1Sets.chirurgical, TX_CHIRURGICAL_OPTIONS) + ' · ' +
           txMedicSummaryText(txStepAnswers.urgence1Sets.medicamenteux));
       }
 
       if(txStage === 'urgence1'){
         html += '<p class="tx-stage-notice" id="tx-stage-notice">Ceci concerne uniquement le <strong>traitement d\'urgence</strong> — le geste réalisé aujourd\'hui, à ce rendez-vous.</p>' +
-          txCheckboxGroupHtml('Geste coronaire', TX_CORONAIRE_OPTIONS, 'coronaire') +
+          txCheckboxGroupHtml('Geste coronaire', txCoronaireOptions(txCaseId), 'coronaire') +
           txCheckboxGroupHtml('Geste chirurgical', TX_CHIRURGICAL_OPTIONS, 'chirurgical') +
           txCheckboxGroupHtml('Geste médicamenteux', TX_MEDIC_OPTIONS, 'medicamenteux') +
           '<div class="result-actions"><button class="btn-primary" id="tx-step-submit-btn">Valider</button></div>';
@@ -4675,7 +4692,7 @@
     recapEl.innerHTML = '';
 
     if(checkboxMode){
-      recapEl.appendChild(txCheckboxCorrectionRow('Geste coronaire', TX_CORONAIRE_OPTIONS, txStepAnswers.urgence1Sets.coronaire, txVariant.axes.coronaire));
+      recapEl.appendChild(txCheckboxCorrectionRow('Geste coronaire', txCoronaireOptions(txCaseId), txStepAnswers.urgence1Sets.coronaire, txVariant.axes.coronaire));
       recapEl.appendChild(txCheckboxCorrectionRow('Geste chirurgical', TX_CHIRURGICAL_OPTIONS, txStepAnswers.urgence1Sets.chirurgical, txVariant.axes.chirurgical));
       recapEl.appendChild(txCheckboxCorrectionRow('Geste médicamenteux (urgence)', TX_MEDIC_OPTIONS, txStepAnswers.urgence1Sets.medicamenteux, txVariant.axes.medicamenteux));
       if(txVariant.finalAxes){
@@ -4719,10 +4736,10 @@
     if(window.EndoStats){
       EndoStats.recordCase('therapeutique', txCaseId, allCorrect);
       if(!allCorrect && checkboxMode){
-        var donne = txAxesSummaryText(txStepAnswers.urgence1Sets.coronaire, TX_CORONAIRE_OPTIONS) + ' · ' +
+        var donne = txAxesSummaryText(txStepAnswers.urgence1Sets.coronaire, txCoronaireOptions(txCaseId)) + ' · ' +
                     txAxesSummaryText(txStepAnswers.urgence1Sets.chirurgical, TX_CHIRURGICAL_OPTIONS) + ' · ' +
                     txMedicSummaryText(txStepAnswers.urgence1Sets.medicamenteux);
-        var attendu = txAxesSummaryText(txVariant.axes.coronaire, TX_CORONAIRE_OPTIONS) + ' · ' +
+        var attendu = txAxesSummaryText(txVariant.axes.coronaire, txCoronaireOptions(txCaseId)) + ' · ' +
                       txAxesSummaryText(txVariant.axes.chirurgical, TX_CHIRURGICAL_OPTIONS) + ' · ' +
                       txMedicSummaryText(txVariant.axes.medicamenteux);
         EndoStats.recordReview('therapeutique', txCaseId, txVariant.patientLine, donne, attendu);
@@ -5125,7 +5142,7 @@
             : 'Le geste d\'urgence est déjà le traitement définitif.';
           return '<div class="recap-variant">' +
             (t.condition ? '<div class="recap-variant-label">' + t.condition + '</div>' : '') +
-            '<div class="recap-tx"><b>Geste coronaire</b>' + txAxesSummaryText(t.axes.coronaire, TX_CORONAIRE_OPTIONS) + '</div>' +
+            '<div class="recap-tx"><b>Geste coronaire</b>' + txAxesSummaryText(t.axes.coronaire, txCoronaireOptions(id)) + '</div>' +
             '<div class="recap-tx"><b>Geste chirurgical</b>' + txAxesSummaryText(t.axes.chirurgical, TX_CHIRURGICAL_OPTIONS) + '</div>' +
             '<div class="recap-tx"><b>Médicamenteux</b>' + txAxesSummaryText(t.axes.medicamenteux, TX_MEDIC_OPTIONS) + '</div>' +
             '<div class="recap-tx"><b>Traitement final</b>' + finalAxesText + '</div>' +
