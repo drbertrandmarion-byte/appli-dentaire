@@ -15,10 +15,17 @@ const RESULTS = [
 ];
 // 3eme annee rate massivement l'abces chronique ; TCEO1 rate la cellulite diffuse.
 const CASES = [];
-for (let i = 0; i < 12; i++) CASES.push({ user_id:'u1', mode:'diagnostic',    diagnosis_id:'abces_chronique',  correct:i < 2 });
-for (let i = 0; i < 12; i++) CASES.push({ user_id:'u2', mode:'therapeutique', diagnosis_id:'abces_chronique',  correct:i < 9 });
-for (let i = 0; i < 11; i++) CASES.push({ user_id:'u3', mode:'diagnostic',    diagnosis_id:'cellulite_diffuse', correct:i < 3 });
-for (let i = 0; i < 4;  i++) CASES.push({ user_id:'u1', mode:'diagnostic',    diagnosis_id:'necrose',           correct:true });
+// Chaque cas porte une date : c'est elle que le back-office affiche pour montrer QUAND un etudiant
+// s'est entraine, et sans elle la colonne « Dernier cas » comme la feuille « Cas joues » seraient
+// controlees a vide.
+let jour = 0;
+const quand = () => new Date(Date.UTC(2026, 7, 20 - (jour++ % 20), 14, 30)).toISOString();
+for (let i = 0; i < 12; i++) CASES.push({ user_id:'u1', mode:'diagnostic',    diagnosis_id:'abces_chronique',  correct:i < 2, created_at:quand() });
+for (let i = 0; i < 12; i++) CASES.push({ user_id:'u2', mode:'therapeutique', diagnosis_id:'abces_chronique',  correct:i < 9, created_at:quand() });
+for (let i = 0; i < 11; i++) CASES.push({ user_id:'u3', mode:'diagnostic',    diagnosis_id:'cellulite_diffuse', correct:i < 3, created_at:quand() });
+for (let i = 0; i < 4;  i++) CASES.push({ user_id:'u1', mode:'diagnostic',    diagnosis_id:'necrose',           correct:true, created_at:quand() });
+// u4 n'est pas valide : ses cas ne doivent pas apparaitre dans le classeur.
+CASES.push({ user_id:'u4', mode:'diagnostic', diagnosis_id:'necrose', correct:true, created_at:quand() });
 
 (async () => {
   const browser = await chromium.launch({ acceptDownloads: true });
@@ -97,7 +104,7 @@ for tag, child in [('numFmts','numFmt'),('fonts','font'),('fills','fill'),('bord
     if int(m.group(1)) != reel:
         pb.append('%s : compteur %s mais %d elements' % (tag, m.group(1), reel))
 rels = z.read('xl/_rels/workbook.xml.rels').decode()
-for i in (1, 2, 3):
+for i in (1, 2, 3, 4):
     if 'sheet%d.xml' % i not in rels: pb.append('feuille %d non reliee' % i)
     if 'xl/worksheets/sheet%d.xml' % i not in z.namelist(): pb.append('feuille %d absente' % i)
 try:
@@ -110,6 +117,26 @@ try:
     print('   type des dates :', types or 'aucune ligne')
     moy = set(type(r[8].value).__name__ for r in et.iter_rows(min_row=2) if r[8].value is not None)
     print('   type des moyennes :', moy or 'aucune valeur')
+    # La feuille des cas : c'est la seule vue qui dit QUAND un etudiant s'est entraine.
+    if 'Cas joues' in wb.sheetnames or 'Cas joués' in wb.sheetnames:
+        cj = wb['Cas joués'] if 'Cas joués' in wb.sheetnames else wb['Cas joues']
+        lignes = [r for r in cj.iter_rows(min_row=2) if r[0].value is not None]
+        print('   feuille « Cas joues » :', len(lignes), 'lignes')
+        if not lignes:
+            pb.append('feuille des cas vide : le controle ne prouverait rien')
+        dts = set(type(r[0].value).__name__ for r in lignes)
+        print('   type des dates de cas :', dts)
+        if dts != {'datetime'}:
+            pb.append('dates de cas non reconnues comme dates : %s' % dts)
+        noms = set(r[1].value for r in lignes)
+        if 'Petit' in noms:
+            pb.append('un compte NON valide figure dans la feuille des cas')
+        # L'ordre annonce est du plus recent au plus ancien.
+        dates = [r[0].value for r in lignes]
+        if dates != sorted(dates, reverse=True):
+            pb.append('feuille des cas : ordre non decroissant')
+    else:
+        pb.append('feuille « Cas joues » absente du classeur')
 except ImportError:
     print('   (openpyxl absent : lecture non verifiee)')
 except Exception as e:

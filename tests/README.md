@@ -56,7 +56,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 | `schemas-soins.js` | Que le schéma dessine bien le soin coronaire décrit par l'énoncé |
 | `legendes-schemas.js` | Que chaque entrée de légende corresponde au tracé : rien de superflu, rien de manquant |
 | `coherence-textes.py` | Que l'énoncé, la radiographie et le schéma disent la même chose — **tous** les cas, sans tirage |
-| `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion et export Excel |
+| `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion, cas joués et export Excel |
 | `confettis.js` | Que les confettis tombent sur un sans-faute, et **seulement** sur un sans-faute |
 | `session-unique.js` | Qu'un compte ne reste ouvert que sur un appareil, sans jamais bloquer la révision hors ligne |
 
@@ -208,6 +208,14 @@ et y laisser entrer un compte non validé. Toutes sont signalées.
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas
 dépendre des données réelles des étudiants, ni risquer de les modifier.
+
+Il contrôle aussi la feuille **« Cas joués »**, la seule vue qui dise *quand* un étudiant s'est
+entraîné : un étudiant qui travaille sans jamais terminer de série n'apparaissait nulle part. Les
+dates du jeu d'essai sont volontairement **désordonnées** — c'est ainsi que le test prouve que le
+back-office trie lui-même, au lieu de se fier à l'ordre renvoyé par le serveur. Trois affichages en
+dépendent : la colonne « Dernier cas », le panneau de détail et cette feuille ; une date fausse n'y
+se verrait pas. Le jeu d'essai contient enfin les cas d'un compte **non validé**, qui ne doivent
+jamais figurer dans le classeur.
 
 Il télécharge ensuite le classeur Excel et le contrôle : archive ZIP intègre, XML bien
 formé dans chaque partie, **compteurs de styles cohérents** (`<fonts count="4">` doit
