@@ -254,6 +254,19 @@ async function valideEtLis(page){
     // Et le panneau du mode ne doit pas s'ouvrir tout seul.
     const panneau = await page.evaluate(() => document.getElementById('mode-radio-intro').classList.contains('hidden'));
     if (!panneau) ko('le panneau du mode radio est affiche d\'emblee');
+
+    // L'atelier de trace modifie le corrige sur lequel les etudiants sont notes : son bouton
+    // doit etre cache, et surtout l'atelier doit REFUSER de s'ouvrir meme appele directement.
+    // Un bouton cache n'est pas une porte fermee.
+    const atelier = await page.evaluate(() => {
+      const b = document.getElementById('radio-trace-btn');
+      const avant = document.getElementById('radio-trace-panel').classList.contains('hidden');
+      b.click();                       // clic direct, sans passer par l'affichage
+      const apres = document.getElementById('radio-trace-panel').classList.contains('hidden');
+      return { cache: b.classList.contains('hidden'), ferme: avant && apres };
+    });
+    if (!atelier.cache) ko('le bouton de l\'atelier de trace est visible pour un compte non enseignant');
+    if (!atelier.ferme) ko('l\'atelier de trace s\'ouvre pour un compte non enseignant : le corrige serait modifiable par un etudiant');
     await page.close();
   }
 

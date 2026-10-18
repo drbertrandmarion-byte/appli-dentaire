@@ -1625,7 +1625,8 @@
 
     <div class="result-actions" id="radio-submit-row">
       <button class="btn-primary" id="radio-submit-btn">Valider ma lecture</button>
-      <button class="btn-secondary" id="radio-trace-btn" type="button">✏️ Tracer les zones</button>
+      <!-- Part caché : seul un compte enseignant le démasque, comme le bouton du mode. -->
+      <button class="btn-secondary hidden" id="radio-trace-btn" type="button">✏️ Tracer les zones</button>
     </div>
 
     <!-- Atelier de tracé, réservé à l'enseignante : il supprime l'étape où je reportais son
@@ -5602,8 +5603,13 @@
                                   [220,104],[150,100],[104,84],[96,54]]},
         inlay_core_simple: {poly:[[186,82],[204,80],[206,120],[198,148],[188,146],[184,118]]},
         debris: {poly:[[100,164],[118,159],[129,172],[127,192],[112,199],[100,188]]},
-        lesion: {poly:[[168,210],[190,206],[200,220],[196,240],[178,246],[166,232]]},
-        parodontite: {poly:[[252,214],[276,212],[286,226],[282,244],[262,248],[250,232]]}
+        // Apex de la prémolaire de gauche, devant le cantilever : lacune volumineuse.
+        lesion: {poly:[[166,206],[188,202],[202,214],[204,234],[192,248],[172,248],[162,230]]},
+        // Apex de la prémolaire de droite, couronnée : simple élargissement ligamentaire. Le
+        // contour est donc un liseré étroit qui épouse l'apex, et non une pastille — c'est la
+        // forme même du signe qui le distingue de la lacune constituée.
+        parodontite: {poly:[[256,212],[272,210],[280,220],[280,236],[272,244],[260,244],
+                            [252,234],[252,220]]}
       }
     }
   ];
@@ -6017,7 +6023,15 @@
     document.getElementById('radio-trace-code').value = txt;
   }
 
+  // L'atelier modifie le corrigé : il est donc réservé au compte enseignant, et la condition
+  // est vérifiée ici, à l'ouverture, et non pas seulement par le masquage du bouton. Un bouton
+  // caché n'est pas une porte fermée — il suffirait d'un appel direct pour l'ouvrir.
+  function radioPeutTracer(){
+    return !!(window.EndoAccount && window.EndoAccount.isAdmin);
+  }
+
   function radioOuvreTrace(){
+    if(!radioPeutTracer()) return;
     radioTracing = true;
     radioTraceCible = null;
     radioFilm.classList.add('tracing');
@@ -6169,6 +6183,9 @@
   // enseignant : un étudiant ne doit pas même savoir que ce mode existe.
   window.EndoTeacherModes = function(on){
     (on ? showEl : hideEl)(document.getElementById('hub-radio-btn'));
+    // L'atelier de tracé suit la même porte que le mode : il modifie le corrigé sur lequel
+    // les étudiants seront notés.
+    (on ? showEl : hideEl)(document.getElementById('radio-trace-btn'));
   };
 
   function categoryLabel(cat){
