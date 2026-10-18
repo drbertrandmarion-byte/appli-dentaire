@@ -101,21 +101,27 @@ function distanceAuBord(poly, px, py){
   return best;
 }
 
-// Un point a une distance donnee a l'EXTERIEUR du contour, pris au milieu de l'arete la plus
-// longue et pousse selon sa normale sortante.
-function pointExterieur(poly, distance){
-  let meilleure = null, longueurMax = -1;
+// Un point a une distance donnee a l'EXTERIEUR du contour, pris au milieu d'une arete et
+// pousse selon sa normale sortante. Toutes les aretes sont essayees, de la plus longue a la
+// plus courte, car la premiere venue peut pointer HORS DU CLICHE : la lesion touche le bord
+// gauche et le bord inferieur, et un point lache dehors n'est pas pose du tout — le test
+// comptait alors un oubli la ou il attendait un repere mal situe.
+function pointExterieur(poly, distance, hU){
+  const aretes = [];
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
     const ax = poly[j][0], ay = poly[j][1], bx = poly[i][0], by = poly[i][1];
     const len = Math.hypot(bx - ax, by - ay);
-    if (len > longueurMax) { longueurMax = len; meilleure = { ax, ay, bx, by, len }; }
+    if (len > 1e-6) aretes.push({ ax, ay, bx, by, len });
   }
-  const { ax, ay, bx, by, len } = meilleure;
-  const nx = -(by - ay) / len, ny = (bx - ax) / len;
-  const mx = (ax + bx) / 2, my = (ay + by) / 2;
-  for (const sens of [1, -1]) {
-    const x = mx + sens * nx * distance, y = my + sens * ny * distance;
-    if (!dansPolygone(poly, x, y) && !dansPolygone(poly, mx + sens * nx * 1.5, my + sens * ny * 1.5)) {
+  aretes.sort((u, v) => v.len - u.len);
+  for (const { ax, ay, bx, by, len } of aretes) {
+    const nx = -(by - ay) / len, ny = (bx - ax) / len;
+    const mx = (ax + bx) / 2, my = (ay + by) / 2;
+    for (const sens of [1, -1]) {
+      const x = mx + sens * nx * distance, y = my + sens * ny * distance;
+      if (x < 8 || x > 352 || y < 8 || y > hU - 8) continue;
+      if (dansPolygone(poly, x, y)) continue;
+      if (dansPolygone(poly, mx + sens * nx * 1.5, my + sens * ny * 1.5)) continue;
       return { x, y };
     }
   }
@@ -131,10 +137,12 @@ async function zonesAttendues(page){
   return page.evaluate(() => {
     const film = document.getElementById('radio-film').getBoundingClientRect();
     const out = [];
-    document.querySelectorAll('.radio-zones polygon[data-poly]').forEach(t => {
+    document.querySelectorAll('.radio-zones polygon[data-rid]').forEach(t => {
       const id = t.getAttribute('data-rid');
       if (out.some(z => z.id === id)) return;
-      const poly = t.getAttribute('data-poly').trim().split(/\s+/)
+      // On lit l'attribut « points » REELLEMENT rendu, pas une declaration parallele : la
+      // reference du test est ainsi la forme que l'etudiant voit a l'ecran.
+      const poly = t.getAttribute('points').trim().split(/\s+/)
         .map(p => p.split(',').map(Number));
       out.push({ id, poly, W: film.width, H: film.height });
     });
@@ -256,6 +264,16 @@ async function valideEtLis(page){
     if (zones.some(z => !z.poly || z.poly.length < 3)) {
       ko(etiquette + ' : un contour attendu a moins de trois sommets — ce n\'est pas une zone'); continue;
     }
+    // Un contour est une COURBE echantillonnee, pas un polygone brut : l'application en tire
+    // huit points par segment, donc au moins vingt-quatre pour la forme la plus simple
+    // possible. En trouver moins signifie que le lissage a saute — l'etudiant verrait alors
+    // des angles droits la ou il n'y a pas d'angle droit en anatomie.
+    zones.forEach(z => {
+      if (z.poly.length < 24) {
+        ko(etiquette + ' : le contour de « ' + z.id + ' » n\'a que ' + z.poly.length
+           + ' sommets — ce n\'est pas une courbe lissee');
+      }
+    });
     if (!/\bko\b/.test(vide.classe)) ko(etiquette + ' : une lecture entierement vide est comptee comme reussie');
     if (!new RegExp('^0 / ' + zones.length + ' ').test(vide.score)) {
       ko(etiquette + ' : score d\'une lecture vide = « ' + vide.score + ' », attendu « 0 / ' + zones.length + ' … »');
@@ -284,8 +302,8 @@ async function valideEtLis(page){
     const sondes = zones.map(z => ({
       z,
       dedans: pointInterieur(z.poly),
-      contact: pointExterieur(z.poly, 4),
-      dehors: pointExterieur(z.poly, 34)
+      contact: pointExterieur(z.poly, 4, 360 * z.H / z.W),
+      dehors: pointExterieur(z.poly, 34, 360 * z.H / z.W)
     }));
     sondes.forEach(s => {
       if (!s.dedans) ko(etiquette + ' : aucun point interieur trouve pour « ' + s.z.id + ' »');
@@ -328,6 +346,26 @@ async function valideEtLis(page){
       const r = await valideEtLis(p);
       if (!/\bok\b/.test(r.classe)) {
         ko(etiquette + ' : un point pose au contact du contour est refuse — « ' + r.score + ' » (la marge de contact ne fonctionne pas)');
+      }
+      await p.close();
+    }
+
+    // Passe C' : la meme sonde poussee nettement plus loin, sur CHAQUE zone. La passe D n'en
+    // eprouve qu'une seule par l'exterieur ; une tolerance devenue enorme sur l'une des autres
+    // y passerait inapercue.
+    {
+      const p = await context.newPage();
+      await boot(p, seed);
+      await ouvreCliche(p);
+      for (const s of sondes) {
+        const f = fraction(s.z, s.dehors.x, s.dehors.y);
+        await depose(p, s.z.id, f.fx, f.fy);
+      }
+      const r = await valideEtLis(p);
+      const attenduLoin = '0 / ' + zones.length + ' repères présents correctement identifiés — '
+        + zones.length + ' repères mal situés.';
+      if (r.score !== attenduLoin) {
+        ko(etiquette + ' : points poses loin des contours — « ' + r.score + ' », attendu « ' + attenduLoin + ' »');
       }
       await p.close();
     }
