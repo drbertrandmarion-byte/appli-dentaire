@@ -5508,6 +5508,12 @@
   // absents du cliché tiré, et les y laisser fait partie de la bonne réponse. Les trois
   // derniers — ostéite condensante, onlay, débris radiculaire — ne sont pour l'instant la
   // bonne réponse nulle part : ce sont des leurres, en attendant les clichés qui les portent.
+  // CATALOGUE des repères : leur libellé et leur couleur. Ce n'est pas la légende affichée.
+  // Chaque cliché choisit la sienne — ses repères attendus, plus deux leurres — car une
+  // légende commune à tous grossirait de cliché en cliché : à deux clichés elle comptait déjà
+  // treize entrées, et un étudiant qui en parcourt treize pour en poser cinq ne lit plus le
+  // cliché, il dépouille une liste.
+  //
   // Une seule entrée pour la lacune constituée, quelle que soit sa nature histologique :
   // granulome, kyste et abcès ne se distinguent pas l'un de l'autre sur un cliché — ils se
   // séparent cliniquement. En faire deux entrées obligerait l'étudiant à un choix indécidable.
@@ -5532,6 +5538,14 @@
   var RADIO_REPERE_BY_ID = {};
   RADIO_REPERES.forEach(function(r){ RADIO_REPERE_BY_ID[r.id] = r; });
 
+  // La légende affichée est celle du cliché. Un cliché qui n'en déclarerait pas retomberait
+  // sur le catalogue entier — ce serait le défaut que l'on vient de corriger, donc on préfère
+  // ses seules cibles, quitte à n'avoir aucun leurre : le test signale ce cas.
+  function radioLegende(){
+    if(!radioCase) return [];
+    return radioCase.legende || radioCase.cibles || [];
+  }
+
   // La consigne est la même d'un cliché à l'autre : elle est donc déclarée une fois ici plutôt
   // que recopiée dans chaque cas, où elle finirait par diverger. Un cliché qui aurait besoin
   // d'une consigne particulière peut toujours la déclarer.
@@ -5551,6 +5565,9 @@
       // Pas de légende sous l'image : la consigne vient d'annoncer une rétro-alvéolaire, la
       // redire ici n'apprendrait rien. Un cliché qui mérite une précision peut en déclarer une.
       caption:'',
+      // Légende de ce cliché : ses cinq repères, plus les trois leurres demandés pour lui.
+      legende:['couronne_cm','osteite','inlay_core','onlay','lesion','debris',
+               'amalgame','rhizalyse'],
       cibles:['couronne_cm','inlay_core','lesion','amalgame','rhizalyse'],
       // Contours relevés sur le tracé de l'enseignante, lu sous grille de coordonnées plutôt
       // qu'estimé à l'œil — deux reports successifs faits à vue avaient décalé l'inlay-core
@@ -5591,6 +5608,10 @@
       titre:'Rétro-alvéolaire — secteur postérieur mandibulaire',
       image:'radios/retro-alveolaire-02.png',
       caption:'',
+      // Légende de ce cliché : ses six repères, plus les deux leurres demandés pour lui —
+      // l'inlay-core à clavette et le fragment instrumental cassé, absents de ce cliché.
+      legende:['bridge_cantilever','inlay_core','inlay_core_simple','lesion',
+               'parodontite','fragment','debris','amalgame_infiltre'],
       cibles:['bridge_cantilever','inlay_core_simple','debris','lesion',
               'parodontite','amalgame_infiltre'],
       // ÉBAUCHES. Contrairement à celles du premier cliché, ces six zones ne viennent d'aucun
@@ -5766,7 +5787,8 @@
 
   function renderRadioLegend(){
     var cas = radioTracing ? radioTracesDuCas() : null;
-    radioLegendEl.innerHTML = RADIO_REPERES.map(function(rep){
+    radioLegendEl.innerHTML = radioLegende().map(function(id){
+      var rep = RADIO_REPERE_BY_ID[id];
       var cls = 'radio-chip';
       // Pendant le tracé, la légende sert à choisir le repère dessiné : l'estompage signale
       // alors les contours déjà tracés, et non les points déjà posés.
@@ -5809,8 +5831,7 @@
     } else if(radioTracing && radioCase){
       // Pendant le tracé : tous les contours du cliché, le courant mis en évidence, et les
       // sommets saisis sous forme de poignées — sans quoi l'enseignante dessine à l'aveugle.
-      var ids = RADIO_REPERES.map(function(r){ return r.id; })
-        .filter(function(id){ return !!radioSommets(id); });
+      var ids = radioLegende().filter(function(id){ return !!radioSommets(id); });
       var dessins = ids.map(function(id){
         var rep = RADIO_REPERE_BY_ID[id], poly = radioZone(id), brut = radioSommets(id);
         if(!poly) return '';
@@ -6119,7 +6140,8 @@
   function submitRadio(){
     radioChecked = true;
     var lignes = [], bons = 0, leurres = 0, oublis = 0, decales = 0;
-    RADIO_REPERES.forEach(function(rep){
+    radioLegende().forEach(function(id){
+      var rep = RADIO_REPERE_BY_ID[id];
       var pl = radioPlacements[rep.id], cible = radioIsTarget(rep.id);
       if(cible && pl && radioWellPlaced(rep.id, pl)){
         bons++;

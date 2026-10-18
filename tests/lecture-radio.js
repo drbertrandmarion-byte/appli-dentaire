@@ -350,6 +350,18 @@ async function valideEtLis(page){
 
     const leurres = reperes.filter(r => !zones.some(z => z.id === r));
     if (!leurres.length) ko(etiquette + ' : aucun leurre dans la legende, tous les reperes sont attendus');
+    // La legende appartient au CLICHE, pas a l'application : ses repères attendus, plus deux
+    // ou trois leurres. Une legende commune a tous grossirait a chaque cliche ajoute — a deux
+    // cliches elle comptait deja treize entrees — et un etudiant qui en parcourt treize pour
+    // en poser cinq ne lit plus le cliche, il depouille une liste.
+    if (leurres.length > 3) {
+      ko(etiquette + ' : ' + leurres.length + ' leurres dans la legende (trois au plus) — '
+         + 'la legende enfle-t-elle avec les cliches ajoutes ?');
+    }
+    if (reperes.length > zones.length + 3) {
+      ko(etiquette + ' : legende de ' + reperes.length + ' entrees pour ' + zones.length
+         + ' reperes attendus');
+    }
 
     // Mesure ABSOLUE de la taille des contours, en part du cliche. Les passes suivantes
     // comparent la zone a elle-meme : si elle etait agrandie dix fois ou reduite a rien,
