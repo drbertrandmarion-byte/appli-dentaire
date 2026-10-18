@@ -3,6 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- L'application est un fichier unique, remplacé à chaque mise en ligne, et GitHub le sert
+     avec dix minutes de cache. Sans ce rappel, un étudiant — ou l'enseignante qui vient de
+     demander une correction — continue de voir l'ancienne version sans rien pour le lui dire.
+     « no-cache » n'interdit pas de garder la page : il demande de vérifier qu'elle n'a pas
+     changé avant de la réutiliser, ce qui coûte une requête conditionnelle et préserve la
+     consultation hors connexion. Les navigateurs ne l'honorent pas tous de la même façon :
+     c'est une amélioration, pas une garantie. -->
+<meta http-equiv="Cache-Control" content="no-cache">
 <title>EndoDiag</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icons/icon-192.png">
