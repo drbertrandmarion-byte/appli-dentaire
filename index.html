@@ -931,7 +931,12 @@
     margin:14px auto 6px;
     touch-action:none;
   }
-  .radio-film svg{display:block; width:100%; height:auto; border-radius:10px;}
+  .radio-film svg,
+  .radio-film .radio-img{display:block; width:100%; height:auto; border-radius:10px;}
+  /* Une vraie radiographie garde son format propre : c'est le cadre qui s'y adapte,
+     et jamais l'inverse — une image étirée déplacerait les structures que l'étudiant
+     doit justement situer. */
+  .radio-film .radio-img{object-fit:contain; background:#0d0e0f;}
   .radio-overlay{position:absolute; inset:0;}
   .radio-pt{
     position:absolute;
@@ -5598,6 +5603,18 @@
 
   function radioPct(v, span){ return (v / span * 100).toFixed(2) + '%'; }
 
+  // Les coordonnées sont exprimées en unités de LARGEUR du cliché : 360 d'un bord à l'autre,
+  // et autant par unité verticale. La hauteur du repère n'est donc pas une constante mais se
+  // déduit du format réellement affiché — 270 pour un cliché 4/3, davantage pour un cliché
+  // plus haut. Sans cela, une zone de tolérance circulaire deviendrait une ellipse dès qu'une
+  // radiographie n'aurait pas le format des schémas dessinés, et le pointage serait plus
+  // sévère dans un sens que dans l'autre.
+  function radioHauteurUnites(){
+    var rect = radioFilm.getBoundingClientRect();
+    if(!rect.width || !rect.height) return RADIO_H;
+    return rect.height / rect.width * RADIO_W;
+  }
+
   function renderRadioLegend(){
     radioLegendEl.innerHTML = RADIO_REPERES.map(function(rep){
       var cls = 'radio-chip';
@@ -5613,6 +5630,7 @@
   // donc recalculée à chaque rendu, et au redimensionnement de la fenêtre.
   function renderRadioOverlay(){
     var html = '';
+    var hUnites = radioHauteurUnites();
     if(radioChecked && radioCase){
       var w = radioFilm.clientWidth || 360;
       radioCase.cibles.forEach(function(id){
@@ -5620,7 +5638,7 @@
         var dpx = 2 * z.r / RADIO_W * w;
         z.pts.forEach(function(pt){
           html += '<span class="radio-target" style="left:' + radioPct(pt[0], RADIO_W) +
-                  ';top:' + radioPct(pt[1], RADIO_H) +
+                  ';top:' + radioPct(pt[1], hUnites) +
                   ';width:' + dpx.toFixed(1) + 'px;height:' + dpx.toFixed(1) + 'px' +
                   ';margin:' + (-dpx / 2).toFixed(1) + 'px 0 0 ' + (-dpx / 2).toFixed(1) + 'px' +
                   ';border-color:' + rep.color + '"></span>';
@@ -5632,7 +5650,7 @@
       var cls = 'radio-pt';
       if(radioChecked) cls += (radioIsTarget(id) && radioWellPlaced(id, pl)) ? ' ok' : ' ko';
       html += '<span class="' + cls + '" data-rid="' + id + '" title="' + rep.label + '"' +
-              ' style="left:' + radioPct(pl.x, RADIO_W) + ';top:' + radioPct(pl.y, RADIO_H) +
+              ' style="left:' + radioPct(pl.x, RADIO_W) + ';top:' + radioPct(pl.y, hUnites) +
               ';background:' + rep.color + '"></span>';
     });
     radioOverlay.innerHTML = html;
@@ -5646,7 +5664,10 @@
     var rect = radioFilm.getBoundingClientRect();
     return {
       x: (clientX - rect.left) / rect.width * RADIO_W,
-      y: (clientY - rect.top) / rect.height * RADIO_H,
+      // Même diviseur que pour x — voir radioHauteurUnites : les deux axes partagent
+      // l'échelle, sans quoi une distance de tolérance n'aurait pas le même sens selon
+      // la direction du décalage.
+      y: (clientY - rect.top) / rect.width * RADIO_W,
       inside: clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom
     };
   }
@@ -5763,7 +5784,18 @@
     document.getElementById('radio-title').textContent = radioCase.titre;
     document.getElementById('radio-def').textContent = radioCase.enonce;
     document.getElementById('radio-caption').textContent = radioCase.caption;
-    document.getElementById('radio-svg').innerHTML = buildRadioSVG(radioCase.cfg);
+    // Un cas peut porter soit une vraie radiographie (« image »), soit un schéma dessiné.
+    // Le reste du mécanisme — glisser-déposer, zones, tolérance, correction — ne fait aucune
+    // différence entre les deux : les coordonnées sont relatives au cliché affiché.
+    var filmEl = document.getElementById('radio-svg');
+    if(radioCase.image){
+      filmEl.innerHTML = '<img class="radio-img" src="' + radioCase.image + '" alt="Cliché radiographique">';
+      // Tant que l'image n'est pas chargée, le cadre n'a pas de hauteur et le format n'est
+      // pas connu : la couche des points est donc retracée à l'arrivée de l'image.
+      filmEl.firstChild.onload = renderRadioOverlay;
+    } else {
+      filmEl.innerHTML = buildRadioSVG(radioCase.cfg);
+    }
 
     renderRadioLegend();
     renderRadioOverlay();
