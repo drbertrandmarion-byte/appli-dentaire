@@ -5465,7 +5465,11 @@
       cibles:['couronne_cm','inlay_core','lesion','amalgame','rhizalyse'],
       zones:{
         couronne_cm: {pts:[[161, 82]],  r:42},
-        inlay_core:  {pts:[[129, 136]], r:28},
+        // L'inlay-core dessine un U : le cœur dans la chambre, et deux tenons qui descendent
+        // dans les racines. Quatre points d'ancrage épousent ce contour — deux pour la barre
+        // du haut, un par tenon — là où un seul cercle aurait aussi accepté le creux entre
+        // les deux tenons, qui n'est pas la clavette mais la dentine qui les sépare.
+        inlay_core:  {pts:[[135, 113], [170, 113], [132, 148], [174, 148]], r:20},
         lesion:      {pts:[[149, 205]], r:30},
         amalgame:    {pts:[[58, 55]],   r:26},
         // Apex de la 45, dent située à droite de la couronne : son canal descend de (200, 105)
