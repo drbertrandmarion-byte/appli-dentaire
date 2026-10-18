@@ -5431,7 +5431,7 @@
     {id:'carie',       label:'Carie coronaire',                       color:'#e8532e', pts:[[244,79]],                          r:20},
     {id:'restauration',label:'Restauration coronaire étanche',        color:'#22d3ee', pts:[[204,51]],                          r:22},
     {id:'restauration_infiltree', label:'Restauration avec perte d\'étanchéité', color:'#2563eb', pts:[[204,51]],               r:22},
-    {id:'lesion',      label:'Lésion périapicale radioclaire',        color:'#dc2626', pts:[[167,234]],                         r:22},
+    {id:'lesion',      label:'Lésion périapicale radioclaire',        color:'#dc2626', pts:[[167,230]],                         r:22},
     {id:'elargissement',  label:'Élargissement du ligament apical',   color:'#ec4899', pts:[[157,186],[182,186],[229,184],[251,184]], r:13},
     {id:'ligament_sain',  label:'Ligament apical d\'aspect sain',     color:'#22c55e', pts:[[157,186],[182,186],[229,184],[251,184]], r:13},
     {id:'fracture',    label:'Trait de fracture radiculaire',         color:'#1e1b4b', pts:[[204,170]],                         r:20}
@@ -5488,7 +5488,7 @@
     p.push('<linearGradient id="radio-bone-g" x1="0" y1="0" x2="0" y2="1">' +
              '<stop offset="0" stop-color="#55534a"/><stop offset="1" stop-color="#3d3c35"/></linearGradient>');
     p.push('<radialGradient id="radio-lesion-g" cx="50%" cy="50%" r="50%">' +
-             '<stop offset="55%" stop-color="#191a18"/><stop offset="100%" stop-color="#191a18" stop-opacity="0"/></radialGradient>');
+             '<stop offset="78%" stop-color="#171816"/><stop offset="100%" stop-color="#171816" stop-opacity="0"/></radialGradient>');
     p.push('</defs>');
 
     // Le film et l'os : le dégradé et les quelques ellipses claires suffisent à faire lire
@@ -5517,14 +5517,16 @@
     p.push('<path d="M154,46 Q154,36 164,36 L246,36 Q256,36 256,46 L256,58 L154,58 Z" fill="' + EMAIL + '"/>');
     // Chambre pulpaire et canaux (tracés avant l'obturation, qui vient les recouvrir)
     p.push('<path d="M186,82 L223,82 L221,102 Q204,112 187,102 Z" fill="' + CANAL + '"/>');
-    p.push('<path d="M175,100 L167,205" stroke="' + CANAL + '" stroke-width="4.5" stroke-linecap="round" fill="none"/>');
-    p.push('<path d="M236,100 L239,201" stroke="' + CANAL + '" stroke-width="4.5" stroke-linecap="round" fill="none"/>');
+    p.push('<path d="M175,100 L167,205" stroke="' + CANAL + '" stroke-width="6" stroke-linecap="round" fill="none"/>');
+    p.push('<path d="M236,100 L239,201" stroke="' + CANAL + '" stroke-width="6" stroke-linecap="round" fill="none"/>');
 
     if(cfg.caries){
-      p.push('<path d="M256,60 Q238,64 236,78 Q238,94 254,98 L256,98 Z" fill="#39382f"/>');
+      p.push('<path d="M256,60 Q238,64 236,78 Q238,94 254,98 L256,98 Z" fill="#46443a"/>');
     }
     if(cfg.resto === 'sealed' || cfg.resto === 'leaking'){
-      p.push('<path d="M178,36 L230,36 L230,60 Q204,72 178,60 Z" fill="' + OPAQUE + '"/>');
+      // Le liseré gris clair sépare le matériau de l'émail, dont la densité est voisine :
+      // sans lui, une restauration étanche se confond avec le relief de la couronne.
+      p.push('<path d="M178,36 L230,36 L230,60 Q204,72 178,60 Z" fill="' + OPAQUE + '" stroke="#9a9588" stroke-width="1"/>');
       if(cfg.resto === 'leaking'){
         // La perte d'étanchéité se lit comme un liseré radioclaire continu à l'interface
         // entre le soin et la dent : le long des parois comme sous le fond de la cavité.
@@ -5532,9 +5534,12 @@
       }
     }
     if(cfg.obturation){
+      // La chambre d'une dent déjà traitée n'est pas vide : la cavité d'accès a été obturée.
+      // La laisser noire donnerait à lire une dent dépulpée dont la pulpe serait encore là.
+      p.push('<path d="M186,82 L223,82 L221,102 Q204,112 187,102 Z" fill="' + OPAQUE + '" stroke="#8d897c" stroke-width="1"/>');
       // Obturation canalaire arrêtée avant l'apex : le noir du canal reste visible au-delà.
-      p.push('<path d="M176,100 L169,190" stroke="' + OPAQUE + '" stroke-width="5" stroke-linecap="round" fill="none"/>');
-      p.push('<path d="M236,100 L239,186" stroke="' + OPAQUE + '" stroke-width="5" stroke-linecap="round" fill="none"/>');
+      p.push('<path d="M176,100 L169,190" stroke="' + OPAQUE + '" stroke-width="3.6" stroke-linecap="round" fill="none"/>');
+      p.push('<path d="M236,100 L239,186" stroke="' + OPAQUE + '" stroke-width="3.6" stroke-linecap="round" fill="none"/>');
     }
 
     // Région apicale : ligament fin et lamina dura continue, ligament élargi, ou lésion radioclaire.
@@ -5544,7 +5549,7 @@
       p.push('<path d="M152,167 Q153,203 167,224 Q181,203 186,167" stroke="' + LAMINA + '" stroke-width="1.5" fill="none"/>');
       p.push('<path d="M225,165 Q226,199 239,220 Q252,199 254,165" stroke="' + LAMINA + '" stroke-width="1.5" fill="none"/>');
     } else if(cfg.periapical === 'lesion'){
-      p.push('<ellipse cx="167" cy="234" rx="27" ry="23" fill="url(#radio-lesion-g)"/>');
+      p.push('<ellipse cx="167" cy="226" rx="26" ry="22" fill="url(#radio-lesion-g)"/>');
       // La lamina dura disparaît là où la lésion a résorbé l'os, et reste visible sur l'autre racine.
       p.push('<path d="M231,168 Q232,194 239,211 Q246,194 248,168" stroke="' + LIGAMENT + '" stroke-width="1.8" fill="none"/>');
       p.push('<path d="M227,167 Q228,197 239,216 Q250,197 252,167" stroke="' + LAMINA + '" stroke-width="1.5" fill="none"/>');
