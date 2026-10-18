@@ -1584,7 +1584,9 @@
       <div class="radio-overlay" id="radio-overlay"></div>
     </div>
     <p class="radio-caption" id="radio-caption"></p>
-    <p class="radio-hint" id="radio-hint">Faites glisser sur le cliché les points de la légende qui correspondent à ce que vous y voyez. Sur écran tactile, vous pouvez aussi toucher un point de la légende puis l'endroit du cliché. Pour retirer un point posé, touchez-le.</p>
+    <!-- La consigne, au-dessus du cliché, dit déjà quoi faire. Cette ligne ne garde que ce
+         qu'elle seule apporte : comment le faire. -->
+    <p class="radio-hint" id="radio-hint">Glissez le point de la légende jusqu'à la zone voulue. Sur écran tactile, vous pouvez aussi toucher le point de la légende puis l'endroit du cliché. Pour retirer un point posé, touchez-le.</p>
 
     <div class="radio-legend" id="radio-legend"></div>
 
@@ -5464,6 +5466,14 @@
   var RADIO_REPERE_BY_ID = {};
   RADIO_REPERES.forEach(function(r){ RADIO_REPERE_BY_ID[r.id] = r; });
 
+  // La consigne est la même d'un cliché à l'autre : elle est donc déclarée une fois ici plutôt
+  // que recopiée dans chaque cas, où elle finirait par diverger. Un cliché qui aurait besoin
+  // d'une consigne particulière peut toujours la déclarer.
+  var RADIO_CONSIGNE =
+    'Vous trouverez ci-dessous une radiographie rétro-alvéolaire, accompagnée d\'une liste de ' +
+    'légendes. Placez sur le cliché celles que vous y reconnaissez, chacune sur la zone qui lui ' +
+    'correspond. Toutes n\'y figurent pas : laisser une légende de côté fait partie de la réponse.';
+
   // Chaque cliché déclare les repères qu'il porte et, pour chacun, la zone attendue : un ou
   // plusieurs points d'ancrage et le rayon de tolérance autour d'eux. Les positions ci-dessous
   // sont une PREMIÈRE LECTURE, à corriger par l'enseignante : la correction trace la zone en
@@ -5472,9 +5482,10 @@
     {
       id:'inlay_core_lesion',
       titre:'Rétro-alvéolaire — secteur postérieur mandibulaire',
-      enonce:'Repérez sur ce cliché tout ce que vous y reconnaissez. Attention : plusieurs repères de la légende n\'y figurent pas — ne rien poser est aussi une réponse.',
       image:'radios/retro-alveolaire-01.png',
-      caption:'Cliché rétro-alvéolaire.',
+      // Pas de légende sous l'image : la consigne vient d'annoncer une rétro-alvéolaire, la
+      // redire ici n'apprendrait rien. Un cliché qui mérite une précision peut en déclarer une.
+      caption:'',
       cibles:['couronne_cm','inlay_core','lesion','amalgame','rhizalyse'],
       zones:{
         couronne_cm: {pts:[[161, 82]],  r:42},
@@ -5712,8 +5723,11 @@
     showEl(document.getElementById('radio-hint'));
 
     document.getElementById('radio-title').textContent = radioCase.titre;
-    document.getElementById('radio-def').textContent = radioCase.enonce;
-    document.getElementById('radio-caption').textContent = radioCase.caption;
+    document.getElementById('radio-def').textContent = radioCase.enonce || RADIO_CONSIGNE;
+    // Une légende vide ne doit pas laisser une ligne blanche sous le cliché.
+    var captionEl = document.getElementById('radio-caption');
+    captionEl.textContent = radioCase.caption || '';
+    (radioCase.caption ? showEl : hideEl)(captionEl);
     var filmEl = document.getElementById('radio-svg');
     filmEl.innerHTML = '<img class="radio-img" src="' + radioCase.image + '" alt="Cliché radiographique">';
     // Tant que l'image n'est pas chargée, le cadre n'a pas de hauteur et son format n'est pas
