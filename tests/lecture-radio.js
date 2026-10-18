@@ -146,17 +146,23 @@ async function valideEtLis(page){
   }
 
   // ---- 3. Le cliche lui-meme, cas par cas ----
+  // Le nombre de cliches n'est pas fige : la suite parcourt des graines et eprouve chaque
+  // cliche distinct qu'elle rencontre. Une graine qui ne rapporte rien de nouveau coute une
+  // page ; en echange, ajouter une radiographie n'oblige pas a toucher au test.
   const vus = new Set();
-  let graine = 1;
-  while (vus.size < 4 && graine <= 60) {
-    const seed = graine++;
+  const GRAINES = 30;
+  const SANS_NOUVEAU_MAX = 6; // arret quand six graines d'affilee ne rapportent plus rien
+  let sansNouveau = 0;
+  for (let graine = 1; graine <= GRAINES && sansNouveau < SANS_NOUVEAU_MAX; graine++) {
+    const seed = graine;
 
     // Passe A : lecture vide, pour relever les zones attendues de ce cliche.
     const a = await context.newPage();
     await boot(a, seed);
     await ouvreCliche(a);
     const enonce = (await a.textContent('#radio-def')).trim();
-    if (vus.has(enonce)) { await a.close(); continue; }
+    if (vus.has(enonce)) { sansNouveau++; await a.close(); continue; }
+    sansNouveau = 0;
     const zones = await zonesAttendues(a);
     const largeurFilm = await a.evaluate(() => document.getElementById('radio-film').getBoundingClientRect().width);
     const reperes = await tousLesReperes(a);
@@ -179,16 +185,18 @@ async function valideEtLis(page){
     const leurres = reperes.filter(r => !zones.some(z => z.id === r));
     if (!leurres.length) ko(etiquette + ' : aucun leurre dans la legende, tous les reperes sont attendus');
 
-    // Mesure ABSOLUE de la marge, en unites du viewBox (360 de large). Les deux passes
-    // suivantes comparent la tolerance a elle-meme : si elle etait multipliee par dix ou
-    // ramenee a zero, elles pourraient le rater puisque la sonde suit le rayon mesure.
-    // Ici le rayon est juge pour ce qu'il est : au-dessus de 40, un point pose n'importe ou
-    // sur la couronne serait accepte ; en dessous de 8, il faudrait viser au pixel.
+    // Mesure ABSOLUE de la marge, en unites de largeur du cliche (360 d'un bord a l'autre).
+    // Les deux passes suivantes comparent la tolerance a elle-meme : si elle etait multipliee
+    // par dix ou ramenee a zero, elles pourraient le rater puisque la sonde suit le rayon
+    // mesure. Ici le rayon est juge pour ce qu'il est. Le plafond est fixe au sixieme de la
+    // largeur : une couronne prothetique est large, et un etudiant qui pointe n'importe ou
+    // dessus a raison ; au-dela, la zone couvrirait un sixieme du cliche et ne designerait
+    // plus rien. Le plancher evite l'inverse, une zone qu'il faudrait viser au pixel.
     zones.forEach(z => {
       const rvb = z.rpx / largeurFilm * 360;
-      if (rvb < 8 || rvb > 40) {
+      if (rvb < 8 || rvb > 60) {
         ko(etiquette + ' : marge de tolerance de ' + rvb.toFixed(1) + ' unites pour « ' + z.id
-           + ' » (attendu entre 8 et 40)');
+           + ' » (attendu entre 8 et 60)');
       }
     });
 
@@ -255,7 +263,7 @@ async function valideEtLis(page){
     }
   }
 
-  if (vus.size < 4) ko('seuls ' + vus.size + ' cliches sur 4 ont ete tires en 60 graines');
+  if (!vus.size) ko('aucun cliche n\'a pu etre ouvert en ' + GRAINES + ' graines');
 
   // ---- 4. Les gestes : poser, reprendre, retirer ----
   // Un point qui se deposerait hors du cliche, ou qu'on ne pourrait plus retirer, rendrait
@@ -306,7 +314,7 @@ async function valideEtLis(page){
   }
 
   await browser.close();
-  console.log('lecture-radio            Erreurs : ' + problemes.length);
+  console.log('lecture-radio            Erreurs : ' + problemes.length + '  (' + vus.size + ' cliche(s) eprouve(s))');
   problemes.forEach(p => console.log('  - ' + p));
   process.exit(problemes.length ? 1 : 0);
 })();

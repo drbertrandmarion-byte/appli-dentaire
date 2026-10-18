@@ -1353,29 +1353,31 @@
       <button class="btn-secondary back-hub-btn" type="button" data-back>← Changer de mode d'entraînement</button>
 
       <div class="radio-wip">
-        <b>Première maquette, visible de vous seule.</b> Le bouton n'existe pas dans le menu des
+        <b>En construction, visible de vous seule.</b> Le bouton n'existe pas dans le menu des
         étudiants : il n'apparaît que pour un compte enseignant. Rien n'est enregistré dans les
-        statistiques ni dans le back-office pour l'instant. Quatre points restent à trancher avec vous :
+        statistiques ni dans le back-office pour l'instant.
         <ul>
-          <li><b>Les clichés.</b> Ce sont ici des radiographies <i>dessinées</i> (rétro-alvéolaire d'une
-            molaire mandibulaire), pour mettre au point le geste de l'étudiant. Si vous préférez de
-            vraies radiographies, il suffit de me les envoyer : le reste du mécanisme ne change pas.</li>
-          <li><b>La légende.</b> Douze repères, toujours les mêmes, dont plusieurs sont volontairement
-            absents du cliché tiré. Dites-moi ceux à ajouter, à retirer ou à renommer (le
-            « trait de fracture radiculaire » n'est pour l'instant jamais la bonne réponse : c'est un
-            leurre pur, en attendant un cas de fracture).</li>
-          <li><b>La marge de tolérance.</b> Chaque zone attendue a son propre rayon d'acceptation
-            (un apex est plus étroit qu'une plage d'os trabéculaire) ; la correction trace en pointillés
-            la zone exacte qui était attendue, pour que vous jugiez si la marge est trop large ou trop juste.</li>
-          <li><b>La notation.</b> Le cas est actuellement compté réussi si tous les repères présents sont
-            bien placés <i>et</i> qu'aucun leurre n'a été posé. À voir si un oubli doit peser autant
-            qu'un faux positif.</li>
+          <li><b>Un seul cliché pour l'instant</b>, le vôtre. Les quatre radiographies dessinées qui
+            servaient à mettre au point le geste ont été retirées : leur vocabulaire — chambre
+            pulpaire, canal, apex — n'était pas le vôtre, et la légende doit rester commune à tous
+            les cas.</li>
+          <li><b>Les zones sont une première lecture, à corriger.</b> Je les ai placées d'après ce que
+            je crois lire sur le cliché. Validez une lecture vide : la correction trace en pointillés
+            chaque zone attendue. Dites-moi celles qui tombent à côté — en particulier la rhizalyse et
+            la lésion, dont je suis le moins sûr.</li>
+          <li><b>La marge de tolérance</b> est propre à chaque repère : large pour une couronne, plus
+            étroite pour une clavette. Les pointillés la montrent telle qu'elle est.</li>
+          <li><b>La notation.</b> Le cas est compté réussi si tous les repères présents sont bien
+            placés <i>et</i> qu'aucun leurre n'a été posé. À voir si un oubli doit peser autant qu'un
+            faux positif.</li>
+          <li><b>Il manque l'énoncé clinique</b> de ce cliché : âge, motif de consultation, ce que
+            l'examen trouve. Pour l'instant la consigne est nue.</li>
         </ul>
       </div>
 
       <p>Principe : un cliché est tiré au hasard. Sous le cliché, une légende de points colorés — la
-        même pour tous les cas. L'étudiant fait glisser sur le cliché les points qui correspondent à ce
-        qu'il y voit, et laisse dans la légende ceux qui n'y sont pas.</p>
+        même pour tous les cas, leurres compris. L'étudiant fait glisser sur le cliché les points qui
+        correspondent à ce qu'il y voit, et laisse dans la légende ceux qui n'y sont pas.</p>
 
       <div class="mode-buttons">
         <button class="btn-primary" id="start-radio-btn">Essayer un cliché</button>
@@ -5427,147 +5429,49 @@
   // du viewBox : un apex se pointe plus précisément qu'une plage d'os trabéculaire.
   var RADIO_W = 360, RADIO_H = 270;
 
+  // Les coordonnées sont exprimées en unités de LARGEUR du cliché : 360 d'un bord latéral à
+  // l'autre, et la même échelle verticalement (voir radioHauteurUnites). Une radiographie de
+  // 664 x 504 pixels fait donc 360 x 273 unités, quelle que soit la taille d'affichage.
+  //
+  // La légende est commune à TOUS les clichés : plusieurs de ses repères sont volontairement
+  // absents du cliché tiré, et les y laisser fait partie de la bonne réponse. Les trois
+  // derniers — ostéite condensante, onlay, débris radiculaire — ne sont pour l'instant la
+  // bonne réponse nulle part : ce sont des leurres, en attendant les clichés qui les portent.
   var RADIO_REPERES = [
-    {id:'chambre',     label:'Chambre pulpaire',                      color:'#f2b134', pts:[[204,95]],                          r:22},
-    {id:'canal',       label:'Canal radiculaire',                     color:'#14b8a6', pts:[[171,150],[238,148]],               r:20},
-    {id:'obturation',  label:'Obturation canalaire',                  color:'#cbd5e1', pts:[[171,150],[238,148]],               r:20},
-    {id:'apex',        label:'Apex radiculaire',                      color:'#a855f7', pts:[[167,212],[239,208]],               r:13},
-    {id:'os',          label:'Os alvéolaire trabéculaire',            color:'#a16207', pts:[[306,168]],                         r:34},
-    {id:'carie',       label:'Carie coronaire',                       color:'#e8532e', pts:[[244,79]],                          r:20},
-    {id:'restauration',label:'Restauration coronaire étanche',        color:'#22d3ee', pts:[[204,51]],                          r:22},
-    {id:'restauration_infiltree', label:'Restauration avec perte d\'étanchéité', color:'#2563eb', pts:[[204,51]],               r:22},
-    {id:'lesion',      label:'Lésion périapicale radioclaire',        color:'#dc2626', pts:[[167,230]],                         r:22},
-    {id:'elargissement',  label:'Élargissement du ligament apical',   color:'#ec4899', pts:[[157,186],[182,186],[229,184],[251,184]], r:13},
-    {id:'ligament_sain',  label:'Ligament apical d\'aspect sain',     color:'#22c55e', pts:[[157,186],[182,186],[229,184],[251,184]], r:13},
-    {id:'fracture',    label:'Trait de fracture radiculaire',         color:'#1e1b4b', pts:[[204,170]],                         r:20}
+    {id:'couronne_cm', label:'Couronne céramo-métallique',                    color:'#f2b134'},
+    {id:'osteite',     label:'Ostéite condensante',                           color:'#a16207'},
+    {id:'inlay_core',  label:'Inlay-core à clavette',                         color:'#22d3ee'},
+    {id:'onlay',       label:'Onlay céramique / composite',                   color:'#22c55e'},
+    {id:'lesion',      label:'Lésion infectieuse radioclaire (granulome / kyste)', color:'#dc2626'},
+    {id:'debris',      label:'Débris radiculaire',                            color:'#ec4899'},
+    {id:'amalgame',    label:'Amalgame dentaire',                             color:'#14b8a6'},
+    {id:'rhizalyse',   label:'Rhizalyse radiculaire sur dent vivante',        color:'#a855f7'}
   ];
 
   var RADIO_REPERE_BY_ID = {};
   RADIO_REPERES.forEach(function(r){ RADIO_REPERE_BY_ID[r.id] = r; });
 
-  // resto : 'none' | 'sealed' | 'leaking' — periapical : 'sain' | 'widened' | 'lesion'
+  // Chaque cliché déclare les repères qu'il porte et, pour chacun, la zone attendue : un ou
+  // plusieurs points d'ancrage et le rayon de tolérance autour d'eux. Les positions ci-dessous
+  // sont une PREMIÈRE LECTURE, à corriger par l'enseignante : la correction trace la zone en
+  // pointillés, précisément pour qu'elle soit jugeable à l'œil.
   var RADIO_CASES = [
     {
-      id:'carie_profonde',
-      titre:'Rétro-alvéolaire de 36',
-      enonce:'Patiente de 23 ans. Douleur provoquée par le froid sur la 36, qui cesse quelques secondes après le stimulus. Lisez le cliché.',
-      cfg:{caries:true, resto:'none', obturation:false, periapical:'sain'},
-      caption:'Cliché rétro-alvéolaire schématique de 36 (molaire mandibulaire) et de la 35 voisine.',
-      cibles:['chambre','canal','apex','os','carie','ligament_sain']
-    },
-    {
-      id:'lesion_apicale',
-      titre:'Rétro-alvéolaire de 36',
-      enonce:'Patient de 41 ans, 36 asymptomatique depuis des mois, soignée il y a longtemps. Lisez le cliché.',
-      cfg:{caries:false, resto:'leaking', obturation:false, periapical:'lesion'},
-      caption:'Cliché rétro-alvéolaire schématique de 36 : restauration occlusale ancienne et apex mésial.',
-      cibles:['chambre','canal','apex','os','restauration_infiltree','lesion']
-    },
-    {
-      id:'ligament_elargi',
-      titre:'Rétro-alvéolaire de 36',
-      enonce:'Patient de 35 ans. 36 douloureuse à la pression et à la mastication, soin occlusal posé il y a deux ans. Lisez le cliché.',
-      cfg:{caries:false, resto:'sealed', obturation:false, periapical:'widened'},
-      caption:'Cliché rétro-alvéolaire schématique de 36 : restauration occlusale étanche, région apicale des deux racines.',
-      cibles:['chambre','canal','apex','os','restauration','elargissement']
-    },
-    {
-      id:'obturation_courte',
-      titre:'Rétro-alvéolaire de 36',
-      enonce:'Patiente de 52 ans. 36 traitée par endodontie il y a six ans, aujourd\'hui sensible à la pression. Lisez le cliché.',
-      cfg:{caries:false, resto:'sealed', obturation:true, periapical:'lesion'},
-      caption:'Cliché rétro-alvéolaire schématique de 36 déjà traitée : matériau radio-opaque dans les canaux, s\'arrêtant avant l\'apex.',
-      cibles:['chambre','canal','obturation','apex','os','restauration','lesion']
-    }
-  ];
-
-  function buildRadioSVG(cfg){
-    // Valeurs de gris d'un cliché : l'os reste sombre, l'émail est la structure la plus
-    // radio-opaque après un soin métallique, et le canal se lit en négatif. Sans cet écart
-    // de densité, le dessin se lit comme un schéma et non comme une radiographie.
-    var DENTINE = '#cbc5b2', EMAIL = '#ece6d4', CANAL = '#26251f', OPAQUE = '#fbf9f2',
-        LAMINA = '#ddd8c8', LIGAMENT = '#24231d';
-    var p = [];
-    p.push('<svg viewBox="0 0 ' + RADIO_W + ' ' + RADIO_H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cliché rétro-alvéolaire schématique">');
-    p.push('<defs>');
-    p.push('<linearGradient id="radio-bone-g" x1="0" y1="0" x2="0" y2="1">' +
-             '<stop offset="0" stop-color="#55534a"/><stop offset="1" stop-color="#3d3c35"/></linearGradient>');
-    p.push('<radialGradient id="radio-lesion-g" cx="50%" cy="50%" r="50%">' +
-             '<stop offset="78%" stop-color="#171816"/><stop offset="100%" stop-color="#171816" stop-opacity="0"/></radialGradient>');
-    p.push('</defs>');
-
-    // Le film et l'os : le dégradé et les quelques ellipses claires suffisent à faire lire
-    // une trame osseuse, sans image à charger.
-    p.push('<rect x="0" y="0" width="' + RADIO_W + '" height="' + RADIO_H + '" rx="10" fill="#0d0e0f"/>');
-    p.push('<rect x="8" y="8" width="344" height="254" rx="6" fill="url(#radio-bone-g)"/>');
-    [[40,62,16,9],[300,96,20,10],[122,212,18,10],[58,158,14,8],[332,196,15,9],[272,142,19,10],
-     [200,244,24,9],[90,104,12,7],[150,250,20,8],[320,240,18,9],[40,232,15,8],[300,152,17,9],
-     [318,188,16,9],[288,206,15,8],[62,196,13,8],[132,160,12,7]].forEach(function(g){
-      p.push('<ellipse cx="' + g[0] + '" cy="' + g[1] + '" rx="' + g[2] + '" ry="' + g[3] + '" fill="#8d8a7c" opacity="0.2"/>');
-    });
-    // Crêtes osseuses interdentaires, plus denses donc plus claires.
-    p.push('<path d="M138,120 L152,118" stroke="#bdb8a8" stroke-width="2.2" fill="none"/>');
-    p.push('<path d="M258,118 L272,122" stroke="#bdb8a8" stroke-width="2.2" fill="none"/>');
-
-    // 35 voisine, à gauche du cliché
-    p.push('<path d="M70,110 L130,110 L114,168 Q106,196 100,198 Q94,196 86,168 Z" fill="' + DENTINE + '"/>');
-    p.push('<path d="M66,46 Q66,38 74,38 L126,38 Q134,38 134,46 L134,112 L66,112 Z" fill="' + DENTINE + '"/>');
-    p.push('<path d="M66,46 Q66,38 74,38 L126,38 Q134,38 134,46 L134,56 L66,56 Z" fill="' + EMAIL + '"/>');
-    p.push('<path d="M100,66 L100,190" stroke="' + CANAL + '" stroke-width="4" stroke-linecap="round" fill="none"/>');
-
-    // 36 : couronne, puis les deux racines
-    p.push('<path d="M157,110 L188,110 L180,178 Q174,211 167,213 Q161,211 158,178 Z" fill="' + DENTINE + '"/>');
-    p.push('<path d="M222,110 L254,110 L248,176 Q244,207 239,209 Q233,207 231,176 Z" fill="' + DENTINE + '"/>');
-    p.push('<path d="M154,46 Q154,36 164,36 L246,36 Q256,36 256,46 L256,114 L154,114 Z" fill="' + DENTINE + '"/>');
-    p.push('<path d="M154,46 Q154,36 164,36 L246,36 Q256,36 256,46 L256,58 L154,58 Z" fill="' + EMAIL + '"/>');
-    // Chambre pulpaire et canaux (tracés avant l'obturation, qui vient les recouvrir)
-    p.push('<path d="M186,82 L223,82 L221,102 Q204,112 187,102 Z" fill="' + CANAL + '"/>');
-    p.push('<path d="M175,100 L167,205" stroke="' + CANAL + '" stroke-width="6" stroke-linecap="round" fill="none"/>');
-    p.push('<path d="M236,100 L239,201" stroke="' + CANAL + '" stroke-width="6" stroke-linecap="round" fill="none"/>');
-
-    if(cfg.caries){
-      p.push('<path d="M256,60 Q238,64 236,78 Q238,94 254,98 L256,98 Z" fill="#46443a"/>');
-    }
-    if(cfg.resto === 'sealed' || cfg.resto === 'leaking'){
-      // Le liseré gris clair sépare le matériau de l'émail, dont la densité est voisine :
-      // sans lui, une restauration étanche se confond avec le relief de la couronne.
-      p.push('<path d="M178,36 L230,36 L230,60 Q204,72 178,60 Z" fill="' + OPAQUE + '" stroke="#9a9588" stroke-width="1"/>');
-      if(cfg.resto === 'leaking'){
-        // La perte d'étanchéité se lit comme un liseré radioclaire continu à l'interface
-        // entre le soin et la dent : le long des parois comme sous le fond de la cavité.
-        p.push('<path d="M178,38 L178,60 Q204,72 230,60 L230,38" stroke="#201f1a" stroke-width="2.6" fill="none"/>');
+      id:'inlay_core_lesion',
+      titre:'Rétro-alvéolaire — secteur postérieur mandibulaire',
+      enonce:'Lisez ce cliché : faites glisser sur l\'image les repères que vous y identifiez, et laissez dans la légende ceux qui n\'y figurent pas.',
+      image:'radios/retro-alveolaire-01.png',
+      caption:'Cliché rétro-alvéolaire.',
+      cibles:['couronne_cm','inlay_core','lesion','amalgame','rhizalyse'],
+      zones:{
+        couronne_cm: {pts:[[161, 82]],  r:42},
+        inlay_core:  {pts:[[129, 136]], r:28},
+        lesion:      {pts:[[149, 205]], r:30},
+        amalgame:    {pts:[[58, 55]],   r:26},
+        rhizalyse:   {pts:[[234, 211]], r:28}
       }
     }
-    if(cfg.obturation){
-      // La chambre d'une dent déjà traitée n'est pas vide : la cavité d'accès a été obturée.
-      // La laisser noire donnerait à lire une dent dépulpée dont la pulpe serait encore là.
-      p.push('<path d="M186,82 L223,82 L221,102 Q204,112 187,102 Z" fill="' + OPAQUE + '" stroke="#8d897c" stroke-width="1"/>');
-      // Obturation canalaire arrêtée avant l'apex : le noir du canal reste visible au-delà.
-      p.push('<path d="M176,100 L169,190" stroke="' + OPAQUE + '" stroke-width="3.6" stroke-linecap="round" fill="none"/>');
-      p.push('<path d="M236,100 L239,186" stroke="' + OPAQUE + '" stroke-width="3.6" stroke-linecap="round" fill="none"/>');
-    }
-
-    // Région apicale : ligament fin et lamina dura continue, ligament élargi, ou lésion radioclaire.
-    if(cfg.periapical === 'widened'){
-      p.push('<path d="M157,168 Q158,200 167,218 Q176,200 181,168" stroke="#24231f" stroke-width="6.5" fill="none"/>');
-      p.push('<path d="M230,166 Q231,196 239,214 Q247,196 249,166" stroke="#24231f" stroke-width="6.5" fill="none"/>');
-      p.push('<path d="M152,167 Q153,203 167,224 Q181,203 186,167" stroke="' + LAMINA + '" stroke-width="1.5" fill="none"/>');
-      p.push('<path d="M225,165 Q226,199 239,220 Q252,199 254,165" stroke="' + LAMINA + '" stroke-width="1.5" fill="none"/>');
-    } else if(cfg.periapical === 'lesion'){
-      p.push('<ellipse cx="167" cy="226" rx="26" ry="22" fill="url(#radio-lesion-g)"/>');
-      // La lamina dura disparaît là où la lésion a résorbé l'os, et reste visible sur l'autre racine.
-      p.push('<path d="M231,168 Q232,194 239,211 Q246,194 248,168" stroke="' + LIGAMENT + '" stroke-width="1.8" fill="none"/>');
-      p.push('<path d="M227,167 Q228,197 239,216 Q250,197 252,167" stroke="' + LAMINA + '" stroke-width="1.5" fill="none"/>');
-    } else {
-      p.push('<path d="M158,170 Q159,198 167,215 Q175,198 180,170" stroke="' + LIGAMENT + '" stroke-width="1.8" fill="none"/>');
-      p.push('<path d="M154,169 Q155,201 167,220 Q179,201 184,169" stroke="' + LAMINA + '" stroke-width="1.5" fill="none"/>');
-      p.push('<path d="M231,168 Q232,194 239,211 Q246,194 248,168" stroke="' + LIGAMENT + '" stroke-width="1.8" fill="none"/>');
-      p.push('<path d="M227,167 Q228,197 239,216 Q250,197 252,167" stroke="' + LAMINA + '" stroke-width="1.5" fill="none"/>');
-    }
-
-    p.push('</svg>');
-    return p.join('');
-  }
+  ];
 
   // ---------- état du mode radio ----------
   var radioCase = null;
@@ -5784,18 +5688,11 @@
     document.getElementById('radio-title').textContent = radioCase.titre;
     document.getElementById('radio-def').textContent = radioCase.enonce;
     document.getElementById('radio-caption').textContent = radioCase.caption;
-    // Un cas peut porter soit une vraie radiographie (« image »), soit un schéma dessiné.
-    // Le reste du mécanisme — glisser-déposer, zones, tolérance, correction — ne fait aucune
-    // différence entre les deux : les coordonnées sont relatives au cliché affiché.
     var filmEl = document.getElementById('radio-svg');
-    if(radioCase.image){
-      filmEl.innerHTML = '<img class="radio-img" src="' + radioCase.image + '" alt="Cliché radiographique">';
-      // Tant que l'image n'est pas chargée, le cadre n'a pas de hauteur et le format n'est
-      // pas connu : la couche des points est donc retracée à l'arrivée de l'image.
-      filmEl.firstChild.onload = renderRadioOverlay;
-    } else {
-      filmEl.innerHTML = buildRadioSVG(radioCase.cfg);
-    }
+    filmEl.innerHTML = '<img class="radio-img" src="' + radioCase.image + '" alt="Cliché radiographique">';
+    // Tant que l'image n'est pas chargée, le cadre n'a pas de hauteur et son format n'est pas
+    // connu : la couche des points est donc retracée à l'arrivée de l'image.
+    filmEl.firstChild.onload = renderRadioOverlay;
 
     renderRadioLegend();
     renderRadioOverlay();
