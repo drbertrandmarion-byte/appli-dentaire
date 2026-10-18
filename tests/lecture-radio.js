@@ -66,6 +66,32 @@ function airePolygone(poly){
   return Math.abs(a) / 2;
 }
 
+// Cherche un croisement entre deux aretes non adjacentes du contour.
+function autoIntersection(poly){
+  const n = poly.length;
+  for (let i = 0; i < n; i++) {
+    const a = poly[i], b = poly[(i + 1) % n];
+    for (let j = i + 2; j < n; j++) {
+      if (i === 0 && j === n - 1) continue; // aretes adjacentes par la fermeture
+      const c = poly[j], d = poly[(j + 1) % n];
+      const p = croisementSegments(a, b, c, d);
+      if (p) return p;
+    }
+  }
+  return null;
+}
+
+function croisementSegments(a, b, c, d){
+  const r = [b[0] - a[0], b[1] - a[1]];
+  const s = [d[0] - c[0], d[1] - c[1]];
+  const den = r[0] * s[1] - r[1] * s[0];
+  if (Math.abs(den) < 1e-12) return null;
+  const t = ((c[0] - a[0]) * s[1] - (c[1] - a[1]) * s[0]) / den;
+  const u = ((c[0] - a[0]) * r[1] - (c[1] - a[1]) * r[0]) / den;
+  if (t <= 1e-9 || t >= 1 - 1e-9 || u <= 1e-9 || u >= 1 - 1e-9) return null;
+  return { x: a[0] + t * r[0], y: a[1] + t * r[1] };
+}
+
 function boite(poly){
   const xs = poly.map(p => p[0]), ys = poly.map(p => p[1]);
   return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
@@ -198,6 +224,22 @@ async function valideEtLis(page){
     }));
   });
 
+  // ---- 0. Les outils du test, eprouves sur des formes connues ----
+  // Un detecteur qui ne signale jamais rien ne prouve rien. Celui d'auto-intersection, en
+  // particulier, ne se declenche sur aucun contour reel — c'est le resultat attendu, la
+  // parametrisation centripete empechant les croisements —, et sans ce controle on ne
+  // saurait pas distinguer « rien a signaler » de « detecteur en panne ».
+  {
+    const noeud = [[0, 0], [10, 10], [10, 0], [0, 10]]; // les deux diagonales se croisent
+    const carre = [[0, 0], [10, 0], [10, 10], [0, 10]];
+    if (!autoIntersection(noeud)) ko('outils du test : une auto-intersection evidente n\'est pas detectee');
+    if (autoIntersection(carre)) ko('outils du test : un carre simple est declare auto-secant');
+    if (!dansPolygone(carre, 5, 5)) ko('outils du test : le centre d\'un carre est declare dehors');
+    if (dansPolygone(carre, 15, 5)) ko('outils du test : un point hors du carre est declare dedans');
+    if (Math.abs(airePolygone(carre) - 100) > 1e-6) ko('outils du test : l\'aire d\'un carre de cote 10 n\'est pas 100');
+    if (Math.abs(distanceAuBord(carre, 5, 5) - 5) > 1e-6) ko('outils du test : la distance au bord est fausse');
+  }
+
   // ---- 1. Cote etudiant : le mode n'existe pas ----
   {
     const page = await context.newPage();
@@ -272,6 +314,16 @@ async function valideEtLis(page){
       if (z.poly.length < 24) {
         ko(etiquette + ' : le contour de « ' + z.id + ' » n\'a que ' + z.poly.length
            + ' sommets — ce n\'est pas une courbe lissee');
+      }
+      // Un contour qui se recoupe creuse un trou invisible : a l'interieur de la boucle, la
+      // regle pair-impair declare « dehors » et un point correctement pose serait refuse. Le
+      // defaut apparait sur un virage trop serre — la pointe d'un tenon, par exemple — et il
+      // ne se voit a l'oeil que si la boucle est grosse.
+      const croisement = autoIntersection(z.poly);
+      if (croisement) {
+        ko(etiquette + ' : le contour de « ' + z.id + ' » se recoupe vers ('
+           + croisement.x.toFixed(0) + ', ' + croisement.y.toFixed(0)
+           + ') — virage trop serre, a decrire par des sommets plus espaces');
       }
     });
     if (!/\bko\b/.test(vide.classe)) ko(etiquette + ' : une lecture entierement vide est comptee comme reussie');
