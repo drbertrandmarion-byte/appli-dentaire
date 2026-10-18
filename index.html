@@ -5477,13 +5477,16 @@
   ];
 
   function buildRadioSVG(cfg){
-    var DENTINE = '#bdb7a6', EMAIL = '#dcd6c6', CANAL = '#2e2d29', OPAQUE = '#f1eee4',
-        LAMINA = '#d8d3c3', LIGAMENT = '#2b2a26';
+    // Valeurs de gris d'un cliché : l'os reste sombre, l'émail est la structure la plus
+    // radio-opaque après un soin métallique, et le canal se lit en négatif. Sans cet écart
+    // de densité, le dessin se lit comme un schéma et non comme une radiographie.
+    var DENTINE = '#cbc5b2', EMAIL = '#ece6d4', CANAL = '#26251f', OPAQUE = '#fbf9f2',
+        LAMINA = '#ddd8c8', LIGAMENT = '#24231d';
     var p = [];
     p.push('<svg viewBox="0 0 ' + RADIO_W + ' ' + RADIO_H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cliché rétro-alvéolaire schématique">');
     p.push('<defs>');
     p.push('<linearGradient id="radio-bone-g" x1="0" y1="0" x2="0" y2="1">' +
-             '<stop offset="0" stop-color="#726f64"/><stop offset="1" stop-color="#58564e"/></linearGradient>');
+             '<stop offset="0" stop-color="#55534a"/><stop offset="1" stop-color="#3d3c35"/></linearGradient>');
     p.push('<radialGradient id="radio-lesion-g" cx="50%" cy="50%" r="50%">' +
              '<stop offset="55%" stop-color="#191a18"/><stop offset="100%" stop-color="#191a18" stop-opacity="0"/></radialGradient>');
     p.push('</defs>');
@@ -5495,11 +5498,11 @@
     [[40,62,16,9],[300,96,20,10],[122,212,18,10],[58,158,14,8],[332,196,15,9],[272,142,19,10],
      [200,244,24,9],[90,104,12,7],[150,250,20,8],[320,240,18,9],[40,232,15,8],[300,152,17,9],
      [318,188,16,9],[288,206,15,8],[62,196,13,8],[132,160,12,7]].forEach(function(g){
-      p.push('<ellipse cx="' + g[0] + '" cy="' + g[1] + '" rx="' + g[2] + '" ry="' + g[3] + '" fill="#827f72" opacity="0.26"/>');
+      p.push('<ellipse cx="' + g[0] + '" cy="' + g[1] + '" rx="' + g[2] + '" ry="' + g[3] + '" fill="#8d8a7c" opacity="0.2"/>');
     });
     // Crêtes osseuses interdentaires, plus denses donc plus claires.
-    p.push('<path d="M138,120 L152,118" stroke="#cfcabb" stroke-width="2.5" fill="none"/>');
-    p.push('<path d="M258,118 L272,122" stroke="#cfcabb" stroke-width="2.5" fill="none"/>');
+    p.push('<path d="M138,120 L152,118" stroke="#bdb8a8" stroke-width="2.2" fill="none"/>');
+    p.push('<path d="M258,118 L272,122" stroke="#bdb8a8" stroke-width="2.2" fill="none"/>');
 
     // 35 voisine, à gauche du cliché
     p.push('<path d="M70,110 L130,110 L114,168 Q106,196 100,198 Q94,196 86,168 Z" fill="' + DENTINE + '"/>');
@@ -5523,10 +5526,9 @@
     if(cfg.resto === 'sealed' || cfg.resto === 'leaking'){
       p.push('<path d="M178,36 L230,36 L230,60 Q204,72 178,60 Z" fill="' + OPAQUE + '"/>');
       if(cfg.resto === 'leaking'){
-        // La perte d'étanchéité se lit comme un liseré noir sous le soin et à ses bords.
-        p.push('<path d="M178,60 Q204,72 230,60" stroke="#26251f" stroke-width="3.2" fill="none"/>');
-        p.push('<path d="M177,37 L182,37 L181,58 L177,56 Z" fill="#26251f"/>');
-        p.push('<path d="M231,37 L226,37 L227,58 L231,56 Z" fill="#26251f"/>');
+        // La perte d'étanchéité se lit comme un liseré radioclaire continu à l'interface
+        // entre le soin et la dent : le long des parois comme sous le fond de la cavité.
+        p.push('<path d="M178,38 L178,60 Q204,72 230,60 L230,38" stroke="#201f1a" stroke-width="2.6" fill="none"/>');
       }
     }
     if(cfg.obturation){
@@ -5539,18 +5541,18 @@
     if(cfg.periapical === 'widened'){
       p.push('<path d="M157,168 Q158,200 167,218 Q176,200 181,168" stroke="#24231f" stroke-width="6.5" fill="none"/>');
       p.push('<path d="M230,166 Q231,196 239,214 Q247,196 249,166" stroke="#24231f" stroke-width="6.5" fill="none"/>');
-      p.push('<path d="M152,167 Q153,203 167,224 Q181,203 186,167" stroke="' + LAMINA + '" stroke-width="2" fill="none"/>');
-      p.push('<path d="M225,165 Q226,199 239,220 Q252,199 254,165" stroke="' + LAMINA + '" stroke-width="2" fill="none"/>');
+      p.push('<path d="M152,167 Q153,203 167,224 Q181,203 186,167" stroke="' + LAMINA + '" stroke-width="1.5" fill="none"/>');
+      p.push('<path d="M225,165 Q226,199 239,220 Q252,199 254,165" stroke="' + LAMINA + '" stroke-width="1.5" fill="none"/>');
     } else if(cfg.periapical === 'lesion'){
       p.push('<ellipse cx="167" cy="234" rx="27" ry="23" fill="url(#radio-lesion-g)"/>');
       // La lamina dura disparaît là où la lésion a résorbé l'os, et reste visible sur l'autre racine.
-      p.push('<path d="M231,168 Q232,194 239,211 Q246,194 248,168" stroke="' + LIGAMENT + '" stroke-width="2.2" fill="none"/>');
-      p.push('<path d="M227,167 Q228,197 239,216 Q250,197 252,167" stroke="' + LAMINA + '" stroke-width="2" fill="none"/>');
+      p.push('<path d="M231,168 Q232,194 239,211 Q246,194 248,168" stroke="' + LIGAMENT + '" stroke-width="1.8" fill="none"/>');
+      p.push('<path d="M227,167 Q228,197 239,216 Q250,197 252,167" stroke="' + LAMINA + '" stroke-width="1.5" fill="none"/>');
     } else {
-      p.push('<path d="M158,170 Q159,198 167,215 Q175,198 180,170" stroke="' + LIGAMENT + '" stroke-width="2.2" fill="none"/>');
-      p.push('<path d="M154,169 Q155,201 167,220 Q179,201 184,169" stroke="' + LAMINA + '" stroke-width="2" fill="none"/>');
-      p.push('<path d="M231,168 Q232,194 239,211 Q246,194 248,168" stroke="' + LIGAMENT + '" stroke-width="2.2" fill="none"/>');
-      p.push('<path d="M227,167 Q228,197 239,216 Q250,197 252,167" stroke="' + LAMINA + '" stroke-width="2" fill="none"/>');
+      p.push('<path d="M158,170 Q159,198 167,215 Q175,198 180,170" stroke="' + LIGAMENT + '" stroke-width="1.8" fill="none"/>');
+      p.push('<path d="M154,169 Q155,201 167,220 Q179,201 184,169" stroke="' + LAMINA + '" stroke-width="1.5" fill="none"/>');
+      p.push('<path d="M231,168 Q232,194 239,211 Q246,194 248,168" stroke="' + LIGAMENT + '" stroke-width="1.8" fill="none"/>');
+      p.push('<path d="M227,167 Q228,197 239,216 Q250,197 252,167" stroke="' + LAMINA + '" stroke-width="1.5" fill="none"/>');
     }
 
     p.push('</svg>');
