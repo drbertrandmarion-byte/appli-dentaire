@@ -386,17 +386,20 @@ async function valideEtLis(page){
 
     // Chaque zone fournit trois sondes : un point franchement dedans, un point juste au
     // contact du bord, et un point nettement dehors.
+    // Un repere peut figurer a plusieurs endroits : il attend alors UN POINT PAR ZONE, et une
+    // zone laissee sans point ne compte pas pour acquise. Les sondes interieures sont donc
+    // une par contour, les sondes exterieures une seule par repere.
     const sondes = zones.map(z => ({
       z,
-      dedans: pointInterieur(z.poly),
-      contact: pointExterieur(z.poly, 4, 360 * z.H / z.W, z.contours),
+      dedans: z.contours.map(c => pointInterieur(c)),
+      contact: z.contours.map(c => pointExterieur(c, 4, 360 * z.H / z.W, z.contours)),
       dehors: pointExterieur(z.poly, 34, 360 * z.H / z.W, z.contours)
     }));
     sondes.forEach(s => {
-      if (!s.dedans) ko(etiquette + ' : aucun point interieur trouve pour « ' + s.z.id + ' »');
-      if (!s.contact || !s.dehors) ko(etiquette + ' : aucune sonde exterieure pour « ' + s.z.id + ' »');
+      if (s.dedans.some(p => !p)) ko(etiquette + ' : aucun point interieur trouve pour « ' + s.z.id + ' »');
+      if (s.contact.some(p => !p) || !s.dehors) ko(etiquette + ' : aucune sonde exterieure pour « ' + s.z.id + ' »');
     });
-    if (sondes.some(s => !s.dedans || !s.contact || !s.dehors)) continue;
+    if (sondes.some(s => s.dedans.some(p => !p) || s.contact.some(p => !p) || !s.dehors)) continue;
 
     // Passe B : tous les reperes attendus, franchement a l'interieur de leur contour.
     {
@@ -407,12 +410,12 @@ async function valideEtLis(page){
         ko(etiquette + ' : la graine ne rejoue pas le meme cliche (passe B)');
         await p.close(); continue;
       }
+      let attendus = 0;
       for (const s of sondes) {
-        const f = fraction(s.z, s.dedans.x, s.dedans.y);
-        await depose(p, s.z.id, f.fx, f.fy);
+        for (const d of s.dedans) { await depose(p, s.z.id, ...Object.values(fraction(s.z, d.x, d.y))); attendus++; }
       }
       const r = await valideEtLis(p);
-      if (r.poses !== zones.length) ko(etiquette + ' : ' + r.poses + ' point(s) poses sur le cliche au lieu de ' + zones.length);
+      if (r.poses !== attendus) ko(etiquette + ' : ' + r.poses + ' point(s) poses sur le cliche au lieu de ' + attendus);
       if (!/\bok\b/.test(r.classe)) ko(etiquette + ' : lecture parfaite refusee — « ' + r.score + ' »');
       if (r.score !== zones.length + ' / ' + zones.length + ' repères présents correctement identifiés.') {
         ko(etiquette + ' : score d\'une lecture parfaite = « ' + r.score + ' »');
@@ -427,8 +430,7 @@ async function valideEtLis(page){
       await boot(p, seed);
       await ouvreCliche(p);
       for (const s of sondes) {
-        const f = fraction(s.z, s.contact.x, s.contact.y);
-        await depose(p, s.z.id, f.fx, f.fy);
+        for (const c of s.contact) { await depose(p, s.z.id, ...Object.values(fraction(s.z, c.x, c.y))); }
       }
       const r = await valideEtLis(p);
       if (!/\bok\b/.test(r.classe)) {
@@ -467,8 +469,7 @@ async function valideEtLis(page){
       const fLoin = fraction(malSitue.z, malSitue.dehors.x, malSitue.dehors.y);
       await depose(p, malSitue.z.id, fLoin.fx, fLoin.fy);
       for (const s of sondes.slice(1, sondes.length - 1)) {
-        const f = fraction(s.z, s.dedans.x, s.dedans.y);
-        await depose(p, s.z.id, f.fx, f.fy);
+        for (const d of s.dedans) { await depose(p, s.z.id, ...Object.values(fraction(s.z, d.x, d.y))); }
       }
       await depose(p, leurres[0], 0.5, 0.5);
       const r = await valideEtLis(p);

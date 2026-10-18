@@ -5648,7 +5648,11 @@
         amalgame_infiltre: {poly:[[14,14],[58,10],[96,22],[100,44],[86,60],[46,62],[16,48]]},
         bridge_cantilever: {poly:[[100,30],[180,24],[260,30],[310,44],[314,78],[290,100],
                                   [220,104],[150,100],[104,84],[96,54]]},
-        inlay_core_simple: {poly:[[186,82],[204,80],[206,120],[198,148],[188,146],[184,118]]},
+        // Deux inlay-cores sur ce cliché : deux zones, donc deux points attendus. Ébauches.
+        inlay_core_simple: {polys:[
+          [[186,82],[204,80],[206,120],[198,148],[188,146],[184,118]],
+          [[252,76],[270,74],[274,112],[268,142],[256,142],[250,110]]
+        ]},
         debris: {poly:[[100,164],[118,159],[129,172],[127,192],[112,199],[100,188]]},
         // Apex de la prémolaire de gauche, devant le cantilever : lacune volumineuse.
         lesion: {poly:[[166,206],[188,202],[202,214],[204,234],[192,248],[172,248],[162,230]]},
@@ -5663,7 +5667,17 @@
 
   // ---------- état du mode radio ----------
   var radioCase = null;
-  var radioPlacements = {};   // id de repère -> {x, y} en unités du viewBox
+  // id de repère -> LISTE de points {x, y}, en unités du viewBox. Un repère peut figurer à
+  // plusieurs endroits d'un cliché — deux inlay-cores, par exemple —, et l'étudiant doit alors
+  // en poser autant. Le nombre attendu n'est jamais annoncé : c'est au cliché de le dire, et
+  // le compter fait partie de la lecture.
+  var radioPlacements = {};
+  var RADIO_POINTS_MAX = 4;
+
+  function radioPoints(id){
+    if(!radioPlacements[id]) radioPlacements[id] = [];
+    return radioPlacements[id];
+  }
   var radioSelected = null;   // repère choisi au toucher, en attente d'un point sur le cliché
   var radioChecked = false;
   var lastRadioCaseId = null;
@@ -5849,7 +5863,7 @@
         if(aDesPoints) cls += ' placed';
         if(radioTraceCible === rep.id) cls += ' sel';
       } else {
-        if(radioPlacements[rep.id]) cls += ' placed';
+        if(radioPoints(rep.id).length) cls += ' placed';
         if(radioSelected === rep.id) cls += ' sel';
       }
       return '<button type="button" class="' + cls + '" data-rid="' + rep.id + '"' +
@@ -5926,12 +5940,16 @@
               '" preserveAspectRatio="none">' + dessins + '</svg>';
     }
     Object.keys(radioPlacements).forEach(function(id){
-      var rep = RADIO_REPERE_BY_ID[id], pl = radioPlacements[id];
-      var cls = 'radio-pt';
-      if(radioChecked) cls += (radioIsTarget(id) && radioWellPlaced(id, pl)) ? ' ok' : ' ko';
-      html += '<span class="' + cls + '" data-rid="' + id + '" title="' + rep.label + '"' +
-              ' style="left:' + radioPct(pl.x, RADIO_W) + ';top:' + radioPct(pl.y, hUnites) +
-              ';background:' + rep.color + '"></span>';
+      var rep = RADIO_REPERE_BY_ID[id];
+      if(!rep) return;
+      radioPlacements[id].forEach(function(pl, idx){
+        var cls = 'radio-pt';
+        if(radioChecked) cls += (radioIsTarget(id) && radioWellPlaced(id, pl)) ? ' ok' : ' ko';
+        html += '<span class="' + cls + '" data-rid="' + id + '" data-idx="' + idx +
+                '" title="' + rep.label + '"' +
+                ' style="left:' + radioPct(pl.x, RADIO_W) + ';top:' + radioPct(pl.y, hUnites) +
+                ';background:' + rep.color + '"></span>';
+      });
     });
     radioOverlay.innerHTML = html;
   }
@@ -5957,8 +5975,8 @@
   // la légende il sélectionne le repère, sur un point déjà posé il le retire.
   var radioDrag = null;
 
-  function radioStartDrag(id, ev, fromFilm){
-    radioDrag = {id:id, fromFilm:fromFilm, moved:false, x0:ev.clientX, y0:ev.clientY};
+  function radioStartDrag(id, ev, fromFilm, idx){
+    radioDrag = {id:id, fromFilm:fromFilm, idx:idx || 0, moved:false, x0:ev.clientX, y0:ev.clientY};
     var ghost = document.createElement('span');
     ghost.className = 'radio-ghost';
     ghost.style.background = RADIO_REPERE_BY_ID[id].color;
@@ -5993,17 +6011,19 @@
     document.removeEventListener('pointercancel', radioOnUp);
     if(drag.ghost.parentNode) drag.ghost.parentNode.removeChild(drag.ghost);
 
+    var points = radioPoints(drag.id);
     if(drag.moved){
       var pos = radioToViewBox(ev.clientX, ev.clientY);
       if(pos.inside){
-        radioPlacements[drag.id] = {x:pos.x, y:pos.y};
+        if(drag.fromFilm) points[drag.idx] = {x:pos.x, y:pos.y};
+        else if(points.length < RADIO_POINTS_MAX) points.push({x:pos.x, y:pos.y});
         radioSelected = null;
       } else if(drag.fromFilm){
         // Point sorti du cliché : l'étudiant le repose dans la légende.
-        delete radioPlacements[drag.id];
+        points.splice(drag.idx, 1);
       }
     } else if(drag.fromFilm){
-      delete radioPlacements[drag.id];
+      points.splice(drag.idx, 1);
       radioSelected = null;
     } else {
       radioSelected = (radioSelected === drag.id) ? null : drag.id;
@@ -6029,7 +6049,7 @@
     if(!pt) return;
     ev.preventDefault();
     ev.stopPropagation();
-    radioStartDrag(pt.getAttribute('data-rid'), ev, true);
+    radioStartDrag(pt.getAttribute('data-rid'), ev, true, parseInt(pt.getAttribute('data-idx'), 10) || 0);
   });
 
   // Repli tactile : un repère sélectionné dans la légende se pose d'un simple toucher
@@ -6041,7 +6061,8 @@
     if(radioChecked || !radioSelected) return;
     if(ev.target.closest && ev.target.closest('.radio-pt')) return;
     var pos = radioToViewBox(ev.clientX, ev.clientY);
-    radioPlacements[radioSelected] = {x:pos.x, y:pos.y};
+    var pts = radioPoints(radioSelected);
+    if(pts.length < RADIO_POINTS_MAX) pts.push({x:pos.x, y:pos.y});
     radioSelected = null;
     renderRadioLegend();
     renderRadioOverlay();
@@ -6314,21 +6335,53 @@
   function submitRadio(){
     radioChecked = true;
     var lignes = [], bons = 0, leurres = 0, oublis = 0, decales = 0;
+    // Un repère figurant à plusieurs endroits attend autant de points qu'il a de zones, et
+    // une zone laissée sans point ne compte pas pour acquise : c'est le dénombrement, autant
+    // que la reconnaissance, qui s'apprend ici. Le nombre attendu n'est jamais annoncé — le
+    // cliché seul le dit.
     radioLegende().forEach(function(id){
       var rep = RADIO_REPERE_BY_ID[id];
-      var pl = radioPlacements[rep.id], cible = radioIsTarget(rep.id);
-      if(cible && pl && radioWellPlaced(rep.id, pl)){
-        bons++;
-        lignes.push({rep:rep, ok:true, msg:'bien placé'});
-      } else if(cible && pl){
-        decales++;
-        lignes.push({rep:rep, ok:false, msg:'ce repère est bien visible ici, mais votre point est posé à côté de la zone attendue (en pointillés)'});
-      } else if(cible){
+      var pts = radioPoints(rep.id), cible = radioIsTarget(rep.id);
+      var contours = cible ? (radioZone(rep.id) || []) : [];
+
+      if(!cible){
+        if(pts.length){
+          leurres++;
+          lignes.push({rep:rep, ok:false, msg:'ce signe n\'est pas présent sur ce cliché : il fallait laisser ce point dans la légende'});
+        }
+        return;
+      }
+      if(!pts.length){
         oublis++;
         lignes.push({rep:rep, ok:false, msg:'oublié : ce repère est visible sur ce cliché'});
-      } else if(pl){
-        leurres++;
-        lignes.push({rep:rep, ok:false, msg:'ce signe n\'est pas présent sur ce cliché : il fallait laisser ce point dans la légende'});
+        return;
+      }
+
+      var horsZone = pts.filter(function(p){ return !radioWellPlaced(rep.id, p); }).length;
+      var couvertes = contours.filter(function(poly){
+        return pts.some(function(p){
+          return radioDansPolygone(poly, p) || radioDistanceAuBord(poly, p) <= RADIO_CONTACT;
+        });
+      }).length;
+
+      if(!horsZone && couvertes === contours.length && pts.length === contours.length){
+        bons++;
+        lignes.push({rep:rep, ok:true, msg:contours.length > 1
+          ? 'les ' + contours.length + ' zones sont bien repérées'
+          : 'bien placé'});
+      } else if(horsZone){
+        decales++;
+        lignes.push({rep:rep, ok:false, msg:horsZone > 1
+          ? horsZone + ' de vos points sont posés à côté des zones attendues (en pointillés)'
+          : 'ce repère est bien visible ici, mais votre point est posé à côté de la zone attendue (en pointillés)'});
+      } else if(couvertes < contours.length){
+        oublis++;
+        lignes.push({rep:rep, ok:false, msg:'ce repère figure à ' + contours.length +
+          ' endroits sur ce cliché, et vous n\'en avez repéré que ' + couvertes});
+      } else {
+        decales++;
+        lignes.push({rep:rep, ok:false, msg:'vous avez posé ' + pts.length + ' points là où ce repère ne figure qu\'à ' +
+          contours.length + (contours.length > 1 ? ' endroits' : ' seul endroit')});
       }
     });
 
