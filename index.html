@@ -1665,6 +1665,9 @@
       </div>
       <div class="radio-trace-actions">
         <button class="btn-secondary" id="radio-trace-undo" type="button">← Annuler le dernier point</button>
+        <!-- Un repère peut figurer à deux endroits : sans ce bouton, les clics suivants
+             allongeraient le premier contour au lieu d'en ouvrir un second. -->
+        <button class="btn-secondary" id="radio-trace-nouveau" type="button">+ Seconde zone pour ce repère</button>
         <button class="btn-secondary" id="radio-trace-clear" type="button">Effacer ce repère</button>
         <button class="btn-secondary" id="radio-trace-reset" type="button">Revenir aux contours d'origine</button>
         <button class="btn-primary" id="radio-trace-done" type="button">Terminer</button>
@@ -5736,20 +5739,41 @@
     try{ localStorage.setItem(RADIO_TRACES_KEY, JSON.stringify(radioTraces)); }catch(e){}
   }
 
+  // Un repère peut figurer à PLUSIEURS endroits d'un même cliché — deux inlay-cores, deux
+  // apex touchés —, et ce n'est pas une exception : c'est la règle dès qu'on lit une
+  // radiographie entière. Une zone est donc une LISTE de contours, et désigner l'un d'eux
+  // suffit : l'étudiant reconnaît l'élément, pas une de ses occurrences.
+  //
+  // L'ancien format à contour unique reste accepté, dans les tracés déjà enregistrés sur
+  // l'appareil de l'enseignante comme dans les zones déclarées : il est converti à la lecture.
+  function radioNormaliseContours(valeur){
+    if(!valeur) return null;
+    // Une liste de points — [[x,y],[x,y]...] — est un contour unique ; une liste de listes de
+    // points en est plusieurs. On reconnaît le contour unique au fait que son premier point
+    // commence par un NOMBRE. Tester seulement « est-ce un tableau » ne suffit pas : un
+    // contour encore vide — [[]] — satisfait aussi ce test, et se retrouvait alors encapsulé
+    // une fois de trop, ce qui glissait un point fantôme en tête du tracé.
+    var estContourUnique = Array.isArray(valeur[0]) && typeof valeur[0][0] === 'number';
+    var contours = estContourUnique ? [valeur] : valeur;
+    contours = contours.filter(function(c){ return c && c.length >= 3; });
+    return contours.length ? contours : null;
+  }
+
   function radioSommets(id){
     if(!radioCase) return null;
-    var trace = (radioTraces[radioCase.id] || {})[id];
-    if(trace && trace.length >= 3) return trace;
+    var trace = radioNormaliseContours((radioTraces[radioCase.id] || {})[id]);
+    if(trace) return trace;
     var zone = (radioCase.zones || {})[id];
-    return (zone && zone.poly) || null;
+    if(!zone) return null;
+    return radioNormaliseContours(zone.polys || zone.poly);
   }
 
   function radioZone(id){
     if(!radioCase) return null;
     if(!radioZonesLissees) radioZonesLissees = {};
     if(!(id in radioZonesLissees)){
-      var sommets = radioSommets(id);
-      radioZonesLissees[id] = sommets ? radioLisse(sommets) : null;
+      var contours = radioSommets(id);
+      radioZonesLissees[id] = contours ? contours.map(radioLisse) : null;
     }
     return radioZonesLissees[id];
   }
@@ -5788,10 +5812,14 @@
     return best;
   }
 
+  // Désigner l'UN des contours suffit : l'étudiant reconnaît l'élément, pas une de ses
+  // occurrences. Exiger les deux reviendrait à noter le dénombrement et non la lecture.
   function radioWellPlaced(id, p){
-    var poly = radioZone(id);
-    if(!poly) return false;
-    return radioDansPolygone(poly, p) || radioDistanceAuBord(poly, p) <= RADIO_CONTACT;
+    var contours = radioZone(id);
+    if(!contours) return false;
+    return contours.some(function(poly){
+      return radioDansPolygone(poly, p) || radioDistanceAuBord(poly, p) <= RADIO_CONTACT;
+    });
   }
 
   function radioPct(v, span){ return (v / span * 100).toFixed(2) + '%'; }
@@ -5816,7 +5844,9 @@
       // Pendant le tracé, la légende sert à choisir le repère dessiné : l'estompage signale
       // alors les contours déjà tracés, et non les points déjà posés.
       if(radioTracing){
-        if(cas[rep.id] && cas[rep.id].length) cls += ' placed';
+        var tr = cas[rep.id];
+        var aDesPoints = !!tr && JSON.stringify(tr).indexOf('[[') !== -1;
+        if(aDesPoints) cls += ' placed';
         if(radioTraceCible === rep.id) cls += ' sel';
       } else {
         if(radioPlacements[rep.id]) cls += ' placed';
@@ -5835,8 +5865,9 @@
     var hUnites = radioHauteurUnites();
     if(radioChecked && radioCase){
       var formes = radioCase.cibles.map(function(id){
-        var rep = RADIO_REPERE_BY_ID[id], poly = radioZone(id);
-        if(!poly) return '';
+        var rep = RADIO_REPERE_BY_ID[id], contours = radioZone(id);
+        if(!contours) return '';
+        return contours.map(function(poly){
         var pts = poly.map(function(pt){ return pt[0] + ',' + pt[1]; }).join(' ');
         // Le remplissage très clair rend la zone lisible d'un coup d'œil sans masquer l'image
         // qu'elle désigne ; le liseré sombre détache le trait de couleur des gris du cliché.
@@ -5848,6 +5879,7 @@
                ' stroke="#00000066" stroke-width="3.4" stroke-linejoin="round"/>' +
                '<polygon points="' + pts + '" fill="none" stroke="' + rep.color +
                '" stroke-width="1.8" stroke-linejoin="round"/>';
+        }).join('');
       }).join('');
       html += '<svg class="radio-zones" viewBox="0 0 ' + RADIO_W + ' ' + hUnites.toFixed(1) +
               '" preserveAspectRatio="none">' + formes + '</svg>';
@@ -5856,26 +5888,31 @@
       // sommets saisis sous forme de poignées — sans quoi l'enseignante dessine à l'aveugle.
       var ids = radioLegende().filter(function(id){ return !!radioSommets(id); });
       var dessins = ids.map(function(id){
-        var rep = RADIO_REPERE_BY_ID[id], poly = radioZone(id), brut = radioSommets(id);
-        if(!poly) return '';
+        var rep = RADIO_REPERE_BY_ID[id], contours = radioZone(id), bruts = radioSommets(id);
+        if(!contours) return '';
         var courant = (id === radioTraceCible);
-        var pts = poly.map(function(pt){ return pt[0] + ',' + pt[1]; }).join(' ');
-        var forme = '<polygon points="' + pts + '" fill="' + rep.color +
-                    '" fill-opacity="' + (courant ? '0.22' : '0.08') + '"' +
-                    ' stroke="' + rep.color + '" stroke-width="' + (courant ? '2.4' : '1.2') +
-                    '" stroke-opacity="' + (courant ? '1' : '0.55') +
-                    '" stroke-linejoin="round"/>';
-        if(courant){
-          forme += brut.map(function(pt){
-            return '<circle cx="' + pt[0] + '" cy="' + pt[1] + '" r="2.6" fill="#fff" stroke="' +
-                   rep.color + '" stroke-width="1.4"/>';
-          }).join('');
-        }
-        return forme;
+        return contours.map(function(poly, k){
+          var pts = poly.map(function(pt){ return pt[0] + ',' + pt[1]; }).join(' ');
+          var forme = '<polygon points="' + pts + '" fill="' + rep.color +
+                      '" fill-opacity="' + (courant ? '0.22' : '0.08') + '"' +
+                      ' stroke="' + rep.color + '" stroke-width="' + (courant ? '2.4' : '1.2') +
+                      '" stroke-opacity="' + (courant ? '1' : '0.55') +
+                      '" stroke-linejoin="round"/>';
+          if(courant && bruts[k]){
+            forme += bruts[k].map(function(pt){
+              return '<circle cx="' + pt[0] + '" cy="' + pt[1] + '" r="2.6" fill="#fff" stroke="' +
+                     rep.color + '" stroke-width="1.4"/>';
+            }).join('');
+          }
+          return forme;
+        }).join('');
       }).join('');
       // Moins de trois sommets : pas encore de contour, on montre la ligne brisée en cours.
-      var cas = radioTracesDuCas();
-      var enCours = radioTraceCible ? cas[radioTraceCible] : null;
+      var enCours = null;
+      if(radioTraceCible){
+        var tousContours = radioContoursTraces(radioTraceCible);
+        enCours = tousContours[tousContours.length - 1];
+      }
       if(enCours && enCours.length && enCours.length < 3){
         var col = RADIO_REPERE_BY_ID[radioTraceCible].color;
         dessins += '<polyline points="' + enCours.map(function(pt){ return pt[0] + ',' + pt[1]; }).join(' ') +
@@ -6111,10 +6148,27 @@
     }
     var pos = radioToViewBox(ev.clientX, ev.clientY);
     if(!pos.inside) return;
-    var cas = radioTracesDuCas();
-    if(!cas[radioTraceCible]) cas[radioTraceCible] = [];
-    cas[radioTraceCible].push([Math.round(pos.x), Math.round(pos.y)]);
+    radioContourCourant().push([Math.round(pos.x), Math.round(pos.y)]);
     radioApresTrace();
+  }
+
+  // Les traces d'un repere sont TOUJOURS une liste de contours, meme quand il n'y en a qu'un :
+  // un seul format en memoire evite d'avoir a se demander, a chaque usage, lequel on tient.
+  // Les traces enregistrees avant cette evolution sont converties a la premiere lecture.
+  function radioContoursTraces(id){
+    var cas = radioTracesDuCas();
+    var v = cas[id];
+    if(!v) { cas[id] = [[]]; return cas[id]; }
+    // Ancien format — une simple liste de points — reconnu au nombre en tête, et non au seul
+    // fait que le premier élément soit un tableau : un contour vide le satisfait aussi.
+    if(v.length && Array.isArray(v[0]) && typeof v[0][0] === 'number') cas[id] = [v];
+    return cas[id];
+  }
+
+  function radioContourCourant(){
+    var contours = radioContoursTraces(radioTraceCible);
+    if(!contours.length) contours.push([]);
+    return contours[contours.length - 1];
   }
 
   function msgTrace(texte){
@@ -6134,13 +6188,18 @@
   // telles quelles, et il n'y a plus rien à interpréter.
   function radioEcritCode(){
     var cas = radioTracesDuCas();
-    var ids = Object.keys(cas).filter(function(k){ return cas[k] && cas[k].length >= 3; });
+    var ids = Object.keys(cas).filter(function(k){ return !!radioNormaliseContours(cas[k]); });
     var txt = ids.length
       ? ids.map(function(id){
-          var pts = cas[id].map(function(p){ return '[' + p[0] + ',' + p[1] + ']'; }).join(',');
-          return '        ' + id + ': {poly:[' + pts + ']},';
+          var contours = radioNormaliseContours(cas[id]);
+          var corps = contours.map(function(c){
+            return '[' + c.map(function(p){ return '[' + p[0] + ',' + p[1] + ']'; }).join(',') + ']';
+          }).join(',');
+          // « polys » même pour un contour unique : un format constant evite qu'une zone
+          // gagne un second contour et change de forme de declaration au passage.
+          return '        ' + id + ': {polys:[' + corps + ']},';
         }).join('\n')
-      : 'Aucun contour tracé pour l\'instant (trois points au minimum par repère).';
+      : 'Aucun contour tracé pour l\'instant (trois points au minimum par zone).';
     document.getElementById('radio-trace-code').value = txt;
   }
 
@@ -6178,11 +6237,25 @@
   document.getElementById('radio-trace-done').addEventListener('click', radioFermeTrace);
 
   document.getElementById('radio-trace-undo').addEventListener('click', function(){
-    var cas = radioTracesDuCas();
-    if(radioTraceCible && cas[radioTraceCible] && cas[radioTraceCible].length){
-      cas[radioTraceCible].pop();
-      radioApresTrace();
+    if(!radioTraceCible) return;
+    var contours = radioContoursTraces(radioTraceCible);
+    var dernier = contours[contours.length - 1];
+    if(dernier && dernier.length) dernier.pop();
+    // Un contour vide ne doit pas subsister : sinon « annuler » semble ne plus rien faire,
+    // alors qu'il vide un contour invisible avant d'atteindre le precedent.
+    while(contours.length > 1 && !contours[contours.length - 1].length) contours.pop();
+    radioApresTrace();
+  });
+
+  document.getElementById('radio-trace-nouveau').addEventListener('click', function(){
+    if(!radioTraceCible){
+      msgTrace('Choisissez d\'abord un repère dans la légende.');
+      return;
     }
+    var contours = radioContoursTraces(radioTraceCible);
+    if(contours[contours.length - 1].length) contours.push([]);
+    msgTrace('Nouvelle zone pour : ' + RADIO_REPERE_BY_ID[radioTraceCible].label);
+    radioApresTrace();
   });
 
   document.getElementById('radio-trace-clear').addEventListener('click', function(){

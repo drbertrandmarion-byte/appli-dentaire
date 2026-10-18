@@ -132,7 +132,7 @@ function distanceAuBord(poly, px, py){
 // plus courte, car la premiere venue peut pointer HORS DU CLICHE : la lesion touche le bord
 // gauche et le bord inferieur, et un point lache dehors n'est pas pose du tout — le test
 // comptait alors un oubli la ou il attendait un repere mal situe.
-function pointExterieur(poly, distance, hU){
+function pointExterieur(poly, distance, hU, tousContours){
   const aretes = [];
   for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
     const ax = poly[j][0], ay = poly[j][1], bx = poly[i][0], by = poly[i][1];
@@ -146,8 +146,9 @@ function pointExterieur(poly, distance, hU){
     for (const sens of [1, -1]) {
       const x = mx + sens * nx * distance, y = my + sens * ny * distance;
       if (x < 8 || x > 352 || y < 8 || y > hU - 8) continue;
-      if (dansPolygone(poly, x, y)) continue;
-      if (dansPolygone(poly, mx + sens * nx * 1.5, my + sens * ny * 1.5)) continue;
+      const contours = tousContours || [poly];
+      if (contours.some(c => dansPolygone(c, x, y))) continue;
+      if (contours.some(c => dansPolygone(c, mx + sens * nx * 1.5, my + sens * ny * 1.5))) continue;
       return { x, y };
     }
   }
@@ -165,12 +166,17 @@ async function zonesAttendues(page){
     const out = [];
     document.querySelectorAll('.radio-zones polygon[data-rid]').forEach(t => {
       const id = t.getAttribute('data-rid');
-      if (out.some(z => z.id === id)) return;
       // On lit l'attribut « points » REELLEMENT rendu, pas une declaration parallele : la
       // reference du test est ainsi la forme que l'etudiant voit a l'ecran.
       const poly = t.getAttribute('points').trim().split(/\s+/)
         .map(p => p.split(',').map(Number));
-      out.push({ id, poly, W: film.width, H: film.height });
+      // Un repere peut avoir PLUSIEURS contours — deux inlay-cores sur un meme cliche. Ils
+      // sont rassembles sous son nom : la sonde interieure vise le premier, mais la sonde
+      // exterieure doit eviter TOUS les contours, sans quoi elle tomberait dans le second et
+      // serait acceptee a juste titre, pendant que le test y verrait une faute.
+      const connu = out.find(z => z.id === id);
+      if (connu) { connu.contours.push(poly); return; }
+      out.push({ id, poly, contours: [poly], W: film.width, H: film.height });
     });
     return out;
   });
@@ -383,8 +389,8 @@ async function valideEtLis(page){
     const sondes = zones.map(z => ({
       z,
       dedans: pointInterieur(z.poly),
-      contact: pointExterieur(z.poly, 4, 360 * z.H / z.W),
-      dehors: pointExterieur(z.poly, 34, 360 * z.H / z.W)
+      contact: pointExterieur(z.poly, 4, 360 * z.H / z.W, z.contours),
+      dehors: pointExterieur(z.poly, 34, 360 * z.H / z.W, z.contours)
     }));
     sondes.forEach(s => {
       if (!s.dedans) ko(etiquette + ' : aucun point interieur trouve pour « ' + s.z.id + ' »');
