@@ -932,12 +932,25 @@
   /* Le cliché et ses points : « touch-action:none » est indispensable, sinon le
      navigateur mobile interprète le glissement d'un point comme un défilement de page
      et le point reste collé au doigt sans jamais se déposer. */
+  /* Le cadre garde la place du cliché dans la page : le cliché, lui, peut être agrandi et
+     déplacé à l'intérieur. « overflow:hidden » est ce qui l'empêche de recouvrir le reste. */
+  .radio-stage{
+    overflow:hidden;
+    max-width:520px;
+    margin:14px auto 6px;
+    border-radius:10px;
+  }
   .radio-film{
     position:relative;
     width:100%;
-    max-width:520px;
-    margin:14px auto 6px;
     touch-action:none;
+  }
+  .radio-zoom-niveau{
+    font-size:0.78rem;
+    font-variant-numeric:tabular-nums;
+    color:var(--muted);
+    min-width:3.2em;
+    text-align:center;
   }
   .radio-film svg,
   .radio-film .radio-img{display:block; width:100%; height:auto; border-radius:10px;}
@@ -1612,9 +1625,13 @@
     <h3>Consigne</h3>
     <div class="def" id="radio-def"></div>
 
-    <div class="radio-film" id="radio-film">
-      <div id="radio-svg"></div>
-      <div class="radio-overlay" id="radio-overlay"></div>
+    <!-- Le cadre fixe le cadrage ; le cliché qu'il contient peut être agrandi et déplacé
+         pendant le tracé, sans que rien ne déborde sur la page. -->
+    <div class="radio-stage" id="radio-stage">
+      <div class="radio-film" id="radio-film">
+        <div id="radio-svg"></div>
+        <div class="radio-overlay" id="radio-overlay"></div>
+      </div>
     </div>
     <p class="radio-caption" id="radio-caption"></p>
     <!-- La consigne, au-dessus du cliché, dit déjà quoi faire. Cette ligne ne garde que ce
@@ -1641,6 +1658,12 @@
       </div>
       <div class="radio-trace-actions">
         <span class="radio-trace-cible" id="radio-trace-cible">Aucun repère sélectionné</span>
+        <button class="btn-secondary" id="radio-zoom-moins" type="button">− Zoom</button>
+        <span class="radio-zoom-niveau" id="radio-zoom-niveau">× 1,0</span>
+        <button class="btn-secondary" id="radio-zoom-plus" type="button">+ Zoom</button>
+        <button class="btn-secondary" id="radio-zoom-reset" type="button">Recadrer</button>
+      </div>
+      <div class="radio-trace-actions">
         <button class="btn-secondary" id="radio-trace-undo" type="button">← Annuler le dernier point</button>
         <button class="btn-secondary" id="radio-trace-clear" type="button">Effacer ce repère</button>
         <button class="btn-secondary" id="radio-trace-reset" type="button">Revenir aux contours d'origine</button>
@@ -5975,7 +5998,9 @@
   // Repli tactile : un repère sélectionné dans la légende se pose d'un simple toucher
   // sur le cliché, sans glissement.
   radioFilm.addEventListener('click', function(ev){
-    if(radioTracing){ radioPoseSommet(ev); return; }
+    // Pendant le tracé, c'est le relâchement du pointeur qui pose le sommet — il faut d'abord
+    // savoir si le geste était un clic ou un déplacement du cliché zoomé.
+    if(radioTracing) return;
     if(radioChecked || !radioSelected) return;
     if(ev.target.closest && ev.target.closest('.radio-pt')) return;
     var pos = radioToViewBox(ev.clientX, ev.clientY);
@@ -5994,6 +6019,81 @@
   // bougé. Ici les sommets sont saisis sur le cliché lui-même : il n'y a plus de traduction.
   var radioTracing = false;
   var radioTraceCible = null;
+
+  // ---- Zoom et déplacement du cliché pendant le tracé ----
+  // Poser une dizaine de sommets sur une image de 520 pixels de large revient à viser à
+  // l'aveugle. Le cliché s'agrandit donc jusqu'à quatre fois, et se déplace au glissement.
+  // Le repère des coordonnées n'en est pas affecté : radioToViewBox part du rectangle
+  // réellement affiché, qui suit la transformation.
+  var radioZoom = 1, radioPanX = 0, radioPanY = 0;
+  var radioStage = document.getElementById('radio-stage');
+
+  function radioAppliqueVue(){
+    radioFilm.style.transformOrigin = '0 0';
+    // Le déplacement est borné pour qu'aucun bord du cliché ne rentre dans le cadre : sans
+    // cela on peut faire glisser l'image jusqu'à ne plus rien voir, et ne plus savoir revenir.
+    var w = radioStage.clientWidth, h = radioStage.clientHeight;
+    var minX = Math.min(0, w - w * radioZoom), minY = Math.min(0, h - h * radioZoom);
+    radioPanX = Math.max(minX, Math.min(0, radioPanX));
+    radioPanY = Math.max(minY, Math.min(0, radioPanY));
+    radioFilm.style.transform = 'translate(' + radioPanX.toFixed(1) + 'px,' +
+                                radioPanY.toFixed(1) + 'px) scale(' + radioZoom + ')';
+    document.getElementById('radio-zoom-niveau').textContent =
+      '× ' + radioZoom.toFixed(1).replace('.', ',');
+  }
+
+  // Le zoom conserve au centre du cadre ce qui s'y trouvait : sans cela, agrandir fait fuir
+  // la zone que l'on vise justement en train de détailler.
+  function radioRegleZoom(z){
+    var w = radioStage.clientWidth, h = radioStage.clientHeight;
+    var cx = (w / 2 - radioPanX) / radioZoom, cy = (h / 2 - radioPanY) / radioZoom;
+    radioZoom = Math.max(1, Math.min(4, Math.round(z * 10) / 10));
+    radioPanX = w / 2 - cx * radioZoom;
+    radioPanY = h / 2 - cy * radioZoom;
+    radioAppliqueVue();
+  }
+
+  function radioRecadre(){
+    radioZoom = 1; radioPanX = 0; radioPanY = 0;
+    radioAppliqueVue();
+  }
+
+  document.getElementById('radio-zoom-plus').addEventListener('click', function(){ radioRegleZoom(radioZoom + 0.5); });
+  document.getElementById('radio-zoom-moins').addEventListener('click', function(){ radioRegleZoom(radioZoom - 0.5); });
+  document.getElementById('radio-zoom-reset').addEventListener('click', radioRecadre);
+
+  // Glisser déplace le cliché, cliquer pose un sommet : c'est la distance parcourue qui
+  // sépare les deux gestes, comme pour les points de la légende.
+  var radioPanDrag = null;
+
+  radioFilm.addEventListener('pointerdown', function(ev){
+    if(!radioTracing) return;
+    ev.preventDefault();
+    radioPanDrag = {x0:ev.clientX, y0:ev.clientY, px:radioPanX, py:radioPanY, bouge:false};
+    document.addEventListener('pointermove', radioPanMove);
+    document.addEventListener('pointerup', radioPanUp);
+    document.addEventListener('pointercancel', radioPanUp);
+  });
+
+  function radioPanMove(ev){
+    if(!radioPanDrag) return;
+    var dx = ev.clientX - radioPanDrag.x0, dy = ev.clientY - radioPanDrag.y0;
+    if(!radioPanDrag.bouge && Math.sqrt(dx * dx + dy * dy) < 6) return;
+    radioPanDrag.bouge = true;
+    radioPanX = radioPanDrag.px + dx;
+    radioPanY = radioPanDrag.py + dy;
+    radioAppliqueVue();
+  }
+
+  function radioPanUp(ev){
+    if(!radioPanDrag) return;
+    var drag = radioPanDrag;
+    radioPanDrag = null;
+    document.removeEventListener('pointermove', radioPanMove);
+    document.removeEventListener('pointerup', radioPanUp);
+    document.removeEventListener('pointercancel', radioPanUp);
+    if(!drag.bouge) radioPoseSommet(ev);
+  }
 
   function radioChoisirCible(id){
     radioTraceCible = id;
@@ -6066,6 +6166,7 @@
   function radioFermeTrace(){
     radioTracing = false;
     radioTraceCible = null;
+    radioRecadre(); // sans quoi l'étudiant hériterait d'un cliché agrandi et décentré
     radioFilm.classList.remove('tracing');
     hideEl(document.getElementById('radio-trace-panel'));
     showEl(document.getElementById('radio-hint'));

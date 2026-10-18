@@ -483,6 +483,72 @@ async function valideEtLis(page){
 
   if (!vus.size) ko('aucun cliche n\'a pu etre ouvert en ' + GRAINES + ' graines');
 
+  // ---- 3bis. L'atelier de trace : le zoom ne doit pas decaler les sommets ----
+  // C'est le risque propre au zoom : un sommet qui se poserait ailleurs qu'ou l'on clique.
+  // On pose donc le MEME point de l'image a deux grossissements differents, et on compare.
+  {
+    const p = await context.newPage();
+    await boot(p, 5);
+    await p.evaluate(() => { window.EndoAccount.isAdmin = true; });
+    await ouvreCliche(p);
+    await p.click('#radio-trace-btn');
+    await p.waitForTimeout(450);
+    const ouvert = await p.evaluate(() => !document.getElementById('radio-trace-panel').classList.contains('hidden'));
+    if (!ouvert) {
+      ko('atelier : il ne s\'ouvre pas pour un compte enseignant');
+    } else {
+      const rid = (await tousLesReperes(p))[0];
+
+      // Le meme point de l'image, vise a travers deux grossissements.
+      const sommets = [];
+      for (const zoom of [1, 3]) {
+        await p.click(`.radio-chip[data-rid="${rid}"]`);
+        await p.waitForTimeout(120);
+        await p.click('#radio-trace-clear');
+        await p.waitForTimeout(120);
+        await p.click('#radio-zoom-reset');
+        await p.waitForTimeout(120);
+        for (let i = 1; i < zoom; i++) { await p.click('#radio-zoom-plus'); await p.click('#radio-zoom-plus'); }
+        await p.waitForTimeout(150);
+        const st = await (await p.$('#radio-stage')).boundingBox();
+        await p.mouse.click(st.x + st.width / 2, st.y + st.height / 2);
+        await p.waitForTimeout(200);
+        sommets.push(await p.evaluate(([id]) => {
+          const t = JSON.parse(localStorage.getItem('endodiag-radio-traces-v1') || '{}');
+          const cas = Object.values(t)[0] || {};
+          return (cas[id] || []).slice(-1)[0] || null;
+        }, [rid]));
+      }
+      if (!sommets[0] || !sommets[1]) {
+        ko('atelier : un clic sur le cliche ne pose pas de sommet');
+      } else {
+        const ecart = Math.hypot(sommets[0][0] - sommets[1][0], sommets[0][1] - sommets[1][1]);
+        if (ecart > 4) {
+          ko('atelier : le meme point vise a x1 et a x3 donne ('
+             + sommets[0] + ') et (' + sommets[1] + ') — le zoom decale les sommets de '
+             + ecart.toFixed(1) + ' unites');
+        }
+      }
+
+      // Un glissement deplace le cliche, il ne pose pas de sommet.
+      await p.click('#radio-trace-clear');
+      await p.waitForTimeout(150);
+      const st = await (await p.$('#radio-stage')).boundingBox();
+      await p.mouse.move(st.x + st.width / 2, st.y + st.height / 2);
+      await p.mouse.down();
+      await p.mouse.move(st.x + st.width / 2 - 70, st.y + st.height / 2 - 50, { steps: 8 });
+      await p.mouse.up();
+      await p.waitForTimeout(200);
+      const apres = await p.evaluate(([id]) => {
+        const t = JSON.parse(localStorage.getItem('endodiag-radio-traces-v1') || '{}');
+        const cas = Object.values(t)[0] || {};
+        return (cas[id] || []).length;
+      }, [rid]);
+      if (apres !== 0) ko('atelier : un glissement pose un sommet au lieu de deplacer le cliche');
+    }
+    await p.close();
+  }
+
   // ---- 4. Les gestes : poser, reprendre, retirer ----
   // Un point qui se deposerait hors du cliche, ou qu'on ne pourrait plus retirer, rendrait
   // l'exercice inutilisable sans rien casser dans le decompte des fautes.
