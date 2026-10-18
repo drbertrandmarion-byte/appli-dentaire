@@ -27,6 +27,7 @@ python3 tests/coherence-textes.py
 node tests/back-office.js
 node tests/confettis.js
 node tests/session-unique.js
+node tests/lecture-radio.js
 ```
 
 Résultats attendus :
@@ -45,7 +46,7 @@ Erreurs : 0
 Les autres suites se terminent par `Erreurs : 0` ou `Problèmes : 0`. `back-office.js`
 affiche en plus des tableaux à relire à l'œil — voir plus bas.
 
-## Les dix suites
+## Les onze suites
 
 | Fichier | Ce qu'il vérifie |
 |---|---|
@@ -59,6 +60,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 | `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion, cas joués et export Excel |
 | `confettis.js` | Que les confettis tombent sur un sans-faute, et **seulement** sur un sans-faute |
 | `session-unique.js` | Qu'un compte ne reste ouvert que sur un appareil, sans jamais bloquer la révision hors ligne |
+| `lecture-radio.js` | Que le troisième mode reste invisible pour les étudiants, et que la marge de tolérance du pointage fonctionne dans les deux sens |
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
 un différentiel affiché sur une erreur et jamais sur une bonne réponse, et surtout un
@@ -204,6 +206,38 @@ par un plantage muet, au lieu du message qui nomme le problème.
 Ses mutations de contrôle : supprimer l'éviction, supprimer la revendication faite à la connexion,
 supprimer le contrôle en fin de cas, déconnecter sur une panne réseau, refuser le repli hors ligne,
 et y laisser entrer un compte non validé. Toutes sont signalées.
+
+`lecture-radio.js` couvre le troisième mode, celui de la lecture radiographique, réservé au compte
+enseignant. Il commence par le vérifier du côté de l'étudiant : le bouton doit être caché **et
+n'occuper aucune place** à l'écran — une classe `hidden` neutralisée par une règle plus spécifique
+laisserait un bouton invisible mais cliquable, défaut déjà rencontré trois fois dans ce projet. Comme
+Supabase est coupé, aucun test en boîte noire ne peut simuler une connexion enseignante : la suite
+contrôle donc **dans la source** que `enterApp` appelle encore `EndoTeacherModes(isAdmin)` et que le
+bouton part caché du HTML. Sans ces deux lignes, le mode disparaîtrait pour l'enseignante sans que
+rien ne le signale.
+
+Le pointage lui-même ne peut pas être vérifié depuis une table de coordonnées recopiée : elle se
+périmerait au premier déplacement d'un repère. Le test **remplace `Math.random` par un générateur
+déterministe**, valide d'abord une lecture vide pour faire révéler par la correction les zones
+attendues — leur position et leur rayon, lus sur les cercles en pointillés, la couleur faisant le
+lien avec le repère —, puis rejoue le même cliché. Il mesure alors la **marge de tolérance dans les
+deux sens** : un point posé juste à l'intérieur du rayon doit passer, le même posé juste au-delà doit
+être refusé. Une seule des deux mesures ne prouverait rien — une tolérance devenue énorme, ou nulle,
+passerait inaperçue.
+
+Il contrôle enfin que les trois fautes sont comptées **séparément** (repère mal situé, repère oublié,
+signe posé à tort), et les gestes sans lesquels l'exercice serait inutilisable : un point lâché hors
+du cliché ne se pose pas, un point déjà posé se déplace sans se dupliquer, un simple toucher le
+retire, et le repli tactile — toucher la légende puis le cliché — pose bien le repère. Il termine par
+`Erreurs : 0`.
+
+Ce que la suite ne peut pas juger : la **justesse clinique** du corrigé de chaque cliché, puisque les
+zones attendues sont lues dans l'application elle-même. C'est à l'enseignante de valider la liste des
+repères de chaque cas — l'encadré affiché en tête du mode l'annonce explicitement.
+
+Ses mutations de contrôle : afficher le bouton aux étudiants, retirer l'appel dans `enterApp`,
+multiplier la tolérance par quatre, l'annuler, et poser les points hors du cliché. Toutes sont
+signalées.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas

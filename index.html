@@ -41,6 +41,9 @@
     --tx-accent:#be185d;
     --tx-accent-dark:#9d174d;
     --tx-accent-100:#fce7f3;
+    --radio-accent:#4338ca;
+    --radio-accent-dark:#312e81;
+    --radio-accent-100:#e8e9fd;
     --ok:#0f9488;
     --ko:#b91c1c;
     --radius:14px;
@@ -877,6 +880,154 @@
   #tx-recap-sheet h1{color:var(--tx-accent-dark);}
   #tx-recap-grid .recap-variant-label{color:var(--tx-accent-dark);}
 
+  /* ---------- Lecture radiographique : accent indigo, troisième mode (enseignant) ---------- */
+  #hub-radio-btn{background:var(--radio-accent-100);}
+  #hub-radio-btn:hover{border-color:var(--radio-accent);}
+  #hub-radio-btn .hub-title{color:var(--radio-accent-dark);}
+  .hub-flag{
+    display:inline-block;
+    margin-top:4px;
+    font-size:0.64rem;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+    color:var(--radio-accent-dark);
+    background:#fff;
+    border:1px solid var(--radio-accent);
+    border-radius:999px;
+    padding:2px 8px;
+  }
+  #mode-radio-intro .btn-primary,
+  #radio-case-card .btn-primary{background:var(--radio-accent);}
+  #mode-radio-intro .btn-primary:hover,
+  #radio-case-card .btn-primary:hover{background:var(--radio-accent-dark);}
+  #mode-radio-intro .btn-secondary,
+  #radio-case-card .btn-secondary{color:var(--radio-accent-dark); border-color:var(--radio-accent);}
+  #mode-radio-intro .btn-secondary:hover,
+  #radio-case-card .btn-secondary:hover{background:var(--radio-accent-100);}
+
+  /* Encadré « en construction » : ce mode n'est montré qu'à l'enseignante, l'encadré
+     rassemble donc les points qui restent à trancher avec elle plutôt que d'être caché
+     dans un commentaire de code que personne ne lira. */
+  .radio-wip{
+    background:var(--radio-accent-100);
+    border:1px solid var(--radio-accent);
+    border-radius:12px;
+    padding:12px 14px;
+    margin:12px 0 16px;
+    font-size:0.84rem;
+    color:var(--ink);
+  }
+  .radio-wip ul{margin:8px 0 0; padding-left:18px;}
+  .radio-wip li{margin-bottom:4px;}
+
+  /* Le cliché et ses points : « touch-action:none » est indispensable, sinon le
+     navigateur mobile interprète le glissement d'un point comme un défilement de page
+     et le point reste collé au doigt sans jamais se déposer. */
+  .radio-film{
+    position:relative;
+    width:100%;
+    max-width:520px;
+    margin:14px auto 6px;
+    touch-action:none;
+  }
+  .radio-film svg{display:block; width:100%; height:auto; border-radius:10px;}
+  .radio-overlay{position:absolute; inset:0;}
+  .radio-pt{
+    position:absolute;
+    width:20px; height:20px;
+    margin:-10px 0 0 -10px;
+    border-radius:50%;
+    border:2px solid #fff;
+    box-shadow:0 1px 4px rgba(0,0,0,0.55);
+    cursor:grab;
+    touch-action:none;
+  }
+  .radio-pt.ok{box-shadow:0 0 0 3px rgba(34,197,94,0.95), 0 1px 4px rgba(0,0,0,0.55);}
+  .radio-pt.ko{box-shadow:0 0 0 3px rgba(220,38,38,0.95), 0 1px 4px rgba(0,0,0,0.55);}
+  .radio-target{
+    position:absolute;
+    border:2px dashed;
+    border-radius:50%;
+    pointer-events:none;
+  }
+  .radio-ghost{
+    position:fixed;
+    z-index:9700;
+    width:20px; height:20px;
+    margin:-10px 0 0 -10px;
+    border-radius:50%;
+    border:2px solid #fff;
+    box-shadow:0 2px 8px rgba(0,0,0,0.5);
+    pointer-events:none;
+  }
+  .radio-caption{
+    margin:0 auto 2px;
+    max-width:520px;
+    font-size:0.8rem;
+    color:var(--muted);
+    text-align:center;
+  }
+  .radio-hint{
+    max-width:520px;
+    margin:10px auto 0;
+    font-size:0.82rem;
+    color:var(--muted);
+    text-align:center;
+  }
+  .radio-legend{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:7px;
+    margin:12px auto 0;
+    max-width:620px;
+  }
+  .radio-chip{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.74rem;
+    font-family:inherit;
+    color:var(--ink);
+    padding:6px 11px;
+    border:1.5px solid var(--border);
+    border-radius:999px;
+    background:#fff;
+    cursor:grab;
+    touch-action:none;
+    user-select:none;
+  }
+  .radio-chip .dot{
+    width:13px; height:13px;
+    border-radius:50%;
+    flex:0 0 auto;
+    border:1.5px solid #fff;
+    box-shadow:0 0 0 1px rgba(0,0,0,0.25);
+  }
+  .radio-chip.placed{opacity:0.42;}
+  .radio-chip.sel{border-color:var(--radio-accent); box-shadow:0 0 0 3px var(--radio-accent-100);}
+  .radio-chip[disabled]{cursor:default;}
+  .radio-verdicts{list-style:none; margin:14px 0 0; padding:0;}
+  .radio-verdicts li{
+    display:flex;
+    align-items:flex-start;
+    gap:8px;
+    font-size:0.84rem;
+    margin-bottom:6px;
+  }
+  .radio-verdicts .dot{
+    width:13px; height:13px;
+    border-radius:50%;
+    flex:0 0 auto;
+    margin-top:3px;
+    border:1.5px solid #fff;
+    box-shadow:0 0 0 1px rgba(0,0,0,0.25);
+  }
+  .radio-verdicts .vlabel{font-weight:600;}
+  .radio-verdicts .v-ok .vmsg{color:var(--ok);}
+  .radio-verdicts .v-ko .vmsg{color:var(--ko);}
+
   /* ---------- Comptes étudiants ---------- */
   /* Menu de compte : symétrique du bouton son, ancré au bord gauche du contenu. */
   /* Position relative — et non plus fixe : le menu déroulant s'ancre dessus, et la barre
@@ -1116,6 +1267,13 @@
           <span class="hub-title">Le choix thérapeutique</span>
           <span class="hub-desc">Le diagnostic est donné : à vous de choisir le traitement d'urgence et le traitement final.</span>
         </button>
+        <!-- Troisième mode : n'est démasqué que pour un compte enseignant (window.EndoTeacherModes). -->
+        <button class="hub-card hidden" id="hub-radio-btn" type="button">
+          <span class="hub-icon">🦷</span>
+          <span class="hub-title">La lecture radiographique</span>
+          <span class="hub-desc">Placez sur le cliché les repères anatomiques et les signes pathologiques, choisis dans une légende commune à tous les cas.</span>
+          <span class="hub-flag">Enseignant · en construction</span>
+        </button>
       </div>
     </div>
 
@@ -1183,6 +1341,39 @@
       <div class="pdf-block">
         <button class="btn-pdf" id="tx-recap-btn" type="button">📄 Téléchargement PDF récapitulatif</button>
         <div class="pdf-hint">Un cas type par situation rencontrée (et non chaque patient), avec le geste d'urgence et le traitement final attendus.</div>
+      </div>
+    </div>
+
+    <div id="mode-radio-intro" class="hidden">
+      <button class="btn-secondary back-hub-btn" type="button" data-back>← Changer de mode d'entraînement</button>
+
+      <div class="radio-wip">
+        <b>Première maquette, visible de vous seule.</b> Le bouton n'existe pas dans le menu des
+        étudiants : il n'apparaît que pour un compte enseignant. Rien n'est enregistré dans les
+        statistiques ni dans le back-office pour l'instant. Quatre points restent à trancher avec vous :
+        <ul>
+          <li><b>Les clichés.</b> Ce sont ici des radiographies <i>dessinées</i> (rétro-alvéolaire d'une
+            molaire mandibulaire), pour mettre au point le geste de l'étudiant. Si vous préférez de
+            vraies radiographies, il suffit de me les envoyer : le reste du mécanisme ne change pas.</li>
+          <li><b>La légende.</b> Douze repères, toujours les mêmes, dont plusieurs sont volontairement
+            absents du cliché tiré. Dites-moi ceux à ajouter, à retirer ou à renommer (le
+            « trait de fracture radiculaire » n'est pour l'instant jamais la bonne réponse : c'est un
+            leurre pur, en attendant un cas de fracture).</li>
+          <li><b>La marge de tolérance.</b> Chaque zone attendue a son propre rayon d'acceptation
+            (un apex est plus étroit qu'une plage d'os trabéculaire) ; la correction trace en pointillés
+            la zone exacte qui était attendue, pour que vous jugiez si la marge est trop large ou trop juste.</li>
+          <li><b>La notation.</b> Le cas est actuellement compté réussi si tous les repères présents sont
+            bien placés <i>et</i> qu'aucun leurre n'a été posé. À voir si un oubli doit peser autant
+            qu'un faux positif.</li>
+        </ul>
+      </div>
+
+      <p>Principe : un cliché est tiré au hasard. Sous le cliché, une légende de points colorés — la
+        même pour tous les cas. L'étudiant fait glisser sur le cliché les points qui correspondent à ce
+        qu'il y voit, et laisse dans la légende ceux qui n'y sont pas.</p>
+
+      <div class="mode-buttons">
+        <button class="btn-primary" id="start-radio-btn">Essayer un cliché</button>
       </div>
     </div>
 
@@ -1357,6 +1548,38 @@
     <div class="result-actions">
       <button class="btn-primary" id="tx-quiz-restart-btn">Recommencer une série</button>
       <button class="btn-secondary" id="tx-quiz-home-btn">Retour à l'accueil</button>
+    </div>
+  </div>
+
+  <!-- Lecture radiographique : le cliché, la légende, puis la correction dans la même carte -->
+  <div class="card result-card hidden" id="radio-case-card">
+    <span class="badge" id="radio-badge">Lecture radiographique</span>
+    <h2 id="radio-title"></h2>
+
+    <h3>Situation</h3>
+    <div class="def" id="radio-def"></div>
+
+    <div class="radio-film" id="radio-film">
+      <div id="radio-svg"></div>
+      <div class="radio-overlay" id="radio-overlay"></div>
+    </div>
+    <p class="radio-caption" id="radio-caption"></p>
+    <p class="radio-hint" id="radio-hint">Faites glisser sur le cliché les points de la légende qui correspondent à ce que vous y voyez. Sur écran tactile, vous pouvez aussi toucher un point de la légende puis l'endroit du cliché. Pour retirer un point posé, touchez-le.</p>
+
+    <div class="radio-legend" id="radio-legend"></div>
+
+    <div class="result-actions" id="radio-submit-row">
+      <button class="btn-primary" id="radio-submit-btn">Valider ma lecture</button>
+    </div>
+
+    <div id="radio-correction" class="hidden">
+      <div class="verdict" id="radio-verdict"></div>
+      <div class="score-recap" id="radio-score"></div>
+      <ul class="radio-verdicts" id="radio-verdicts"></ul>
+      <div class="result-actions">
+        <button class="btn-primary" id="radio-next-btn">Nouveau cliché</button>
+        <button class="btn-secondary" id="radio-home-btn">Retour à l'accueil</button>
+      </div>
     </div>
   </div>
 
@@ -3772,18 +3995,24 @@
   function showHub(){
     flushPendingFades();
     showEl(hubChoice);
-    hideEl(modeDiagnosticIntro);
-    hideEl(modeTxIntro);
+    hideModePanels();
     setBackTarget(null);
   }
 
   function showMode(panel){
     flushPendingFades();
     hideEl(hubChoice);
-    hideEl(modeDiagnosticIntro);
-    hideEl(modeTxIntro);
+    hideModePanels();
     showEl(panel);
     setBackTarget(showHub);
+  }
+
+  // Un seul endroit où la liste des panneaux de mode est écrite : le jour où un quatrième
+  // mode arrive, en oublier un ici laisserait deux panneaux affichés l'un sous l'autre.
+  function hideModePanels(){
+    hideEl(modeDiagnosticIntro);
+    hideEl(modeTxIntro);
+    hideEl(document.getElementById('mode-radio-intro'));
   }
 
   document.getElementById('start-single-btn').addEventListener('click', function(){ revisionWeights = null; startSingleSession(); });
@@ -3909,6 +4138,7 @@
     hideEl(txCaseCard);
     hideEl(txResultCard);
     hideEl(txQuizScoreCard);
+    hideEl(document.getElementById('radio-case-card'));
     showEl(introCard);
     showHub();
     introCard.scrollIntoView({behavior:'smooth', block:'start'});
@@ -5182,6 +5412,427 @@
     window.print();
   }
 
+  // ---------------------------------------------------------------------------
+  // Troisième mode : lecture radiographique (maquette, compte enseignant seulement)
+  // ---------------------------------------------------------------------------
+  // L'étudiant fait glisser sur le cliché des points colorés pris dans une légende
+  // identique d'un cas à l'autre : plusieurs repères de cette légende sont donc
+  // volontairement absents du cliché tiré, et les laisser en place fait partie de la
+  // bonne réponse. Chaque repère attendu porte sa propre marge de tolérance, en unités
+  // du viewBox : un apex se pointe plus précisément qu'une plage d'os trabéculaire.
+  var RADIO_W = 360, RADIO_H = 270;
+
+  var RADIO_REPERES = [
+    {id:'chambre',     label:'Chambre pulpaire',                      color:'#f2b134', pts:[[204,95]],                          r:22},
+    {id:'canal',       label:'Canal radiculaire',                     color:'#14b8a6', pts:[[171,150],[238,148]],               r:20},
+    {id:'obturation',  label:'Obturation canalaire',                  color:'#cbd5e1', pts:[[171,150],[238,148]],               r:20},
+    {id:'apex',        label:'Apex radiculaire',                      color:'#a855f7', pts:[[167,212],[239,208]],               r:13},
+    {id:'os',          label:'Os alvéolaire trabéculaire',            color:'#a16207', pts:[[306,168]],                         r:34},
+    {id:'carie',       label:'Carie coronaire',                       color:'#e8532e', pts:[[244,79]],                          r:20},
+    {id:'restauration',label:'Restauration coronaire étanche',        color:'#22d3ee', pts:[[204,51]],                          r:22},
+    {id:'restauration_infiltree', label:'Restauration avec perte d\'étanchéité', color:'#2563eb', pts:[[204,51]],               r:22},
+    {id:'lesion',      label:'Lésion périapicale radioclaire',        color:'#dc2626', pts:[[167,234]],                         r:22},
+    {id:'elargissement',  label:'Élargissement du ligament apical',   color:'#ec4899', pts:[[157,186],[182,186],[229,184],[251,184]], r:13},
+    {id:'ligament_sain',  label:'Ligament apical d\'aspect sain',     color:'#22c55e', pts:[[157,186],[182,186],[229,184],[251,184]], r:13},
+    {id:'fracture',    label:'Trait de fracture radiculaire',         color:'#1e1b4b', pts:[[204,170]],                         r:20}
+  ];
+
+  var RADIO_REPERE_BY_ID = {};
+  RADIO_REPERES.forEach(function(r){ RADIO_REPERE_BY_ID[r.id] = r; });
+
+  // resto : 'none' | 'sealed' | 'leaking' — periapical : 'sain' | 'widened' | 'lesion'
+  var RADIO_CASES = [
+    {
+      id:'carie_profonde',
+      titre:'Rétro-alvéolaire de 36',
+      enonce:'Patiente de 23 ans. Douleur provoquée par le froid sur la 36, qui cesse quelques secondes après le stimulus. Lisez le cliché.',
+      cfg:{caries:true, resto:'none', obturation:false, periapical:'sain'},
+      caption:'Cliché rétro-alvéolaire schématique de 36 (molaire mandibulaire) et de la 35 voisine.',
+      cibles:['chambre','canal','apex','os','carie','ligament_sain']
+    },
+    {
+      id:'lesion_apicale',
+      titre:'Rétro-alvéolaire de 36',
+      enonce:'Patient de 41 ans, 36 asymptomatique depuis des mois, soignée il y a longtemps. Lisez le cliché.',
+      cfg:{caries:false, resto:'leaking', obturation:false, periapical:'lesion'},
+      caption:'Cliché rétro-alvéolaire schématique de 36 : restauration occlusale ancienne et apex mésial.',
+      cibles:['chambre','canal','apex','os','restauration_infiltree','lesion']
+    },
+    {
+      id:'ligament_elargi',
+      titre:'Rétro-alvéolaire de 36',
+      enonce:'Patient de 35 ans. 36 douloureuse à la pression et à la mastication, soin occlusal posé il y a deux ans. Lisez le cliché.',
+      cfg:{caries:false, resto:'sealed', obturation:false, periapical:'widened'},
+      caption:'Cliché rétro-alvéolaire schématique de 36 : restauration occlusale étanche, région apicale des deux racines.',
+      cibles:['chambre','canal','apex','os','restauration','elargissement']
+    },
+    {
+      id:'obturation_courte',
+      titre:'Rétro-alvéolaire de 36',
+      enonce:'Patiente de 52 ans. 36 traitée par endodontie il y a six ans, aujourd\'hui sensible à la pression. Lisez le cliché.',
+      cfg:{caries:false, resto:'sealed', obturation:true, periapical:'lesion'},
+      caption:'Cliché rétro-alvéolaire schématique de 36 déjà traitée : matériau radio-opaque dans les canaux, s\'arrêtant avant l\'apex.',
+      cibles:['chambre','canal','obturation','apex','os','restauration','lesion']
+    }
+  ];
+
+  function buildRadioSVG(cfg){
+    var DENTINE = '#bdb7a6', EMAIL = '#dcd6c6', CANAL = '#2e2d29', OPAQUE = '#f1eee4',
+        LAMINA = '#d8d3c3', LIGAMENT = '#2b2a26';
+    var p = [];
+    p.push('<svg viewBox="0 0 ' + RADIO_W + ' ' + RADIO_H + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Cliché rétro-alvéolaire schématique">');
+    p.push('<defs>');
+    p.push('<linearGradient id="radio-bone-g" x1="0" y1="0" x2="0" y2="1">' +
+             '<stop offset="0" stop-color="#726f64"/><stop offset="1" stop-color="#58564e"/></linearGradient>');
+    p.push('<radialGradient id="radio-lesion-g" cx="50%" cy="50%" r="50%">' +
+             '<stop offset="55%" stop-color="#191a18"/><stop offset="100%" stop-color="#191a18" stop-opacity="0"/></radialGradient>');
+    p.push('</defs>');
+
+    // Le film et l'os : le dégradé et les quelques ellipses claires suffisent à faire lire
+    // une trame osseuse, sans image à charger.
+    p.push('<rect x="0" y="0" width="' + RADIO_W + '" height="' + RADIO_H + '" rx="10" fill="#0d0e0f"/>');
+    p.push('<rect x="8" y="8" width="344" height="254" rx="6" fill="url(#radio-bone-g)"/>');
+    [[40,62,16,9],[300,96,20,10],[122,212,18,10],[58,158,14,8],[332,196,15,9],[272,142,19,10],
+     [200,244,24,9],[90,104,12,7],[150,250,20,8],[320,240,18,9],[40,232,15,8],[300,152,17,9],
+     [318,188,16,9],[288,206,15,8],[62,196,13,8],[132,160,12,7]].forEach(function(g){
+      p.push('<ellipse cx="' + g[0] + '" cy="' + g[1] + '" rx="' + g[2] + '" ry="' + g[3] + '" fill="#827f72" opacity="0.26"/>');
+    });
+    // Crêtes osseuses interdentaires, plus denses donc plus claires.
+    p.push('<path d="M138,120 L152,118" stroke="#cfcabb" stroke-width="2.5" fill="none"/>');
+    p.push('<path d="M258,118 L272,122" stroke="#cfcabb" stroke-width="2.5" fill="none"/>');
+
+    // 35 voisine, à gauche du cliché
+    p.push('<path d="M70,110 L130,110 L114,168 Q106,196 100,198 Q94,196 86,168 Z" fill="' + DENTINE + '"/>');
+    p.push('<path d="M66,46 Q66,38 74,38 L126,38 Q134,38 134,46 L134,112 L66,112 Z" fill="' + DENTINE + '"/>');
+    p.push('<path d="M66,46 Q66,38 74,38 L126,38 Q134,38 134,46 L134,56 L66,56 Z" fill="' + EMAIL + '"/>');
+    p.push('<path d="M100,66 L100,190" stroke="' + CANAL + '" stroke-width="4" stroke-linecap="round" fill="none"/>');
+
+    // 36 : couronne, puis les deux racines
+    p.push('<path d="M157,110 L188,110 L180,178 Q174,211 167,213 Q161,211 158,178 Z" fill="' + DENTINE + '"/>');
+    p.push('<path d="M222,110 L254,110 L248,176 Q244,207 239,209 Q233,207 231,176 Z" fill="' + DENTINE + '"/>');
+    p.push('<path d="M154,46 Q154,36 164,36 L246,36 Q256,36 256,46 L256,114 L154,114 Z" fill="' + DENTINE + '"/>');
+    p.push('<path d="M154,46 Q154,36 164,36 L246,36 Q256,36 256,46 L256,58 L154,58 Z" fill="' + EMAIL + '"/>');
+    // Chambre pulpaire et canaux (tracés avant l'obturation, qui vient les recouvrir)
+    p.push('<path d="M186,82 L223,82 L221,102 Q204,112 187,102 Z" fill="' + CANAL + '"/>');
+    p.push('<path d="M175,100 L167,205" stroke="' + CANAL + '" stroke-width="4.5" stroke-linecap="round" fill="none"/>');
+    p.push('<path d="M236,100 L239,201" stroke="' + CANAL + '" stroke-width="4.5" stroke-linecap="round" fill="none"/>');
+
+    if(cfg.caries){
+      p.push('<path d="M256,60 Q238,64 236,78 Q238,94 254,98 L256,98 Z" fill="#39382f"/>');
+    }
+    if(cfg.resto === 'sealed' || cfg.resto === 'leaking'){
+      p.push('<path d="M178,36 L230,36 L230,60 Q204,72 178,60 Z" fill="' + OPAQUE + '"/>');
+      if(cfg.resto === 'leaking'){
+        // La perte d'étanchéité se lit comme un liseré noir sous le soin et à ses bords.
+        p.push('<path d="M178,60 Q204,72 230,60" stroke="#26251f" stroke-width="3.2" fill="none"/>');
+        p.push('<path d="M177,37 L182,37 L181,58 L177,56 Z" fill="#26251f"/>');
+        p.push('<path d="M231,37 L226,37 L227,58 L231,56 Z" fill="#26251f"/>');
+      }
+    }
+    if(cfg.obturation){
+      // Obturation canalaire arrêtée avant l'apex : le noir du canal reste visible au-delà.
+      p.push('<path d="M176,100 L169,190" stroke="' + OPAQUE + '" stroke-width="5" stroke-linecap="round" fill="none"/>');
+      p.push('<path d="M236,100 L239,186" stroke="' + OPAQUE + '" stroke-width="5" stroke-linecap="round" fill="none"/>');
+    }
+
+    // Région apicale : ligament fin et lamina dura continue, ligament élargi, ou lésion radioclaire.
+    if(cfg.periapical === 'widened'){
+      p.push('<path d="M157,168 Q158,200 167,218 Q176,200 181,168" stroke="#24231f" stroke-width="6.5" fill="none"/>');
+      p.push('<path d="M230,166 Q231,196 239,214 Q247,196 249,166" stroke="#24231f" stroke-width="6.5" fill="none"/>');
+      p.push('<path d="M152,167 Q153,203 167,224 Q181,203 186,167" stroke="' + LAMINA + '" stroke-width="2" fill="none"/>');
+      p.push('<path d="M225,165 Q226,199 239,220 Q252,199 254,165" stroke="' + LAMINA + '" stroke-width="2" fill="none"/>');
+    } else if(cfg.periapical === 'lesion'){
+      p.push('<ellipse cx="167" cy="234" rx="27" ry="23" fill="url(#radio-lesion-g)"/>');
+      // La lamina dura disparaît là où la lésion a résorbé l'os, et reste visible sur l'autre racine.
+      p.push('<path d="M231,168 Q232,194 239,211 Q246,194 248,168" stroke="' + LIGAMENT + '" stroke-width="2.2" fill="none"/>');
+      p.push('<path d="M227,167 Q228,197 239,216 Q250,197 252,167" stroke="' + LAMINA + '" stroke-width="2" fill="none"/>');
+    } else {
+      p.push('<path d="M158,170 Q159,198 167,215 Q175,198 180,170" stroke="' + LIGAMENT + '" stroke-width="2.2" fill="none"/>');
+      p.push('<path d="M154,169 Q155,201 167,220 Q179,201 184,169" stroke="' + LAMINA + '" stroke-width="2" fill="none"/>');
+      p.push('<path d="M231,168 Q232,194 239,211 Q246,194 248,168" stroke="' + LIGAMENT + '" stroke-width="2.2" fill="none"/>');
+      p.push('<path d="M227,167 Q228,197 239,216 Q250,197 252,167" stroke="' + LAMINA + '" stroke-width="2" fill="none"/>');
+    }
+
+    p.push('</svg>');
+    return p.join('');
+  }
+
+  // ---------- état du mode radio ----------
+  var radioCase = null;
+  var radioPlacements = {};   // id de repère -> {x, y} en unités du viewBox
+  var radioSelected = null;   // repère choisi au toucher, en attente d'un point sur le cliché
+  var radioChecked = false;
+  var lastRadioCaseId = null;
+
+  var modeRadioIntro  = document.getElementById('mode-radio-intro');
+  var radioCaseCard   = document.getElementById('radio-case-card');
+  var radioFilm       = document.getElementById('radio-film');
+  var radioOverlay    = document.getElementById('radio-overlay');
+  var radioLegendEl   = document.getElementById('radio-legend');
+
+  function radioZone(id){
+    var base = RADIO_REPERE_BY_ID[id];
+    var ov = radioCase && radioCase.zones && radioCase.zones[id];
+    return { pts: (ov && ov.pts) || base.pts, r: (ov && ov.r) || base.r };
+  }
+
+  function radioIsTarget(id){
+    return !!radioCase && radioCase.cibles.indexOf(id) !== -1;
+  }
+
+  function radioWellPlaced(id, p){
+    var z = radioZone(id), best = Infinity;
+    z.pts.forEach(function(pt){
+      var d = Math.sqrt((pt[0] - p.x) * (pt[0] - p.x) + (pt[1] - p.y) * (pt[1] - p.y));
+      if(d < best) best = d;
+    });
+    return best <= z.r;
+  }
+
+  function radioPct(v, span){ return (v / span * 100).toFixed(2) + '%'; }
+
+  function renderRadioLegend(){
+    radioLegendEl.innerHTML = RADIO_REPERES.map(function(rep){
+      var cls = 'radio-chip';
+      if(radioPlacements[rep.id]) cls += ' placed';
+      if(radioSelected === rep.id) cls += ' sel';
+      return '<button type="button" class="' + cls + '" data-rid="' + rep.id + '"' +
+             (radioChecked ? ' disabled' : '') + '>' +
+             '<i class="dot" style="background:' + rep.color + '"></i>' + rep.label + '</button>';
+    }).join('');
+  }
+
+  // La taille des cercles de correction dépend de la largeur affichée du cliché : elle est
+  // donc recalculée à chaque rendu, et au redimensionnement de la fenêtre.
+  function renderRadioOverlay(){
+    var html = '';
+    if(radioChecked && radioCase){
+      var w = radioFilm.clientWidth || 360;
+      radioCase.cibles.forEach(function(id){
+        var rep = RADIO_REPERE_BY_ID[id], z = radioZone(id);
+        var dpx = 2 * z.r / RADIO_W * w;
+        z.pts.forEach(function(pt){
+          html += '<span class="radio-target" style="left:' + radioPct(pt[0], RADIO_W) +
+                  ';top:' + radioPct(pt[1], RADIO_H) +
+                  ';width:' + dpx.toFixed(1) + 'px;height:' + dpx.toFixed(1) + 'px' +
+                  ';margin:' + (-dpx / 2).toFixed(1) + 'px 0 0 ' + (-dpx / 2).toFixed(1) + 'px' +
+                  ';border-color:' + rep.color + '"></span>';
+        });
+      });
+    }
+    Object.keys(radioPlacements).forEach(function(id){
+      var rep = RADIO_REPERE_BY_ID[id], pl = radioPlacements[id];
+      var cls = 'radio-pt';
+      if(radioChecked) cls += (radioIsTarget(id) && radioWellPlaced(id, pl)) ? ' ok' : ' ko';
+      html += '<span class="' + cls + '" data-rid="' + id + '" title="' + rep.label + '"' +
+              ' style="left:' + radioPct(pl.x, RADIO_W) + ';top:' + radioPct(pl.y, RADIO_H) +
+              ';background:' + rep.color + '"></span>';
+    });
+    radioOverlay.innerHTML = html;
+  }
+
+  window.addEventListener('resize', function(){
+    if(radioChecked && !radioCaseCard.classList.contains('hidden')) renderRadioOverlay();
+  });
+
+  function radioToViewBox(clientX, clientY){
+    var rect = radioFilm.getBoundingClientRect();
+    return {
+      x: (clientX - rect.left) / rect.width * RADIO_W,
+      y: (clientY - rect.top) / rect.height * RADIO_H,
+      inside: clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom
+    };
+  }
+
+  // Glissement au doigt comme à la souris : un fantôme suit le pointeur, et c'est au lâcher
+  // que le point est déposé. Un simple toucher (moins de 7 px) n'est pas un glissement : sur
+  // la légende il sélectionne le repère, sur un point déjà posé il le retire.
+  var radioDrag = null;
+
+  function radioStartDrag(id, ev, fromFilm){
+    radioDrag = {id:id, fromFilm:fromFilm, moved:false, x0:ev.clientX, y0:ev.clientY};
+    var ghost = document.createElement('span');
+    ghost.className = 'radio-ghost';
+    ghost.style.background = RADIO_REPERE_BY_ID[id].color;
+    ghost.style.left = ev.clientX + 'px';
+    ghost.style.top  = ev.clientY + 'px';
+    ghost.style.display = 'none';
+    document.body.appendChild(ghost);
+    radioDrag.ghost = ghost;
+    document.addEventListener('pointermove', radioOnMove);
+    document.addEventListener('pointerup', radioOnUp);
+    document.addEventListener('pointercancel', radioOnUp);
+  }
+
+  function radioOnMove(ev){
+    if(!radioDrag) return;
+    if(!radioDrag.moved){
+      var dx = ev.clientX - radioDrag.x0, dy = ev.clientY - radioDrag.y0;
+      if(Math.sqrt(dx * dx + dy * dy) < 7) return;
+      radioDrag.moved = true;
+      radioDrag.ghost.style.display = '';
+    }
+    radioDrag.ghost.style.left = ev.clientX + 'px';
+    radioDrag.ghost.style.top  = ev.clientY + 'px';
+  }
+
+  function radioOnUp(ev){
+    if(!radioDrag) return;
+    var drag = radioDrag;
+    radioDrag = null;
+    document.removeEventListener('pointermove', radioOnMove);
+    document.removeEventListener('pointerup', radioOnUp);
+    document.removeEventListener('pointercancel', radioOnUp);
+    if(drag.ghost.parentNode) drag.ghost.parentNode.removeChild(drag.ghost);
+
+    if(drag.moved){
+      var pos = radioToViewBox(ev.clientX, ev.clientY);
+      if(pos.inside){
+        radioPlacements[drag.id] = {x:pos.x, y:pos.y};
+        radioSelected = null;
+      } else if(drag.fromFilm){
+        // Point sorti du cliché : l'étudiant le repose dans la légende.
+        delete radioPlacements[drag.id];
+      }
+    } else if(drag.fromFilm){
+      delete radioPlacements[drag.id];
+      radioSelected = null;
+    } else {
+      radioSelected = (radioSelected === drag.id) ? null : drag.id;
+    }
+    renderRadioLegend();
+    renderRadioOverlay();
+  }
+
+  radioLegendEl.addEventListener('pointerdown', function(ev){
+    if(radioChecked) return;
+    var chip = ev.target.closest ? ev.target.closest('.radio-chip') : null;
+    if(!chip) return;
+    ev.preventDefault();
+    radioStartDrag(chip.getAttribute('data-rid'), ev, false);
+  });
+
+  radioOverlay.addEventListener('pointerdown', function(ev){
+    if(radioChecked) return;
+    var pt = ev.target.closest ? ev.target.closest('.radio-pt') : null;
+    if(!pt) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    radioStartDrag(pt.getAttribute('data-rid'), ev, true);
+  });
+
+  // Repli tactile : un repère sélectionné dans la légende se pose d'un simple toucher
+  // sur le cliché, sans glissement.
+  radioFilm.addEventListener('click', function(ev){
+    if(radioChecked || !radioSelected) return;
+    if(ev.target.closest && ev.target.closest('.radio-pt')) return;
+    var pos = radioToViewBox(ev.clientX, ev.clientY);
+    radioPlacements[radioSelected] = {x:pos.x, y:pos.y};
+    radioSelected = null;
+    renderRadioLegend();
+    renderRadioOverlay();
+  });
+
+  function randomRadioCase(){
+    var pool = RADIO_CASES.filter(function(c){ return c.id !== lastRadioCaseId; });
+    if(!pool.length) pool = RADIO_CASES;
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function startRadioCase(){
+    flushPendingFades();
+    radioCase = randomRadioCase();
+    lastRadioCaseId = radioCase.id;
+    radioPlacements = {};
+    radioSelected = null;
+    radioChecked = false;
+
+    hideEl(introCard);
+    showEl(radioCaseCard);
+    hideEl(document.getElementById('radio-correction'));
+    showEl(document.getElementById('radio-submit-row'));
+    showEl(document.getElementById('radio-hint'));
+
+    document.getElementById('radio-title').textContent = radioCase.titre;
+    document.getElementById('radio-def').textContent = radioCase.enonce;
+    document.getElementById('radio-caption').textContent = radioCase.caption;
+    document.getElementById('radio-svg').innerHTML = buildRadioSVG(radioCase.cfg);
+
+    renderRadioLegend();
+    renderRadioOverlay();
+    setBackTarget(backToRadioIntro);
+    radioCaseCard.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function submitRadio(){
+    radioChecked = true;
+    var lignes = [], bons = 0, leurres = 0, oublis = 0, decales = 0;
+    RADIO_REPERES.forEach(function(rep){
+      var pl = radioPlacements[rep.id], cible = radioIsTarget(rep.id);
+      if(cible && pl && radioWellPlaced(rep.id, pl)){
+        bons++;
+        lignes.push({rep:rep, ok:true, msg:'bien placé'});
+      } else if(cible && pl){
+        decales++;
+        lignes.push({rep:rep, ok:false, msg:'ce repère est bien visible ici, mais votre point est posé à côté de la zone attendue (en pointillés)'});
+      } else if(cible){
+        oublis++;
+        lignes.push({rep:rep, ok:false, msg:'oublié : ce repère est visible sur ce cliché'});
+      } else if(pl){
+        leurres++;
+        lignes.push({rep:rep, ok:false, msg:'ce signe n\'est pas présent sur ce cliché : il fallait laisser ce point dans la légende'});
+      }
+    });
+
+    var total = radioCase.cibles.length;
+    var reussi = (bons === total) && leurres === 0;
+
+    var verdict = document.getElementById('radio-verdict');
+    verdict.className = 'verdict ' + (reussi ? 'ok' : 'ko');
+    verdict.innerHTML = reussi
+      ? '<span class="icon">✓</span> Lecture complète et exacte !'
+      : '<span class="icon">✗</span> Lecture à revoir.';
+
+    var detail = [];
+    if(decales) detail.push(decales + (decales > 1 ? ' repères mal situés' : ' repère mal situé'));
+    if(oublis)  detail.push(oublis + (oublis > 1 ? ' repères oubliés' : ' repère oublié'));
+    if(leurres) detail.push(leurres + (leurres > 1 ? ' signes posés à tort' : ' signe posé à tort'));
+    document.getElementById('radio-score').textContent =
+      bons + ' / ' + total + ' repères présents correctement identifiés' +
+      (detail.length ? ' — ' + detail.join(', ') + '.' : '.');
+
+    document.getElementById('radio-verdicts').innerHTML = lignes.map(function(l){
+      return '<li class="' + (l.ok ? 'v-ok' : 'v-ko') + '">' +
+        '<i class="dot" style="background:' + l.rep.color + '"></i>' +
+        '<span><span class="vlabel">' + l.rep.label + '</span> — <span class="vmsg">' + l.msg + '</span></span></li>';
+    }).join('');
+
+    renderRadioLegend();
+    renderRadioOverlay();
+    hideEl(document.getElementById('radio-submit-row'));
+    hideEl(document.getElementById('radio-hint'));
+    showEl(document.getElementById('radio-correction'));
+  }
+
+  function backToRadioIntro(){
+    flushPendingFades();
+    hideEl(radioCaseCard);
+    showEl(introCard);
+    showMode(modeRadioIntro);
+  }
+
+  document.getElementById('hub-radio-btn').addEventListener('click', function(){ showMode(modeRadioIntro); });
+  document.getElementById('start-radio-btn').addEventListener('click', startRadioCase);
+  document.getElementById('radio-submit-btn').addEventListener('click', submitRadio);
+  document.getElementById('radio-next-btn').addEventListener('click', startRadioCase);
+  document.getElementById('radio-home-btn').addEventListener('click', goHome);
+
+  // Le troisième bouton reste caché jusqu'à ce que le compte connecté soit reconnu comme
+  // enseignant : un étudiant ne doit pas même savoir que ce mode existe.
+  window.EndoTeacherModes = function(on){
+    (on ? showEl : hideEl)(document.getElementById('hub-radio-btn'));
+  };
+
   function categoryLabel(cat){
     switch(cat){
       case 'normal': return 'Physiologique';
@@ -5730,6 +6381,8 @@
     $('acct-name').textContent = profile ? (profile.prenom + ' ' + profile.nom) : '';
     $('acct-sub').textContent  = profile ? (profile.annee + ' · ' + profile.faculte) : '';
     (isAdmin ? show : hide)($('acct-admin-btn'));
+    // Modes réservés à l'enseignante (lecture radiographique, encore en construction).
+    if(window.EndoTeacherModes) window.EndoTeacherModes(isAdmin);
     if(!offline){ touchLastSeen(); flushQueue(); }
     if(window.EndoRefreshRevision) window.EndoRefreshRevision();
     window.EndoAccount = { profile: profile, isAdmin: isAdmin, offline: offline, userId: session && session.user_id };
