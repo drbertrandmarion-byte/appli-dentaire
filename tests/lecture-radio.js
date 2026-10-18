@@ -287,7 +287,11 @@ async function valideEtLis(page){
     const a = await context.newPage();
     await boot(a, seed);
     await ouvreCliche(a);
-    const enonce = (await a.textContent('#radio-def')).trim();
+    // Un cliche s'identifie par SON IMAGE. La consigne, elle, est commune a tous depuis
+    // qu'elle est declaree une seule fois : s'en servir ici faisait prendre deux cliches
+    // differents pour un seul, et la suite n'en eprouvait qu'un sur deux sans le dire.
+    const enonce = await a.getAttribute('#radio-film img', 'src');
+    if (!enonce) { ko('aucune image sur le cliche tire'); await a.close(); break; }
     if (vus.has(enonce)) { sansNouveau++; await a.close(); continue; }
     sansNouveau = 0;
     const zones = await zonesAttendues(a);
@@ -368,7 +372,7 @@ async function valideEtLis(page){
       const p = await context.newPage();
       await boot(p, seed);
       await ouvreCliche(p);
-      if ((await p.textContent('#radio-def')).trim() !== enonce) {
+      if (await p.getAttribute('#radio-film img', 'src') !== enonce) {
         ko(etiquette + ' : la graine ne rejoue pas le meme cliche (passe B)');
         await p.close(); continue;
       }

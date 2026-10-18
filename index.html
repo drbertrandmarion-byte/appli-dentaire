@@ -1044,6 +1044,36 @@
   .radio-verdicts .v-ok .vmsg{color:var(--ok);}
   .radio-verdicts .v-ko .vmsg{color:var(--ko);}
 
+  /* ---------- Atelier de tracé (enseignante) ---------- */
+  .radio-trace-actions{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:8px;
+    margin:10px 0;
+  }
+  .radio-trace-cible{
+    font-size:0.8rem;
+    font-weight:600;
+    color:var(--radio-accent-dark);
+    margin-right:auto;
+  }
+  #radio-trace-code{
+    width:100%;
+    font-family:ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size:0.72rem;
+    line-height:1.45;
+    color:var(--ink);
+    background:#fbfbfe;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:10px;
+    resize:vertical;
+  }
+  /* Pendant le tracé, le cliché reçoit les clics qui posent les sommets : le curseur le dit. */
+  .radio-film.tracing{cursor:crosshair;}
+  .radio-film.tracing .radio-pt{pointer-events:none;}
+
   /* ---------- Comptes étudiants ---------- */
   /* Menu de compte : symétrique du bouton son, ancré au bord gauche du contenu. */
   /* Position relative — et non plus fixe : le menu déroulant s'ancre dessus, et la barre
@@ -1595,6 +1625,28 @@
 
     <div class="result-actions" id="radio-submit-row">
       <button class="btn-primary" id="radio-submit-btn">Valider ma lecture</button>
+      <button class="btn-secondary" id="radio-trace-btn" type="button">✏️ Tracer les zones</button>
+    </div>
+
+    <!-- Atelier de tracé, réservé à l'enseignante : il supprime l'étape où je reportais son
+         dessin en coordonnées à vue, et où quatre lectures successives d'un même tenon
+         l'avaient placé à quatre endroits différents. -->
+    <div id="radio-trace-panel" class="hidden">
+      <div class="radio-wip">
+        <b>Tracé des zones.</b> Choisissez un repère dans la légende ci-dessus, puis cliquez les
+        points de son contour sur le cliché. Le contour se referme tout seul. Vos tracés
+        remplacent ceux d'origine, sont conservés sur cet appareil, et s'affichent tels quels
+        à la correction.
+      </div>
+      <div class="radio-trace-actions">
+        <span class="radio-trace-cible" id="radio-trace-cible">Aucun repère sélectionné</span>
+        <button class="btn-secondary" id="radio-trace-undo" type="button">← Annuler le dernier point</button>
+        <button class="btn-secondary" id="radio-trace-clear" type="button">Effacer ce repère</button>
+        <button class="btn-secondary" id="radio-trace-reset" type="button">Revenir aux contours d'origine</button>
+        <button class="btn-primary" id="radio-trace-done" type="button">Terminer</button>
+      </div>
+      <p class="radio-hint">Coordonnées de vos tracés, à me transmettre pour les inscrire définitivement :</p>
+      <textarea id="radio-trace-code" rows="8" readonly></textarea>
     </div>
 
     <div id="radio-correction" class="hidden">
@@ -5455,15 +5507,25 @@
   // absents du cliché tiré, et les y laisser fait partie de la bonne réponse. Les trois
   // derniers — ostéite condensante, onlay, débris radiculaire — ne sont pour l'instant la
   // bonne réponse nulle part : ce sont des leurres, en attendant les clichés qui les portent.
+  // Une seule entrée pour la lacune constituée, quelle que soit sa nature histologique :
+  // granulome, kyste et abcès ne se distinguent pas l'un de l'autre sur un cliché — ils se
+  // séparent cliniquement. En faire deux entrées obligerait l'étudiant à un choix indécidable.
+  // La parodontite apicale débutante, elle, est bien une lecture radiographique distincte :
+  // un simple élargissement ligamentaire, et non une lacune.
   var RADIO_REPERES = [
-    {id:'couronne_cm', label:'Couronne céramo-métallique',                    color:'#f2b134'},
-    {id:'osteite',     label:'Ostéite condensante',                           color:'#a16207'},
-    {id:'inlay_core',  label:'Inlay-core à clavette',                         color:'#22d3ee'},
-    {id:'onlay',       label:'Onlay céramique / composite',                   color:'#22c55e'},
-    {id:'lesion',      label:'Lésion infectieuse radioclaire (granulome / kyste)', color:'#dc2626'},
-    {id:'debris',      label:'Débris radiculaire',                            color:'#ec4899'},
-    {id:'amalgame',    label:'Amalgame dentaire',                             color:'#14b8a6'},
-    {id:'rhizalyse',   label:'Rhizalyse radiculaire sur dent vivante',        color:'#a855f7'}
+    {id:'couronne_cm',       label:'Couronne céramo-métallique',                color:'#f2b134'},
+    {id:'bridge_cantilever', label:'Bridge avec cantilever métallique',         color:'#2563eb'},
+    {id:'osteite',           label:'Ostéite condensante',                       color:'#a16207'},
+    {id:'inlay_core',        label:'Inlay-core à clavette',                     color:'#22d3ee'},
+    {id:'inlay_core_simple', label:'Inlay-core simple',                         color:'#f97316'},
+    {id:'onlay',             label:'Onlay céramique / composite',               color:'#22c55e'},
+    {id:'lesion',            label:'Lésion apicale infectieuse radioclaire (granulome, kyste ou abcès)', color:'#dc2626'},
+    {id:'parodontite',       label:'Lésion apicale débutante (parodontite apicale)', color:'#a3e635'},
+    {id:'debris',            label:'Débris radiculaire',                        color:'#ec4899'},
+    {id:'fragment',          label:'Fragment instrumental cassé',               color:'#7f1d1d'},
+    {id:'amalgame',          label:'Amalgame dentaire',                         color:'#14b8a6'},
+    {id:'amalgame_infiltre', label:'Perte d\'étanchéité de l\'amalgame',        color:'#64748b'},
+    {id:'rhizalyse',         label:'Rhizalyse radiculaire sur dent vivante',    color:'#a855f7'}
   ];
 
   var RADIO_REPERE_BY_ID = {};
@@ -5477,10 +5539,9 @@
     'légendes. Placez sur le cliché celles que vous y reconnaissez, chacune sur la zone qui lui ' +
     'correspond. Toutes n\'y figurent pas : laisser une légende de côté fait partie de la réponse.';
 
-  // Chaque cliché déclare les repères qu'il porte et, pour chacun, la zone attendue : un ou
-  // plusieurs points d'ancrage et le rayon de tolérance autour d'eux. Les positions ci-dessous
-  // sont une PREMIÈRE LECTURE, à corriger par l'enseignante : la correction trace la zone en
-  // pointillés, précisément pour qu'elle soit jugeable à l'œil.
+  // Chaque cliché déclare les repères qu'il porte et, pour chacun, le contour attendu. Les
+  // sommets sont corrigeables sans toucher au code : l'atelier de tracé les remplace et les
+  // conserve sur l'appareil de l'enseignante.
   var RADIO_CASES = [
     {
       id:'inlay_core_lesion',
@@ -5522,6 +5583,27 @@
         // Portion apicale de la racine de la 45, dent située à droite de la couronne.
         rhizalyse: {poly:[[212,143],[240,141],[249,150],[250,200],[246,222],[232,227],
                           [216,224],[210,200],[211,160]]}
+      }
+    },
+    {
+      id:'bridge_debris',
+      titre:'Rétro-alvéolaire — secteur postérieur mandibulaire',
+      image:'radios/retro-alveolaire-02.png',
+      caption:'',
+      cibles:['bridge_cantilever','inlay_core_simple','debris','lesion',
+              'parodontite','amalgame_infiltre'],
+      // ÉBAUCHES. Contrairement à celles du premier cliché, ces six zones ne viennent d'aucun
+      // tracé de l'enseignante : ce sont mes repérages approximatifs, destinés à être repris
+      // dans l'atelier de tracé. Les poser au jugé serait répéter l'erreur qui a coûté quatre
+      // allers-retours sur un seul tenon.
+      zones:{
+        amalgame_infiltre: {poly:[[14,14],[58,10],[96,22],[100,44],[86,60],[46,62],[16,48]]},
+        bridge_cantilever: {poly:[[100,30],[180,24],[260,30],[310,44],[314,78],[290,100],
+                                  [220,104],[150,100],[104,84],[96,54]]},
+        inlay_core_simple: {poly:[[186,82],[204,80],[206,120],[198,148],[188,146],[184,118]]},
+        debris: {poly:[[100,164],[118,159],[129,172],[127,192],[112,199],[100,188]]},
+        lesion: {poly:[[168,210],[190,206],[200,220],[196,240],[178,246],[166,232]]},
+        parodontite: {poly:[[252,214],[276,212],[286,226],[282,244],[262,248],[250,232]]}
       }
     }
   ];
@@ -5585,16 +5667,41 @@
   // Le lissage est calculé une fois par cliché : il sert à chaque validation et à chaque rendu.
   var radioZonesLissees = null;
 
+  // Sommets saisis par l'enseignante dans l'atelier de tracé, par cliché puis par repère. Ils
+  // priment sur ceux déclarés dans le code : c'est le seul moyen qu'elle a de corriger une
+  // zone sans passer par moi, et c'est la correction qui fait foi.
+  var RADIO_TRACES_KEY = 'endodiag-radio-traces-v1';
+  var radioTraces = (function(){
+    try{ return JSON.parse(localStorage.getItem(RADIO_TRACES_KEY)) || {}; }
+    catch(e){ return {}; }
+  })();
+
+  function radioTracesDuCas(){
+    if(!radioCase) return {};
+    if(!radioTraces[radioCase.id]) radioTraces[radioCase.id] = {};
+    return radioTraces[radioCase.id];
+  }
+
+  function radioSauveTraces(){
+    try{ localStorage.setItem(RADIO_TRACES_KEY, JSON.stringify(radioTraces)); }catch(e){}
+  }
+
+  function radioSommets(id){
+    if(!radioCase) return null;
+    var trace = (radioTraces[radioCase.id] || {})[id];
+    if(trace && trace.length >= 3) return trace;
+    var zone = (radioCase.zones || {})[id];
+    return (zone && zone.poly) || null;
+  }
+
   function radioZone(id){
     if(!radioCase) return null;
-    if(!radioZonesLissees){
-      radioZonesLissees = {};
-      var zones = radioCase.zones || {};
-      Object.keys(zones).forEach(function(k){
-        radioZonesLissees[k] = radioLisse(zones[k].poly);
-      });
+    if(!radioZonesLissees) radioZonesLissees = {};
+    if(!(id in radioZonesLissees)){
+      var sommets = radioSommets(id);
+      radioZonesLissees[id] = sommets ? radioLisse(sommets) : null;
     }
-    return radioZonesLissees[id] || null;
+    return radioZonesLissees[id];
   }
 
   function radioIsTarget(id){
@@ -5652,12 +5759,20 @@
   }
 
   function renderRadioLegend(){
+    var cas = radioTracing ? radioTracesDuCas() : null;
     radioLegendEl.innerHTML = RADIO_REPERES.map(function(rep){
       var cls = 'radio-chip';
-      if(radioPlacements[rep.id]) cls += ' placed';
-      if(radioSelected === rep.id) cls += ' sel';
+      // Pendant le tracé, la légende sert à choisir le repère dessiné : l'estompage signale
+      // alors les contours déjà tracés, et non les points déjà posés.
+      if(radioTracing){
+        if(cas[rep.id] && cas[rep.id].length) cls += ' placed';
+        if(radioTraceCible === rep.id) cls += ' sel';
+      } else {
+        if(radioPlacements[rep.id]) cls += ' placed';
+        if(radioSelected === rep.id) cls += ' sel';
+      }
       return '<button type="button" class="' + cls + '" data-rid="' + rep.id + '"' +
-             (radioChecked ? ' disabled' : '') + '>' +
+             (radioChecked && !radioTracing ? ' disabled' : '') + '>' +
              '<i class="dot" style="background:' + rep.color + '"></i>' + rep.label + '</button>';
     }).join('');
   }
@@ -5685,6 +5800,43 @@
       }).join('');
       html += '<svg class="radio-zones" viewBox="0 0 ' + RADIO_W + ' ' + hUnites.toFixed(1) +
               '" preserveAspectRatio="none">' + formes + '</svg>';
+    } else if(radioTracing && radioCase){
+      // Pendant le tracé : tous les contours du cliché, le courant mis en évidence, et les
+      // sommets saisis sous forme de poignées — sans quoi l'enseignante dessine à l'aveugle.
+      var ids = RADIO_REPERES.map(function(r){ return r.id; })
+        .filter(function(id){ return !!radioSommets(id); });
+      var dessins = ids.map(function(id){
+        var rep = RADIO_REPERE_BY_ID[id], poly = radioZone(id), brut = radioSommets(id);
+        if(!poly) return '';
+        var courant = (id === radioTraceCible);
+        var pts = poly.map(function(pt){ return pt[0] + ',' + pt[1]; }).join(' ');
+        var forme = '<polygon points="' + pts + '" fill="' + rep.color +
+                    '" fill-opacity="' + (courant ? '0.22' : '0.08') + '"' +
+                    ' stroke="' + rep.color + '" stroke-width="' + (courant ? '2.4' : '1.2') +
+                    '" stroke-opacity="' + (courant ? '1' : '0.55') +
+                    '" stroke-linejoin="round"/>';
+        if(courant){
+          forme += brut.map(function(pt){
+            return '<circle cx="' + pt[0] + '" cy="' + pt[1] + '" r="2.6" fill="#fff" stroke="' +
+                   rep.color + '" stroke-width="1.4"/>';
+          }).join('');
+        }
+        return forme;
+      }).join('');
+      // Moins de trois sommets : pas encore de contour, on montre la ligne brisée en cours.
+      var cas = radioTracesDuCas();
+      var enCours = radioTraceCible ? cas[radioTraceCible] : null;
+      if(enCours && enCours.length && enCours.length < 3){
+        var col = RADIO_REPERE_BY_ID[radioTraceCible].color;
+        dessins += '<polyline points="' + enCours.map(function(pt){ return pt[0] + ',' + pt[1]; }).join(' ') +
+                   '" fill="none" stroke="' + col + '" stroke-width="2.4"/>' +
+                   enCours.map(function(pt){
+                     return '<circle cx="' + pt[0] + '" cy="' + pt[1] + '" r="2.6" fill="#fff" stroke="' +
+                            col + '" stroke-width="1.4"/>';
+                   }).join('');
+      }
+      html += '<svg class="radio-zones" viewBox="0 0 ' + RADIO_W + ' ' + hUnites.toFixed(1) +
+              '" preserveAspectRatio="none">' + dessins + '</svg>';
     }
     Object.keys(radioPlacements).forEach(function(id){
       var rep = RADIO_REPERE_BY_ID[id], pl = radioPlacements[id];
@@ -5778,6 +5930,9 @@
     var chip = ev.target.closest ? ev.target.closest('.radio-chip') : null;
     if(!chip) return;
     ev.preventDefault();
+    // Pendant le tracé, la légende ne sert plus à poser un point mais à choisir le repère
+    // dont on dessine le contour.
+    if(radioTracing){ radioChoisirCible(chip.getAttribute('data-rid')); return; }
     radioStartDrag(chip.getAttribute('data-rid'), ev, false);
   });
 
@@ -5793,6 +5948,7 @@
   // Repli tactile : un repère sélectionné dans la légende se pose d'un simple toucher
   // sur le cliché, sans glissement.
   radioFilm.addEventListener('click', function(ev){
+    if(radioTracing){ radioPoseSommet(ev); return; }
     if(radioChecked || !radioSelected) return;
     if(ev.target.closest && ev.target.closest('.radio-pt')) return;
     var pos = radioToViewBox(ev.clientX, ev.clientY);
@@ -5800,6 +5956,110 @@
     radioSelected = null;
     renderRadioLegend();
     renderRadioOverlay();
+  });
+
+  // ---------------------------------------------------------------------------
+  // Atelier de tracé des zones (enseignante)
+  // ---------------------------------------------------------------------------
+  // Il supprime l'étape qui échouait : jusqu'ici l'enseignante dessinait sur une capture et
+  // je reportais son trait en coordonnées à vue. Sur un seul tenon, quatre lectures
+  // successives l'ont placé à quatre endroits différents alors que son trait n'avait pas
+  // bougé. Ici les sommets sont saisis sur le cliché lui-même : il n'y a plus de traduction.
+  var radioTracing = false;
+  var radioTraceCible = null;
+
+  function radioChoisirCible(id){
+    radioTraceCible = id;
+    var rep = RADIO_REPERE_BY_ID[id];
+    document.getElementById('radio-trace-cible').textContent =
+      rep ? 'Tracé en cours : ' + rep.label : 'Aucun repère sélectionné';
+    renderRadioLegend();
+    renderRadioOverlay();
+  }
+
+  function radioPoseSommet(ev){
+    if(!radioTraceCible){
+      msgTrace('Choisissez d\'abord un repère dans la légende.');
+      return;
+    }
+    var pos = radioToViewBox(ev.clientX, ev.clientY);
+    if(!pos.inside) return;
+    var cas = radioTracesDuCas();
+    if(!cas[radioTraceCible]) cas[radioTraceCible] = [];
+    cas[radioTraceCible].push([Math.round(pos.x), Math.round(pos.y)]);
+    radioApresTrace();
+  }
+
+  function msgTrace(texte){
+    document.getElementById('radio-trace-cible').textContent = texte;
+  }
+
+  // Un contour modifié doit être relissé : le cache garde la version précédente.
+  function radioApresTrace(){
+    radioZonesLissees = null;
+    radioSauveTraces();
+    renderRadioLegend();
+    renderRadioOverlay();
+    radioEcritCode();
+  }
+
+  // Les coordonnées, dans le format exact du fichier source : l'enseignante me les transmet
+  // telles quelles, et il n'y a plus rien à interpréter.
+  function radioEcritCode(){
+    var cas = radioTracesDuCas();
+    var ids = Object.keys(cas).filter(function(k){ return cas[k] && cas[k].length >= 3; });
+    var txt = ids.length
+      ? ids.map(function(id){
+          var pts = cas[id].map(function(p){ return '[' + p[0] + ',' + p[1] + ']'; }).join(',');
+          return '        ' + id + ': {poly:[' + pts + ']},';
+        }).join('\n')
+      : 'Aucun contour tracé pour l\'instant (trois points au minimum par repère).';
+    document.getElementById('radio-trace-code').value = txt;
+  }
+
+  function radioOuvreTrace(){
+    radioTracing = true;
+    radioTraceCible = null;
+    radioFilm.classList.add('tracing');
+    showEl(document.getElementById('radio-trace-panel'));
+    hideEl(document.getElementById('radio-hint'));
+    msgTrace('Choisissez un repère dans la légende, puis cliquez son contour sur le cliché.');
+    radioEcritCode();
+    renderRadioOverlay();
+  }
+
+  function radioFermeTrace(){
+    radioTracing = false;
+    radioTraceCible = null;
+    radioFilm.classList.remove('tracing');
+    hideEl(document.getElementById('radio-trace-panel'));
+    showEl(document.getElementById('radio-hint'));
+    renderRadioLegend();
+    renderRadioOverlay();
+  }
+
+  document.getElementById('radio-trace-btn').addEventListener('click', radioOuvreTrace);
+  document.getElementById('radio-trace-done').addEventListener('click', radioFermeTrace);
+
+  document.getElementById('radio-trace-undo').addEventListener('click', function(){
+    var cas = radioTracesDuCas();
+    if(radioTraceCible && cas[radioTraceCible] && cas[radioTraceCible].length){
+      cas[radioTraceCible].pop();
+      radioApresTrace();
+    }
+  });
+
+  document.getElementById('radio-trace-clear').addEventListener('click', function(){
+    var cas = radioTracesDuCas();
+    if(radioTraceCible){ delete cas[radioTraceCible]; radioApresTrace(); }
+  });
+
+  document.getElementById('radio-trace-reset').addEventListener('click', function(){
+    if(!radioCase) return;
+    delete radioTraces[radioCase.id];
+    radioTraceCible = null;
+    msgTrace('Contours d\'origine rétablis. Choisissez un repère pour en tracer un nouveau.');
+    radioApresTrace();
   });
 
   function randomRadioCase(){
@@ -5816,6 +6076,7 @@
     radioSelected = null;
     radioChecked = false;
     radioZonesLissees = null; // les contours lissés appartiennent au cliché précédent
+    if(radioTracing) radioFermeTrace();
 
     hideEl(introCard);
     showEl(radioCaseCard);
