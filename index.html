@@ -1378,8 +1378,10 @@
           <li><b>La notation.</b> Le cas est compté réussi si tous les repères présents sont bien
             placés <i>et</i> qu'aucun leurre n'a été posé. À voir si un oubli doit peser autant qu'un
             faux positif.</li>
-          <li><b>Il manque l'énoncé clinique</b> de ce cliché : âge, motif de consultation, ce que
-            l'examen trouve. Pour l'instant la consigne est nue.</li>
+          <li><b>Pas d'énoncé clinique ici, et c'est voulu.</b> Ce mode n'entraîne qu'à la lecture du
+            cliché. L'histoire du patient viendra plus tard, dans un cas clinique complet qui
+            enchaînera les trois étapes — tables de diagnostic, lecture radiographique, choix
+            thérapeutique. On s'y mettra une fois la partie radiographique terminée.</li>
         </ul>
       </div>
 
@@ -1571,7 +1573,10 @@
     <span class="badge" id="radio-badge">Lecture radiographique</span>
     <h2 id="radio-title"></h2>
 
-    <h3>Situation</h3>
+    <!-- « Consigne » et non « Situation » : ce mode n'entraîne qu'à la lecture du cliché, sans
+         histoire de patient. Celle-ci viendra avec le cas clinique complet, qui enchaînera
+         diagnostic, lecture radiographique et choix thérapeutique. -->
+    <h3>Consigne</h3>
     <div class="def" id="radio-def"></div>
 
     <div class="radio-film" id="radio-film">
@@ -5467,7 +5472,7 @@
     {
       id:'inlay_core_lesion',
       titre:'Rétro-alvéolaire — secteur postérieur mandibulaire',
-      enonce:'Lisez ce cliché : faites glisser sur l\'image les repères que vous y identifiez, et laissez dans la légende ceux qui n\'y figurent pas.',
+      enonce:'Repérez sur ce cliché tout ce que vous y reconnaissez. Attention : plusieurs repères de la légende n\'y figurent pas — ne rien poser est aussi une réponse.',
       image:'radios/retro-alveolaire-01.png',
       caption:'Cliché rétro-alvéolaire.',
       cibles:['couronne_cm','inlay_core','lesion','amalgame','rhizalyse'],
