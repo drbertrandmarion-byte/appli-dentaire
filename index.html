@@ -958,10 +958,13 @@
   }
   .radio-pt.ok{box-shadow:0 0 0 3px rgba(34,197,94,0.95), 0 1px 4px rgba(0,0,0,0.55);}
   .radio-pt.ko{box-shadow:0 0 0 3px rgba(220,38,38,0.95), 0 1px 4px rgba(0,0,0,0.55);}
-  .radio-target{
+  /* Les zones attendues de la correction : des contours fermés, tracés en SVG par-dessus le
+     cliché. « pointer-events:none » est indispensable — la couche couvre toute l'image, et
+     sans cela elle intercepterait les clics destinés aux points posés. */
+  .radio-zones{
     position:absolute;
-    border:2px dashed;
-    border-radius:50%;
+    inset:0;
+    width:100%; height:100%;
     pointer-events:none;
   }
   .radio-ghost{
@@ -5487,25 +5490,24 @@
       // redire ici n'apprendrait rien. Un cliché qui mérite une précision peut en déclarer une.
       caption:'',
       cibles:['couronne_cm','inlay_core','lesion','amalgame','rhizalyse'],
+      // Contours relevés sur le tracé de l'enseignante, en unités de largeur du cliché.
       zones:{
-        couronne_cm: {pts:[[161, 82]],  r:42},
-        // L'inlay-core dessine un U : le cœur dans la chambre, et deux tenons qui descendent
-        // dans les racines. Quatre points d'ancrage épousent ce contour — deux pour la barre
-        // du haut, un par tenon — là où un seul cercle aurait aussi accepté le creux entre
-        // les deux tenons, qui n'est pas la clavette mais la dentine qui les sépare.
-        inlay_core:  {pts:[[135, 113], [170, 113], [132, 148], [174, 148]], r:20},
-        // La lésion est une vaste radioclarté de forme irrégulière — sa forme naturelle —, qui
-        // s'étend sous la molaire de gauche, passe sous la dent couronnée et rejoint la région
-        // apicale de la 45. Sept points d'ancrage suivent son contour, dont un pour le sommet
-        // qui remonte entre la molaire et la racine mésiale. Elle recouvre donc en partie la
-        // zone de la rhizalyse : c'est clinique, la lésion résorbe l'apex voisin, et les deux
-        // repères étant jugés séparément, aucun des deux n'en souffre.
-        lesion:      {pts:[[56, 205], [98, 208], [104, 183], [140, 213],
-                           [182, 211], [222, 213], [250, 218]], r:28},
-        amalgame:    {pts:[[58, 55]],   r:26},
-        // Apex de la 45, dent située à droite de la couronne : son canal descend de (200, 105)
-        // vers (235, 210). Rayon resserré — un apex est une cible plus étroite qu'une couronne.
-        rhizalyse:   {pts:[[235, 213]], r:24}
+        amalgame: {poly:[[48,40],[80,40],[82,55],[79,68],[50,69],[46,54]]},
+        couronne_cm: {poly:[[112,53],[136,47],[180,45],[203,50],[206,74],[200,96],
+                            [163,99],[128,100],[110,90]]},
+        // L'inlay-core dessine un U : le cœur dans la chambre et deux tenons qui descendent
+        // dans les racines. Le creux entre les deux tenons n'est pas la clavette mais la
+        // dentine qui les sépare — le contour le laisse donc dehors.
+        inlay_core: {poly:[[110,78],[190,78],[190,105],[172,105],[172,160],[150,160],
+                           [150,105],[133,105],[133,165],[110,165]]},
+        // Vaste radioclarté de forme irrégulière — sa forme naturelle — qui court sous la
+        // molaire de gauche, passe sous la dent couronnée et rejoint la région apicale de la
+        // 45. Les deux sommets du contour remontent entre les racines.
+        lesion: {poly:[[11,191],[34,191],[46,162],[59,191],[82,191],[96,188],[101,162],
+                       [118,187],[158,187],[165,178],[187,176],[189,216],[231,219],
+                       [234,238],[170,243],[110,245],[52,241],[12,226]]},
+        // Portion apicale de la racine de la 45, dent située à droite de la couronne.
+        rhizalyse: {poly:[[219,139],[254,139],[254,221],[246,224],[222,222],[218,200]]}
       }
     }
   ];
@@ -5523,23 +5525,52 @@
   var radioOverlay    = document.getElementById('radio-overlay');
   var radioLegendEl   = document.getElementById('radio-legend');
 
+  // Une zone attendue est un CONTOUR FERMÉ, et non plus un ou plusieurs cercles. Deux raisons :
+  // un cercle ne dit jamais où s'arrête réellement la structure, et plusieurs cercles pour un
+  // même repère laissent croire à l'étudiant qu'il y a plusieurs endroits à trouver.
   function radioZone(id){
-    var base = RADIO_REPERE_BY_ID[id];
     var ov = radioCase && radioCase.zones && radioCase.zones[id];
-    return { pts: (ov && ov.pts) || base.pts, r: (ov && ov.r) || base.r };
+    return (ov && ov.poly) || null;
   }
 
   function radioIsTarget(id){
     return !!radioCase && radioCase.cibles.indexOf(id) !== -1;
   }
 
-  function radioWellPlaced(id, p){
-    var z = radioZone(id), best = Infinity;
-    z.pts.forEach(function(pt){
-      var d = Math.sqrt((pt[0] - p.x) * (pt[0] - p.x) + (pt[1] - p.y) * (pt[1] - p.y));
+  // Le point posé a un rayon visible d'une dizaine de pixels : poser son bord au contact du
+  // contour, c'est désigner la zone. On accepte donc « dedans » comme « au contact », à cette
+  // distance près, exprimée en unités de largeur du cliché.
+  var RADIO_CONTACT = 7;
+
+  function radioDansPolygone(poly, p){
+    var dedans = false;
+    for(var i = 0, j = poly.length - 1; i < poly.length; j = i++){
+      var xi = poly[i][0], yi = poly[i][1], xj = poly[j][0], yj = poly[j][1];
+      if((yi > p.y) !== (yj > p.y) &&
+         p.x < (xj - xi) * (p.y - yi) / (yj - yi) + xi) dedans = !dedans;
+    }
+    return dedans;
+  }
+
+  function radioDistanceAuBord(poly, p){
+    var best = Infinity;
+    for(var i = 0, j = poly.length - 1; i < poly.length; j = i++){
+      var ax = poly[j][0], ay = poly[j][1], bx = poly[i][0], by = poly[i][1];
+      var dx = bx - ax, dy = by - ay;
+      var len2 = dx * dx + dy * dy;
+      var t = len2 ? ((p.x - ax) * dx + (p.y - ay) * dy) / len2 : 0;
+      t = t < 0 ? 0 : (t > 1 ? 1 : t);
+      var ex = ax + t * dx - p.x, ey = ay + t * dy - p.y;
+      var d = Math.sqrt(ex * ex + ey * ey);
       if(d < best) best = d;
-    });
-    return best <= z.r;
+    }
+    return best;
+  }
+
+  function radioWellPlaced(id, p){
+    var poly = radioZone(id);
+    if(!poly) return false;
+    return radioDansPolygone(poly, p) || radioDistanceAuBord(poly, p) <= RADIO_CONTACT;
   }
 
   function radioPct(v, span){ return (v / span * 100).toFixed(2) + '%'; }
@@ -5567,24 +5598,26 @@
     }).join('');
   }
 
-  // La taille des cercles de correction dépend de la largeur affichée du cliché : elle est
-  // donc recalculée à chaque rendu, et au redimensionnement de la fenêtre.
+  // Les contours sont tracés en SVG, dans le même repère que les coordonnées : ils suivent donc
+  // le cliché quelle que soit sa taille d'affichage, sans recalcul au redimensionnement.
   function renderRadioOverlay(){
     var html = '';
     var hUnites = radioHauteurUnites();
     if(radioChecked && radioCase){
-      var w = radioFilm.clientWidth || 360;
-      radioCase.cibles.forEach(function(id){
-        var rep = RADIO_REPERE_BY_ID[id], z = radioZone(id);
-        var dpx = 2 * z.r / RADIO_W * w;
-        z.pts.forEach(function(pt){
-          html += '<span class="radio-target" style="left:' + radioPct(pt[0], RADIO_W) +
-                  ';top:' + radioPct(pt[1], hUnites) +
-                  ';width:' + dpx.toFixed(1) + 'px;height:' + dpx.toFixed(1) + 'px' +
-                  ';margin:' + (-dpx / 2).toFixed(1) + 'px 0 0 ' + (-dpx / 2).toFixed(1) + 'px' +
-                  ';border-color:' + rep.color + '"></span>';
-        });
-      });
+      var formes = radioCase.cibles.map(function(id){
+        var rep = RADIO_REPERE_BY_ID[id], poly = radioZone(id);
+        if(!poly) return '';
+        var pts = poly.map(function(pt){ return pt[0] + ',' + pt[1]; }).join(' ');
+        // Le remplissage très clair rend la zone lisible d'un coup d'œil sans masquer l'image
+        // qu'elle désigne ; le liseré sombre détache le trait de couleur des gris du cliché.
+        return '<polygon points="' + pts + '" data-rid="' + id + '" data-poly="' + pts + '"' +
+               ' fill="' + rep.color + '" fill-opacity="0.16"' +
+               ' stroke="#00000066" stroke-width="3.4" stroke-linejoin="round"/>' +
+               '<polygon points="' + pts + '" fill="none" stroke="' + rep.color +
+               '" stroke-width="1.8" stroke-linejoin="round"/>';
+      }).join('');
+      html += '<svg class="radio-zones" viewBox="0 0 ' + RADIO_W + ' ' + hUnites.toFixed(1) +
+              '" preserveAspectRatio="none">' + formes + '</svg>';
     }
     Object.keys(radioPlacements).forEach(function(id){
       var rep = RADIO_REPERE_BY_ID[id], pl = radioPlacements[id];

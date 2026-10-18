@@ -2,12 +2,15 @@
 //
 // Ce que la suite verifie, dans l'ordre :
 //   1. Un etudiant ne voit pas le bouton — ni dans le menu, ni meme en cliquant dessus.
-//   2. Le cliche accepte un point depose au centre exact de la zone attendue.
-//   3. La marge de tolerance existe vraiment : un point pose juste a l'interieur du rayon
-//      passe, le meme pose juste au-dela est refuse. Sans ces deux mesures symetriques,
-//      une tolerance devenue enorme — ou nulle — passerait inapercue.
+//   2. Le cliche accepte un point depose a l'interieur du contour attendu.
+//   3. La marge de contact existe vraiment : un point pose JUSTE A L'EXTERIEUR du contour
+//      passe — le point a un rayon visible, le poser au contact designe bien la zone —,
+//      le meme pose nettement plus loin est refuse. Sans ces deux mesures symetriques, une
+//      tolerance devenue enorme — ou nulle — passerait inapercue.
 //   4. Les trois fautes possibles sont comptees separement : repere mal situe, repere
 //      oublie, signe pose a tort (leurre).
+//   5. Chaque contour garde une taille plausible : ni si vaste qu'il designerait un quart
+//      du cliche, ni si menu qu'il faudrait viser au pixel.
 //
 // Technique : le tirage du cliche est aleatoire, donc Math.random est remplace par un
 // generateur a graine (meme procede que tests/confettis.js). Une premiere passe valide
@@ -42,33 +45,107 @@ async function ouvreCliche(page){
   await page.waitForTimeout(650); // fondu + scrollIntoView
 }
 
+// ---- Geometrie des contours, cote test ----
+// Le test refait son propre calcul d'appartenance plutot que d'appeler celui de la page :
+// deux implementations independantes qui tombent d'accord valent mieux qu'une seule qui se
+// confirme elle-meme.
+function dansPolygone(poly, x, y){
+  let dedans = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i][0], yi = poly[i][1], xj = poly[j][0], yj = poly[j][1];
+    if ((yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi) dedans = !dedans;
+  }
+  return dedans;
+}
+
+function airePolygone(poly){
+  let a = 0;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    a += poly[j][0] * poly[i][1] - poly[i][0] * poly[j][1];
+  }
+  return Math.abs(a) / 2;
+}
+
+function boite(poly){
+  const xs = poly.map(p => p[0]), ys = poly.map(p => p[1]);
+  return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
+}
+
+// Un point franchement a l'interieur : le centre de gravite tombe dehors sur une forme en U,
+// on cherche donc, par echantillonnage, le point interieur le plus eloigne du bord.
+function pointInterieur(poly){
+  const b = boite(poly);
+  let best = null, bestD = -1;
+  for (let i = 1; i < 24; i++) {
+    for (let j = 1; j < 24; j++) {
+      const x = b.x0 + (b.x1 - b.x0) * i / 24;
+      const y = b.y0 + (b.y1 - b.y0) * j / 24;
+      if (!dansPolygone(poly, x, y)) continue;
+      const d = distanceAuBord(poly, x, y);
+      if (d > bestD) { bestD = d; best = { x, y, marge: d }; }
+    }
+  }
+  return best;
+}
+
+function distanceAuBord(poly, px, py){
+  let best = Infinity;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const ax = poly[j][0], ay = poly[j][1], bx = poly[i][0], by = poly[i][1];
+    const dx = bx - ax, dy = by - ay, len2 = dx * dx + dy * dy;
+    let t = len2 ? ((px - ax) * dx + (py - ay) * dy) / len2 : 0;
+    t = t < 0 ? 0 : (t > 1 ? 1 : t);
+    const ex = ax + t * dx - px, ey = ay + t * dy - py;
+    best = Math.min(best, Math.sqrt(ex * ex + ey * ey));
+  }
+  return best;
+}
+
+// Un point a une distance donnee a l'EXTERIEUR du contour, pris au milieu de l'arete la plus
+// longue et pousse selon sa normale sortante.
+function pointExterieur(poly, distance){
+  let meilleure = null, longueurMax = -1;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const ax = poly[j][0], ay = poly[j][1], bx = poly[i][0], by = poly[i][1];
+    const len = Math.hypot(bx - ax, by - ay);
+    if (len > longueurMax) { longueurMax = len; meilleure = { ax, ay, bx, by, len }; }
+  }
+  const { ax, ay, bx, by, len } = meilleure;
+  const nx = -(by - ay) / len, ny = (bx - ax) / len;
+  const mx = (ax + bx) / 2, my = (ay + by) / 2;
+  for (const sens of [1, -1]) {
+    const x = mx + sens * nx * distance, y = my + sens * ny * distance;
+    if (!dansPolygone(poly, x, y) && !dansPolygone(poly, mx + sens * nx * 1.5, my + sens * ny * 1.5)) {
+      return { x, y };
+    }
+  }
+  return null;
+}
+
 // Les zones attendues ne sont lisibles que dans la correction : on valide donc une lecture
-// vide, et on releve les cercles en pointilles. La couleur fait le lien avec le repere,
-// puisque c'est elle, et elle seule, que l'etudiant voit.
+// vide, et on releve les contours traces. Leurs sommets sont lus tels quels — c'est la zone
+// que l'etudiant voit, et c'est elle qui doit correspondre a ce que l'application accepte.
 async function zonesAttendues(page){
   await page.click('#radio-submit-btn');
   await page.waitForTimeout(450);
   return page.evaluate(() => {
     const film = document.getElementById('radio-film').getBoundingClientRect();
-    const parId = {};
-    document.querySelectorAll('.radio-chip').forEach(c => {
-      const dot = c.querySelector('.dot');
-      parId[getComputedStyle(dot).backgroundColor] = c.getAttribute('data-rid');
-    });
     const out = [];
-    document.querySelectorAll('.radio-target').forEach(t => {
-      const r = t.getBoundingClientRect();
-      const id = parId[getComputedStyle(t).borderColor] || null;
-      if (out.some(z => z.id === id)) return; // un repere peut avoir plusieurs zones : la premiere suffit
-      out.push({
-        id,
-        fx: (r.left + r.width / 2 - film.left) / film.width,
-        fy: (r.top + r.height / 2 - film.top) / film.height,
-        rpx: r.width / 2
-      });
+    document.querySelectorAll('.radio-zones polygon[data-poly]').forEach(t => {
+      const id = t.getAttribute('data-rid');
+      if (out.some(z => z.id === id)) return;
+      const poly = t.getAttribute('data-poly').trim().split(/\s+/)
+        .map(p => p.split(',').map(Number));
+      out.push({ id, poly, W: film.width, H: film.height });
     });
     return out;
   });
+}
+
+// Unites du cliche -> fraction du cadre. L'horizontale fait 360 unites de large ; la
+// verticale partage la meme echelle, d'ou le rapport largeur/hauteur.
+function fraction(z, x, y){
+  return { fx: x / 360, fy: (y / 360) * (z.W / z.H) };
 }
 
 async function tousLesReperes(page){
@@ -164,7 +241,6 @@ async function valideEtLis(page){
     if (vus.has(enonce)) { sansNouveau++; await a.close(); continue; }
     sansNouveau = 0;
     const zones = await zonesAttendues(a);
-    const largeurFilm = await a.evaluate(() => document.getElementById('radio-film').getBoundingClientRect().width);
     const reperes = await tousLesReperes(a);
     const vide = await a.evaluate(() => ({
       classe: document.getElementById('radio-verdict').className,
@@ -176,7 +252,10 @@ async function valideEtLis(page){
     const etiquette = 'cliche #' + vus.size;
 
     if (!zones.length) { ko(etiquette + ' : aucune zone attendue revelee par la correction'); continue; }
-    if (zones.some(z => !z.id)) { ko(etiquette + ' : une zone attendue n\'a pas de repere identifiable (couleur inconnue)'); continue; }
+    if (zones.some(z => !z.id)) { ko(etiquette + ' : un contour attendu ne porte pas le nom de son repere'); continue; }
+    if (zones.some(z => !z.poly || z.poly.length < 3)) {
+      ko(etiquette + ' : un contour attendu a moins de trois sommets — ce n\'est pas une zone'); continue;
+    }
     if (!/\bko\b/.test(vide.classe)) ko(etiquette + ' : une lecture entierement vide est comptee comme reussie');
     if (!new RegExp('^0 / ' + zones.length + ' ').test(vide.score)) {
       ko(etiquette + ' : score d\'une lecture vide = « ' + vide.score + ' », attendu « 0 / ' + zones.length + ' … »');
@@ -185,22 +264,36 @@ async function valideEtLis(page){
     const leurres = reperes.filter(r => !zones.some(z => z.id === r));
     if (!leurres.length) ko(etiquette + ' : aucun leurre dans la legende, tous les reperes sont attendus');
 
-    // Mesure ABSOLUE de la marge, en unites de largeur du cliche (360 d'un bord a l'autre).
-    // Les deux passes suivantes comparent la tolerance a elle-meme : si elle etait multipliee
-    // par dix ou ramenee a zero, elles pourraient le rater puisque la sonde suit le rayon
-    // mesure. Ici le rayon est juge pour ce qu'il est. Le plafond est fixe au sixieme de la
-    // largeur : une couronne prothetique est large, et un etudiant qui pointe n'importe ou
-    // dessus a raison ; au-dela, la zone couvrirait un sixieme du cliche et ne designerait
-    // plus rien. Le plancher evite l'inverse, une zone qu'il faudrait viser au pixel.
+    // Mesure ABSOLUE de la taille des contours, en part du cliche. Les passes suivantes
+    // comparent la zone a elle-meme : si elle etait agrandie dix fois ou reduite a rien,
+    // elles pourraient le rater, puisque la sonde suit le contour mesure. Ici la zone est
+    // jugee pour ce qu'elle est. Le plafond est fixe au quart du cliche : une lesion etendue
+    // en occupe legitimement une large part, mais au-dela une zone ne designe plus rien. Le
+    // plancher evite l'inverse, un contour qu'il faudrait viser au pixel.
+    const AIRE_FILM = 360 * (zones[0].H / zones[0].W) * 360;
     zones.forEach(z => {
-      const rvb = z.rpx / largeurFilm * 360;
-      if (rvb < 8 || rvb > 60) {
-        ko(etiquette + ' : marge de tolerance de ' + rvb.toFixed(1) + ' unites pour « ' + z.id
-           + ' » (attendu entre 8 et 60)');
+      const part = airePolygone(z.poly) / AIRE_FILM * 100;
+      if (part < 0.3 || part > 25) {
+        ko(etiquette + ' : le contour de « ' + z.id + ' » couvre ' + part.toFixed(1)
+           + ' % du cliche (attendu entre 0,3 et 25)');
       }
     });
 
-    // Passe B : tous les reperes attendus, au centre exact de leur zone.
+    // Chaque zone fournit trois sondes : un point franchement dedans, un point juste au
+    // contact du bord, et un point nettement dehors.
+    const sondes = zones.map(z => ({
+      z,
+      dedans: pointInterieur(z.poly),
+      contact: pointExterieur(z.poly, 4),
+      dehors: pointExterieur(z.poly, 34)
+    }));
+    sondes.forEach(s => {
+      if (!s.dedans) ko(etiquette + ' : aucun point interieur trouve pour « ' + s.z.id + ' »');
+      if (!s.contact || !s.dehors) ko(etiquette + ' : aucune sonde exterieure pour « ' + s.z.id + ' »');
+    });
+    if (sondes.some(s => !s.dedans || !s.contact || !s.dehors)) continue;
+
+    // Passe B : tous les reperes attendus, franchement a l'interieur de leur contour.
     {
       const p = await context.newPage();
       await boot(p, seed);
@@ -209,7 +302,10 @@ async function valideEtLis(page){
         ko(etiquette + ' : la graine ne rejoue pas le meme cliche (passe B)');
         await p.close(); continue;
       }
-      for (const z of zones) await depose(p, z.id, z.fx, z.fy);
+      for (const s of sondes) {
+        const f = fraction(s.z, s.dedans.x, s.dedans.y);
+        await depose(p, s.z.id, f.fx, f.fy);
+      }
       const r = await valideEtLis(p);
       if (r.poses !== zones.length) ko(etiquette + ' : ' + r.poses + ' point(s) poses sur le cliche au lieu de ' + zones.length);
       if (!/\bok\b/.test(r.classe)) ko(etiquette + ' : lecture parfaite refusee — « ' + r.score + ' »');
@@ -219,33 +315,36 @@ async function valideEtLis(page){
       await p.close();
     }
 
-    // Passe C : juste a l'interieur de la marge. Chaque point est decale de (rayon - 3) px,
-    // en diagonale pour eviter de retomber par hasard sur une autre zone du meme repere.
+    // Passe C : tous les points poses JUSTE A L'EXTERIEUR du contour. Le point a un rayon
+    // visible ; le poser au contact du bord designe bien la zone et doit passer.
     {
       const p = await context.newPage();
       await boot(p, seed);
       await ouvreCliche(p);
-      for (const z of zones) {
-        const d = Math.max(0, z.rpx - 3) / Math.SQRT2;
-        await depose(p, z.id, z.fx, z.fy, d, -d);
+      for (const s of sondes) {
+        const f = fraction(s.z, s.contact.x, s.contact.y);
+        await depose(p, s.z.id, f.fx, f.fy);
       }
       const r = await valideEtLis(p);
       if (!/\bok\b/.test(r.classe)) {
-        ko(etiquette + ' : un point pose a l\'interieur de la marge est refuse — « ' + r.score + ' » (la tolerance ne fonctionne pas)');
+        ko(etiquette + ' : un point pose au contact du contour est refuse — « ' + r.score + ' » (la marge de contact ne fonctionne pas)');
       }
       await p.close();
     }
 
-    // Passe D : les trois fautes, une de chaque, et la limite exterieure de la marge.
+    // Passe D : les trois fautes, une de chaque — et le point « nettement dehors », qui
+    // mesure la limite exterieure de la marge de contact.
     {
       const p = await context.newPage();
       await boot(p, seed);
       await ouvreCliche(p);
-      const malSitue = zones[0];
-      const oublie = zones[zones.length - 1];
-      const d = (malSitue.rpx + 8) / Math.SQRT2;
-      await depose(p, malSitue.id, malSitue.fx, malSitue.fy, d, d);
-      for (const z of zones.slice(1, zones.length - 1)) await depose(p, z.id, z.fx, z.fy);
+      const malSitue = sondes[0];
+      const fLoin = fraction(malSitue.z, malSitue.dehors.x, malSitue.dehors.y);
+      await depose(p, malSitue.z.id, fLoin.fx, fLoin.fy);
+      for (const s of sondes.slice(1, sondes.length - 1)) {
+        const f = fraction(s.z, s.dedans.x, s.dedans.y);
+        await depose(p, s.z.id, f.fx, f.fy);
+      }
       await depose(p, leurres[0], 0.5, 0.5);
       const r = await valideEtLis(p);
       if (!/\bko\b/.test(r.classe)) ko(etiquette + ' : une lecture fautive est comptee comme reussie');
