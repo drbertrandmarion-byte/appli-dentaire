@@ -5931,6 +5931,35 @@
         carie: {poly:[[272,205],[282,204],[288,211],[288,222],[282,229],[273,228],[268,220],
                       [268,211]]}
       }
+    },
+    {
+      id:'screw_post_carie',
+      titre:'Rétro-alvéolaire — secteur postérieur maxillaire',
+      image:'radios/retro-alveolaire-08.jpg',
+      caption:'',
+      legende:['carie','screw_post','lesion','couronne_metal','parodontite','composite'],
+      // L'énoncé reçu ne séparait pas les bonnes légendes des fausses, contrairement aux sept
+      // précédents. Les quatre repères retenus ici sont ceux que le cliché montre sans
+      // ambiguïté. Les deux lésions apicales sont laissées en leurres FAUTE DE LES VOIR : je
+      // n'ai pas su distinguer de radioclarté apicale sur ce film, et déclarer une cible
+      // m'obligerait à dessiner une lacune inventée — une erreur qui survivrait dans le
+      // corrigé même après correction de la liste. Le choix se renverse en une ligne.
+      cibles:['carie','screw_post','couronne_metal','composite'],
+      zones:{
+        // Tenon vissé : son filetage se voit nettement sur le bord droit de la colonne.
+        screw_post: {poly:[[98,142],[110,142],[118,156],[121,173],[122,190],[117,200],
+                           [107,200],[99,187],[96,167],[95,151]]},
+        // Coiffe métallique, coupée par le bord gauche du film.
+        couronne_metal: {poly:[[0,158],[22,162],[42,184],[64,190],[90,196],[118,199],
+                               [140,202],[141,228],[136,250],[114,263],[82,267],[48,266],
+                               [20,261],[0,250]]},
+        // Vaste radioclarté qui mine la couronne de la dent du milieu.
+        carie: {poly:[[156,190],[172,186],[190,190],[200,202],[200,222],[192,236],[176,240],
+                      [160,234],[152,218],[151,202]]},
+        // Restauration grise, aux limites nettes, sur la dent de droite.
+        composite: {poly:[[262,199],[280,198],[294,206],[300,220],[297,236],[285,245],
+                          [268,244],[257,232],[255,214]]}
+      }
     }
   ];
 
