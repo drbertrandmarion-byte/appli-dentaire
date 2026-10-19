@@ -5663,7 +5663,8 @@
     {id:'couronne_metal',    label:'Couronne métallique',                       color:'#78716c'},
     {id:'resorption_externe',label:'Résorption externe',                        color:'#e11d48'},
     {id:'resorption_interne',label:'Résorption interne',                        color:'#7e22ce'},
-    {id:'composite',         label:'Composite dentaire',                        color:'#06b6d4'}
+    {id:'composite',         label:'Composite dentaire',                        color:'#06b6d4'},
+    {id:'carie',             label:'Lésion carieuse',                           color:'#ca8a04'}
   ];
 
   var RADIO_REPERE_BY_ID = {};
@@ -5826,6 +5827,30 @@
         // de délimiter la lacune. Ce contour marque la région, pas la lésion.
         lesion: {poly:[[282,166],[302,162],[318,170],[322,186],[316,200],[298,204],[284,196],
                        [278,180]]}
+      }
+    },
+    {
+      id:'amalgames_resorption',
+      titre:'Rétro-alvéolaire — secteur postérieur mandibulaire',
+      // Seul cliché au format portrait : le cadre s'y adapte, les contours étant exprimés en
+      // unités de largeur de film et non en pixels.
+      image:'radios/retro-alveolaire-05.jpg',
+      caption:'',
+      // Deux repères présents seulement, et les trois leurres demandés pour ce cliché.
+      legende:['amalgame','resorption_interne','resorption_externe','carie','composite'],
+      cibles:['amalgame','resorption_externe'],
+      zones:{
+        // Deux obturations métalliques sur ce cliché : deux zones, donc deux points attendus.
+        // Ce sont les seuls contours de ce cliché que la grille donne sans hésitation.
+        amalgame: {polys:[
+          [[70,150],[80,150],[87,157],[88,167],[84,178],[75,182],[66,178],[61,168],[62,157]],
+          [[176,158],[187,157],[196,164],[199,176],[195,189],[185,195],[174,192],[167,182],[167,168]]
+        ]},
+        // ÉBAUCHE, et la plus incertaine de toutes celles posées jusqu'ici : ce cliché est une
+        // photographie d'écran, son contraste ne permet pas de délimiter la lacune. Le contour
+        // marque la zone la plus anormale de la dent de droite, à reprendre dans l'atelier.
+        resorption_externe: {poly:[[300,172],[312,170],[322,177],[325,190],[320,201],[308,205],
+                                   [298,199],[294,186]]}
       }
     }
   ];
