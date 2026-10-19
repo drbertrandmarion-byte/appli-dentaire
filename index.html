@@ -5673,7 +5673,11 @@
     // un matériau mais demandent d'identifier une dent par son numéro. La zone attendue est
     // alors la dent entière.
     {id:'dent_16',           label:'Dent numéro 16',                            color:'#facc15'},
-    {id:'dent_27',           label:'Dent numéro 27',                            color:'#0284c7'}
+    {id:'dent_27',           label:'Dent numéro 27',                            color:'#0284c7'},
+    // Repère anatomique et non pathologique : le sinus est une cavité normale, qu'il s'agit
+    // de reconnaître pour ne pas la confondre avec une lésion. Sa couleur est choisie claire,
+    // le sinus étant la région la plus sombre du cliché.
+    {id:'sinus',             label:'Sinus maxillaire',                          color:'#8b5cf6'}
   ];
 
   var RADIO_REPERE_BY_ID = {};
@@ -5959,6 +5963,42 @@
         // Restauration grise, aux limites nettes, sur la dent de droite.
         composite: {poly:[[262,199],[280,198],[294,206],[300,220],[297,236],[285,245],
                           [268,244],[257,232],[255,214]]}
+      }
+    },
+    {
+      id:'inlay_core_sinus',
+      titre:'Rétro-alvéolaire — secteur postérieur maxillaire',
+      image:'radios/retro-alveolaire-09.png',
+      caption:'',
+      legende:['inlay_core_simple','couronne_cm','onlay','composite','lesion','fragment','sinus'],
+      // L'énoncé ne séparait pas les bonnes légendes des fausses. Le partage retenu suit la
+      // règle que l'enseignante avait elle-même posée — les repères présents, plus deux faux,
+      // pas davantage : cinq cibles et deux leurres. Les deux leurres sont ceux que je ne
+      // trouve pas sur le film : aucune coiffe céramo-métallique, aucune radioclarté apicale.
+      cibles:['inlay_core_simple','onlay','composite','fragment','sinus'],
+      zones:{
+        // Le seul repère certain du cliché : masse coulée très dense, prolongée vers le haut
+        // par son tenon effilé.
+        inlay_core_simple: {poly:[[150,86],[158,88],[164,124],[172,150],[200,152],[228,160],
+                                  [243,178],[245,202],[238,226],[220,242],[196,248],[172,242],
+                                  [156,226],[150,202],[152,176],[150,140],[148,110]]},
+        // Fin trait radio-opaque qui prolonge le canal AU-DELÀ de la pointe du tenon, et
+        // nettement plus mince que lui : c'est ce qui le fait lire comme un fragment.
+        // Le contour s'arrête au-dessus de la pointe du tenon : s'ils se chevauchaient, un
+        // point posé dans le recouvrement vaudrait pour l'un comme pour l'autre, et les deux
+        // repères deviendraient indiscernables là où il faut justement les distinguer.
+        fragment: {poly:[[128,40],[136,38],[148,60],[154,76],[152,82],[144,82],[136,64],
+                         [129,48]]},
+        // Cavité sinusienne, au-dessus du liseré cortical qui court en arc d'un bord à l'autre.
+        sinus: {poly:[[8,16],[70,10],[150,10],[230,12],[310,18],[328,40],[306,56],[262,52],
+                      [214,74],[166,82],[124,72],[84,50],[46,42],[16,40]]},
+        // Restauration de la dent de droite, dont la limite incurvée passe sous les deux
+        // cuspides : recouvrement partiel, d'où la lecture en onlay.
+        onlay: {poly:[[246,158],[262,154],[280,156],[296,162],[303,176],[300,192],[288,204],
+                      [270,206],[254,198],[244,182],[242,168]]},
+        // Restauration mésio-occlusale de la dent de gauche, plus petite et de limite oblique.
+        composite: {poly:[[72,186],[88,182],[106,186],[122,196],[132,208],[128,220],[112,224],
+                          [94,218],[78,206],[70,196]]}
       }
     }
   ];
