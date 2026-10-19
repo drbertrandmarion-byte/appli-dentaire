@@ -5677,7 +5677,10 @@
     // Repère anatomique et non pathologique : le sinus est une cavité normale, qu'il s'agit
     // de reconnaître pour ne pas la confondre avec une lésion. Sa couleur est choisie claire,
     // le sinus étant la région la plus sombre du cliché.
-    {id:'sinus',             label:'Sinus maxillaire',                          color:'#8b5cf6'}
+    {id:'sinus',             label:'Sinus maxillaire',                          color:'#8b5cf6'},
+    {id:'traitement_radiculaire', label:'Traitement radiculaire endodontique',  color:'#4338ca'},
+    {id:'couronne_transitoire',   label:'Couronne transitoire',                 color:'#a8a29e'},
+    {id:'composite_fibre',   label:'Préparation coronaire en composite fibré',  color:'#d97706'}
   ];
 
   var RADIO_REPERE_BY_ID = {};
@@ -5999,6 +6002,42 @@
         // Restauration mésio-occlusale de la dent de gauche, plus petite et de limite oblique.
         composite: {poly:[[72,186],[88,182],[106,186],[122,196],[132,208],[128,220],[112,224],
                           [94,218],[78,206],[70,196]]}
+      }
+    },
+    {
+      id:'endo_composite_fibre',
+      titre:'Rétro-alvéolaire — secteur postérieur mandibulaire',
+      image:'radios/retro-alveolaire-10.jpg',
+      caption:'',
+      legende:['traitement_radiculaire','couronne_transitoire','onlay','composite_fibre',
+               'lesion','composite'],
+      // Même partage que les deux clichés précédents, faute d'énoncé séparant les bonnes
+      // légendes des fausses : quatre cibles, deux leurres. UN SEUL repère est certain ici —
+      // le traitement radiculaire. Les trois autres cibles tiennent à la lecture d'une limite
+      // de restauration, et le partage lui-même demande confirmation.
+      cibles:['traitement_radiculaire','couronne_transitoire','composite_fibre','composite'],
+      zones:{
+        // Les deux obturations canalaires de la molaire du milieu, et la chambre qui les
+        // relie : un seul traitement, donc une seule zone en V, l'espace inter-radiculaire
+        // restant en dehors. Denses, continues, effilées vers l'apex — c'est le seul repère
+        // de ce cliché qui ne prête pas à discussion.
+        traitement_radiculaire: {poly:[[124,96],[152,90],[196,96],[208,124],[214,172],
+                                       [211,210],[203,222],[196,212],[190,170],[180,132],
+                                       [168,120],[156,132],[146,176],[140,226],[132,240],
+                                       [124,232],[122,180],[120,130]]},
+        // Coiffe de la dent de gauche : la limite se suit tout autour de la couronne, sans
+        // que la densité change beaucoup — ce qui va dans le sens d'une résine provisoire.
+        couronne_transitoire: {poly:[[28,30],[50,26],[72,28],[86,38],[88,56],[84,74],[70,84],
+                                     [48,86],[32,78],[24,60],[24,42]]},
+        // Reconstitution coronaire de la molaire traitée : c'est la dent dépulpée qui porte
+        // la préparation, ce qui rend ce rattachement plus plausible que les autres.
+        composite_fibre: {poly:[[104,34],[130,28],[160,28],[188,34],[196,52],[194,76],
+                                [180,92],[150,96],[122,92],[106,76],[100,54]]},
+        // Restauration mésio-occlusale de la dent de droite. Elle ne recouvre pas les
+        // cuspides, d'où la lecture en composite plutôt qu'en onlay — c'est le point sur
+        // lequel je suis le moins sûr.
+        composite: {poly:[[206,32],[228,26],[246,32],[254,48],[252,68],[240,82],[220,84],
+                          [206,74],[200,54]]}
       }
     }
   ];
