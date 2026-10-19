@@ -5566,12 +5566,20 @@
     {id:'inlay_core_simple', label:'Inlay-core simple',                         color:'#f97316'},
     {id:'onlay',             label:'Onlay céramique / composite',               color:'#22c55e'},
     {id:'lesion',            label:'Lésion apicale infectieuse radioclaire (granulome, kyste ou abcès)', color:'#dc2626'},
-    {id:'parodontite',       label:'Lésion apicale débutante (parodontite apicale)', color:'#a3e635'},
+    // Un seul libellé pour l'élargissement ligamentaire sans lacune constituée, que
+    // l'enseignante l'ait appelé « débutante » sur un cliché et « aiguë » sur un autre : c'est
+    // la même lecture radiographique, et deux entrées imposeraient un choix indécidable.
+    {id:'parodontite',       label:'Lésion apicale débutante (parodontite apicale aiguë)', color:'#a3e635'},
     {id:'debris',            label:'Débris radiculaire',                        color:'#ec4899'},
     {id:'fragment',          label:'Fragment instrumental cassé',               color:'#7f1d1d'},
     {id:'amalgame',          label:'Amalgame dentaire',                         color:'#14b8a6'},
     {id:'amalgame_infiltre', label:'Perte d\'étanchéité de l\'amalgame',        color:'#64748b'},
-    {id:'rhizalyse',         label:'Rhizalyse radiculaire sur dent vivante',    color:'#a855f7'}
+    {id:'rhizalyse',         label:'Rhizalyse radiculaire sur dent vivante',    color:'#a855f7'},
+    {id:'screw_post',        label:'Screw post',                                color:'#1d4ed8'},
+    {id:'couronne_metal',    label:'Couronne métallique',                       color:'#78716c'},
+    {id:'resorption_externe',label:'Résorption externe',                        color:'#e11d48'},
+    {id:'resorption_interne',label:'Résorption interne',                        color:'#7e22ce'},
+    {id:'composite',         label:'Composite dentaire',                        color:'#06b6d4'}
   ];
 
   var RADIO_REPERE_BY_ID = {};
@@ -5674,6 +5682,32 @@
         // forme même du signe qui le distingue de la lacune constituée.
         parodontite: {poly:[[256,212],[272,210],[280,220],[280,236],[272,244],[260,244],
                             [252,234],[252,220]]}
+      }
+    },
+    {
+      id:'screw_post_resorption',
+      titre:'Rétro-alvéolaire — secteur postérieur mandibulaire',
+      image:'radios/retro-alveolaire-03.png',
+      caption:'',
+      legende:['couronne_metal','screw_post','couronne_cm','inlay_core_simple','parodontite',
+               'resorption_externe','resorption_interne','composite','amalgame'],
+      cibles:['screw_post','couronne_metal','couronne_cm','parodontite',
+              'resorption_externe','composite'],
+      // ÉBAUCHES, comme pour le deuxième cliché : mes repérages approximatifs, à reprendre
+      // dans l'atelier de tracé.
+      zones:{
+        // Deux screw posts, reconnaissables à leur filetage : deux zones, donc deux points.
+        screw_post: {polys:[
+          [[130,78],[146,76],[150,110],[144,136],[132,136],[126,108]],
+          [[230,70],[248,68],[252,104],[246,132],[234,132],[228,102]]
+        ]},
+        couronne_metal: {poly:[[92,18],[200,14],[280,22],[286,56],[250,70],[150,72],[96,56]]},
+        couronne_cm: {poly:[[292,22],[340,20],[348,40],[344,64],[310,70],[290,52]]},
+        parodontite: {poly:[[224,196],[246,194],[254,206],[252,224],[238,232],[224,226],
+                            [218,212]]},
+        resorption_externe: {poly:[[22,120],[44,116],[52,140],[50,172],[36,184],[20,176],
+                                   [14,146]]},
+        composite: {poly:[[172,78],[196,74],[204,92],[200,112],[182,118],[168,106],[166,88]]}
       }
     }
   ];
@@ -6468,6 +6502,12 @@
 
   // Le troisième bouton reste caché jusqu'à ce que le compte connecté soit reconnu comme
   // enseignant : un étudiant ne doit pas même savoir que ce mode existe.
+  // La liste des clichés, exposée pour que la suite de tests sache combien il y en a. Sans
+  // elle, elle ne peut que tirer au hasard et conclure « plus rien de nouveau » — ce qui est
+  // indiscernable d'un cliché que le tirage ne propose jamais, donc jamais vérifié. Le tirage
+  // reste celui des étudiants : c'est la couverture qui est contrôlée, pas le hasard.
+  window.EndoRadioCliches = RADIO_CASES.map(function(c){ return c.image; });
+
   window.EndoTeacherModes = function(on){
     (on ? showEl : hideEl)(document.getElementById('hub-radio-btn'));
     // L'atelier de tracé suit la même porte que le mode : il modifie le corrigé sur lequel

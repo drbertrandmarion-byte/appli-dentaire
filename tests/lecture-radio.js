@@ -295,11 +295,22 @@ async function valideEtLis(page){
   // Le nombre de cliches n'est pas fige : la suite parcourt des graines et eprouve chaque
   // cliche distinct qu'elle rencontre. Une graine qui ne rapporte rien de nouveau coute une
   // page ; en echange, ajouter une radiographie n'oblige pas a toucher au test.
+  // Combien de cliches existent ? L'application le dit. Sans cette liste, la suite ne peut
+  // que tirer au hasard et conclure « plus rien de nouveau », ce qui est indiscernable d'un
+  // cliche que le tirage ne propose jamais — et un cliche jamais tire est un cliche jamais
+  // verifie. C'est arrive : avec trois cliches, deux seulement etaient eprouves.
+  let attendus = [];
+  {
+    const p = await context.newPage();
+    await boot(p, 1);
+    attendus = await p.evaluate(() => window.EndoRadioCliches || []);
+    await p.close();
+    if (!attendus.length) ko('l\'application ne declare aucun cliche (window.EndoRadioCliches)');
+  }
+
   const vus = new Set();
-  const GRAINES = 30;
-  const SANS_NOUVEAU_MAX = 6; // arret quand six graines d'affilee ne rapportent plus rien
-  let sansNouveau = 0;
-  for (let graine = 1; graine <= GRAINES && sansNouveau < SANS_NOUVEAU_MAX; graine++) {
+  const GRAINES = 30 * Math.max(1, attendus.length);
+  for (let graine = 1; graine <= GRAINES && vus.size < attendus.length; graine++) {
     const seed = graine;
 
     // Passe A : lecture vide, pour relever les zones attendues de ce cliche.
@@ -311,8 +322,7 @@ async function valideEtLis(page){
     // differents pour un seul, et la suite n'en eprouvait qu'un sur deux sans le dire.
     const enonce = await a.getAttribute('#radio-film img', 'src');
     if (!enonce) { ko('aucune image sur le cliche tire'); await a.close(); break; }
-    if (vus.has(enonce)) { sansNouveau++; await a.close(); continue; }
-    sansNouveau = 0;
+    if (vus.has(enonce)) { await a.close(); continue; }
     const zones = await zonesAttendues(a);
     const reperes = await tousLesReperes(a);
     const vide = await a.evaluate(() => ({
@@ -540,7 +550,12 @@ async function valideEtLis(page){
     }
   }
 
-  if (!vus.size) ko('aucun cliche n\'a pu etre ouvert en ' + GRAINES + ' graines');
+  // Un cliche jamais tire est un cliche jamais verifie : on le nomme, comme le fait la suite
+  // du choix therapeutique avec ses cas nommes.
+  const jamaisTires = attendus.filter(src => ![...vus].some(v => v.indexOf(src) !== -1));
+  if (jamaisTires.length) {
+    ko('cliches jamais tires en ' + GRAINES + ' graines, donc jamais verifies : ' + jamaisTires.join(', '));
+  }
 
   // ---- 3bis. L'atelier de trace : le zoom ne doit pas decaler les sommets ----
   // C'est le risque propre au zoom : un sommet qui se poserait ailleurs qu'ou l'on clique.
@@ -657,7 +672,7 @@ async function valideEtLis(page){
   }
 
   await browser.close();
-  console.log('lecture-radio            Erreurs : ' + problemes.length + '  (' + vus.size + ' cliche(s) eprouve(s))');
+  console.log('lecture-radio            Erreurs : ' + problemes.length + '  (' + vus.size + ' / ' + attendus.length + ' cliche(s) eprouve(s))');
   problemes.forEach(p => console.log('  - ' + p));
   process.exit(problemes.length ? 1 : 0);
 })();
