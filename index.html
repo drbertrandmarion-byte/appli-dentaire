@@ -5621,7 +5621,10 @@
     {id:'parodontite',       label:'Lésion apicale débutante (parodontite apicale)', color:'#a3e635'},
     {id:'debris',            label:'Débris radiculaire',                        color:'#ec4899'},
     {id:'fragment',          label:'Fragment instrumental cassé',               color:'#7f1d1d'},
-    {id:'amalgame',          label:'Amalgame dentaire',                         color:'#14b8a6'},
+    // Vert foncé et non plus turquoise : sur le quatrième cliché, l'amalgame et le composite
+    // sont deux zones voisines, et leurs anciennes couleurs — #14b8a6 et #06b6d4 — ne se
+    // distinguaient ni sur le cliché ni entre deux pastilles de la légende.
+    {id:'amalgame',          label:'Amalgame dentaire',                         color:'#15803d'},
     {id:'amalgame_infiltre', label:'Perte d\'étanchéité de l\'amalgame',        color:'#64748b'},
     {id:'rhizalyse',         label:'Rhizalyse radiculaire sur dent vivante',    color:'#a855f7'},
     {id:'screw_post',        label:'Screw post',                                color:'#1d4ed8'},
@@ -5757,6 +5760,40 @@
         resorption_externe: {poly:[[22,120],[44,116],[52,140],[50,172],[36,184],[20,176],
                                    [14,146]]},
         composite: {poly:[[172,78],[196,74],[204,92],[200,112],[182,118],[168,106],[166,88]]}
+      }
+    },
+    {
+      id:'couronne_post_lesion',
+      titre:'Rétro-alvéolaire — secteur postérieur mandibulaire',
+      image:'radios/retro-alveolaire-04.png',
+      caption:'',
+      // Cinq repères présents, plus les deux leurres demandés pour ce cliché : la couronne
+      // métallique — celle qu'on voit est céramo-métallique — et l'inlay-core simple.
+      legende:['couronne_cm','amalgame','couronne_metal','screw_post','lesion',
+               'inlay_core_simple','composite'],
+      cibles:['amalgame','composite','screw_post','couronne_cm','lesion'],
+      // ÉBAUCHES, comme pour les deuxième et troisième clichés : mes repérages approximatifs,
+      // à reprendre dans l'atelier de tracé. Seul l'amalgame se lit sans ambiguïté sur la
+      // grille — c'est la seule zone dont le contour soit ici autre chose qu'un point de
+      // départ.
+      zones:{
+        // Obturation métallique occlusale, petite et franchement radio-opaque : son contour
+        // se relève directement sur la grille, entre x 147 et 168, y 34 et 60.
+        amalgame: {poly:[[152,35],[160,34],[166,39],[168,47],[166,55],[160,60],[153,59],
+                         [148,53],[147,44],[149,38]]},
+        // Restauration grise, distale de la même dent, nettement moins opaque que l'amalgame.
+        composite: {poly:[[164,54],[178,52],[192,60],[199,74],[198,90],[190,100],[177,99],
+                          [168,88],[163,70]]},
+        couronne_cm: {poly:[[210,48],[218,37],[232,29],[250,26],[270,27],[288,33],[298,36],
+                            [306,33],[312,42],[306,54],[292,62],[285,74],[279,96],[262,100],[244,99],
+                            [228,95],[214,88],[207,74],[206,58]]},
+        // Tenon vissé, sous la couronne, dans l'orifice canalaire.
+        screw_post: {poly:[[258,94],[278,92],[286,106],[288,128],[282,146],[270,148],
+                           [260,130],[256,110]]},
+        // Ébauche la moins sûre des cinq : le contraste de la région apicale ne m'a pas permis
+        // de délimiter la lacune. Ce contour marque la région, pas la lésion.
+        lesion: {poly:[[282,166],[302,162],[318,170],[322,186],[316,200],[298,204],[284,196],
+                       [278,180]]}
       }
     }
   ];
