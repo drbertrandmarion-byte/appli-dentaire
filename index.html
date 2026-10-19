@@ -1065,6 +1065,15 @@
     gap:8px;
     margin:10px 0;
   }
+  .radio-etat{
+    font-size:0.78rem;
+    color:var(--radio-accent-dark);
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:10px;
+    padding:8px 11px;
+    margin:10px 0 6px;
+  }
   .radio-trace-cible{
     font-size:0.8rem;
     font-weight:600;
@@ -1672,6 +1681,10 @@
         <button class="btn-secondary" id="radio-trace-reset" type="button">Revenir aux contours d'origine</button>
         <button class="btn-primary" id="radio-trace-done" type="button">Terminer</button>
       </div>
+      <!-- Ce que l'appareil conserve réellement, affiché noir sur blanc : sans cela on ne peut
+           pas distinguer « mon tracé n'a pas été enregistré » de « je ne regarde pas le bon
+           cliché », et le doute suffit à faire refaire le travail. -->
+      <p class="radio-etat" id="radio-trace-etat"></p>
       <p class="radio-hint">Coordonnées de vos tracés, à me transmettre pour les inscrire définitivement :</p>
       <textarea id="radio-trace-code" rows="8" readonly></textarea>
     </div>
@@ -6207,7 +6220,32 @@
 
   // Les coordonnées, dans le format exact du fichier source : l'enseignante me les transmet
   // telles quelles, et il n'y a plus rien à interpréter.
+  // Dit, pour le cliché affiché, ce qui est réellement conservé sur cet appareil. Le nom du
+  // fichier y figure : c'est lui qui distingue un cliché de l'autre, et c'est en le lisant
+  // qu'on voit qu'on ne traçait pas celui qu'on croyait.
+  function radioEcritEtat(){
+    var el = document.getElementById('radio-trace-etat');
+    if(!el || !radioCase) return;
+    var cas = radioTracesDuCas();
+    var noms = Object.keys(cas).filter(function(k){ return !!radioNormaliseContours(cas[k]); });
+    var fichier = (radioCase.image || '').split('/').pop();
+    if(!noms.length){
+      el.textContent = 'Cliché « ' + fichier + ' » : aucun tracé enregistré sur cet appareil ' +
+                       '— les contours affichés sont ceux d\'origine.';
+      return;
+    }
+    var detail = noms.map(function(id){
+      var n = radioNormaliseContours(cas[id]).length;
+      var rep = RADIO_REPERE_BY_ID[id];
+      return (rep ? rep.label : id) + (n > 1 ? ' (' + n + ' zones)' : '');
+    }).join(' · ');
+    el.textContent = 'Cliché « ' + fichier + ' » : ' + noms.length +
+                     (noms.length > 1 ? ' repères tracés et conservés' : ' repère tracé et conservé') +
+                     ' sur cet appareil — ' + detail + '.';
+  }
+
   function radioEcritCode(){
+    radioEcritEtat();
     var cas = radioTracesDuCas();
     var ids = Object.keys(cas).filter(function(k){ return !!radioNormaliseContours(cas[k]); });
     var txt = ids.length

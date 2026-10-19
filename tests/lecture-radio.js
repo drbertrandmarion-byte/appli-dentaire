@@ -486,6 +486,58 @@ async function valideEtLis(page){
       if (!detail.some(t => /oublié/.test(t))) ko(etiquette + ' : l\'oubli n\'est pas signale dans le detail');
       await p.close();
     }
+
+    // ---- Passes E et F : le denombrement, quand un repere figure a plusieurs endroits ----
+    // Les passes precedentes posent toujours le bon nombre de points au bon endroit : elles
+    // ne peuvent donc rien dire des deux fautes propres au denombrement. Sans ces deux passes,
+    // accepter une seule zone sur deux, ou ne plus compter les points du tout, passait
+    // inapercu — verifie par mutation.
+    const multi = sondes.find(s => s.z.contours.length > 1);
+    if (multi) {
+      // E : une seule des deux zones repérée. Le repere doit etre compte comme oublie.
+      {
+        const p = await context.newPage();
+        await boot(p, seed);
+        await ouvreCliche(p);
+        for (const s of sondes) {
+          // Pour le repere a plusieurs zones, on n'en pose qu'une seule.
+          const aPoser = (s === multi) ? s.dedans.slice(0, 1) : s.dedans;
+          for (const d of aPoser) await depose(p, s.z.id, ...Object.values(fraction(s.z, d.x, d.y)));
+        }
+        const r = await valideEtLis(p);
+        const attendu = (zones.length - 1) + ' / ' + zones.length
+          + ' repères présents correctement identifiés — 1 repère oublié.';
+        if (r.score !== attendu) {
+          ko(etiquette + ' : une seule zone sur ' + multi.z.contours.length + ' repérée pour « '
+             + multi.z.id + ' » donne « ' + r.score + ' », attendu « ' + attendu + ' »');
+        }
+        const detailE = await p.$$eval('#radio-verdicts li', es => es.map(e => e.textContent.trim()));
+        if (!detailE.some(t => /figure à \d+ endroits/.test(t))) {
+          ko(etiquette + ' : le detail ne dit pas combien de zones restaient a reperer');
+        }
+        await p.close();
+      }
+
+      // F : un point de trop sur un repere par ailleurs complet.
+      {
+        const p = await context.newPage();
+        await boot(p, seed);
+        await ouvreCliche(p);
+        for (const s of sondes) {
+          for (const d of s.dedans) await depose(p, s.z.id, ...Object.values(fraction(s.z, d.x, d.y)));
+        }
+        const enTrop = multi.dedans[0];
+        await depose(p, multi.z.id, ...Object.values(fraction(multi.z, enTrop.x + 3, enTrop.y + 3)));
+        const r = await valideEtLis(p);
+        const attendu = (zones.length - 1) + ' / ' + zones.length
+          + ' repères présents correctement identifiés — 1 repère mal situé.';
+        if (r.score !== attendu) {
+          ko(etiquette + ' : un point de trop sur « ' + multi.z.id + ' » donne « ' + r.score
+             + ' », attendu « ' + attendu + ' »');
+        }
+        await p.close();
+      }
+    }
   }
 
   if (!vus.size) ko('aucun cliche n\'a pu etre ouvert en ' + GRAINES + ' graines');
