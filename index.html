@@ -1134,6 +1134,16 @@
     color:var(--radio-accent-dark);
     margin-right:auto;
   }
+  /* Un repère déclaré absent du cliché : le tracé est permis mais restera sans effet. */
+  .radio-trace-cible.radio-alerte{
+    color:#9a3412;
+    background:#fff7ed;
+    border:1px solid #fdba74;
+    border-radius:8px;
+    padding:6px 10px;
+    font-weight:500;
+    line-height:1.35;
+  }
   #radio-trace-code{
     width:100%;
     font-family:ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -6555,8 +6565,21 @@
   function radioChoisirCible(id){
     radioTraceCible = id;
     var rep = RADIO_REPERE_BY_ID[id];
-    document.getElementById('radio-trace-cible').textContent =
-      rep ? 'Tracé en cours : ' + rep.label : 'Aucun repère sélectionné';
+    var el = document.getElementById('radio-trace-cible');
+    if(!rep){ el.textContent = 'Aucun repère sélectionné'; el.classList.remove('radio-alerte'); }
+    else if(!radioIsTarget(id)){
+      // Un repère déclaré absent du cliché peut être tracé — rien ne l'empêche — mais son
+      // contour n'est jamais dessiné à la correction, qui ne parcourt que les repères
+      // attendus. Sans cet avertissement, le tracé disparaît sans un mot, et l'on croit que
+      // l'enregistrement a échoué. C'est exactement ce qui est arrivé.
+      el.textContent = '⚠ « ' + rep.label + ' » est déclaré ABSENT de ce cliché : vous pouvez ' +
+                       'le tracer, mais son contour ne s\'affichera pas à la correction tant ' +
+                       'qu\'il n\'y sera pas déclaré présent.';
+      el.classList.add('radio-alerte');
+    } else {
+      el.textContent = 'Tracé en cours : ' + rep.label;
+      el.classList.remove('radio-alerte');
+    }
     renderRadioLegend();
     renderRadioOverlay();
   }
@@ -6739,7 +6762,17 @@
     var el = document.getElementById('radio-choix-actuel');
     if(!el || !radioCase) return;
     var rang = RADIO_CASES.indexOf(radioCase) + 1;
-    el.textContent = 'À l\'écran : cliché ' + rang + ' — ' + (radioCase.image || '').split('/').pop();
+    // La date du fichier réellement chargé. Un navigateur peut servir une copie gardée en
+    // cache sans le dire : on croit alors travailler sur la dernière version alors qu'on a
+    // l'ancienne sous les yeux, et un correctif déployé semble n'avoir aucun effet.
+    var maj = '';
+    try {
+      var d = new Date(document.lastModified);
+      if(!isNaN(d)) maj = ' · version du ' + d.toLocaleDateString('fr-FR') + ' à ' +
+                          d.toLocaleTimeString('fr-FR', {hour:'2-digit', minute:'2-digit'});
+    } catch(e){}
+    el.textContent = 'À l\'écran : cliché ' + rang + ' — ' +
+                     (radioCase.image || '').split('/').pop() + maj;
   }
 
   function startRadioCase(choix){

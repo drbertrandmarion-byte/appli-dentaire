@@ -766,6 +766,57 @@ async function valideEtLis(page){
     await p.close();
   }
 
+  // ---- 3quater. L'atelier et les reperes declares ABSENTS du cliche ----
+  // Rien n'empeche d'y tracer un leurre, mais son contour n'est jamais dessine a la
+  // correction, qui ne parcourt que les reperes attendus : le trace disparaissait alors sans
+  // un mot, et l'enseignante a cru deux soirees de suite que l'enregistrement echouait. Le
+  // partage attendu/absent est etabli ICI par une lecture vide sur une page a part, et non
+  // demande a l'atelier : c'est la meme source de verite que le reste de la suite.
+  {
+    const ref = await context.newPage();
+    await boot(ref, 11);
+    await ouvreCliche(ref);
+    const image = await ref.getAttribute('#radio-film img', 'src');
+    const attendusIci = (await zonesAttendues(ref)).map(z => z.id);
+    await ref.close();
+
+    const p = await context.newPage();
+    await boot(p, 11);
+    await p.evaluate(() => { window.EndoAccount.isAdmin = true; });
+    await ouvreCliche(p);
+    if (await p.getAttribute('#radio-film img', 'src') !== image) {
+      ko('atelier : la meme graine n\'ouvre pas le meme cliche, la comparaison ne vaut rien');
+    }
+    await p.click('#radio-trace-btn');
+    await p.waitForTimeout(450);
+    const tous = await tousLesReperes(p);
+    const leurresIci = tous.filter(id => !attendusIci.includes(id));
+    for (const id of tous) {
+      await p.click(`.radio-chip[data-rid="${id}"]`);
+      await p.waitForTimeout(90);
+      const etat = await p.$eval('#radio-trace-cible',
+        e => ({ alerte: e.classList.contains('radio-alerte'), texte: e.textContent }));
+      const devrait = !attendusIci.includes(id);
+      if (devrait && !etat.alerte) {
+        ko('atelier : « ' + id + ' » est declare absent du cliche et rien ne le dit — son trace '
+           + 'resterait sans effet a la correction');
+      }
+      if (!devrait && etat.alerte) {
+        ko('atelier : « ' + id + ' » est attendu sur ce cliche mais l\'atelier le declare absent');
+      }
+      if (devrait && etat.alerte && !/ABSENT/.test(etat.texte)) {
+        ko('atelier : l\'avertissement ne dit pas que le repere est absent du cliche');
+      }
+      if (!devrait && !/Tracé en cours/.test(etat.texte)) {
+        ko('atelier : un repere attendu ne s\'annonce pas par « Tracé en cours »');
+      }
+    }
+    if (!leurresIci.length) {
+      ko('atelier : le cliche tire par cette graine ne porte aucun leurre, l\'avertissement n\'a pas ete eprouve');
+    }
+    await p.close();
+  }
+
   // ---- 3ter. Le choix du cliche, reserve a l'enseignante ----
   // Elle doit pouvoir ouvrir le cliche qu'elle corrige sans attendre que le tirage le propose.
   // Deux choses a prouver : le choix est obei (et tenu d'un cliche au suivant), et il reste
