@@ -289,6 +289,14 @@ async function valideEtLis(page){
     if (!/<button class="hub-card hidden" id="hub-radio-btn"/.test(src)) {
       ko('le bouton #hub-radio-btn ne part plus cache dans le HTML : un etudiant le verrait le temps du chargement');
     }
+    // Meme exigence pour la liste des cliches, et elle ne peut etre eprouvee qu'ici : au
+    // chargement, enterApp appelle EndoTeacherModes(false) pour un etudiant et remet la
+    // classe. Un test en boite noire voit donc une liste cachee meme si le HTML ne la cache
+    // plus — seul reste expose le bref instant AVANT cet appel, que seule la source revele.
+    // La mutation qui retirait « hidden » du HTML passait inapercue, c'est ce qui l'a montre.
+    if (!/<div class="result-actions radio-pick-row hidden" id="radio-choix-wrap"/.test(src)) {
+      ko('la liste #radio-choix-wrap ne part plus cachee dans le HTML : un etudiant la verrait le temps du chargement');
+    }
   }
 
   // ---- 3. Le cliche lui-meme, cas par cas ----
@@ -670,6 +678,14 @@ async function valideEtLis(page){
 
     // Chaque cliche declare doit etre atteignable par son entree de liste.
     for (const id of options.slice(1)) {
+      // La liste doit etre atteignable a chaque tour. Sans ce controle, une liste disparue en
+      // cours de route faisait echouer le selectOption suivant sur un timeout Playwright :
+      // la suite s'interrompait sans jamais dire ce qui n'allait pas, et le ko deja enregistre
+      // partait avec elle. Un test doit nommer le defaut, pas planter dessus.
+      if (await p.$eval('#radio-choix-wrap', e => e.classList.contains('hidden'))) {
+        ko('liste enseignante : elle a disparu en cours de route, les cliches suivants sont inatteignables');
+        break;
+      }
       await p.selectOption('#radio-choix', id);
       await p.waitForTimeout(500);
       const vue = await ouverte();
@@ -693,10 +709,15 @@ async function valideEtLis(page){
       }
     }
 
-    // Revenir au hasard doit rendre la main au tirage.
-    await p.selectOption('#radio-choix', '');
-    await p.waitForTimeout(500);
-    if (!attendus.includes(await ouverte())) ko('liste enseignante : le retour au tirage au hasard n\'ouvre aucun cliche connu');
+    // Revenir au hasard doit rendre la main au tirage — pour autant que la liste soit encore
+    // la : sinon ce dernier selectOption echouerait sur un timeout et emporterait le rapport.
+    if (await p.$eval('#radio-choix-wrap', e => e.classList.contains('hidden'))) {
+      ko('liste enseignante : elle a disparu, le retour au tirage au hasard est hors d\'atteinte');
+    } else {
+      await p.selectOption('#radio-choix', '');
+      await p.waitForTimeout(500);
+      if (!attendus.includes(await ouverte())) ko('liste enseignante : le retour au tirage au hasard n\'ouvre aucun cliche connu');
+    }
     await p.close();
   }
 

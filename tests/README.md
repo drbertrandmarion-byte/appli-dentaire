@@ -242,6 +242,20 @@ côté étudiant, il ne suffit pas que la liste soit cachée : le test **force s
 une douzaine de clichés, et exige que le tirage reste un tirage. Un contrôle d'affichage seul
 laisserait passer une porte ouverte à qui inspecte le DOM.
 
+Que la liste parte **cachée dans le HTML** ne peut se vérifier que dans la source, et c'est une
+mutation qui l'a montré : `enterApp` appelle `EndoTeacherModes(false)` pour un étudiant et remet la
+classe au chargement, si bien qu'un test en boîte noire voit une liste cachée même quand le HTML ne
+la cache plus. Ce qui reste exposé est le bref instant *avant* cet appel — le défaut déjà rencontré
+trois fois ici. Le test vérifie aussi, avant chaque `selectOption`, que la liste est toujours là :
+sans cela, une liste disparue en cours de route faisait échouer Playwright sur un timeout et la
+suite s'interrompait **sans nommer le défaut**, emportant les erreurs déjà relevées.
+
+La légende, enfin, ne doit pas **s'éteindre** quand un point est posé : un même repère peut figurer
+deux fois sur un cliché, et une entrée estompée se donne pour épuisée. Le test mesure son opacité,
+lit son compteur, et vérifie que le repère **reste choisi** après la dépose — un second point se pose
+à la suite — tout en pouvant être relâché d'un nouveau toucher. Sans cette dernière mesure, un repère
+resterait collé au pointeur et chaque clic ajouterait un point involontaire.
+
 Il contrôle enfin que les trois fautes sont comptées **séparément** (repère mal situé, repère oublié,
 signe posé à tort), et les gestes sans lesquels l'exercice serait inutilisable : un point lâché hors
 du cliché ne se pose pas, un point déjà posé se déplace sans se dupliquer, un simple toucher le
@@ -254,8 +268,11 @@ repères de chaque cas — l'encadré affiché en tête du mode l'annonce explic
 
 Ses mutations de contrôle : afficher le bouton aux étudiants, retirer l'appel dans `enterApp`,
 multiplier la tolérance par quatre, l'annuler, poser les points hors du cliché, retirer un cliché de
-la liste déclarée, ignorer le choix de l'enseignante, obéir à la liste même cachée, la faire
-disparaître à la validation, et vider la ligne « à l'écran ». Toutes sont signalées.
+la liste déclarée, ignorer le choix de l'enseignante, la montrer aux étudiants dans le HTML, obéir à
+la liste même cachée, la faire disparaître à la validation, vider la ligne « à l'écran », remettre
+l'estompage dès le premier point, supprimer le compteur, relâcher le repère après chaque dépose, et
+l'empêcher d'être relâché. Toutes sont signalées — deux ne l'étaient pas au premier essai, et c'est
+ce qui a fait ajouter le contrôle en source et le garde-fou de visibilité.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas
