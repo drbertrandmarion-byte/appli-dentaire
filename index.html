@@ -978,6 +978,27 @@
      et jamais l'inverse — une image étirée déplacerait les structures que l'étudiant
      doit justement situer. */
   .radio-film .radio-img{object-fit:contain; background:#0d0e0f;}
+  /* Le doublon sans annotation : même cadre et même largeur que le cliché corrigé, pour que
+     la comparaison se fasse d'un coup d'œil sans que rien ne change d'échelle. */
+  .radio-nu{
+    max-width:520px;
+    margin:10px auto 6px;
+    padding:0;
+  }
+  .radio-nu img{
+    display:block;
+    width:100%;
+    height:auto;
+    border-radius:10px;
+    background:#0d0e0f;
+    object-fit:contain;
+  }
+  .radio-nu figcaption{
+    margin-top:6px;
+    font-size:0.78rem;
+    color:var(--muted);
+    text-align:center;
+  }
   .radio-overlay{position:absolute; inset:0;}
   .radio-pt{
     position:absolute;
@@ -1675,6 +1696,17 @@
         <div class="radio-overlay" id="radio-overlay"></div>
       </div>
     </div>
+
+    <!-- À la correction seulement : le même cliché, nu. Les contours de la correction
+         recouvrent justement ce qu'il s'agit d'apprendre à voir — une fois la zone peinte,
+         on ne distingue plus l'image qui l'a motivée. L'étudiant garde donc sous les yeux
+         une copie intacte, juste en dessous, pour comparer ce qu'il a lu à ce que montre
+         le film. -->
+    <figure class="radio-nu hidden" id="radio-nu">
+      <img id="radio-nu-img" alt="Le même cliché, sans annotation">
+      <figcaption>Le même cliché, sans annotation, pour comparer.</figcaption>
+    </figure>
+
     <p class="radio-caption" id="radio-caption"></p>
     <!-- La consigne, au-dessus du cliché, dit déjà quoi faire. Cette ligne ne garde que ce
          qu'elle seule apporte : comment le faire. -->
@@ -6503,6 +6535,7 @@
     hideEl(introCard);
     showEl(radioCaseCard);
     hideEl(document.getElementById('radio-correction'));
+    hideEl(document.getElementById('radio-nu'));
     showEl(document.getElementById('radio-submit-row'));
     showEl(document.getElementById('radio-hint'));
 
@@ -6605,6 +6638,10 @@
     renderRadioOverlay();
     hideEl(document.getElementById('radio-submit-row'));
     hideEl(document.getElementById('radio-hint'));
+    // La copie intacte du cliché n'apparaît qu'ici : avant la validation, le film est déjà nu,
+    // et la montrer deux fois ne ferait qu'allonger la page.
+    document.getElementById('radio-nu-img').src = radioCase.image;
+    showEl(document.getElementById('radio-nu'));
     showEl(document.getElementById('radio-correction'));
   }
 

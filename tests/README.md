@@ -250,6 +250,15 @@ trois fois ici. Le test vérifie aussi, avant chaque `selectOption`, que la list
 sans cela, une liste disparue en cours de route faisait échouer Playwright sur un timeout et la
 suite s'interrompait **sans nommer le défaut**, emportant les erreurs déjà relevées.
 
+La correction affiche sous le cliché annoté une **copie intacte** du même film : les contours
+colorés recouvrent justement ce qu'il s'agit d'apprendre à voir. Le test exige qu'elle soit cachée
+avant la validation, présente après, qu'elle montre **le même fichier** que le cliché corrigé — une
+copie d'un autre cliché serait pire que pas de copie —, qu'elle soit réellement rendue et chargée, et
+qu'elle **disparaisse au cliché suivant**. Cette dernière mesure ne pouvait pas vivre dans les passes
+par graine, qui repartent chacune d'une page neuve : une copie restée en place après « Nouveau
+cliché » y serait passée inaperçue, alors qu'elle montrerait le cliché précédent pendant qu'on lit le
+suivant.
+
 La légende, enfin, ne doit pas **s'éteindre** quand un point est posé : un même repère peut figurer
 deux fois sur un cliché, et une entrée estompée se donne pour épuisée. Le test mesure son opacité,
 lit son compteur, et vérifie que le repère **reste choisi** après la dépose — un second point se pose
@@ -271,8 +280,18 @@ multiplier la tolérance par quatre, l'annuler, poser les points hors du cliché
 la liste déclarée, ignorer le choix de l'enseignante, la montrer aux étudiants dans le HTML, obéir à
 la liste même cachée, la faire disparaître à la validation, vider la ligne « à l'écran », remettre
 l'estompage dès le premier point, supprimer le compteur, relâcher le repère après chaque dépose, et
-l'empêcher d'être relâché. Toutes sont signalées — deux ne l'étaient pas au premier essai, et c'est
-ce qui a fait ajouter le contrôle en source et le garde-fou de visibilité.
+l'empêcher d'être relâché, cacher la copie sans annotation, la faire montrer un autre cliché, la
+rendre sans largeur, et la laisser en place au cliché suivant. Toutes sont signalées — deux ne
+l'étaient pas au premier essai, et c'est ce qui a fait ajouter le contrôle en source et le garde-fou
+de visibilité.
+
+Une mutation ne l'est pas, et c'est délibéré : retirer `hidden` du HTML de la copie sans annotation
+ne change rien d'observable. La carte entière est cachée au chargement, et `startRadioCase` masque la
+copie dans le même bloc synchrone que l'affichage de la carte — il n'existe aucun instant où l'une
+serait visible sans l'autre. Contrairement au bouton enseignant, dont l'appel ne vient qu'après
+l'authentification, il n'y a pas de fenêtre de clignotement à protéger : un contrôle en source
+n'attesterait ici de rien. C'est en examinant ce mutant équivalent qu'a été trouvé le vrai trou
+voisin, la copie non retirée au cliché suivant.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas

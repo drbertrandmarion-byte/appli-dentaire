@@ -355,17 +355,45 @@ async function valideEtLis(page){
     const enonce = await a.getAttribute('#radio-film img', 'src');
     if (!enonce) { ko('aucune image sur le cliche tire'); await a.close(); break; }
     if (vus.has(enonce)) { await a.close(); continue; }
+    // Avant la validation, le film est deja nu : une seconde copie n'aurait rien a comparer et
+    // ne ferait qu'allonger la page.
+    const nuAvant = await a.$eval('#radio-nu', e => e.classList.contains('hidden'));
     const zones = await zonesAttendues(a);
     const reperes = await tousLesReperes(a);
     const vide = await a.evaluate(() => ({
       classe: document.getElementById('radio-verdict').className,
       score: document.getElementById('radio-score').textContent.trim()
     }));
+    // La copie sans annotation, sous le cliche corrige : la correction recouvre justement ce
+    // qu'il faut apprendre a voir, et sans elle l'etudiant n'a plus l'image intacte sous les
+    // yeux. Elle doit montrer LE MEME fichier — une copie d'un autre cliche serait pire que
+    // pas de copie du tout — et etre visible, ce qu'une largeur nulle dementirait.
+    const nu = await a.evaluate(() => {
+      const f = document.getElementById('radio-nu'), i = document.getElementById('radio-nu-img');
+      if (!f || !i) return null;
+      return {
+        cache: f.classList.contains('hidden'),
+        src: i.getAttribute('src'),
+        largeur: i.getBoundingClientRect().width,
+        charge: i.naturalWidth
+      };
+    });
     await a.close();
 
     vus.add(enonce);
     const etiquette = 'cliche #' + vus.size;
 
+    if (!nuAvant) ko(etiquette + ' : la copie sans annotation s\'affiche avant la validation, alors que le film est deja nu');
+    if (!nu) {
+      ko(etiquette + ' : la copie sans annotation du cliche a disparu de la page');
+    } else {
+      if (nu.cache) ko(etiquette + ' : la correction n\'affiche pas la copie sans annotation du cliche');
+      if (nu.src !== enonce) {
+        ko(etiquette + ' : la copie sans annotation montre « ' + nu.src + ' » et non le cliche corrige (' + enonce + ')');
+      }
+      if (!(nu.largeur > 80)) ko(etiquette + ' : la copie sans annotation est rendue sur ' + Math.round(nu.largeur) + ' px de large');
+      if (!nu.charge) ko(etiquette + ' : la copie sans annotation n\'a pas charge son image');
+    }
     if (!zones.length) { ko(etiquette + ' : aucune zone attendue revelee par la correction'); continue; }
     if (zones.some(z => !z.id)) { ko(etiquette + ' : un contour attendu ne porte pas le nom de son repere'); continue; }
     if (zones.some(z => !z.poly || z.poly.length < 3)) {
@@ -700,8 +728,18 @@ async function valideEtLis(page){
       if (await p.$eval('#radio-choix-wrap', e => e.classList.contains('hidden'))) {
         ko('liste enseignante : elle disparait apres la validation, le cliche suivant redevient introuvable');
       }
+      // La copie sans annotation doit suivre le cliche d'un tour a l'autre. Les passes de la
+      // section 3 repartent chacune d'une page neuve : elles ne verraient jamais une copie
+      // restee en place apres « Nouveau cliche », qui montrerait alors le cliche precedent
+      // pendant qu'on lit le suivant.
+      if (await p.$eval('#radio-nu', e => e.classList.contains('hidden'))) {
+        ko('copie sans annotation : absente de la correction de « ' + id + ' »');
+      }
       await p.click('#radio-next-btn');
       await p.waitForTimeout(500);
+      if (!await p.$eval('#radio-nu', e => e.classList.contains('hidden'))) {
+        ko('copie sans annotation : elle reste affichee apres « Nouveau cliche », avant toute validation');
+      }
       if (await ouverte() !== vue) ko('liste enseignante : « Nouveau cliche » abandonne le cliche choisi');
       const dit = await p.textContent('#radio-choix-actuel');
       if (!dit || dit.indexOf(vue.split('/').pop()) < 0) {
