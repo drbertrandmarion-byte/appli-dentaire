@@ -5668,7 +5668,12 @@
     // couronne céramo-métallique dans la même légende, et l'ancien doré n'en était distant que
     // de 14 — deux contours jumeaux sur le film. La mesure est désormais faite par le test.
     {id:'carie',             label:'Lésion carieuse',                           color:'#86198f'},
-    {id:'calcification',     label:'Dent avec une calcification diffuse',       color:'#9f1239'}
+    {id:'calcification',     label:'Dent avec une calcification diffuse',       color:'#9f1239'},
+    // Deux entrées d'une nature différente des autres : elles ne désignent pas une lésion ni
+    // un matériau mais demandent d'identifier une dent par son numéro. La zone attendue est
+    // alors la dent entière.
+    {id:'dent_16',           label:'Dent numéro 16',                            color:'#facc15'},
+    {id:'dent_27',           label:'Dent numéro 27',                            color:'#0284c7'}
   ];
 
   var RADIO_REPERE_BY_ID = {};
@@ -5894,6 +5899,37 @@
         calcification: {poly:[[262,28],[290,22],[316,28],[330,46],[336,82],[342,122],
                               [348,160],[344,190],[334,214],[316,228],[290,232],[266,226],
                               [250,208],[244,180],[246,140],[250,96],[254,56]]}
+      }
+    },
+    {
+      id:'dent_16_carie',
+      titre:'Rétro-alvéolaire — secteur postérieur maxillaire',
+      image:'radios/retro-alveolaire-07.png',
+      caption:'',
+      legende:['carie','dent_16','amalgame','dent_27','parodontite','composite'],
+      cibles:['carie','amalgame','dent_16'],
+      // ÉBAUCHES — et ici une réserve plus sérieuse que sur les clichés précédents. Le numéro
+      // de la dent ne se déduit pas de l'image seule : il dépend du côté et du secteur, que
+      // seul le praticien qui a pris le cliché connaît. La zone « dent 16 » ci-dessous
+      // désigne la dent porteuse de l'amalgame, faute de mieux. Si ce n'est pas la bonne,
+      // l'atelier de tracé n'y pourra rien : il corrige la forme d'une zone, pas la dent à
+      // laquelle elle est rattachée — et l'exercice enseignerait alors une fausse
+      // identification, ce qui est pire qu'un contour imprécis.
+      zones:{
+        // Dent porteuse de l'amalgame, prise dans son ensemble : c'est la dent qu'il s'agit
+        // de reconnaître, pas une de ses parties.
+        dent_16: {poly:[[232,88],[258,84],[280,92],[292,110],[296,140],[300,170],[303,200],
+                        [302,230],[298,255],[286,267],[262,270],[236,268],[214,262],
+                        [203,240],[200,210],[202,175],[206,140],[214,110]]},
+        // Masse métallique de la face distale, nettement plus dense que tout le reste du
+        // cliché. Une seconde opacité, plus petite, se voit en dessous vers (243-258, 250-262)
+        // — je ne sais pas s'il s'agit de la même obturation ou d'une seconde, et je n'ai
+        // donc déclaré qu'une zone.
+        amalgame: {poly:[[268,219],[282,221],[292,226],[300,236],[301,250],[296,260],
+                         [282,263],[268,262],[259,254],[256,240],[259,228]]},
+        // Encoche sombre sous le point de contact, à la face distale de cette même dent.
+        carie: {poly:[[272,205],[282,204],[288,211],[288,222],[282,229],[273,228],[268,220],
+                      [268,211]]}
       }
     }
   ];
