@@ -5664,7 +5664,11 @@
     {id:'resorption_externe',label:'Résorption externe',                        color:'#e11d48'},
     {id:'resorption_interne',label:'Résorption interne',                        color:'#7e22ce'},
     {id:'composite',         label:'Composite dentaire',                        color:'#06b6d4'},
-    {id:'carie',             label:'Lésion carieuse',                           color:'#ca8a04'}
+    // Prune et non plus doré : le sixième cliché fait figurer la lésion carieuse et la
+    // couronne céramo-métallique dans la même légende, et l'ancien doré n'en était distant que
+    // de 14 — deux contours jumeaux sur le film. La mesure est désormais faite par le test.
+    {id:'carie',             label:'Lésion carieuse',                           color:'#86198f'},
+    {id:'calcification',     label:'Dent avec une calcification diffuse',       color:'#9f1239'}
   ];
 
   var RADIO_REPERE_BY_ID = {};
@@ -5851,6 +5855,45 @@
         // marque la zone la plus anormale de la dent de droite, à reprendre dans l'atelier.
         resorption_externe: {poly:[[300,172],[312,170],[322,177],[325,190],[320,201],[308,205],
                                    [298,199],[294,186]]}
+      }
+    },
+    {
+      id:'calcification_carie',
+      // Secteur maxillaire : les racines pointent vers le haut du cliché.
+      titre:'Rétro-alvéolaire — secteur postérieur maxillaire',
+      image:'radios/retro-alveolaire-06.png',
+      caption:'',
+      legende:['couronne_cm','amalgame','screw_post','couronne_metal','carie','onlay',
+               'calcification','composite'],
+      cibles:['amalgame','screw_post','composite','carie','couronne_cm','calcification'],
+      // ÉBAUCHES. Au-delà des contours, c'est l'ATTRIBUTION qui demande confirmation : si un
+      // repère désigne ici la mauvaise dent, l'atelier de tracé n'y pourra rien — il corrige
+      // la forme d'une zone, pas la dent à laquelle elle est rattachée.
+      zones:{
+        // Dent la plus à gauche, obturation très radio-opaque, coupée par le bord du film.
+        amalgame: {poly:[[0,184],[14,181],[30,186],[44,183],[55,190],[56,205],[46,215],
+                         [28,219],[12,215],[0,210]]},
+        // Deuxième dent : masse en dôme, de loin la plus dense du cliché.
+        couronne_cm: {poly:[[100,163],[118,166],[128,178],[132,195],[128,214],[116,230],
+                            [100,236],[84,230],[72,214],[66,196],[70,178],[82,168]]},
+        // Colonne radio-opaque qui remonte dans le canal de cette même dent, depuis la
+        // couronne. Le contour s'arrête à la moitié coronaire : au-delà, la colonne pourrait
+        // tout aussi bien être une obturation canalaire.
+        screw_post: {poly:[[100,96],[114,96],[118,120],[119,142],[116,162],[106,168],
+                           [97,162],[95,140],[96,118]]},
+        // Troisième dent : restauration occlusale aux limites festonnées, nettement moins
+        // dense que l'amalgame de gauche.
+        composite: {poly:[[140,196],[152,186],[168,190],[182,184],[198,188],[214,184],
+                          [226,192],[224,208],[210,218],[190,222],[168,220],[150,214],
+                          [138,206]]},
+        // Encoche sombre sous le point de contact entre la troisième et la quatrième dent.
+        carie: {poly:[[227,181],[236,183],[241,191],[239,201],[231,205],[224,199],[222,189]]},
+        // Dent la plus à droite, prise dans son ensemble : c'est la dent entière qui porte le
+        // signe, et non une lacune. Son canal ne se suit pas sur la hauteur de la racine,
+        // alors qu'il se lit sans peine sur les trois autres dents.
+        calcification: {poly:[[262,28],[290,22],[316,28],[330,46],[336,82],[342,122],
+                              [348,160],[344,190],[334,214],[316,228],[290,232],[266,226],
+                              [250,208],[244,180],[246,140],[250,96],[254,56]]}
       }
     }
   ];

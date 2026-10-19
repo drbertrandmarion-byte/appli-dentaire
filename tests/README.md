@@ -250,6 +250,17 @@ trois fois ici. Le test vérifie aussi, avant chaque `selectOption`, que la list
 sans cela, une liste disparue en cours de route faisait échouer Playwright sur un timeout et la
 suite s'interrompait **sans nommer le défaut**, emportant les erreurs déjà relevées.
 
+La couleur est le **seul lien** entre une entrée de la légende et son contour sur le film : deux
+entrées de teintes voisines rendent ce lien ambigu. Le test mesure donc, légende par légende, l'écart
+entre toutes les paires de pastilles — en CIE76 sur Lab, qui approche la perception bien mieux qu'une
+distance entre composantes RVB — et refuse en dessous de 30. Le plancher est calibré sur le défaut
+qui l'a motivé : l'amalgame et le composite étaient deux turquoises distantes de 28,2, sur deux zones
+mitoyennes de la même dent. La paire légitime la plus serrée du catalogue est à 30,1 : la marge est
+donc **mince**, et ce contrôle protège contre une aggravation plus qu'il ne garantit du confort. La
+mesure est elle-même éprouvée sur ces deux turquoises avant de servir — un détecteur muet rendrait le
+même « 0 erreur » qu'une palette saine. Deux repères peuvent partager une couleur tant qu'ils ne se
+rencontrent jamais dans une même légende ; c'est le cliché, pas le catalogue, qui est jugé.
+
 La correction affiche sous le cliché annoté une **copie intacte** du même film : les contours
 colorés recouvrent justement ce qu'il s'agit d'apprendre à voir. Le test exige qu'elle soit cachée
 avant la validation, présente après, qu'elle montre **le même fichier** que le cliché corrigé — une
@@ -281,7 +292,8 @@ la liste déclarée, ignorer le choix de l'enseignante, la montrer aux étudiant
 la liste même cachée, la faire disparaître à la validation, vider la ligne « à l'écran », remettre
 l'estompage dès le premier point, supprimer le compteur, relâcher le repère après chaque dépose, et
 l'empêcher d'être relâché, cacher la copie sans annotation, la faire montrer un autre cliché, la
-rendre sans largeur, et la laisser en place au cliché suivant. Toutes sont signalées — deux ne
+rendre sans largeur, la laisser en place au cliché suivant, et redonner à la lésion carieuse le doré
+qui la rendait jumelle de la couronne céramo-métallique. Toutes sont signalées — deux ne
 l'étaient pas au premier essai, et c'est ce qui a fait ajouter le contrôle en source et le garde-fou
 de visibilité.
 

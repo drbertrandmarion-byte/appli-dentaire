@@ -45,6 +45,33 @@ async function ouvreCliche(page){
   await page.waitForTimeout(650); // fondu + scrollIntoView
 }
 
+// ---- Ecart entre deux couleurs de legende ----
+// La couleur est le SEUL lien entre une entree de la legende et son contour sur le film. Deux
+// entrees de teintes voisines rendent ce lien ambigu, et c'est arrive : l'amalgame et le
+// composite etaient deux turquoises (#14b8a6 et #06b6d4) sur deux zones mitoyennes de la meme
+// dent. L'ecart se mesure donc, en CIE76 sur Lab, qui approche la perception bien mieux que la
+// distance entre composantes RVB.
+function versLab(rgb){
+  const m = rgb.match(/\d+(\.\d+)?/g).map(Number);
+  let [r, g, b] = m.slice(0, 3).map(v => v / 255);
+  const f = c => c > 0.04045 ? Math.pow((c + 0.055) / 1.055, 2.4) : c / 12.92;
+  r = f(r); g = f(g); b = f(b);
+  let X = (0.4124 * r + 0.3576 * g + 0.1805 * b) / 0.95047;
+  let Y = (0.2126 * r + 0.7152 * g + 0.0722 * b);
+  let Z = (0.0193 * r + 0.1192 * g + 0.9505 * b) / 1.08883;
+  const h = t => t > 0.008856 ? Math.cbrt(t) : (7.787 * t + 16 / 116);
+  X = h(X); Y = h(Y); Z = h(Z);
+  return [116 * Y - 16, 500 * (X - Y), 200 * (Y - Z)];
+}
+function ecartCouleur(a, b){
+  const A = versLab(a), B = versLab(b);
+  return Math.hypot(A[0] - B[0], A[1] - B[1], A[2] - B[2]);
+}
+// Plancher calibre sur le defaut reellement trouve : les deux turquoises n'etaient distantes
+// que de 28,2. La paire legitime la plus serree du catalogue est a 30,1 — la marge est donc
+// mince, et ce plancher protege contre une AGGRAVATION plus qu'il ne garantit du confort.
+const ECART_MINI = 30;
+
 // ---- Geometrie des contours, cote test ----
 // Le test refait son propre calcul d'appartenance plutot que d'appeler celui de la page :
 // deux implementations independantes qui tombent d'accord valent mieux qu'une seule qui se
@@ -192,6 +219,15 @@ async function tousLesReperes(page){
   return page.$$eval('.radio-chip', es => es.map(e => e.getAttribute('data-rid')));
 }
 
+// La couleur REELLEMENT rendue de chaque pastille, et non la valeur declaree dans le source :
+// c'est celle-la que l'etudiant voit, et celle-la qu'il doit relier a un contour.
+async function couleursDeLaLegende(page){
+  return page.$$eval('.radio-chip', es => es.map(e => ({
+    id: e.getAttribute('data-rid'),
+    couleur: getComputedStyle(e.querySelector('.dot')).backgroundColor
+  })));
+}
+
 async function depose(page, rid, fx, fy, dxPx = 0, dyPx = 0){
   const chip = await page.$(`.radio-chip[data-rid="${rid}"]`);
   if (!chip) { ko(`chip introuvable : ${rid}`); return; }
@@ -244,6 +280,21 @@ async function valideEtLis(page){
     if (dansPolygone(carre, 15, 5)) ko('outils du test : un point hors du carre est declare dedans');
     if (Math.abs(airePolygone(carre) - 100) > 1e-6) ko('outils du test : l\'aire d\'un carre de cote 10 n\'est pas 100');
     if (Math.abs(distanceAuBord(carre, 5, 5) - 5) > 1e-6) ko('outils du test : la distance au bord est fausse');
+
+    // La mesure d'ecart entre couleurs, eprouvee sur le defaut qu'elle existe pour attraper :
+    // les deux anciens turquoises de l'amalgame et du composite. Si elle les laissait passer,
+    // elle ne protegerait de rien.
+    const ancienAmalgame = 'rgb(20, 184, 166)', ancienComposite = 'rgb(6, 182, 212)';
+    if (ecartCouleur(ancienAmalgame, ancienComposite) >= ECART_MINI) {
+      ko('outils du test : les deux turquoises qui ont motive cette mesure passeraient le seuil (' +
+         ecartCouleur(ancienAmalgame, ancienComposite).toFixed(1) + ' >= ' + ECART_MINI + ')');
+    }
+    if (ecartCouleur('rgb(220, 38, 38)', 'rgb(34, 197, 94)') < ECART_MINI) {
+      ko('outils du test : un rouge et un vert franc sont declares trop proches');
+    }
+    if (ecartCouleur('rgb(120, 120, 120)', 'rgb(120, 120, 120)') !== 0) {
+      ko('outils du test : deux couleurs identiques ne sont pas a distance nulle');
+    }
   }
 
   // ---- 1. Cote etudiant : le mode n'existe pas ----
@@ -358,6 +409,7 @@ async function valideEtLis(page){
     // Avant la validation, le film est deja nu : une seconde copie n'aurait rien a comparer et
     // ne ferait qu'allonger la page.
     const nuAvant = await a.$eval('#radio-nu', e => e.classList.contains('hidden'));
+    const palette = await couleursDeLaLegende(a);
     const zones = await zonesAttendues(a);
     const reperes = await tousLesReperes(a);
     const vide = await a.evaluate(() => ({
@@ -383,6 +435,20 @@ async function valideEtLis(page){
     vus.add(enonce);
     const etiquette = 'cliche #' + vus.size;
 
+    // Deux entrees de la MEME legende ne doivent pas se ressembler : la couleur est le seul
+    // lien entre une entree et son contour, et deux teintes voisines rendent ce lien ambigu.
+    // La mesure porte sur la legende affichee, cliche par cliche : deux reperes peuvent
+    // partager une couleur tant qu'ils ne se rencontrent jamais.
+    for (let i = 0; i < palette.length; i++) {
+      for (let j = i + 1; j < palette.length; j++) {
+        const d = ecartCouleur(palette[i].couleur, palette[j].couleur);
+        if (d < ECART_MINI) {
+          ko(etiquette + ' : « ' + palette[i].id + ' » et « ' + palette[j].id +
+             ' » portent des couleurs trop voisines (ecart ' + d.toFixed(1) +
+             ', plancher ' + ECART_MINI + ') — on ne saurait pas quel contour va avec quelle entree');
+        }
+      }
+    }
     if (!nuAvant) ko(etiquette + ' : la copie sans annotation s\'affiche avant la validation, alors que le film est deja nu');
     if (!nu) {
       ko(etiquette + ' : la copie sans annotation du cliche a disparu de la page');
