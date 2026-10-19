@@ -673,6 +673,26 @@
     flex-wrap:wrap;
     margin-top:20px;
   }
+  /* Le choix du cliché, réservé à l'enseignante : il se tient dans la même rangée que les
+     boutons, mais son intitulé doit rester lisible au-dessus de la liste. */
+  .radio-pick{
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+    flex:1 1 240px;
+    min-width:0;
+    font-size:0.82rem;
+    color:var(--muted);
+  }
+  .radio-pick select{flex:0 0 auto; width:100%;}
+  .radio-pick-row{margin-top:12px; align-items:flex-end;}
+  .radio-pick-now{
+    margin:0 0 11px;
+    font-size:0.82rem;
+    color:var(--muted);
+    flex:1 1 200px;
+    min-width:0;
+  }
 
   .tx-skip-row{
     display:flex;
@@ -1034,7 +1054,20 @@
     border:1.5px solid #fff;
     box-shadow:0 0 0 1px rgba(0,0,0,0.25);
   }
+  /* Réservé à l'atelier de tracé : là, l'estompage dit « ce contour est déjà dessiné », ce qui
+     ne renseigne que l'enseignante. Côté étudiant, voir une légende s'éteindre après un point
+     la donnait pour épuisée alors qu'un repère peut figurer deux fois sur un cliché. */
   .radio-chip.placed{opacity:0.42;}
+  /* Une légende qui porte déjà des points reste pleinement lisible et saisissable : seul son
+     fond change, et le compteur rappelle combien l'étudiant en a posé. */
+  .radio-chip.pose{background:var(--logo-blue-100); border-color:var(--border);}
+  .radio-chip-n{
+    font-style:normal;
+    font-size:0.7rem;
+    font-weight:700;
+    color:var(--muted);
+    margin-left:2px;
+  }
   .radio-chip.sel{border-color:var(--radio-accent); box-shadow:0 0 0 3px var(--radio-accent-100);}
   .radio-chip[disabled]{cursor:default;}
   .radio-verdicts{list-style:none; margin:14px 0 0; padding:0;}
@@ -1645,7 +1678,7 @@
     <p class="radio-caption" id="radio-caption"></p>
     <!-- La consigne, au-dessus du cliché, dit déjà quoi faire. Cette ligne ne garde que ce
          qu'elle seule apporte : comment le faire. -->
-    <p class="radio-hint" id="radio-hint">Glissez le point de la légende jusqu'à la zone voulue. Sur écran tactile, vous pouvez aussi toucher le point de la légende puis l'endroit du cliché. Pour retirer un point posé, touchez-le.</p>
+    <p class="radio-hint" id="radio-hint">Glissez le point de la légende jusqu'à la zone voulue. Sur écran tactile, vous pouvez aussi toucher le point de la légende puis l'endroit du cliché : il reste choisi, de sorte qu'un même repère puisse être posé plusieurs fois de suite ; touchez son entrée à nouveau pour le relâcher. Pour retirer un point posé, touchez-le.</p>
 
     <div class="radio-legend" id="radio-legend"></div>
 
@@ -1653,6 +1686,21 @@
       <button class="btn-primary" id="radio-submit-btn">Valider ma lecture</button>
       <!-- Part caché : seul un compte enseignant le démasque, comme le bouton du mode. -->
       <button class="btn-secondary hidden" id="radio-trace-btn" type="button">✏️ Tracer les zones</button>
+    </div>
+
+    <!-- Même porte que l'atelier. Tant que les clichés ne sont pas tous corrigés,
+         l'enseignante doit pouvoir ouvrir celui qu'elle veut sans attendre que le tirage le
+         propose : les trois portent le même titre, et chercher à l'aveugle coûtait du temps.
+         Les étudiants, eux, gardent le tirage au hasard. Cette rangée vit hors de
+         #radio-submit-row, qui disparaît à la validation : le choix doit rester atteignable
+         même une fois la correction affichée. -->
+    <div class="result-actions radio-pick-row hidden" id="radio-choix-wrap">
+      <label class="radio-pick">Cliché à ouvrir
+        <select id="radio-choix"></select>
+      </label>
+      <!-- Laissée sur « Tirage au hasard », la liste ne dit pas lequel est tombé. Cette ligne
+           le dit, pour qu'on ne trace pas un cliché en croyant travailler sur un autre. -->
+      <p class="radio-pick-now" id="radio-choix-actuel"></p>
     </div>
 
     <!-- Atelier de tracé, réservé à l'enseignante : il supprime l'étape où je reportais son
@@ -5568,8 +5616,9 @@
     {id:'lesion',            label:'Lésion apicale infectieuse radioclaire (granulome, kyste ou abcès)', color:'#dc2626'},
     // Un seul libellé pour l'élargissement ligamentaire sans lacune constituée, que
     // l'enseignante l'ait appelé « débutante » sur un cliché et « aiguë » sur un autre : c'est
-    // la même lecture radiographique, et deux entrées imposeraient un choix indécidable.
-    {id:'parodontite',       label:'Lésion apicale débutante (parodontite apicale aiguë)', color:'#a3e635'},
+    // la même lecture radiographique, et deux entrées imposeraient un choix indécidable. Elle
+    // a tranché pour le libellé du deuxième cliché, qui vaut donc partout.
+    {id:'parodontite',       label:'Lésion apicale débutante (parodontite apicale)', color:'#a3e635'},
     {id:'debris',            label:'Débris radiculaire',                        color:'#ec4899'},
     {id:'fragment',          label:'Fragment instrumental cassé',               color:'#7f1d1d'},
     {id:'amalgame',          label:'Amalgame dentaire',                         color:'#14b8a6'},
@@ -5909,13 +5958,22 @@
         var aDesPoints = !!tr && JSON.stringify(tr).indexOf('[[') !== -1;
         if(aDesPoints) cls += ' placed';
         if(radioTraceCible === rep.id) cls += ' sel';
-      } else {
-        if(radioPoints(rep.id).length) cls += ' placed';
+      }
+      // Côté étudiant, la légende n'est PAS estompée quand un point est posé. L'estompage se
+      // lisait comme « c'est fait, il n'y a plus rien à y mettre » — alors qu'un même repère
+      // peut figurer deux fois sur un cliché, et qu'il fallait alors recliquer sur une entrée
+      // qui se donnait pour épuisée. À la place, un compteur dit seulement combien de points
+      // ont été posés : il rend compte du geste de l'étudiant, sans jamais annoncer combien
+      // de zones sont attendues — ce nombre fait partie de la lecture.
+      var compteur = '';
+      if(!radioTracing){
+        var n = radioPoints(rep.id).length;
+        if(n){ cls += ' pose'; compteur = '<em class="radio-chip-n">×' + n + '</em>'; }
         if(radioSelected === rep.id) cls += ' sel';
       }
       return '<button type="button" class="' + cls + '" data-rid="' + rep.id + '"' +
              (radioChecked && !radioTracing ? ' disabled' : '') + '>' +
-             '<i class="dot" style="background:' + rep.color + '"></i>' + rep.label + '</button>';
+             '<i class="dot" style="background:' + rep.color + '"></i>' + rep.label + compteur + '</button>';
     }).join('');
   }
 
@@ -6110,7 +6168,9 @@
     var pos = radioToViewBox(ev.clientX, ev.clientY);
     var pts = radioPoints(radioSelected);
     if(pts.length < RADIO_POINTS_MAX) pts.push({x:pos.x, y:pos.y});
-    radioSelected = null;
+    // Le repère RESTE choisi : un même élément peut figurer deux fois sur un cliché, et il
+    // fallait alors revenir le rechercher dans la légende entre deux points. On le relâche en
+    // touchant de nouveau son entrée, ou en en choisissant une autre.
     renderRadioLegend();
     renderRadioOverlay();
   });
@@ -6370,9 +6430,32 @@
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
-  function startRadioCase(){
+  function radioCaseParId(id){
+    for(var i = 0; i < RADIO_CASES.length; i++){ if(RADIO_CASES[i].id === id) return RADIO_CASES[i]; }
+    return null;
+  }
+
+  // Le cliché imposé par la liste enseignante, s'il y en a un. La liste cachée ne compte pas :
+  // un étudiant ne doit pas pouvoir forcer le tirage en bricolant le DOM.
+  function radioCaseImpose(){
+    var wrap = document.getElementById('radio-choix-wrap');
+    if(!wrap || wrap.classList.contains('hidden')) return null;
+    return radioCaseParId(document.getElementById('radio-choix').value);
+  }
+
+  function radioEcritChoix(){
+    var el = document.getElementById('radio-choix-actuel');
+    if(!el || !radioCase) return;
+    var rang = RADIO_CASES.indexOf(radioCase) + 1;
+    el.textContent = 'À l\'écran : cliché ' + rang + ' — ' + (radioCase.image || '').split('/').pop();
+  }
+
+  function startRadioCase(choix){
     flushPendingFades();
-    radioCase = randomRadioCase();
+    // « Nouveau cliché » branche startRadioCase directement sur le clic : le premier argument
+    // est alors l'évènement. Seule une chaîne est prise pour une demande explicite.
+    var demande = typeof choix === 'string' ? radioCaseParId(choix) : null;
+    radioCase = demande || radioCaseImpose() || randomRadioCase();
     lastRadioCaseId = radioCase.id;
     radioPlacements = {};
     radioSelected = null;
@@ -6388,6 +6471,7 @@
 
     document.getElementById('radio-title').textContent = radioCase.titre;
     document.getElementById('radio-def').textContent = radioCase.enonce || RADIO_CONSIGNE;
+    radioEcritChoix();
     // Une légende vide ne doit pas laisser une ligne blanche sous le cliché.
     var captionEl = document.getElementById('radio-caption');
     captionEl.textContent = radioCase.caption || '';
@@ -6508,11 +6592,33 @@
   // reste celui des étudiants : c'est la couverture qui est contrôlée, pas le hasard.
   window.EndoRadioCliches = RADIO_CASES.map(function(c){ return c.image; });
 
+  // La liste des clichés, remplie une fois pour toutes. Les trois portent le même titre : seul
+  // le nom du fichier les distingue, et c'est lui qui sert d'étiquette — comme dans l'indicateur
+  // de l'atelier, pour qu'un même repère désigne le même cliché partout.
+  (function(){
+    var sel = document.getElementById('radio-choix');
+    if(!sel) return;
+    var html = '<option value="">Tirage au hasard</option>';
+    RADIO_CASES.forEach(function(c, i){
+      var fichier = (c.image || '').split('/').pop();
+      html += '<option value="' + c.id + '">Cliché ' + (i + 1) + ' — ' + fichier + '</option>';
+    });
+    sel.innerHTML = html;
+    sel.addEventListener('change', function(){
+      // Changer de cliché relance la lecture : les points posés et les contours lissés
+      // appartiennent au cliché qu'on quitte.
+      startRadioCase(sel.value || undefined);
+    });
+  })();
+
   window.EndoTeacherModes = function(on){
     (on ? showEl : hideEl)(document.getElementById('hub-radio-btn'));
     // L'atelier de tracé suit la même porte que le mode : il modifie le corrigé sur lequel
     // les étudiants seront notés.
     (on ? showEl : hideEl)(document.getElementById('radio-trace-btn'));
+    // Le choix du cliché aussi : c'est un outil de correction, pas un raccourci pour l'étudiant,
+    // qui doit lire le cliché qu'on lui donne.
+    (on ? showEl : hideEl)(document.getElementById('radio-choix-wrap'));
   };
 
   function categoryLabel(cat){

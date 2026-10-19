@@ -60,7 +60,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 | `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion, cas joués et export Excel |
 | `confettis.js` | Que les confettis tombent sur un sans-faute, et **seulement** sur un sans-faute |
 | `session-unique.js` | Qu'un compte ne reste ouvert que sur un appareil, sans jamais bloquer la révision hors ligne |
-| `lecture-radio.js` | Que le troisième mode reste invisible pour les étudiants, et que la marge de tolérance du pointage fonctionne dans les deux sens |
+| `lecture-radio.js` | Que le troisième mode et le choix du cliché restent hors de portée des étudiants, que chaque cliché déclaré soit réellement éprouvé, et que la marge de tolérance du pointage fonctionne dans les deux sens |
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
 un différentiel affiché sur une erreur et jamais sur une bonne réponse, et surtout un
@@ -219,11 +219,28 @@ rien ne le signale.
 Le pointage lui-même ne peut pas être vérifié depuis une table de coordonnées recopiée : elle se
 périmerait au premier déplacement d'un repère. Le test **remplace `Math.random` par un générateur
 déterministe**, valide d'abord une lecture vide pour faire révéler par la correction les zones
-attendues — leur position et leur rayon, lus sur les cercles en pointillés, la couleur faisant le
-lien avec le repère —, puis rejoue le même cliché. Il mesure alors la **marge de tolérance dans les
-deux sens** : un point posé juste à l'intérieur du rayon doit passer, le même posé juste au-delà doit
-être refusé. Une seule des deux mesures ne prouverait rien — une tolérance devenue énorme, ou nulle,
-passerait inaperçue.
+attendues — les sommets de chaque contour, relevés dans la couche de correction, la couleur faisant
+le lien avec le repère —, puis rejoue le même cliché. Il mesure alors la **marge de tolérance dans
+les deux sens** : un point posé juste à l'extérieur du contour doit passer — le point a un rayon
+visible, le poser au contact désigne bien la zone —, le même posé nettement plus loin doit être
+refusé. Une seule des deux mesures ne prouverait rien — une tolérance devenue énorme, ou nulle,
+passerait inaperçue. Les outils de géométrie du test (appartenance, aire, distance au bord,
+auto-intersection) sont **éprouvés sur des figures connues** avant de servir : un détecteur muet
+rendrait le même « 0 erreur » qu'un corrigé sain.
+
+Combien de clichés existent ? L'application le dit, par `window.EndoRadioCliches`, et la suite
+parcourt des graines jusqu'à les avoir tous ouverts — un cliché que le tirage ne proposerait jamais
+serait un cliché jamais vérifié, ce qui est déjà arrivé. Mais cette liste ne peut pas être son propre
+juge : si elle en oubliait un, la suite annoncerait « 2 / 2 » en toute bonne foi. Elle est donc
+**recoupée avec deux sources qu'elle ne contrôle pas** — les images déclarées dans `RADIO_CASES`,
+lues dans le source, et les fichiers réellement présents dans `radios/`. Les trois doivent coïncider.
+
+Le **choix du cliché**, réservé lui aussi à l'enseignante, est vérifié des deux côtés : chaque entrée
+de la liste doit ouvrir le cliché qu'elle nomme, le choix doit survivre à « Nouveau cliché » et
+rester atteignable après la validation, et la ligne « à l'écran » doit nommer le fichier affiché. Du
+côté étudiant, il ne suffit pas que la liste soit cachée : le test **force sa valeur** puis enchaîne
+une douzaine de clichés, et exige que le tirage reste un tirage. Un contrôle d'affichage seul
+laisserait passer une porte ouverte à qui inspecte le DOM.
 
 Il contrôle enfin que les trois fautes sont comptées **séparément** (repère mal situé, repère oublié,
 signe posé à tort), et les gestes sans lesquels l'exercice serait inutilisable : un point lâché hors
@@ -236,8 +253,9 @@ zones attendues sont lues dans l'application elle-même. C'est à l'enseignante 
 repères de chaque cas — l'encadré affiché en tête du mode l'annonce explicitement.
 
 Ses mutations de contrôle : afficher le bouton aux étudiants, retirer l'appel dans `enterApp`,
-multiplier la tolérance par quatre, l'annuler, et poser les points hors du cliché. Toutes sont
-signalées.
+multiplier la tolérance par quatre, l'annuler, poser les points hors du cliché, retirer un cliché de
+la liste déclarée, ignorer le choix de l'enseignante, obéir à la liste même cachée, la faire
+disparaître à la validation, et vider la ligne « à l'écran ». Toutes sont signalées.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas

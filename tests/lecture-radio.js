@@ -306,6 +306,30 @@ async function valideEtLis(page){
     attendus = await p.evaluate(() => window.EndoRadioCliches || []);
     await p.close();
     if (!attendus.length) ko('l\'application ne declare aucun cliche (window.EndoRadioCliches)');
+
+    // Cette liste ne peut pas etre son propre juge : si elle oubliait un cliche, la suite
+    // eprouverait tout ce qu'elle declare et annoncerait « 2 / 2 » alors que la troisieme
+    // radiographie n'aurait jamais ete ouverte. La verite tient donc a deux sources que la
+    // liste ne controle pas : les images declarees dans le source, et les fichiers presents
+    // dans radios/. Les trois doivent coincider.
+    const src = fs.readFileSync(__dirname + '/../index.html', 'utf8');
+    const sourceImages = (src.match(/image:'[^']+'/g) || []).map(s => s.slice(7, -1));
+    const fichiers = fs.readdirSync(__dirname + '/../radios')
+      .filter(f => /\.(png|jpe?g)$/i.test(f))
+      .map(f => 'radios/' + f);
+    const manquants = sourceImages.filter(i => !attendus.includes(i));
+    if (manquants.length) {
+      ko('window.EndoRadioCliches passe sous silence ' + manquants.join(', ') +
+         ' : ces cliches existent dans RADIO_CASES mais aucun test ne les atteindrait');
+    }
+    const orphelins = fichiers.filter(f => !sourceImages.includes(f));
+    if (orphelins.length) {
+      ko('radios/ contient ' + orphelins.join(', ') + ' qu\'aucun cas n\'utilise');
+    }
+    const introuvables = sourceImages.filter(i => !fichiers.includes(i));
+    if (introuvables.length) {
+      ko('un cas reclame ' + introuvables.join(', ') + ' qui n\'existe pas sur le disque');
+    }
   }
 
   const vus = new Set();
@@ -623,6 +647,95 @@ async function valideEtLis(page){
     await p.close();
   }
 
+  // ---- 3ter. Le choix du cliche, reserve a l'enseignante ----
+  // Elle doit pouvoir ouvrir le cliche qu'elle corrige sans attendre que le tirage le propose.
+  // Deux choses a prouver : le choix est obei (et tenu d'un cliche au suivant), et il reste
+  // hors de portee d'un etudiant — y compris s'il forcait la valeur de la liste cachee, ce
+  // qu'un simple test d'affichage ne verrait pas.
+  {
+    const p = await context.newPage();
+    await boot(p, 1);
+    await ouvreCliche(p);
+
+    const ouverte = () => p.getAttribute('#radio-film img', 'src');
+    const options = await p.$$eval('#radio-choix option', os => os.map(o => o.value));
+    if (options.length !== attendus.length + 1) {
+      ko('liste enseignante : ' + (options.length - 1) + ' cliche(s) proposes pour ' +
+         attendus.length + ' declares');
+    }
+    if (options[0] !== '') ko('liste enseignante : le tirage au hasard n\'est plus propose en tete');
+    if (await p.$eval('#radio-choix-wrap', e => e.classList.contains('hidden'))) {
+      ko('liste enseignante : elle reste cachee alors que le mode enseignant est ouvert');
+    }
+
+    // Chaque cliche declare doit etre atteignable par son entree de liste.
+    for (const id of options.slice(1)) {
+      await p.selectOption('#radio-choix', id);
+      await p.waitForTimeout(500);
+      const vue = await ouverte();
+      if (!attendus.includes(vue)) ko('liste enseignante : « ' + id + ' » ouvre une image inconnue (' + vue + ')');
+      // Volontairement, ce cliche n'est PAS compte dans « vus » : l'ouvrir par la liste ne
+      // prouve pas que la section 3 en a eprouve la geometrie. Le compteur de couverture ne
+      // doit mesurer que ce que le tirage a reellement propose.
+
+      // Le choix doit survivre a « Nouveau cliche » : sinon elle le reperdrait a chaque tour.
+      await p.click('#radio-submit-btn');
+      await p.waitForTimeout(400);
+      if (await p.$eval('#radio-choix-wrap', e => e.classList.contains('hidden'))) {
+        ko('liste enseignante : elle disparait apres la validation, le cliche suivant redevient introuvable');
+      }
+      await p.click('#radio-next-btn');
+      await p.waitForTimeout(500);
+      if (await ouverte() !== vue) ko('liste enseignante : « Nouveau cliche » abandonne le cliche choisi');
+      const dit = await p.textContent('#radio-choix-actuel');
+      if (!dit || dit.indexOf(vue.split('/').pop()) < 0) {
+        ko('liste enseignante : la ligne « a l\'ecran » n\'annonce pas ' + vue + ' (lu : ' + dit + ')');
+      }
+    }
+
+    // Revenir au hasard doit rendre la main au tirage.
+    await p.selectOption('#radio-choix', '');
+    await p.waitForTimeout(500);
+    if (!attendus.includes(await ouverte())) ko('liste enseignante : le retour au tirage au hasard n\'ouvre aucun cliche connu');
+    await p.close();
+  }
+
+  {
+    // Cote etudiant : la liste est absente, et la forcer ne doit rien imposer. Le tirage
+    // n'etant pas sous controle ici, ce qui est verifie est qu'il reste un tirage : on force
+    // la valeur sur un cliche, et sur plusieurs tours l'application ne s'y fixe pas.
+    const p = await context.newPage();
+    await boot(p, 7);
+    await p.evaluate(() => { document.getElementById('hub-radio-btn').classList.remove('hidden'); });
+    await p.click('#hub-radio-btn');
+    await p.waitForTimeout(420);
+    await p.click('#start-radio-btn');
+    await p.waitForTimeout(650);
+    if (!await p.$eval('#radio-choix-wrap', e => e.classList.contains('hidden'))) {
+      ko('liste enseignante : un etudiant la voit');
+    }
+    const force = attendus[attendus.length - 1];
+    const cible = await p.evaluate((img) => {
+      const o = [].slice.call(document.querySelectorAll('#radio-choix option'))
+        .filter(o => o.textContent.indexOf(img.split('/').pop()) >= 0)[0];
+      if (o) document.getElementById('radio-choix').value = o.value;
+      return o ? o.value : null;
+    }, force);
+    if (!cible) ko('liste enseignante : impossible de retrouver l\'entree de ' + force + ' pour l\'eprouver');
+    let autres = 0;
+    for (let i = 0; i < 12; i++) {
+      await p.click('#radio-submit-btn');
+      await p.waitForTimeout(250);
+      await p.click('#radio-next-btn');
+      await p.waitForTimeout(400);
+      if (await p.getAttribute('#radio-film img', 'src') !== force) autres++;
+    }
+    if (!autres) {
+      ko('liste enseignante : un etudiant qui force la valeur de la liste cachee impose son cliche');
+    }
+    await p.close();
+  }
+
   // ---- 4. Les gestes : poser, reprendre, retirer ----
   // Un point qui se deposerait hors du cliche, ou qu'on ne pourrait plus retirer, rendrait
   // l'exercice inutilisable sans rien casser dans le decompte des fautes.
@@ -668,6 +781,39 @@ async function valideEtLis(page){
     await p.mouse.click(film.x + film.width * 0.6, film.y + film.height * 0.6);
     await p.waitForTimeout(60);
     if (await compte() !== 1) ko('gestes : repli tactile — le clic sur le cliche ne pose pas le repere selectionne');
+
+    // f) la legende qui porte un point reste lisible et saisissable. L'estompage se lisait
+    //    comme « c'est fait », alors qu'un meme repere peut figurer deux fois sur un cliche :
+    //    il fallait recliquer sur une entree qui se donnait pour epuisee.
+    const etat = await p.$eval(`.radio-chip[data-rid="${rid}"]`,
+      e => ({ opacite: parseFloat(getComputedStyle(e).opacity), texte: e.textContent }));
+    if (!(etat.opacite > 0.95)) {
+      ko('gestes : la legende est estompee (opacite ' + etat.opacite + ') des qu\'un point est pose — elle se donne pour epuisee');
+    }
+    if (etat.texte.indexOf('×1') < 0) ko('gestes : la legende ne compte pas le point pose (lu : ' + etat.texte + ')');
+
+    // g) le repere reste choisi apres la depose : un deuxieme point se pose a la suite, sans
+    //    retourner le chercher dans la legende.
+    if (await p.$$eval('.radio-chip.sel', es => es.length) !== 1) {
+      ko('gestes : le repere est relache apres la depose, il faut le rechercher dans la legende pour le poser une seconde fois');
+    }
+    await p.mouse.click(film.x + film.width * 0.4, film.y + film.height * 0.7);
+    await p.waitForTimeout(60);
+    if (await compte() !== 2) ko('gestes : le deuxieme point ne se pose pas a la suite du premier');
+    const apres = await p.textContent(`.radio-chip[data-rid="${rid}"]`);
+    if (apres.indexOf('×2') < 0) ko('gestes : le compteur de la legende reste a un point (lu : ' + apres + ')');
+
+    // h) et on doit pouvoir le relacher : un nouveau toucher sur son entree, puis un clic sur
+    //    le cliche, ne doit plus rien poser. Sans cette sortie, le repere resterait collé au
+    //    pointeur et chaque clic ailleurs ajouterait un point involontaire.
+    await p.click(`.radio-chip[data-rid="${rid}"]`);
+    await p.waitForTimeout(60);
+    if (await p.$$eval('.radio-chip.sel', es => es.length) !== 0) {
+      ko('gestes : toucher a nouveau l\'entree de la legende ne relache pas le repere');
+    }
+    await p.mouse.click(film.x + film.width * 0.2, film.y + film.height * 0.2);
+    await p.waitForTimeout(60);
+    if (await compte() !== 2) ko('gestes : un clic sur le cliche pose encore un point alors qu\'aucun repere n\'est choisi');
     await p.close();
   }
 
