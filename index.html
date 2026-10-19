@@ -5700,7 +5700,11 @@
   var RADIO_CONSIGNE =
     'Vous trouverez ci-dessous une radiographie rétro-alvéolaire, accompagnée d\'une liste de ' +
     'légendes. Placez sur le cliché celles que vous y reconnaissez, chacune sur la zone qui lui ' +
-    'correspond. Toutes n\'y figurent pas : laisser une légende de côté fait partie de la réponse.';
+    // « Pas nécessairement », et non plus « pas » : sur un cliché où les six légendes figurent
+    // toutes, l'ancienne formule affirmait une chose fausse et envoyait l'étudiant chercher
+    // une légende à écarter qui n'existait pas.
+    'correspond. Toutes n\'y figurent pas nécessairement : laisser une légende de côté peut ' +
+    'faire partie de la réponse.';
 
   // Chaque cliché déclare les repères qu'il porte et, pour chacun, le contour attendu. Les
   // sommets sont corrigeables sans toucher au code : l'atelier de tracé les remplace et les
@@ -6011,11 +6015,12 @@
       caption:'',
       legende:['traitement_radiculaire','couronne_transitoire','onlay','composite_fibre',
                'lesion','composite'],
-      // Même partage que les deux clichés précédents, faute d'énoncé séparant les bonnes
-      // légendes des fausses : quatre cibles, deux leurres. UN SEUL repère est certain ici —
-      // le traitement radiculaire. Les trois autres cibles tiennent à la lecture d'une limite
-      // de restauration, et le partage lui-même demande confirmation.
-      cibles:['traitement_radiculaire','couronne_transitoire','composite_fibre','composite'],
+      // L'enseignante a tranché : les six légendes figurent sur ce cliché, aucune n'est
+      // fausse. Mes quatre cibles de départ en manquaient deux — l'onlay et la lésion —, et
+      // trois des quatre étaient rattachées à la mauvaise dent. Les contours ci-dessous
+      // suivent son propre tracé.
+      cibles:['traitement_radiculaire','couronne_transitoire','onlay','composite_fibre',
+              'lesion','composite'],
       zones:{
         // Les deux obturations canalaires de la molaire du milieu, et la chambre qui les
         // relie : un seul traitement, donc une seule zone en V, l'espace inter-radiculaire
@@ -6025,19 +6030,25 @@
                                        [211,210],[203,222],[196,212],[190,170],[180,132],
                                        [168,120],[156,132],[146,176],[140,226],[132,240],
                                        [124,232],[122,180],[120,130]]},
-        // Coiffe de la dent de gauche : la limite se suit tout autour de la couronne, sans
-        // que la densité change beaucoup — ce qui va dans le sens d'une résine provisoire.
-        couronne_transitoire: {poly:[[28,30],[50,26],[72,28],[86,38],[88,56],[84,74],[70,84],
-                                     [48,86],[32,78],[24,60],[24,42]]},
-        // Reconstitution coronaire de la molaire traitée : c'est la dent dépulpée qui porte
-        // la préparation, ce qui rend ce rattachement plus plausible que les autres.
-        composite_fibre: {poly:[[104,34],[130,28],[160,28],[188,34],[196,52],[194,76],
-                                [180,92],[150,96],[122,92],[106,76],[100,54]]},
-        // Restauration mésio-occlusale de la dent de droite. Elle ne recouvre pas les
-        // cuspides, d'où la lecture en composite plutôt qu'en onlay — c'est le point sur
-        // lequel je suis le moins sûr.
-        composite: {poly:[[206,32],[228,26],[246,32],[254,48],[252,68],[240,82],[220,84],
-                          [206,74],[200,54]]}
+        // La coiffe provisoire et la reconstitution qu'elle recouvre sont sur la MÊME dent,
+        // la molaire traitée : l'une emboîtée dans l'autre. J'avais mis la couronne sur la
+        // dent de gauche et cru y voir une résine provisoire.
+        couronne_transitoire: {poly:[[98,32],[126,24],[158,24],[190,32],[200,52],[198,78],
+                                     [184,94],[150,100],[118,96],[100,78],[94,54]]},
+        composite_fibre: {poly:[[110,42],[132,36],[158,36],[180,42],[188,58],[186,76],
+                                [174,88],[150,92],[126,88],[112,74],[106,58]]},
+        // Dent de gauche, et non celle de droite comme je l'avais placé.
+        composite: {poly:[[28,30],[50,26],[72,28],[86,38],[88,56],[84,74],[70,84],[48,86],
+                          [32,78],[24,60],[24,42]]},
+        // Dent de droite : la restauration recouvre bien les cuspides. C'est un onlay, et
+        // j'avais lu un composite.
+        onlay: {poly:[[200,40],[212,24],[232,18],[256,20],[280,26],[298,34],[302,52],
+                      [294,66],[278,62],[262,70],[248,88],[232,94],[216,86],[204,70],
+                      [196,54]]},
+        // Radioclarté apicale embrassant les deux racines de la molaire traitée. Je ne
+        // l'avais pas vue et l'avais classée en fausse légende.
+        lesion: {poly:[[124,206],[140,198],[158,214],[176,212],[192,198],[210,204],[216,226],
+                       [208,248],[188,256],[164,252],[146,254],[128,244],[120,226]]}
       }
     }
   ];

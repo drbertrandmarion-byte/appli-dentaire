@@ -392,6 +392,7 @@ async function valideEtLis(page){
   }
 
   const vus = new Set();
+  let clichesAvecLeurre = 0;
   const GRAINES = 30 * Math.max(1, attendus.length);
   for (let graine = 1; graine <= GRAINES && vus.size < attendus.length; graine++) {
     const seed = graine;
@@ -409,6 +410,7 @@ async function valideEtLis(page){
     // Avant la validation, le film est deja nu : une seconde copie n'aurait rien a comparer et
     // ne ferait qu'allonger la page.
     const nuAvant = await a.$eval('#radio-nu', e => e.classList.contains('hidden'));
+    const consigne = (await a.textContent('#radio-def')).trim();
     const palette = await couleursDeLaLegende(a);
     const zones = await zonesAttendues(a);
     const reperes = await tousLesReperes(a);
@@ -491,7 +493,19 @@ async function valideEtLis(page){
     }
 
     const leurres = reperes.filter(r => !zones.some(z => z.id === r));
-    if (!leurres.length) ko(etiquette + ' : aucun leurre dans la legende, tous les reperes sont attendus');
+    // Un cliche peut n'avoir AUCUN leurre : l'enseignante a tranche ainsi pour le dixieme, ou
+    // les six legendes figurent toutes. C'est pour cela que la consigne dit « pas
+    // necessairement ». Les mesures qui ont besoin d'un leurre sont alors passees — mais la
+    // suite verifie a la fin qu'au moins un cliche en porte un, sans quoi la regle du « signe
+    // pose a tort » ne serait plus eprouvee nulle part.
+    if (leurres.length) clichesAvecLeurre++;
+    // Et la consigne ne doit pas promettre un leurre quand il n'y en a pas : l'ancienne
+    // formule, « Toutes n'y figurent pas », envoyait l'etudiant chercher une legende a ecarter
+    // qui n'existait pas sur ce cliche-la.
+    if (!leurres.length && !/n'y figurent pas nécessairement/.test(consigne)) {
+      ko(etiquette + ' : aucun leurre, mais la consigne affirme que certaines legendes sont '
+         + 'absentes — « ' + consigne.slice(-90) + ' »');
+    }
     // La legende appartient au CLICHE, pas a l'application : ses repères attendus, plus deux
     // ou trois leurres. Une legende commune a tous grossirait a chaque cliche ajoute — a deux
     // cliches elle comptait deja treize entrees — et un etudiant qui en parcourt treize pour
@@ -607,18 +621,21 @@ async function valideEtLis(page){
       for (const s of sondes.slice(1, sondes.length - 1)) {
         for (const d of s.dedans) { await depose(p, s.z.id, ...Object.values(fraction(s.z, d.x, d.y))); }
       }
-      await depose(p, leurres[0], 0.5, 0.5);
+      if (leurres.length) await depose(p, leurres[0], 0.5, 0.5);
       const r = await valideEtLis(p);
       if (!/\bko\b/.test(r.classe)) ko(etiquette + ' : une lecture fautive est comptee comme reussie');
       const attendu = (zones.length - 2) + ' / ' + zones.length
-        + ' repères présents correctement identifiés — 1 repère mal situé, 1 repère oublié, 1 signe posé à tort.';
+        + ' repères présents correctement identifiés — 1 repère mal situé, 1 repère oublié'
+        + (leurres.length ? ', 1 signe posé à tort.' : '.');
       if (r.score !== attendu) {
         ko(etiquette + ' : decompte des fautes = « ' + r.score + ' », attendu « ' + attendu + ' »');
       }
       // La zone mal situee doit etre signalee comme telle, et le leurre comme absent du cliche.
       const detail = await p.$$eval('#radio-verdicts li', es => es.map(e => e.textContent.trim()));
       if (!detail.some(t => /posé à côté de la zone attendue/.test(t))) ko(etiquette + ' : aucun « posé à côté » dans le detail');
-      if (!detail.some(t => /n'est pas présent sur ce cliché/.test(t))) ko(etiquette + ' : le leurre n\'est pas signale dans le detail');
+      if (leurres.length && !detail.some(t => /n'est pas présent sur ce cliché/.test(t))) {
+        ko(etiquette + ' : le leurre n\'est pas signale dans le detail');
+      }
       if (!detail.some(t => /oublié/.test(t))) ko(etiquette + ' : l\'oubli n\'est pas signale dans le detail');
       await p.close();
     }
@@ -942,8 +959,14 @@ async function valideEtLis(page){
     await p.close();
   }
 
+  // Un leurre quelque part, sinon la regle du « signe pose a tort » n'est eprouvee nulle part :
+  // chaque cliche peut legitimement s'en passer, l'ensemble non.
+  if (!clichesAvecLeurre) {
+    ko('aucun cliche ne porte de leurre : la faute « signe pose a tort » n\'est plus eprouvee');
+  }
+
   await browser.close();
-  console.log('lecture-radio            Erreurs : ' + problemes.length + '  (' + vus.size + ' / ' + attendus.length + ' cliche(s) eprouve(s))');
+  console.log('lecture-radio            Erreurs : ' + problemes.length + '  (' + vus.size + ' / ' + attendus.length + ' cliche(s) eprouve(s), ' + clichesAvecLeurre + ' avec leurre)');
   problemes.forEach(p => console.log('  - ' + p));
   process.exit(problemes.length ? 1 : 0);
 })();
