@@ -841,6 +841,114 @@ async function valideEtLis(page){
     await p.close();
   }
 
+  // ---- 3quinquies. Le corrige partage : ce que l'enseignante retrace vaut pour tous ----
+  // Les contours declares dans le code ne sont qu'un point de depart ; ceux qu'elle retrace
+  // font foi et doivent valoir pour TOUTES les sessions. Trois choses a prouver : le corrige
+  // du serveur l'emporte sur le contour declare ; un repere absent du corrige garde le sien ;
+  // et seul le compte enseignant ecrit.
+  {
+    // 1. Relever, serveur injoignable, l'identifiant du premier cliche et d'un de ses reperes.
+    const a = await context.newPage();
+    await boot(a, 2);
+    await a.evaluate(() => window.EndoTeacherModes(true));
+    await a.waitForTimeout(420);
+    await a.click('#hub-radio-btn'); await a.waitForTimeout(420);
+    await a.click('#start-radio-btn'); await a.waitForTimeout(650);
+    const premier = await a.$eval('#radio-choix option:nth-child(2)', o => o.value);
+    await a.selectOption('#radio-choix', premier);
+    await a.waitForTimeout(600);
+    const zonesDeclarees = await zonesAttendues(a);
+    await a.close();
+    if (zonesDeclarees.length < 2) {
+      ko('corrige partage : le premier cliche n\'a pas deux reperes, le test ne peut rien comparer');
+    } else {
+      const vise = zonesDeclarees[0].id, temoin = zonesDeclarees[1].id;
+      // Un carre franc, loin de tout contour declare.
+      const carre = [[40, 40], [120, 40], [120, 120], [40, 120]];
+
+      // 2. Le meme cliche, mais le serveur repond cette fois.
+      const b = await context.newPage();
+      await b.route('**/rest/v1/radio_traces*', route => {
+        if (route.request().method() !== 'GET') return route.fulfill({ status: 201, body: '' });
+        route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify([{ case_id: premier, zones: { [vise]: [carre] } }])
+        });
+      });
+      await boot(b, 2);
+      await b.evaluate(() => window.EndoTeacherModes(true));
+      await b.waitForTimeout(420);
+      await b.click('#hub-radio-btn'); await b.waitForTimeout(700);
+      await b.click('#start-radio-btn'); await b.waitForTimeout(650);
+      await b.selectOption('#radio-choix', premier);
+      await b.waitForTimeout(800);
+      const zonesServeur = await zonesAttendues(b);
+
+      const recu = zonesServeur.filter(z => z.id === vise)[0];
+      if (!recu) {
+        ko('corrige partage : le repere corrige par le serveur a disparu de la correction');
+      } else {
+        // Les sommets lus sur le SVG sont DEJA en unites du cliche : son viewBox est
+        // exprime dans le meme repere que les coordonnees des contours.
+        const xs = recu.poly.map(p => p[0]);
+        const ys = recu.poly.map(p => p[1]);
+        const dans = Math.min(...xs) > 25 && Math.max(...xs) < 135
+                  && Math.min(...ys) > 25 && Math.max(...ys) < 135;
+        if (!dans) {
+          ko('corrige partage : le contour de « ' + vise + ' » ne suit pas celui du serveur — '
+             + 'x ' + Math.min(...xs).toFixed(0) + '..' + Math.max(...xs).toFixed(0)
+             + ', y ' + Math.min(...ys).toFixed(0) + '..' + Math.max(...ys).toFixed(0)
+             + ' (attendu dans 40..120)');
+        }
+      }
+      // Le temoin, absent du corrige recu, doit garder son contour declare.
+      const avant = zonesDeclarees.filter(z => z.id === temoin)[0];
+      const apres = zonesServeur.filter(z => z.id === temoin)[0];
+      if (!apres) {
+        ko('corrige partage : un repere absent du corrige du serveur a perdu son contour declare');
+      } else if (avant && Math.abs(airePolygone(avant.poly) - airePolygone(apres.poly)) > 1) {
+        ko('corrige partage : le corrige du serveur a modifie « ' + temoin + ' », qu\'il ne mentionne pas');
+      }
+      await b.close();
+    }
+  }
+
+  // ---- 3sexies. Qui ECRIT le corrige partage ----
+  {
+    for (const cas of [{ nom: 'enseignant', admin: true, attendu: true },
+                       { nom: 'acces radio sans etre enseignant', admin: false, attendu: false }]) {
+      const p = await context.newPage();
+      const envois = [];
+      await p.route('**/rest/v1/radio_traces*', route => {
+        if (route.request().method() !== 'GET') envois.push(route.request().method());
+        route.fulfill({ status: route.request().method() === 'GET' ? 200 : 201,
+                        contentType: 'application/json',
+                        body: route.request().method() === 'GET' ? '[]' : '' });
+      });
+      await boot(p, 6);
+      await p.evaluate(a => {
+        window.EndoAccount = Object.assign({}, window.EndoAccount, { isAdmin: a, accesRadio: true });
+        window.EndoTeacherModes(true, true);
+      }, cas.admin);
+      await p.waitForTimeout(420);
+      await p.click('#hub-radio-btn'); await p.waitForTimeout(500);
+      await p.click('#start-radio-btn'); await p.waitForTimeout(650);
+      await p.click('#radio-trace-btn'); await p.waitForTimeout(450);
+      const rid = (await tousLesReperes(p))[0];
+      await p.click(`.radio-chip[data-rid="${rid}"]`); await p.waitForTimeout(120);
+      const st = await (await p.$('#radio-stage')).boundingBox();
+      await p.mouse.click(st.x + st.width / 2, st.y + st.height / 2);
+      await p.waitForTimeout(1800); // le delai d'attente avant publication
+      if (cas.attendu && !envois.length) {
+        ko('corrige partage : un trace du compte enseignant n\'est pas publie');
+      }
+      if (!cas.attendu && envois.length) {
+        ko('corrige partage : un compte non enseignant a ecrit sur le corrige partage (' + envois.join(', ') + ')');
+      }
+      await p.close();
+    }
+  }
+
   // ---- 3quater. L'atelier et les reperes declares ABSENTS du cliche ----
   // Rien n'empeche d'y tracer un leurre, mais son contour n'est jamais dessine a la
   // correction, qui ne parcourt que les reperes attendus : le trace disparaissait alors sans

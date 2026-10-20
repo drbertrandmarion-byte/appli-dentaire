@@ -1769,6 +1769,10 @@
         <button class="btn-secondary" id="radio-trace-nouveau" type="button">+ Seconde zone pour ce repère</button>
         <button class="btn-secondary" id="radio-trace-clear" type="button">Effacer ce repère</button>
         <button class="btn-secondary" id="radio-trace-reset" type="button">Revenir aux contours d'origine</button>
+        <!-- Pour les tracés faits avant que le corrigé ne soit partagé : ils dorment sur
+             l'appareil, et ce bouton les envoie sans qu'il faille déplacer un point pour
+             déclencher l'enregistrement. -->
+        <button class="btn-secondary" id="radio-trace-publier" type="button">☁️ Publier ce cliché</button>
         <button class="btn-primary" id="radio-trace-done" type="button">Terminer</button>
       </div>
       <!-- Ce que l'appareil conserve réellement, affiché noir sur blanc : sans cela on ne peut
@@ -6262,8 +6266,83 @@
   // étudiants : il ne se modifie que depuis le compte qui en répond.
   function radioSauveTraces(){
     if(!radioPeutTracer()) return false;
-    try{ localStorage.setItem(RADIO_TRACES_KEY, JSON.stringify(radioTraces)); return true; }
-    catch(e){ return false; }
+    try{ localStorage.setItem(RADIO_TRACES_KEY, JSON.stringify(radioTraces)); }
+    catch(e){}
+    // Et, sur le serveur : c'est ce qui fait que la correction de l'enseignante devient le
+    // corrigé de tout le monde, et pas seulement celui de l'appareil où elle l'a faite. Un
+    // délai d'attente évite une requête par sommet — un contour en compte vingt.
+    radioPublieBientot();
+    return true;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Le corrigé partagé
+  // ---------------------------------------------------------------------------
+  // Les contours déclarés dans le code ne sont qu'un point de départ. Ceux que l'enseignante
+  // retrace font foi, et doivent valoir pour toutes les sessions — sinon sa correction reste
+  // prisonnière de l'appareil où elle l'a faite, ce qui a déjà coûté deux soirées.
+  // L'écriture est refusée côté serveur à tout compte qui n'est pas enseignant : la garde
+  // posée ici évite des requêtes inutiles, celle de Supabase est la seule qui protège.
+  var radioSyncEtat = 'inconnu';   // inconnu | charge | hors-ligne | publie | echec | en-cours
+  var radioSyncMsg  = '';
+  var radioChargement = null;
+
+  function radioChargeCorrige(){
+    if(radioChargement) return radioChargement;
+    if(!window.EndoApi){
+      radioSyncEtat = 'hors-ligne';
+      radioSyncMsg  = 'session non connectée';
+      return Promise.resolve(false);
+    }
+    radioChargement = window.EndoApi('/rest/v1/radio_traces?select=case_id,zones')
+      .then(function(rows){
+        (rows || []).forEach(function(r){
+          if(r && r.case_id && r.zones) radioTraces[r.case_id] = r.zones;
+        });
+        radioSyncEtat = 'charge';
+        radioSyncMsg  = (rows || []).length + ' cliché(s) corrigé(s) reçus du serveur';
+        radioZonesLissees = null;
+        renderRadioOverlay();
+        radioEcritEtat();
+        return true;
+      })
+      .catch(function(err){
+        // Un corrigé inaccessible ne doit pas rendre le mode inutilisable : on retombe sur
+        // les contours déclarés dans le code, en le disant.
+        radioSyncEtat = 'hors-ligne';
+        radioSyncMsg  = (err && err.message) || 'serveur injoignable';
+        radioEcritEtat();
+        return false;
+      });
+    return radioChargement;
+  }
+
+  var radioPublieTimer = null;
+  function radioPublieBientot(){
+    if(radioPublieTimer) clearTimeout(radioPublieTimer);
+    radioPublieTimer = setTimeout(function(){ radioPublieTimer = null; radioPublie(); }, 1200);
+  }
+
+  function radioPublie(){
+    if(radioPublieTimer){ clearTimeout(radioPublieTimer); radioPublieTimer = null; }
+    if(!radioPeutTracer() || !radioCase || !window.EndoApi) return Promise.resolve(false);
+    var id = radioCase.id, zones = radioTraces[id] || {};
+    radioSyncEtat = 'en-cours'; radioEcritEtat();
+    return window.EndoApi('/rest/v1/radio_traces', {
+      method: 'POST',
+      prefer: 'resolution=merge-duplicates,return=minimal',
+      body: { case_id: id, zones: zones, updated_at: new Date().toISOString() }
+    }).then(function(){
+      radioSyncEtat = 'publie';
+      radioSyncMsg  = 'publié le ' + new Date().toLocaleString('fr-FR');
+      radioEcritEtat();
+      return true;
+    }).catch(function(err){
+      radioSyncEtat = 'echec';
+      radioSyncMsg  = (err && err.message) || 'envoi refusé';
+      radioEcritEtat();
+      return false;
+    });
   }
 
   // Un repère peut figurer à PLUSIEURS endroits d'un même cliché — deux inlay-cores, deux
@@ -6753,9 +6832,21 @@
     var cas = radioTracesDuCas();
     var noms = Object.keys(cas).filter(function(k){ return !!radioNormaliseContours(cas[k]); });
     var fichier = (radioCase.image || '').split('/').pop();
+    // Où en est le corrigé partagé. Sans cette ligne, « publié » et « enregistré seulement
+    // ici » ont exactement la même apparence à l'écran.
+    var sync = {
+      'charge':   '✓ corrigé du serveur chargé (' + radioSyncMsg + ')',
+      'publie':   '✓ publié pour toutes les sessions — ' + radioSyncMsg,
+      'en-cours': '… publication en cours',
+      'echec':    '⚠ NON PUBLIÉ : ' + radioSyncMsg + ' — ce tracé ne vaut que sur cet appareil',
+      'hors-ligne': '⚠ serveur injoignable (' + radioSyncMsg + ') : contours d\'origine, ' +
+                    'et vos tracés ne sortiront pas de cet appareil',
+      'inconnu':  ''
+    }[radioSyncEtat] || '';
+    if(sync) sync = ' — ' + sync;
     if(!noms.length){
       el.textContent = 'Cliché « ' + fichier + ' » : aucun tracé enregistré sur cet appareil ' +
-                       '— les contours affichés sont ceux d\'origine.';
+                       '— les contours affichés sont ceux d\'origine.' + sync;
       return;
     }
     var detail = noms.map(function(id){
@@ -6764,8 +6855,8 @@
       return (rep ? rep.label : id) + (n > 1 ? ' (' + n + ' zones)' : '');
     }).join(' · ');
     el.textContent = 'Cliché « ' + fichier + ' » : ' + noms.length +
-                     (noms.length > 1 ? ' repères tracés et conservés' : ' repère tracé et conservé') +
-                     ' sur cet appareil — ' + detail + '.';
+                     (noms.length > 1 ? ' repères tracés' : ' repère tracé') +
+                     ' — ' + detail + '.' + sync;
   }
 
   function radioEcritCode(){
@@ -6844,6 +6935,13 @@
   document.getElementById('radio-trace-clear').addEventListener('click', function(){
     var cas = radioTracesDuCas();
     if(radioTraceCible){ delete cas[radioTraceCible]; radioApresTrace(); }
+  });
+
+  document.getElementById('radio-trace-publier').addEventListener('click', function(){
+    radioPublie().then(function(ok){
+      msgTrace(ok ? 'Tracés de ce cliché publiés : ils valent désormais pour toutes les sessions.'
+                  : 'Publication refusée — ' + radioSyncMsg + '. Vos tracés restent sur cet appareil.');
+    });
   });
 
   document.getElementById('radio-trace-reset').addEventListener('click', function(){
@@ -7023,7 +7121,12 @@
     showMode(modeRadioIntro);
   }
 
-  document.getElementById('hub-radio-btn').addEventListener('click', function(){ showMode(modeRadioIntro); });
+  document.getElementById('hub-radio-btn').addEventListener('click', function(){
+    // Le corrigé partagé est demandé dès l'entrée dans le mode, et une seule fois : le
+    // chargement doit être fini avant qu'un cliché ne soit validé contre les contours.
+    radioChargeCorrige();
+    showMode(modeRadioIntro);
+  });
   document.getElementById('start-radio-btn').addEventListener('click', startRadioCase);
   document.getElementById('radio-submit-btn').addEventListener('click', submitRadio);
   document.getElementById('radio-next-btn').addEventListener('click', startRadioCase);
@@ -7626,6 +7729,9 @@
     if(window.EndoRefreshRevision) window.EndoRefreshRevision();
     window.EndoAccount = { profile: profile, isAdmin: isAdmin, accesRadio: accesRadio,
                            offline: offline, userId: session && session.user_id };
+    // Le mode de lecture radiographique vit dans l'autre bloc de script : il n'atteint pas
+    // « authed ». On le lui tend ici, sans rien lui donner de plus que la requête signée.
+    window.EndoApi = function(path, opts){ return authed(path, opts); };
   }
 
   // Décide quoi afficher à partir de la session courante.
@@ -7786,6 +7892,7 @@
     clearSession();
     hide(menu); hide(dropdown);
     window.EndoAccount = null;
+    window.EndoApi = null;
     showView('login');
     msg('login-msg', '');
   }
