@@ -334,8 +334,16 @@ async function valideEtLis(page){
     const src = fs.readFileSync(__dirname + '/../index.html', 'utf8');
     const enterApp = src.slice(src.indexOf('function enterApp(){'));
     const corps = enterApp.slice(0, enterApp.indexOf('\n  }'));
-    if (!/EndoTeacherModes\(isAdmin\)/.test(corps)) {
-      ko('enterApp n\'appelle plus EndoTeacherModes(isAdmin) : le bouton ne s\'afficherait jamais pour l\'enseignante');
+    // Deux portes distinctes : le mode s'ouvre a l'enseignante ET aux comptes porteurs du
+    // drapeau « radio » ; l'atelier reste a l'enseignante seule. Un appel qui passerait le
+    // meme argument aux deux rendrait le corrige modifiable par un compte simplement autorise
+    // a lire les cliches.
+    if (!/EndoTeacherModes\(accesRadio,\s*isAdmin\)/.test(corps)) {
+      ko('enterApp n\'appelle plus EndoTeacherModes(accesRadio, isAdmin) : soit le mode ne '
+         + 's\'ouvrirait jamais, soit l\'atelier s\'ouvrirait a qui n\'est pas enseignant');
+    }
+    if (!/isAdmin\s*\|\|\s*!!\(profile && profile\.radio\)/.test(corps)) {
+      ko('enterApp ne lit plus le drapeau « radio » du profil : le compte autorise n\'aurait pas le mode');
     }
     if (!/<button class="hub-card hidden" id="hub-radio-btn"/.test(src)) {
       ko('le bouton #hub-radio-btn ne part plus cache dans le HTML : un etudiant le verrait le temps du chargement');
@@ -747,6 +755,29 @@ async function valideEtLis(page){
         }
       }
 
+      // Seul le compte enseignant ENREGISTRE. La garde de l'ouverture ne suffit pas : on
+      // verifie ici qu'un compte qui atteindrait l'atelier par un autre chemin n'ecrirait
+      // rien. Le corrige note tous les etudiants, il ne se modifie que depuis le compte qui
+      // en repond.
+      {
+        await p.click('#radio-trace-clear');
+        await p.waitForTimeout(150);
+        const st0 = await (await p.$('#radio-stage')).boundingBox();
+        await p.mouse.click(st0.x + st0.width * 0.4, st0.y + st0.height * 0.4);
+        await p.waitForTimeout(200);
+        const avant = await p.evaluate(() => localStorage.getItem('endodiag-radio-traces-v1'));
+        if (!avant) ko('atelier : rien n\'est enregistre meme pour le compte enseignant');
+        // Le compte devient « acces radio » sans etre enseignant, l'atelier restant ouvert.
+        await p.evaluate(() => { window.EndoAccount.isAdmin = false; window.EndoAccount.accesRadio = true; });
+        await p.mouse.click(st0.x + st0.width * 0.6, st0.y + st0.height * 0.6);
+        await p.waitForTimeout(200);
+        const apres = await p.evaluate(() => localStorage.getItem('endodiag-radio-traces-v1'));
+        if (apres !== avant) {
+          ko('atelier : un compte non enseignant a enregistre une modification du corrige');
+        }
+        await p.evaluate(() => { window.EndoAccount.isAdmin = true; });
+      }
+
       // Un glissement deplace le cliche, il ne pose pas de sommet.
       await p.click('#radio-trace-clear');
       await p.waitForTimeout(150);
@@ -763,6 +794,50 @@ async function valideEtLis(page){
       }, [rid]);
       if (apres !== 0) ko('atelier : un glissement pose un sommet au lieu de deplacer le cliche');
     }
+    await p.close();
+  }
+
+  // ---- 2bis. Le compte autorise a LIRE mais pas a TRACER ----
+  // Un compte peut recevoir le mode et le choix du cliche sans l'atelier. Si les deux portes
+  // se confondaient, le corrige sur lequel tous les etudiants sont notes deviendrait
+  // modifiable par quiconque a recu le droit de lire les cliches.
+  {
+    const p = await context.newPage();
+    await boot(p, 4);
+    // L'etat exact du compte a creer : le drapeau « radio » accorde, mais pas enseignant.
+    // Sans le poser, la garde de l'atelier refuserait pour la mauvaise raison — parce que le
+    // compte n'a RIEN —, et une garde qui accepterait « accesRadio » passerait inapercue.
+    await p.evaluate(() => {
+      window.EndoAccount = Object.assign({}, window.EndoAccount, { isAdmin: false, accesRadio: true });
+      window.EndoTeacherModes(true, false);
+    });
+    await p.waitForTimeout(420);
+    const vu = await p.evaluate(() => {
+      const aire = el => { const r = el.getBoundingClientRect(); return r.width * r.height; };
+      const b = document.getElementById('hub-radio-btn');
+      const t = document.getElementById('radio-trace-btn');
+      const c = document.getElementById('radio-choix-wrap');
+      return { mode: !b.classList.contains('hidden'), trace: !t.classList.contains('hidden'),
+               choix: !c.classList.contains('hidden'), aireTrace: aire(t) };
+    });
+    if (!vu.mode)  ko('acces lecture seule : le mode n\'est pas ouvert');
+    if (!vu.choix) ko('acces lecture seule : le choix du cliche n\'est pas ouvert');
+    if (vu.trace)  ko('acces lecture seule : le bouton de l\'atelier est visible — le corrige serait modifiable');
+    if (vu.aireTrace !== 0) ko('acces lecture seule : le bouton de l\'atelier occupe encore de la place a l\'ecran');
+
+    // Et le forcer ne doit rien ouvrir : l'atelier a sa propre garde, qui ne regarde que le
+    // compte enseignant.
+    await p.click('#hub-radio-btn');
+    await p.waitForTimeout(400);
+    await p.click('#start-radio-btn');
+    await p.waitForTimeout(650);
+    const force = await p.evaluate(() => {
+      const t = document.getElementById('radio-trace-btn');
+      t.classList.remove('hidden');
+      t.click();
+      return document.getElementById('radio-trace-panel').classList.contains('hidden');
+    });
+    if (!force) ko('acces lecture seule : demasquer le bouton de l\'atelier suffit a l\'ouvrir');
     await p.close();
   }
 

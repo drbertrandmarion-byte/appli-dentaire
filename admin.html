@@ -360,6 +360,12 @@
         '<td>' + moy + '</td>' +
         '<td><div class="actions">' +
           '<button class="btn" data-detail="' + esc(p.id) + '">Résultats</button>' +
+          // Accès au mode de lecture radiographique et au choix du cliché. L'atelier de
+          // tracé n'est PAS concerné : il reste au compte enseignant, puisqu'il modifie le
+          // corrigé sur lequel tous les étudiants sont notés.
+          '<button class="btn' + (p.radio ? ' btn-ok' : '') + '" data-radio="' + esc(p.id) +
+            '" data-radio-on="' + (p.radio ? '1' : '0') + '">' +
+            (p.radio ? '📷 Radio : oui' : '📷 Radio : non') + '</button>' +
           '<button class="btn btn-ko" data-delete="' + esc(p.id) + '">Supprimer</button>' +
         '</div></td></tr>';
     }).join('') : '<tr><td colspan="8"><div class="empty">Aucun compte validé pour le moment.</div></td></tr>';
@@ -863,6 +869,26 @@
       }).then(loadAll)
         .then(function(){ msg('global-msg', 'Compte validé. L\'étudiant a désormais accès aux cas cliniques.', 'ok'); })
         .catch(function(err){ msg('global-msg', 'Échec de la validation : ' + esc(err.message), 'err'); t.disabled = false; t.textContent = 'Valider'; });
+    }
+    else if((id = t.getAttribute('data-radio'))){
+      var versOn = t.getAttribute('data-radio-on') !== '1';
+      var q = profiles.filter(function(x){ return x.id === id; })[0];
+      var nom = q ? (q.prenom + ' ' + q.nom) : 'ce compte';
+      t.disabled = true; t.textContent = '…';
+      authed('/rest/v1/profiles?id=eq.' + id, {
+        method:'PATCH', body:{ radio: versOn }, prefer:'return=minimal'
+      }).then(loadAll)
+        .then(function(){
+          msg('global-msg', versOn
+            ? esc(nom) + ' a désormais accès à la lecture radiographique et au choix du cliché. '
+              + 'Le tracé des zones reste réservé à votre compte.'
+            : esc(nom) + ' n\'a plus accès à la lecture radiographique.', 'ok');
+        })
+        .catch(function(err){
+          msg('global-msg', 'Échec : ' + esc(err.message) +
+              ' — la colonne « radio » existe-t-elle sur la table profiles ?', 'err');
+          t.disabled = false; t.textContent = versOn ? '📷 Radio : non' : '📷 Radio : oui';
+        });
     }
     else if((id = t.getAttribute('data-delete'))){
       var p = profiles.filter(function(x){ return x.id === id; })[0];

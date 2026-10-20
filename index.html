@@ -6255,8 +6255,15 @@
     return radioTraces[radioCase.id];
   }
 
+  // Seconde porte, au point d'ÉCRITURE cette fois. La première — radioPeutTracer — décide si
+  // l'atelier s'ouvre ; celle-ci décide si quoi que ce soit s'enregistre. Les deux regardent
+  // le même compte enseignant, mais une garde placée à l'ouverture seule laisserait écrire
+  // quiconque atteindrait le code par un autre chemin. Le corrigé est ce qui note tous les
+  // étudiants : il ne se modifie que depuis le compte qui en répond.
   function radioSauveTraces(){
-    try{ localStorage.setItem(RADIO_TRACES_KEY, JSON.stringify(radioTraces)); }catch(e){}
+    if(!radioPeutTracer()) return false;
+    try{ localStorage.setItem(RADIO_TRACES_KEY, JSON.stringify(radioTraces)); return true; }
+    catch(e){ return false; }
   }
 
   // Un repère peut figurer à PLUSIEURS endroits d'un même cliché — deux inlay-cores, deux
@@ -7049,14 +7056,17 @@
     });
   })();
 
-  window.EndoTeacherModes = function(on){
-    (on ? showEl : hideEl)(document.getElementById('hub-radio-btn'));
-    // L'atelier de tracé suit la même porte que le mode : il modifie le corrigé sur lequel
-    // les étudiants seront notés.
-    (on ? showEl : hideEl)(document.getElementById('radio-trace-btn'));
-    // Le choix du cliché aussi : c'est un outil de correction, pas un raccourci pour l'étudiant,
-    // qui doit lire le cliché qu'on lui donne.
-    (on ? showEl : hideEl)(document.getElementById('radio-choix-wrap'));
+  // DEUX portes distinctes, et non plus une seule.
+  //   « mode »  : voir le mode de lecture et choisir le cliché sur lequel on travaille.
+  //   « trace » : ouvrir l'atelier, qui modifie le corrigé sur lequel les étudiants sont notés.
+  // Un compte peut recevoir la première sans la seconde — pour éprouver le placement des
+  // repères sur chaque cliché sans pouvoir toucher aux contours. Appelée avec un seul
+  // argument, la fonction ouvre les deux, comme avant.
+  window.EndoTeacherModes = function(mode, trace){
+    if(arguments.length < 2) trace = mode;
+    (mode  ? showEl : hideEl)(document.getElementById('hub-radio-btn'));
+    (trace ? showEl : hideEl)(document.getElementById('radio-trace-btn'));
+    (mode  ? showEl : hideEl)(document.getElementById('radio-choix-wrap'));
   };
 
   function categoryLabel(cat){
@@ -7607,11 +7617,15 @@
     $('acct-name').textContent = profile ? (profile.prenom + ' ' + profile.nom) : '';
     $('acct-sub').textContent  = profile ? (profile.annee + ' · ' + profile.faculte) : '';
     (isAdmin ? show : hide)($('acct-admin-btn'));
-    // Modes réservés à l'enseignante (lecture radiographique, encore en construction).
-    if(window.EndoTeacherModes) window.EndoTeacherModes(isAdmin);
+    // La lecture radiographique s'ouvre à l'enseignante et aux comptes qui portent le drapeau
+    // « radio » dans leur profil — accordé depuis le back-office. L'ATELIER DE TRACÉ, lui,
+    // reste à l'enseignante seule : il modifie le corrigé sur lequel les étudiants sont notés.
+    var accesRadio = isAdmin || !!(profile && profile.radio);
+    if(window.EndoTeacherModes) window.EndoTeacherModes(accesRadio, isAdmin);
     if(!offline){ touchLastSeen(); flushQueue(); }
     if(window.EndoRefreshRevision) window.EndoRefreshRevision();
-    window.EndoAccount = { profile: profile, isAdmin: isAdmin, offline: offline, userId: session && session.user_id };
+    window.EndoAccount = { profile: profile, isAdmin: isAdmin, accesRadio: accesRadio,
+                           offline: offline, userId: session && session.user_id };
   }
 
   // Décide quoi afficher à partir de la session courante.
