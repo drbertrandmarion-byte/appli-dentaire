@@ -5697,7 +5697,14 @@
     {id:'racine_palatine_26', label:'Racine palatine de la dent 26',            color:'#22c55e'},
     {id:'gutta',             label:'Gutta-percha',                              color:'#1e3a8a'},
     {id:'lesion_parodontale', label:'Lésion parodontale verticale',             color:'#4d7c0f'},
-    {id:'radix_entomolaris', label:'Radix entomolaris',                         color:'#c026d3'}
+    {id:'radix_entomolaris', label:'Radix entomolaris',                         color:'#c026d3'},
+    {id:'implant',           label:'Implant dentaire',                          color:'#0284c7'},
+    {id:'racine_mesiale_17', label:'Racine mésiale de la dent 17',              color:'#c026d3'},
+    // Deux repères anatomiques de plus : un relief osseux, et un nerf — ce dernier du
+    // maxillaire inférieur, donc absent par construction d'un cliché maxillaire supérieur.
+    // Le jaune suit la convention des planches d'anatomie.
+    {id:'tuberosite',        label:'Tubérosité maxillaire',                     color:'#a16207'},
+    {id:'nerf_alveolaire',   label:'Nerf alvéolaire inférieur',                 color:'#facc15'}
   ];
 
   var RADIO_REPERE_BY_ID = {};
@@ -6128,6 +6135,38 @@
         // isoler — je place ici l'ourlet qui déborde, pas la racine entière.
         radix_entomolaris: {poly:[[186,100],[202,98],[212,112],[216,140],[212,170],[202,192],
                                   [192,194],[188,170],[186,140],[184,118]]}
+      }
+    },
+    {
+      id:'implants_tuberosite',
+      titre:'Rétro-alvéolaire — secteur postérieur maxillaire',
+      image:'radios/retro-alveolaire-13.png',
+      caption:'',
+      legende:['implant','tuberosite','racine_mesiale_17','nerf_alveolaire','amalgame'],
+      cibles:['implant','tuberosite','racine_mesiale_17','amalgame'],
+      // ORIENTATION. Tout ce cliché tient à un point que l'image seule ne donne pas : de quel
+      // côté est le fond de l'arcade. J'ai lu la tubérosité dans la zone osseuse sans dent du
+      // bord gauche, ce qui place le distal à GAUCHE — et cela s'accorde avec les racines des
+      // molaires supérieures, qui penchent vers le distal, donc ici vers la gauche. Si le fond
+      // est à droite, la tubérosité change de côté et la racine mésiale de la 17 devient celle
+      // de gauche et non celle de droite.
+      zones:{
+        // Deux implants : deux zones, donc deux points attendus. Leur filetage se lit sans
+        // ambiguïté sur les deux bords.
+        implant: {polys:[
+          [[224,34],[242,30],[250,44],[250,80],[247,112],[238,126],[226,124],[221,100],[220,64]],
+          [[312,26],[332,24],[341,38],[342,76],[338,108],[328,122],[315,118],[309,92],[308,52]]
+        ]},
+        // Relief osseux au-delà de la dernière molaire, du côté que je lis comme distal.
+        tuberosite: {poly:[[6,24],[34,18],[56,26],[62,60],[64,110],[62,160],[56,206],[42,238],
+                           [22,244],[8,224],[4,160],[4,90]]},
+        // La plus mésiale des racines de la 17, c'est-à-dire la plus proche des implants dans
+        // ma lecture de l'orientation.
+        racine_mesiale_17: {poly:[[186,44],[200,42],[212,56],[216,90],[214,126],[208,158],
+                                  [198,172],[188,168],[186,136],[184,98],[183,66]]},
+        // Obturation métallique de la dent la plus distale.
+        amalgame: {poly:[[64,186],[90,177],[120,178],[148,180],[160,192],[158,214],[146,232],
+                         [118,238],[88,236],[66,222],[60,204]]}
       }
     }
   ];
