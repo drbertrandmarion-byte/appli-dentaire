@@ -5671,7 +5671,10 @@
     // sont deux zones voisines, et leurs anciennes couleurs — #14b8a6 et #06b6d4 — ne se
     // distinguaient ni sur le cliché ni entre deux pastilles de la légende.
     {id:'amalgame',          label:'Amalgame dentaire',                         color:'#15803d'},
-    {id:'amalgame_infiltre', label:'Perte d\'étanchéité de l\'amalgame',        color:'#64748b'},
+    // Libellé élargi : le signe est le même quel que soit le matériau qui fuit, et le
+    // quatorzième cliché le fait porter sur une restauration qui n'est pas un amalgame.
+    // Un second repère presque identique n'aurait ajouté qu'une ambiguïté de plus.
+    {id:'amalgame_infiltre', label:'Perte d\'étanchéité d\'une restauration',  color:'#64748b'},
     {id:'rhizalyse',         label:'Rhizalyse radiculaire sur dent vivante',    color:'#a855f7'},
     {id:'screw_post',        label:'Screw post',                                color:'#1d4ed8'},
     {id:'couronne_metal',    label:'Couronne métallique',                       color:'#78716c'},
@@ -6171,6 +6174,35 @@
         // Obturation métallique de la dent la plus distale.
         amalgame: {poly:[[64,186],[90,177],[120,178],[148,180],[160,192],[158,214],[146,232],
                          [118,238],[88,236],[66,222],[60,204]]}
+      }
+    },
+    {
+      id:'inlay_core_etancheite',
+      titre:'Rétro-alvéolaire — secteur postérieur maxillaire',
+      image:'radios/retro-alveolaire-14.png',
+      caption:'',
+      legende:['inlay_core_simple','couronne_cm','composite','amalgame_infiltre','lesion'],
+      cibles:['inlay_core_simple','couronne_cm','composite','amalgame_infiltre','lesion'],
+      zones:{
+        // Masse coulée et son tenon unique : le repère le plus net du cliché.
+        inlay_core_simple: {poly:[[192,124],[204,124],[207,152],[212,172],[228,180],[233,200],
+                                  [230,226],[218,246],[194,255],[166,256],[142,250],[130,230],
+                                  [131,204],[137,186],[158,176],[182,171],[189,150]]},
+        // La coiffe enveloppe la reconstitution : les deux zones se recouvrent forcément,
+        // comme la couronne transitoire et son composite fibré au dixième cliché.
+        couronne_cm: {poly:[[124,200],[128,180],[146,168],[172,162],[200,162],[224,170],
+                            [238,186],[240,212],[236,238],[222,256],[196,264],[166,265],
+                            [140,258],[126,238]]},
+        // Restauration occluso-distale de la dent de droite, à la limite nettement dessinée.
+        composite: {poly:[[274,186],[292,184],[310,192],[322,206],[324,224],[316,238],
+                          [298,242],[280,236],[270,220],[268,200]]},
+        // Liseré sombre au bord cervical de cette restauration : c'est le défaut d'étanchéité,
+        // et non la restauration elle-même — le contour longe la limite, il ne la couvre pas.
+        amalgame_infiltre: {poly:[[262,224],[280,228],[298,232],[312,238],[310,250],[292,254],
+                                  [272,250],[258,240]]},
+        // ÉBAUCHE la moins sûre : région apicale de la dent reconstituée.
+        lesion: {poly:[[152,62],[176,56],[200,62],[212,80],[210,104],[196,122],[172,126],
+                       [154,118],[146,96],[146,76]]}
       }
     }
   ];

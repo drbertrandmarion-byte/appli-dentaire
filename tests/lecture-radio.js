@@ -956,20 +956,32 @@ async function valideEtLis(page){
   // partage attendu/absent est etabli ICI par une lecture vide sur une page a part, et non
   // demande a l'atelier : c'est la meme source de verite que le reste de la suite.
   {
+    // Le cliche est choisi par la LISTE enseignante et non par le tirage : des cliches sans
+    // aucun leurre existent desormais, et une graine qui tombait sur l'un d'eux faisait
+    // echouer la mesure pour une raison qui n'avait rien a voir avec ce qu'elle eprouve.
     const ref = await context.newPage();
     await boot(ref, 11);
     await ouvreCliche(ref);
-    const image = await ref.getAttribute('#radio-film img', 'src');
-    const attendusIci = (await zonesAttendues(ref)).map(z => z.id);
+    const options = await ref.$$eval('#radio-choix option', os => os.map(o => o.value).filter(Boolean));
+    let choisi = null, attendusIci = null;
+    for (const opt of options) {
+      await ref.selectOption('#radio-choix', opt);
+      await ref.waitForTimeout(550);
+      const chips = await tousLesReperes(ref);
+      const zs = (await zonesAttendues(ref)).map(z => z.id);
+      if (chips.some(id => !zs.includes(id))) { choisi = opt; attendusIci = zs; break; }
+    }
     await ref.close();
+    if (!choisi) {
+      ko('atelier : aucun cliche ne porte de leurre, l\'avertissement n\'a pas pu etre eprouve');
+    } else {
 
     const p = await context.newPage();
     await boot(p, 11);
     await p.evaluate(() => { window.EndoAccount.isAdmin = true; });
     await ouvreCliche(p);
-    if (await p.getAttribute('#radio-film img', 'src') !== image) {
-      ko('atelier : la meme graine n\'ouvre pas le meme cliche, la comparaison ne vaut rien');
-    }
+    await p.selectOption('#radio-choix', choisi);
+    await p.waitForTimeout(600);
     await p.click('#radio-trace-btn');
     await p.waitForTimeout(450);
     const tous = await tousLesReperes(p);
@@ -995,9 +1007,10 @@ async function valideEtLis(page){
       }
     }
     if (!leurresIci.length) {
-      ko('atelier : le cliche tire par cette graine ne porte aucun leurre, l\'avertissement n\'a pas ete eprouve');
+      ko('atelier : le cliche choisi ne porte aucun leurre alors qu\'il en portait a la lecture');
     }
     await p.close();
+    }
   }
 
   // ---- 3ter. Le choix du cliche, reserve a l'enseignante ----
