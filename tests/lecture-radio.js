@@ -421,6 +421,23 @@ async function valideEtLis(page){
     const consigne = (await a.textContent('#radio-def')).trim();
     const palette = await couleursDeLaLegende(a);
     const zones = await zonesAttendues(a);
+    // La lecture doit etre consignee comme n'importe quel cas, sinon le back-office ne voit
+    // rien de ce que les etudiants font dans ce mode. Supabase etant coupe, l'enregistrement
+    // reste dans la file d'attente du navigateur : c'est la qu'on le lit.
+    const file = await a.evaluate(() => {
+      try { return JSON.parse(localStorage.getItem('endodiag-pending') || '[]'); }
+      catch(e){ return []; }
+    });
+    const ligne = file.filter(x => x && x.mode === 'radio').slice(-1)[0];
+    const attenduId = enonce.split('/').pop().replace(/\.[a-z]+$/i, '');
+    if (!ligne) {
+      ko('la lecture validee n\'est consignee nulle part : le back-office ne verrait pas ce mode');
+    } else if (ligne.diagnosis_id !== attenduId) {
+      ko('la lecture est consignee sous « ' + ligne.diagnosis_id + ' » et non sous le cliche lu ('
+         + attenduId + ')');
+    } else if (ligne.correct !== false) {
+      ko('une lecture entierement vide est consignee comme reussie');
+    }
     const reperes = await tousLesReperes(a);
     const vide = await a.evaluate(() => ({
       classe: document.getElementById('radio-verdict').className,

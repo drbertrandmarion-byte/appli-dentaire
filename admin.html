@@ -173,7 +173,7 @@
       <p class="hint">Chaque cas validé, série notée ou cas isolé, du plus récent au plus ancien.
         C'est ici qu'apparaît le travail d'un étudiant qui s'entraîne sans terminer de série.</p>
       <div class="tbl-wrap"><table>
-        <thead><tr><th>Date</th><th>Mode</th><th>Pathologie</th><th>Résultat</th></tr></thead>
+        <thead><tr><th>Date</th><th>Mode</th><th>Pathologie ou cliché</th><th>Résultat</th></tr></thead>
         <tbody id="detail-cases-body"></tbody>
       </table></div>
     </div>
@@ -325,8 +325,9 @@
       stat(results.length, 'séries terminées') +
       // Les deux modes comptés à part. Confondus, le total ne disait pas si une promotion
       // travaille le diagnostic, le traitement, ou l'un au détriment de l'autre.
-      stat(caseResults.filter(function(c){ return c.mode === 'diagnostic'; }).length, 'cas diagnostic') +
-      stat(caseResults.filter(function(c){ return c.mode !== 'diagnostic'; }).length, 'cas thérapeutique');
+      stat(caseResults.filter(function(c){ return modeLabel(c.mode) === 'Diagnostic'; }).length, 'cas diagnostic') +
+      stat(caseResults.filter(function(c){ return c.mode === 'therapeutique'; }).length, 'cas thérapeutique') +
+      stat(caseResults.filter(function(c){ return c.mode === 'radio'; }).length, 'lectures radio');
 
     // En attente
     $('pending-count').innerHTML = pending.length ? '<span class="tag tag-wait">' + pending.length + '</span>' : '';
@@ -363,8 +364,9 @@
         '<td>' + mine.length + '</td>' +
         // Un seul nombre melangeait les deux modes : on ne pouvait pas savoir si l'etudiant
         // travaillait le diagnostic, le traitement, ou l'un sans l'autre.
-        '<td style="line-height:1.55">' + partCas('Diagnostic', mesCas, true)
-          + '<br>' + partCas('Thérapeutique', mesCas, false) + '</td>' +
+        '<td style="line-height:1.55">' + partCas('Diagnostic', mesCas, 'diagnostic')
+          + '<br>' + partCas('Thérapeutique', mesCas, 'therapeutique')
+          + '<br>' + partCas('Lecture radio', mesCas, 'radio') + '</td>' +
         '<td>' + moy + '</td>' +
         '<td><div class="actions">' +
           '<button class="btn" data-detail="' + esc(p.id) + '">Résultats</button>' +
@@ -410,6 +412,9 @@
     var promo = promoVoulue || $('promo-filter').value || TOUTES;
     var byDiag = {};
     caseResults.forEach(function(c){
+      // La lecture radiographique porte sur un cliché, pas sur une pathologie : l'inclure
+      // ferait apparaître des noms de fichiers dans le tableau des pathologies faibles.
+      if(c.mode === 'radio') return;
       if(promo !== TOUTES && promoOf(c.user_id) !== promo) return;
       var d = byDiag[c.diagnosis_id] ||
               (byDiag[c.diagnosis_id] = { total:0, wrong:0, dTot:0, dErr:0, tTot:0, tErr:0 });
@@ -460,11 +465,25 @@
 
   function stat(v, l){ return '<div class="stat"><div class="v">' + v + '</div><div class="l">' + l + '</div></div>'; }
 
+  // TROIS modes desormais. Tout ce qui n'etait pas « therapeutique » etait compte comme
+  // diagnostic : la lecture radiographique s'y serait fondue sans bruit, et les noms de
+  // cliches seraient apparus dans le tableau des pathologies.
+  function modeLabel(m){
+    return m === 'radio' ? 'Lecture radiographique'
+         : m === 'therapeutique' ? 'Choix thérapeutique'
+         : 'Diagnostic';
+  }
+  // Un cas de lecture radiographique porte un nom de cliche, pas une pathologie.
+  function objetCas(c){
+    return c.mode === 'radio' ? ('Cliché ' + c.diagnosis_id)
+                              : (DIAG_LABELS[c.diagnosis_id] || c.diagnosis_id);
+  }
+
   // Les cas d'un etudiant pour UN mode : leur nombre et leur taux de reussite. Un mode jamais
   // joue s'affiche en gris plutot qu'en « 0 » — ne pas avoir commence et avoir tout rate sont
   // deux situations differentes, et la premiere n'appelle pas la meme remarque que la seconde.
-  function partCas(nom, cas, diagnostic){
-    var l = cas.filter(function(c){ return (c.mode === 'diagnostic') === diagnostic; });
+  function partCas(nom, cas, mode){
+    var l = cas.filter(function(c){ return modeLabel(c.mode) === modeLabel(mode); });
     if(!l.length) return '<span style="font-size:0.78rem;color:var(--muted)">' + nom + ' — aucun</span>';
     var ok = l.filter(function(c){ return c.correct; }).length;
     return '<span style="font-size:0.78rem;color:var(--muted)">' + nom + '</span> <b>' + l.length +
@@ -479,7 +498,7 @@
     $('detail-title').textContent = 'Résultats de ' + p.prenom + ' ' + p.nom;
     $('detail-body').innerHTML = mine.length ? mine.map(function(r){
       return '<tr><td>' + fmtDateTime(r.created_at) + '</td>' +
-        '<td>' + (r.mode === 'diagnostic' ? 'Diagnostic' : 'Choix thérapeutique') + '</td>' +
+        '<td>' + modeLabel(r.mode) + '</td>' +
         '<td><b>' + r.score + ' / ' + r.serie + '</b></td></tr>';
     }).join('') : '<tr><td colspan="3"><div class="empty">Aucune série terminée.</div></td></tr>';
     // Les cas sont deja tries du plus recent au plus ancien par la requete.
@@ -490,8 +509,8 @@
     $('detail-cases-body').innerHTML = mesCas.length
       ? mesCas.slice(0, MAX_CAS).map(function(c){
           return '<tr><td>' + fmtDateTime(c.created_at) + '</td>' +
-            '<td>' + (c.mode === 'diagnostic' ? 'Diagnostic' : 'Choix thérapeutique') + '</td>' +
-            '<td>' + esc(DIAG_LABELS[c.diagnosis_id] || c.diagnosis_id) + '</td>' +
+            '<td>' + modeLabel(c.mode) + '</td>' +
+            '<td>' + esc(objetCas(c)) + '</td>' +
             '<td>' + (c.correct ? '<span class="tag tag-ok">réussi</span>'
                                 : '<span class="tag tag-ko">raté</span>') + '</td></tr>';
         }).join('')
@@ -829,13 +848,13 @@
     var parId = {};
     profiles.forEach(function(p){ parId[p.id] = p; });
     var rows = [[H('Date'), H('Nom'), H('Prénom'), H('Promotion'), H('Mode'),
-                 H('Pathologie'), H('Résultat')]];
+                 H('Pathologie ou cliché'), H('Résultat')]];
     caseResults.forEach(function(c){
       var p = parId[c.user_id];
       if(!p || !p.approved) return;
       rows.push([DT(c.created_at), S(p.nom), S(p.prenom), S(p.annee),
-                 S(c.mode === 'diagnostic' ? 'Diagnostic' : 'Choix thérapeutique'),
-                 S(DIAG_LABELS[c.diagnosis_id] || c.diagnosis_id),
+                 S(modeLabel(c.mode)),
+                 S(objetCas(c)),
                  S(c.correct ? 'Réussi' : 'Raté')]);
     });
     return { nom:'Cas joués', rows:rows, largeurs:[19, 20, 16, 16, 20, 30, 10], figer:1 };

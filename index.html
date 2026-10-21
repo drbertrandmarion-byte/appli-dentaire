@@ -7137,6 +7137,15 @@
 
     renderRadioLegend();
     renderRadioOverlay();
+    // Le cliché est consigné comme n'importe quel cas, sous son nom de fichier : c'est lui
+    // qui porte le numéro, et il se lit sans table de correspondance dans le back-office.
+    // Une lecture n'est comptée réussie que complète et sans signe posé à tort — le même
+    // tout-ou-rien que les deux autres modes.
+    if(window.EndoStats && window.EndoStats.recordCase){
+      var fichier = (radioCase.image || '').split('/').pop().replace(/\.[a-z]+$/i, '');
+      window.EndoStats.recordCase('radio', fichier, reussi);
+    }
+
     hideEl(document.getElementById('radio-submit-row'));
     hideEl(document.getElementById('radio-hint'));
     // La copie intacte du cliché n'apparaît qu'ici : avant la validation, le film est déjà nu,

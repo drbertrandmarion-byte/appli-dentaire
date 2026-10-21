@@ -26,6 +26,11 @@ for (let i = 0; i < 11; i++) CASES.push({ user_id:'u3', mode:'diagnostic',    di
 for (let i = 0; i < 4;  i++) CASES.push({ user_id:'u1', mode:'diagnostic',    diagnosis_id:'necrose',           correct:true, created_at:quand() });
 // u4 n'est pas valide : ses cas ne doivent pas apparaitre dans le classeur.
 CASES.push({ user_id:'u4', mode:'diagnostic', diagnosis_id:'necrose', correct:true, created_at:quand() });
+// Lectures radiographiques : un troisieme mode, dont l'objet est un CLICHE et non une
+// pathologie. Melangees aux cas de diagnostic, elles feraient apparaitre des noms de
+// fichiers dans le tableau des pathologies faibles.
+for (let i = 0; i < 8; i++) CASES.push({ user_id:'u1', mode:'radio', diagnosis_id:'retro-alveolaire-03', correct:i < 5, created_at:quand() });
+for (let i = 0; i < 2; i++) CASES.push({ user_id:'u3', mode:'radio', diagnosis_id:'retro-alveolaire-07', correct:false, created_at:quand() });
 
 (async () => {
   const browser = await chromium.launch({ acceptDownloads: true });
@@ -93,10 +98,24 @@ CASES.push({ user_id:'u4', mode:'diagnostic', diagnosis_id:'necrose', correct:tr
     if (!/Diagnostic — aucun/.test(cas(bruno))) {
       pbJs.push('comptes valides : Bruno n\'a joue aucun cas de diagnostic, et rien ne le dit — lu « ' + cas(bruno) + ' »');
     }
+    // La lecture radiographique est un TROISIEME mode : fondue dans l'un des deux autres,
+    // elle serait invisible, et ses cliches passeraient pour des pathologies.
+    if (!/Lecture radio 8 \(63 %\)/.test(cas(alice))) {
+      pbJs.push('comptes valides : les 8 lectures radiographiques d\'Alice ne sont pas comptees a part — lu « ' + cas(alice) + ' »');
+    }
+    if (!/Lecture radio — aucun/.test(cas(bruno))) {
+      pbJs.push('comptes valides : Bruno n\'a fait aucune lecture radiographique, et rien ne le dit — lu « ' + cas(bruno) + ' »');
+    }
+  }
+  // Les cliches ne doivent pas apparaitre dans le tableau des pathologies faibles.
+  await page.selectOption('#promo-filter', '__toutes__');
+  const patho = (await page.textContent('#weak-body')) || '';
+  if (/retro-alveolaire/.test(patho)) {
+    pbJs.push('pathologies faibles : un cliche de lecture radiographique y figure comme pathologie');
   }
   const resume = (await page.textContent('#stats')).replace(/\s+/g, ' ');
-  if (!/cas diagnostic/.test(resume) || !/cas thérapeutique/.test(resume)) {
-    pbJs.push('bandeau : le total des cas ne distingue pas les deux modes — lu « ' + resume.trim() + ' »');
+  if (!/cas diagnostic/.test(resume) || !/cas thérapeutique/.test(resume) || !/lectures radio/.test(resume)) {
+    pbJs.push('bandeau : le total des cas ne distingue pas les trois modes — lu « ' + resume.trim() + ' »');
   }
   console.log('\n4bis. comptes valides, cas par mode :');
   console.log('    Alice :', alice ? alice[5] : '—');
@@ -166,6 +185,12 @@ try:
         print('   type des dates de cas :', dts)
         if dts != {'datetime'}:
             pb.append('dates de cas non reconnues comme dates : %s' % dts)
+        modes = set(r[4].value for r in lignes)
+        if 'Lecture radiographique' not in modes:
+            pb.append('feuille des cas : les lectures radiographiques n y figurent pas (%s)' % modes)
+        objets = [r[5].value for r in lignes if r[4].value == 'Lecture radiographique']
+        if not all(str(o).startswith('Cliche') or str(o).startswith('Clich') for o in objets):
+            pb.append('feuille des cas : une lecture radiographique n annonce pas son cliche (%s)' % objets[:3])
         noms = set(r[1].value for r in lignes)
         if 'Petit' in noms:
             pb.append('un compte NON valide figure dans la feuille des cas')
