@@ -66,6 +66,44 @@ CASES.push({ user_id:'u4', mode:'diagnostic', diagnosis_id:'necrose', correct:tr
   console.log('\n4. TCEO1 :');             (await lire()).forEach(l => console.log('   ', l));
   console.log('   note :', await page.textContent('#weak-note'));
 
+  // --- les deux modes comptes a part dans la liste des comptes valides ---
+  // Un seul nombre melangeait les cas de diagnostic et ceux de choix therapeutique : on ne
+  // pouvait pas savoir si un etudiant travaillait l'un, l'autre, ou l'un sans l'autre.
+  // Le jeu d'essai le rend verifiable : Alice n'a que du diagnostic (16 cas, 6 reussis),
+  // Bruno n'a que du therapeutique (12 cas, 9 reussis).
+  const pbJs = [];
+  await page.selectOption('#promo-filter', '__toutes__');
+  const lignes = await page.$$eval('#approved-body tr', rs => rs.map(r =>
+    [...r.querySelectorAll('td')].map(c => c.textContent.replace(/\s+/g, ' ').trim())));
+  const ligneDe = nom => lignes.filter(l => l[0] && l[0].indexOf(nom) === 0)[0];
+  const alice = ligneDe('Alice'), bruno = ligneDe('Bruno');
+  if (!alice || !bruno) {
+    pbJs.push('comptes valides : Alice ou Bruno introuvable dans la liste');
+  } else {
+    const cas = l => l[5] || '';
+    if (!/Diagnostic 16 \(38 %\)/.test(cas(alice))) {
+      pbJs.push('comptes valides : les 16 cas de diagnostic d\'Alice ne sont pas comptes a part — lu « ' + cas(alice) + ' »');
+    }
+    if (!/Thérapeutique — aucun/.test(cas(alice))) {
+      pbJs.push('comptes valides : Alice n\'a joue aucun cas therapeutique, et rien ne le dit — lu « ' + cas(alice) + ' »');
+    }
+    if (!/Thérapeutique 12 \(75 %\)/.test(cas(bruno))) {
+      pbJs.push('comptes valides : les 12 cas therapeutiques de Bruno ne sont pas comptes a part — lu « ' + cas(bruno) + ' »');
+    }
+    if (!/Diagnostic — aucun/.test(cas(bruno))) {
+      pbJs.push('comptes valides : Bruno n\'a joue aucun cas de diagnostic, et rien ne le dit — lu « ' + cas(bruno) + ' »');
+    }
+  }
+  const resume = (await page.textContent('#stats')).replace(/\s+/g, ' ');
+  if (!/cas diagnostic/.test(resume) || !/cas thérapeutique/.test(resume)) {
+    pbJs.push('bandeau : le total des cas ne distingue pas les deux modes — lu « ' + resume.trim() + ' »');
+  }
+  console.log('\n4bis. comptes valides, cas par mode :');
+  console.log('    Alice :', alice ? alice[5] : '—');
+  console.log('    Bruno :', bruno ? bruno[5] : '—');
+  pbJs.forEach(x => console.log('  ! ' + x));
+  if (pbJs.length) process.exitCode = 1;
+
   // --- export du classeur ---
   const [dl] = await Promise.all([
     page.waitForEvent('download', { timeout:15000 }),

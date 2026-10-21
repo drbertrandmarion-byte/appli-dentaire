@@ -153,7 +153,9 @@
       <p class="hint">Cliquez sur un étudiant pour consulter ses résultats.</p>
       <div class="tbl-wrap"><table>
         <thead><tr>
-          <th>Nom</th><th>Année</th><th>Faculté</th><th>Dernière connexion</th><th>Séries</th><th>Cas joués</th><th>Moyenne</th><th></th>
+          <th>Nom</th><th>Année</th><th>Faculté</th><th>Dernière connexion</th><th>Séries</th>
+          <th>Cas joués<br><span style="font-weight:400;font-size:0.74rem;color:var(--muted)">par mode, et taux de réussite</span></th>
+          <th>Moyenne</th><th></th>
         </tr></thead>
         <tbody id="approved-body"></tbody>
       </table></div>
@@ -321,7 +323,10 @@
       stat(approved.length, 'comptes validés') +
       stat(active, 'actifs (7 jours)') +
       stat(results.length, 'séries terminées') +
-      stat(caseResults.length, 'cas joués');
+      // Les deux modes comptés à part. Confondus, le total ne disait pas si une promotion
+      // travaille le diagnostic, le traitement, ou l'un au détriment de l'autre.
+      stat(caseResults.filter(function(c){ return c.mode === 'diagnostic'; }).length, 'cas diagnostic') +
+      stat(caseResults.filter(function(c){ return c.mode !== 'diagnostic'; }).length, 'cas thérapeutique');
 
     // En attente
     $('pending-count').innerHTML = pending.length ? '<span class="tag tag-wait">' + pending.length + '</span>' : '';
@@ -356,7 +361,10 @@
         '<td>' + esc(p.faculte) + '</td>' +
         '<td>' + fmtDateTime(p.last_seen_at) + '</td>' +
         '<td>' + mine.length + '</td>' +
-        '<td>' + mesCas.length + (mesCas.length ? ' <span style="font-size:0.76rem;color:var(--muted)">(' + Math.round(mesCas.filter(function(c){ return c.correct; }).length / mesCas.length * 100) + ' %)</span>' : '') + '</td>' +
+        // Un seul nombre melangeait les deux modes : on ne pouvait pas savoir si l'etudiant
+        // travaillait le diagnostic, le traitement, ou l'un sans l'autre.
+        '<td style="line-height:1.55">' + partCas('Diagnostic', mesCas, true)
+          + '<br>' + partCas('Thérapeutique', mesCas, false) + '</td>' +
         '<td>' + moy + '</td>' +
         '<td><div class="actions">' +
           '<button class="btn" data-detail="' + esc(p.id) + '">Résultats</button>' +
@@ -451,6 +459,18 @@
   }
 
   function stat(v, l){ return '<div class="stat"><div class="v">' + v + '</div><div class="l">' + l + '</div></div>'; }
+
+  // Les cas d'un etudiant pour UN mode : leur nombre et leur taux de reussite. Un mode jamais
+  // joue s'affiche en gris plutot qu'en « 0 » — ne pas avoir commence et avoir tout rate sont
+  // deux situations differentes, et la premiere n'appelle pas la meme remarque que la seconde.
+  function partCas(nom, cas, diagnostic){
+    var l = cas.filter(function(c){ return (c.mode === 'diagnostic') === diagnostic; });
+    if(!l.length) return '<span style="font-size:0.78rem;color:var(--muted)">' + nom + ' — aucun</span>';
+    var ok = l.filter(function(c){ return c.correct; }).length;
+    return '<span style="font-size:0.78rem;color:var(--muted)">' + nom + '</span> <b>' + l.length +
+           '</b> <span style="font-size:0.76rem;color:var(--muted)">(' +
+           Math.round(ok / l.length * 100) + ' %)</span>';
+  }
 
   function showDetail(id){
     var p = profiles.filter(function(x){ return x.id === id; })[0];
