@@ -5702,6 +5702,14 @@
     // Une RACINE et non une dent entière : le repère demande de distinguer, parmi les racines
     // d'une molaire supérieure, celle qui est palatine.
     {id:'racine_palatine_26', label:'Racine palatine de la dent 26',            color:'#22c55e'},
+    // Trois repères anatomiques de plus, et un tissu : l'émail, couche la plus dense de la
+    // couronne. Les deux chambres pulpaires sont volontairement d'un rouge et d'un vert
+    // francs — ce sont deux réponses différentes, et les confondre serait l'erreur même que
+    // le leurre cherche à provoquer.
+    {id:'email_46',          label:'Émail de la dent 46',                       color:'#facc15'},
+    {id:'chambre_pulpaire_45', label:'Chambre pulpaire de la dent 45',          color:'#dc2626'},
+    {id:'chambre_pulpaire_36', label:'Chambre pulpaire de la dent 36',          color:'#22c55e'},
+    {id:'foramen_mentonnier', label:'Foramen mentonnier',                       color:'#44403c'},
     {id:'gutta',             label:'Gutta-percha',                              color:'#1e3a8a'},
     {id:'lesion_parodontale', label:'Lésion parodontale verticale',             color:'#4d7c0f'},
     {id:'radix_entomolaris', label:'Radix entomolaris',                         color:'#c026d3'},
@@ -6203,6 +6211,35 @@
         // ÉBAUCHE la moins sûre : région apicale de la dent reconstituée.
         lesion: {poly:[[152,62],[176,56],[200,62],[212,80],[210,104],[196,122],[172,126],
                        [154,118],[146,96],[146,76]]}
+      }
+    },
+    {
+      id:'email_foramen',
+      titre:'Rétro-alvéolaire — secteur postérieur mandibulaire',
+      image:'radios/retro-alveolaire-15.png',
+      caption:'',
+      legende:['carie','email_46','chambre_pulpaire_36','foramen_mentonnier','chambre_pulpaire_45'],
+      cibles:['carie','email_46','foramen_mentonnier','chambre_pulpaire_45'],
+      // La 45 est la dent de GAUCHE, plus étroite ; la 46 celle de droite, plus large et
+      // molaire. C'est la largeur des couronnes qui range les deux, et elle s'accorde avec
+      // l'ordre que l'énoncé suppose : le mésial à gauche.
+      zones:{
+        // Encoche triangulaire sous le point de contact, sur la face distale de la 45 : la
+        // forme même d'une carie interproximale, et le repère le plus net du cliché.
+        carie: {poly:[[162,84],[170,90],[168,104],[160,118],[150,122],[144,112],[146,98],
+                      [153,88]]},
+        // Coiffe d'émail de la 46 : la couche externe de la couronne, la plus dense. Le
+        // contour suit la moitié occlusale, là où l'émail est le plus épais — un anneau
+        // creux ne se déclare pas dans ce format, qui ne connaît que des contours pleins.
+        email_46: {poly:[[164,60],[170,42],[186,31],[208,27],[232,28],[254,36],[270,52],
+                         [272,70],[258,76],[236,68],[212,64],[188,66],[172,72]]},
+        // Chambre pulpaire de la 45 : la clarté sous l'émail, au cœur de la couronne.
+        chambre_pulpaire_45: {poly:[[96,86],[112,82],[130,84],[142,92],[140,104],[124,110],
+                                    [106,108],[94,98]]},
+        // ÉBAUCHE la moins sûre : le foramen se cherche près de l'apex de la prémolaire, et
+        // son ovale se distingue mal du dessin de l'os à ce contraste.
+        foramen_mentonnier: {poly:[[146,206],[168,200],[188,208],[194,224],[186,240],
+                                   [166,246],[148,240],[140,224]]}
       }
     }
   ];
