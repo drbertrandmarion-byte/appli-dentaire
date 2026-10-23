@@ -5815,6 +5815,13 @@
      familles:['numerotation','tissus']},
     {id:'dent_28',           label:'Dent numéro 28',                            color:'#16a34a',
      familles:['numerotation']},
+    // Vingtième cliché : une obturation canalaire d'un autre temps, qu'on ne pose plus mais
+    // qu'on retrouve encore sous les prothèses anciennes.
+    // Turquoise choisi par recherche exhaustive : 50 d'écart avec ses voisins de légende, 32
+    // avec la teinte la plus proche de tout le catalogue. Le premier chiffre est ce que la
+    // règle exige, le second évite qu'une pastille ressemble à une autre d'un cliché voisin.
+    {id:'cone_argent',       label:'Cône d\'argent',                            color:'#00b499',
+     note:'Obturation canalaire métallique, d\'un calibre PARFAITEMENT CONSTANT sur toute sa longueur et plus opaque que la gutta. C\'est cette régularité de diamètre — impossible à un cône de gutta, qui se conifie — qui le signe.'},
     {id:'pulpolithe',        label:'Pulpolithe',                                color:'#db2777',
      note:'Nodule radio-opaque DANS la chambre pulpaire, de densité proche de celle de la dentine, la radioclarté de la chambre restant visible autour de lui. C\'est ce qui le sépare d\'une calcification diffuse, laquelle efface la chambre au lieu de l\'occuper.'}
   ];
@@ -6511,6 +6518,54 @@
         // ÉBAUCHE : zone sombre au collet, sous l'amalgame de gauche.
         carie: {poly:[[30,240],[50,244],[70,247],[90,245],[104,241],[103,256],[80,262],
                       [54,261],[32,254]]}
+      }
+    },
+    {
+      id:'cone_argent_couronnes',
+      titre:'Rétro-alvéolaire — secteur postérieur maxillaire',
+      image:'radios/retro-alveolaire-20.png',
+      caption:'',
+      legende:['inlay_core_simple','cone_argent','couronne_metal','couronne_cm','carie',
+               'parodontite','lesion'],
+      cibles:['inlay_core_simple','cone_argent','couronne_metal','couronne_cm','carie',
+              'parodontite','lesion'],
+      // SEUL CLICHÉ DE LA SÉRIE SANS AUCUN LEURRE : les sept légendes y figurent toutes.
+      //
+      // C'est aussi le seul qui vienne d'une PHOTOGRAPHIE D'ÉCRAN et non d'un export. J'ai
+      // retiré les bandes bleues du moniteur et la dominante de couleur ; restent le moiré de
+      // la trame et le pointeur de souris posé sur la coiffe de droite. Un export du logiciel
+      // d'imagerie remplacerait avantageusement ce fichier.
+      //
+      // CE QUE JE LIS VRAIMENT. Les deux cônes d'argent sont certains : deux traits métalliques
+      // de calibre rigoureusement constant d'un bout à l'autre, ce qu'aucun cône de gutta ne
+      // fait. La coiffe de droite est uniformément dense sur toute son épaisseur — métallique ;
+      // celle de gauche montre deux densités dans une même cape — céramo-métallique. L'ancrage
+      // coulé de gauche a un tenon unique.
+      // LES TROIS LÉSIONS SONT POSÉES, PAS RECONNUES. Sur une photo d'écran, je ne distingue
+      // pas une lacune apicale du grain de la trame avec assez de certitude pour l'affirmer.
+      // Ces trois contours-là sont à refaire avant que le cliché serve.
+      zones:{
+        // Les deux traits métalliques dans les canaux, pris dans un même contour : c'est leur
+        // nature qui est demandée, pas leur dénombrement.
+        cone_argent: {poly:[[134,106],[149,104],[162,149],[180,207],[193,288],[194,306],
+                            [180,308],[171,252],[158,194],[143,144]]},
+        // Coiffe de droite, dense et uniforme sur toute son épaisseur.
+        couronne_metal: {poly:[[101,315],[135,302],[180,299],[225,302],[259,315],[270,342],
+                               [269,383],[257,419],[225,436],[180,439],[140,432],[110,405],
+                               [99,365]]},
+        // Coiffe de gauche, où se lisent deux densités dans une même cape.
+        couronne_cm: {poly:[[6,331],[32,326],[59,328],[81,334],[86,356],[84,387],[76,419],
+                            [54,437],[27,435],[9,414],[4,378],[3,352]]},
+        // Ancrage coulé sous cette coiffe, à tenon unique.
+        inlay_core_simple: {poly:[[35,226],[47,223],[57,252],[66,293],[70,320],[64,325],
+                                  [49,323],[41,297],[36,270],[32,247]]},
+        // ÉBAUCHE : lacune étendue au-dessus des apex de la dent aux cônes.
+        lesion: {poly:[[128,50],[160,44],[192,52],[202,76],[192,98],[160,106],[130,100],
+                       [119,76]]},
+        // ÉBAUCHE : élargissement discret à l'apex de la dent de gauche.
+        parodontite: {poly:[[31,192],[47,187],[60,196],[61,213],[48,222],[32,219],[26,206]]},
+        // ÉBAUCHE : encoche sombre au collet distal de la coiffe de droite.
+        carie: {poly:[[214,268],[233,263],[249,272],[250,290],[234,298],[216,294],[209,281]]}
       }
     }
   ];
