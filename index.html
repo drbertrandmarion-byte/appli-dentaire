@@ -6438,6 +6438,38 @@
         // ÉBAUCHE : restauration lue à l'occlusal de 26, sous la chambre.
         composite: {poly:[[116,205],[151,200],[178,208],[175,226],[140,232],[116,221]]}
       }
+    },
+    {
+      id:'screw_post_kyste',
+      titre:'Rétro-alvéolaire — secteur antérieur maxillaire',
+      image:'radios/retro-alveolaire-18.png',
+      caption:'',
+      legende:['carie','lesion','screw_post','debris','fragment','composite','inlay_core_simple'],
+      cibles:['carie','lesion','screw_post','debris','fragment'],
+      // Cliché VERTICAL, comme le cinquième : les coordonnées restent en largeur de film, la
+      // hauteur suit (592 unités ici contre 360 de large).
+      //
+      // CE QUE JE LIS VRAIMENT, et ce que je devine. Le screw post est le seul repère certain :
+      // son filetage le signe, aucun autre objet du cliché n'en a. Le fragment — long trait
+      // dense et rectiligne dans le canal, au-dessus de l'ancrage — est défendable. La lacune
+      // apicale est au bon endroit, mais son contour est grossier. La carie et le débris
+      // radiculaire sont POSÉS, PAS RECONNUS : je ne les distingue pas avec assez de certitude
+      // pour les affirmer. Ce cliché est à retracer avant d'être donné aux étudiants.
+      zones:{
+        // Le seul objet fileté du cliché, dans la lumière canalaire coronaire.
+        screw_post: {poly:[[227,418],[254,411],[278,429],[280,473],[269,511],[251,537],
+                           [232,533],[223,494],[222,452]]},
+        // Trait dense, mince et rectiligne qui prolonge le canal au-dessus de l'ancrage.
+        fragment: {poly:[[217,212],[230,210],[243,274],[245,347],[239,392],[227,394],
+                         [219,347],[212,274]]},
+        // Lacune radioclaire étendue, au-dessus de l'apex.
+        lesion: {poly:[[201,55],[256,41],[306,64],[315,119],[302,178],[256,206],[212,192],
+                       [194,137],[192,91]]},
+        // ÉBAUCHE : zone sombre au collet de la dent de gauche.
+        carie: {poly:[[29,450],[71,442],[99,457],[97,488],[64,501],[33,493],[24,471]]},
+        // ÉBAUCHE : esquille dense sous l'ancrage, lue comme un reliquat radiculaire.
+        debris: {poly:[[222,544],[242,541],[249,564],[240,580],[223,576],[216,560]]}
+      }
     }
   ];
 
