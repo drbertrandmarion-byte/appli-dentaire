@@ -270,6 +270,7 @@
 
   /* Hub : choix du type d'entraînement */
   .hub-intro{margin-top:0;}
+  .radio-cle{margin:8px 0 14px;font-size:.88rem;color:#475569;line-height:1.5;}
   .envoi-ko{margin:0 0 16px;padding:10px 14px;border-radius:10px;font-size:.94rem;line-height:1.5;
             background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
   .hub-buttons{
@@ -1828,6 +1829,10 @@
     <div id="radio-correction" class="hidden">
       <div class="verdict" id="radio-verdict"></div>
       <div class="score-recap" id="radio-score"></div>
+      <!-- Le code du dessin, dit une fois : sans cette ligne, les pointillés seraient une
+           nuance qu'on remarque sans la comprendre. -->
+      <p class="radio-cle">Sur le cliché corrigé : <b>trait plein</b>, zone que vous avez
+        trouvée · <b>pointillés</b>, zone manquée ou mal visée.</p>
       <ul class="radio-verdicts" id="radio-verdicts"></ul>
       <!-- Les repères du cliché et leur lecture, remplis à la validation. -->
       <div id="radio-lecons-boite" class="hidden"></div>
@@ -3778,16 +3783,55 @@
     return result;
   }
 
-  // Choix thérapeutique : abaisse fortement (sans l'annuler) le poids de tirage du diagnostic qui
-  // vient d'être présenté, pour limiter les répétitions immédiates sans les rendre impossibles.
+  // Un sac qu'on vide avant de le rebattre, comme en lecture radiographique : hors révision,
+  // les douze pathologies passent toutes avant qu'aucune ne revienne. Au tirage avec remise,
+  // un étudiant pouvait en revoir une trois fois avant d'en découvrir une autre — c'est ce que
+  // l'enseignante appelle un tirage qui n'est pas homogène, et elle a raison : une pathologie
+  // vue trois fois et une jamais vue ne s'apprennent pas au même rythme.
+  // Le sac retient LUI-MÊME son dernier tirage, plutôt que de le recevoir en argument : c'est
+  // la seule façon d'éprouver sa règle de non-répétition sans passer par l'interface, où le
+  // bouton « Nouveau cas » n'apparaît qu'une fois le cas répondu.
+  function faitUnSac(){
+    var sac = [], dernier = null;
+    return function(){
+      if(!sac.length){
+        sac = DIAGNOSIS_ORDER.slice();
+        for(var i = sac.length - 1; i > 0; i--){ // mélange de Fisher-Yates
+          var j = Math.floor(Math.random() * (i + 1));
+          var t = sac[i]; sac[i] = sac[j]; sac[j] = t;
+        }
+      }
+      // Le cas qu'on vient de faire ne doit pas revenir tout de suite, fût-ce au raccord
+      // entre deux sacs : on prend celui d'en dessous et on le laisse pour plus tard.
+      var k = sac.length - 1;
+      if(sac.length > 1 && sac[k] === dernier) k--;
+      dernier = sac.splice(k, 1)[0];
+      return dernier;
+    };
+  }
+  var sacDiagnostic = faitUnSac(), sacTherapeutique = faitUnSac();
+  // Exposés pour les tests. La liste, pour que la suite connaisse la taille du sac au lieu de
+  // la deviner — un sac deviné faux ne prouverait rien le jour où une pathologie s'ajoute. Le
+  // tirage, pour que sa règle s'éprouve sans passer par l'interface : le bouton « Nouveau cas »
+  // n'apparaît qu'une fois le cas répondu, et vingt-quatre cas répondus pour mesurer un tirage
+  // seraient vingt-quatre occasions d'échouer pour une raison étrangère au tirage.
+  // ATTENTION : ces fonctions CONSOMMENT le sac, comme les vraies. C'est voulu — c'est le
+  // même sac que l'interface, pas une copie qui pourrait en diverger sans bruit.
+  window.EndoDiagnosisOrder = DIAGNOSIS_ORDER.slice();
+  window.EndoTirage = { diagnostic: sacDiagnostic, therapeutique: sacTherapeutique };
+
+  // Choix thérapeutique. En révision, le tirage suit les poids d'erreur ; hors révision, il
+  // épuise le sac.
   function randomTxCaseId(){
-    // En révision, la pénalité anti-répétition est adoucie : sinon elle frappe
-    // précisément la pathologie que l'on cherche à faire retravailler.
-    var repeatPenalty = revisionWeights ? 0.5 : 0.15;
-    var weights = DIAGNOSIS_ORDER.map(function(id){
-      return (id === lastTxCaseId ? repeatPenalty : 1) * revisionWeight(id);
-    });
-    return pickWeighted(DIAGNOSIS_ORDER, weights);
+    if(revisionWeights){
+      // La pénalité anti-répétition est adoucie ici : sinon elle frappe précisément la
+      // pathologie que l'on cherche à faire retravailler.
+      var weights = DIAGNOSIS_ORDER.map(function(id){
+        return (id === lastTxCaseId ? 0.5 : 1) * revisionWeight(id);
+      });
+      return pickWeighted(DIAGNOSIS_ORDER, weights);
+    }
+    return sacTherapeutique();
   }
 
   function generateTxSeriesCases(n){
@@ -4335,7 +4379,7 @@
     if(revisionWeights){
       return pickWeighted(DIAGNOSIS_ORDER, DIAGNOSIS_ORDER.map(revisionWeight));
     }
-    return DIAGNOSIS_ORDER[Math.floor(Math.random() * DIAGNOSIS_ORDER.length)];
+    return sacDiagnostic();
   }
 
   function beginCase(id){
@@ -6646,6 +6690,9 @@
 
   // Le lissage est calculé une fois par cliché : il sert à chaque validation et à chaque rendu.
   var radioZonesLissees = null;
+  // id de repère -> un booléen par contour : l'étudiant a-t-il atteint CETTE zone-là. Rempli
+  // à la validation, lu par le dessin de la correction.
+  var radioZonesTrouvees = {};
 
   // Sommets saisis par l'enseignante dans l'atelier de tracé, par cliché puis par repère. Ils
   // priment sur ceux déclarés dans le code : c'est le seul moyen qu'elle a de corriger une
@@ -6907,7 +6954,12 @@
       var formes = radioCase.cibles.map(function(id){
         var rep = RADIO_REPERE_BY_ID[id], contours = radioZone(id);
         if(!contours) return '';
-        return contours.map(function(poly){
+        var atteintes = radioZonesTrouvees[id] || [];
+        return contours.map(function(poly, k){
+        // Trait plein : zone atteinte. Pointillés : zone manquée ou mal visée. L'étudiant voit
+        // ainsi d'un coup d'œil ce qu'il a trouvé et ce qui lui a échappé, sans relire la liste.
+        var manquee = !atteintes[k];
+        var tirets = manquee ? ' stroke-dasharray="7 5"' : '';
         var pts = poly.map(function(pt){ return pt[0] + ',' + pt[1]; }).join(' ');
         // Le remplissage très clair rend la zone lisible d'un coup d'œil sans masquer l'image
         // qu'elle désigne ; le liseré sombre détache le trait de couleur des gris du cliché.
@@ -6915,10 +6967,11 @@
         // « points » réellement rendu, de sorte que sa référence soit la forme que l'étudiant
         // voit, et non une déclaration parallèle qui pourrait en diverger sans bruit.
         return '<polygon points="' + pts + '" data-rid="' + id + '"' +
-               ' fill="' + rep.color + '" fill-opacity="0.16"' +
-               ' stroke="#00000066" stroke-width="3.4" stroke-linejoin="round"/>' +
+               ' data-trouvee="' + (manquee ? '0' : '1') + '"' +
+               ' fill="' + rep.color + '" fill-opacity="' + (manquee ? '0.08' : '0.16') + '"' +
+               ' stroke="#00000066" stroke-width="3.4" stroke-linejoin="round"' + tirets + '/>' +
                '<polygon points="' + pts + '" fill="none" stroke="' + rep.color +
-               '" stroke-width="1.8" stroke-linejoin="round"/>';
+               '" stroke-width="1.8" stroke-linejoin="round"' + tirets + '/>';
         }).join('');
       }).join('');
       html += '<svg class="radio-zones" viewBox="0 0 ' + RADIO_W + ' ' + hUnites.toFixed(1) +
@@ -7462,6 +7515,7 @@
     radioSelected = null;
     radioChecked = false;
     radioZonesLissees = null; // les contours lissés appartiennent au cliché précédent
+    radioZonesTrouvees = {};  // et les zones atteintes, à la lecture précédente
     if(radioTracing) radioFermeTrace();
 
     hideEl(introCard);
@@ -7492,6 +7546,11 @@
 
   function submitRadio(){
     radioChecked = true;
+    // Quelles zones l'étudiant a-t-il réellement atteintes, contour par contour. Le dessin de
+    // la correction s'en sert : trait plein pour ce qui est trouvé, pointillés pour ce qui est
+    // manqué. La phrase « la zone attendue (en pointillés) » promettait ce code depuis le
+    // début sans que rien ne le dessine.
+    radioZonesTrouvees = {};
     var lignes = [], bons = 0, leurres = 0, oublis = 0, decales = 0;
     // Un repère figurant à plusieurs endroits attend autant de points qu'il a de zones, et
     // une zone laissée sans point ne compte pas pour acquise : c'est le dénombrement, autant
@@ -7516,11 +7575,13 @@
       }
 
       var horsZone = pts.filter(function(p){ return !radioWellPlaced(rep.id, p); }).length;
-      var couvertes = contours.filter(function(poly){
+      var atteintes = contours.map(function(poly){
         return pts.some(function(p){
           return radioDansPolygone(poly, p) || radioDistanceAuBord(poly, p) <= RADIO_CONTACT;
         });
-      }).length;
+      });
+      radioZonesTrouvees[rep.id] = atteintes;
+      var couvertes = atteintes.filter(Boolean).length;
 
       if(!horsZone && couvertes === contours.length && pts.length === contours.length){
         bons++;
@@ -8116,6 +8177,10 @@
   // effacés : le volume stocké reste borné quel que soit l'usage.
   var REVIEW_KEEP = 20;
 
+  // Nombre de cas à faire dans un mode avant que le tirage se mette à insister sur les
+  // pathologies ratées. En deçà, une faute n'est qu'un accident de parcours.
+  var RODAGE_AVANT_PONDERATION = 20;
+
   window.EndoStats = {
     recordCase: function(mode, diagnosisId, correct){
       if(!session || !diagnosisId) return;
@@ -8159,6 +8224,12 @@
                     '&user_id=eq.' + session.user_id + '&order=created_at.desc&limit=400')
         .then(function(rows){
           if(!rows || !rows.length) return null;
+          // RODAGE : tant que l'étudiant n'a pas fait une vingtaine de cas dans ce mode, le
+          // tirage reste homogène. Pondérer plus tôt le renvoie sans cesse sur les mêmes
+          // pathologies, précisément celles qu'il n'a vues qu'une fois : une faute unique n'est
+          // pas encore une faiblesse, et la mesurer sur deux ou trois cas ne mesure que le
+          // hasard. C'est l'enseignante qui l'a demandé, et c'est exact.
+          if(rows.length < RODAGE_AVANT_PONDERATION) return null;
           var agg = {};
           rows.forEach(function(r){
             var a = agg[r.diagnosis_id] || (agg[r.diagnosis_id] = {t:0, w:0});

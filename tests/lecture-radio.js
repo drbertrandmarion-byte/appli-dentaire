@@ -1466,6 +1466,78 @@ async function valideEtLis(page){
     await p.close();
   }
 
+  // ---- 6bis. Trouve en trait plein, manque en pointilles ----
+  // La correction promettait « la zone attendue (en pointillés) » alors que TOUTES les zones
+  // etaient tracees en trait plein : la phrase renvoyait a un code qui n'existait pas. Le
+  // dessin distingue desormais ce que l'etudiant a atteint de ce qui lui a echappe.
+  {
+    const p = await context.newPage();
+    await boot(p, 5);
+    await ouvreCliche(p);
+    // Un cliche a plusieurs cibles, ouvert par la liste pour que le test ne depende pas du
+    // tirage : on en atteint UNE seule, les autres doivent ressortir en pointilles.
+    if (await p.$eval('#radio-choix-wrap', e => e.classList.contains('hidden'))) {
+      ko('plein/pointilles : la liste enseignante est inatteignable, le cliche ne peut pas etre choisi');
+    } else {
+      await p.selectOption('#radio-choix', 'cone_argent_couronnes');
+      await p.waitForTimeout(500);
+      const zones = await zonesAttendues(p);   // revele les contours, puis on recommence
+      await p.click('#radio-next-btn');
+      await p.waitForTimeout(300);
+      await p.selectOption('#radio-choix', 'cone_argent_couronnes');
+      await p.waitForTimeout(500);
+
+      const cible = zones[0];
+      if (!cible || zones.length < 2) {
+        ko('plein/pointilles : ce cliche n\'expose pas au moins deux zones, le test ne prouverait rien');
+      } else {
+        const cx = cible.poly.reduce((s, q) => s + q[0], 0) / cible.poly.length;
+        const cy = cible.poly.reduce((s, q) => s + q[1], 0) / cible.poly.length;
+        await p.click(`.radio-chip[data-rid="${cible.id}"]`);
+        await p.waitForTimeout(80);
+        const film = await p.$eval('#radio-film', e => {
+          const r = e.getBoundingClientRect();
+          return { x: r.x, y: r.y, w: r.width, h: r.height };
+        });
+        const hU = await p.evaluate(() => {
+          const r = document.getElementById('radio-film').getBoundingClientRect();
+          return r.height / r.width * 360;
+        });
+        await p.mouse.click(film.x + film.w * (cx / 360), film.y + film.h * (cy / hU));
+        await p.waitForTimeout(100);
+        await p.click('#radio-submit-btn');
+        await p.waitForTimeout(500);
+
+        const dessin = await p.$$eval('#radio-overlay polygon[data-rid]', ns => ns.map(n => ({
+          id: n.dataset.rid,
+          trouvee: n.dataset.trouvee,
+          tirets: n.getAttribute('stroke-dasharray')
+        })));
+        const atteinte = dessin.filter(z => z.id === cible.id);
+        const autres   = dessin.filter(z => z.id !== cible.id);
+        if (!atteinte.length) {
+          ko('plein/pointilles : la zone visee n\'est pas dessinee a la correction');
+        } else if (atteinte.some(z => z.trouvee !== '1' || z.tirets)) {
+          ko('plein/pointilles : la zone ATTEINTE est tracee en pointilles — le code est inverse '
+             + 'ou la zone n\'est pas reconnue comme trouvee');
+        }
+        if (!autres.length) {
+          ko('plein/pointilles : aucune autre zone a comparer, le test ne prouverait rien');
+        } else if (!autres.every(z => z.trouvee === '0' && z.tirets)) {
+          ko('plein/pointilles : une zone MANQUEE reste en trait plein — l\'etudiant ne peut pas '
+             + 'distinguer ce qu\'il a trouve de ce qui lui a echappe');
+        }
+        // La phrase qui annonce le code doit etre la : des pointillés que rien n'explique
+        // sont une nuance qu'on remarque sans la comprendre.
+        const cle = await p.$eval('.radio-cle', e => (e.textContent || '').trim()).catch(() => '');
+        if (!/pointill/i.test(cle) || !/trait plein/i.test(cle)) {
+          ko('plein/pointilles : la ligne qui explique le code est absente ou muette (lu : ' + cle + ')');
+        }
+      }
+    }
+    await p.close();
+  }
+
   // ---- 7. Un refus du serveur doit se VOIR, et ne doit rien bloquer ----
   // L'enseignante a fait plusieurs lectures radio sans en voir trace dans le back-office. Si
   // le serveur refuse la ligne — contrainte qui n'accepte pas ce mode, colonne absente —, le

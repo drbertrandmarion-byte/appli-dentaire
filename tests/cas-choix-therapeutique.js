@@ -269,6 +269,54 @@ async function run() {
   });
   console.log('Fiche recapitulative :', lignesFiche.length, 'lignes controlees');
 
+  // ---- Le tirage hors revision epuise les douze pathologies avant d'en repeter une ----
+  // Au tirage avec remise, un etudiant pouvait revoir trois fois la meme pathologie avant
+  // d'en decouvrir une autre. L'enseignante l'a signale : « il retourne toujours sur les
+  // memes ». Le tirage vide desormais un sac avant de le rebattre, et c'est verifie SANS
+  // rechargement de page — une page neuve rebat le sac et masquerait la panne.
+  {
+    await page.goto('http://localhost:9300/index.html');
+    await page.evaluate(() => { const s = document.getElementById('splash-screen'); if (s) s.remove(); });
+    await page.waitForSelector('#auth-gate.hidden', { state: 'attached', timeout: 15000 });
+
+    const tire = await page.evaluate(() => {
+      if (!window.EndoTirage || !window.EndoDiagnosisOrder) return null;
+      const N = window.EndoDiagnosisOrder.length;
+      const out = { N: N, diagnostic: [], therapeutique: [] };
+      for (let i = 0; i < 2 * N; i++) {
+        out.diagnostic.push(window.EndoTirage.diagnostic());
+        out.therapeutique.push(window.EndoTirage.therapeutique());
+      }
+      return out;
+    });
+    const dedans = (l) => l.length - new Set(l).size;
+    if (!tire) {
+      results.push('TIRAGE : window.EndoTirage est introuvable — la regle du sac n\'est eprouvee nulle part');
+    } else {
+      for (const mode of ['diagnostic', 'therapeutique']) {
+        const suite = tire[mode], N = tire.N;
+        const premier = suite.slice(0, N), second = suite.slice(N, 2 * N);
+        if (dedans(premier)) {
+          results.push('TIRAGE ' + mode + ' : ' + dedans(premier) + ' repetition(s) dans les ' + N +
+                       ' premiers cas — une pathologie revient avant que toutes soient passees');
+        }
+        if (new Set(premier).size !== N) {
+          results.push('TIRAGE ' + mode + ' : ' + new Set(premier).size + ' pathologies distinctes sur ' + N);
+        }
+        if (dedans(second)) {
+          results.push('TIRAGE ' + mode + ' : ' + dedans(second) + ' repetition(s) dans le deuxieme tour complet');
+        }
+        if (suite[N] === suite[N - 1]) {
+          results.push('TIRAGE ' + mode + ' : meme pathologie au raccord entre deux series — ' + suite[N]);
+        }
+      }
+    }
+    // Controle du controle : la meme mesure sur une suite fautive doit crier.
+    if (!dedans(['a', 'b', 'a'])) {
+      results.push('AUTOCONTROLE : le detecteur de repetition ne voit pas un doublon pose expres');
+    }
+  }
+
   console.log('Tested', seen.size, '/', allKeys.length, 'unique named cases');
   const missing = allKeys.filter(k => !seen.has(k));
   console.log('Missing (never rolled):', missing);
