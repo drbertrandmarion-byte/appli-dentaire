@@ -6165,14 +6165,24 @@
       image:'radios/retro-alveolaire-08.jpg',
       caption:'',
       legende:['carie','screw_post','lesion','couronne_metal','parodontite','composite'],
-      // L'énoncé reçu ne séparait pas les bonnes légendes des fausses, contrairement aux sept
-      // précédents. Les quatre repères retenus ici sont ceux que le cliché montre sans
-      // ambiguïté. Les deux lésions apicales sont laissées en leurres FAUTE DE LES VOIR : je
-      // n'ai pas su distinguer de radioclarté apicale sur ce film, et déclarer une cible
-      // m'obligerait à dessiner une lacune inventée — une erreur qui survivrait dans le
-      // corrigé même après correction de la liste. Le choix se renverse en une ligne.
-      cibles:['carie','screw_post','couronne_metal','composite'],
+      // L'énoncé reçu ne séparait pas les bonnes légendes des fausses. J'avais donc laissé les
+      // deux lésions apicales en leurres FAUTE DE LES VOIR. L'enseignante a tranché : elles
+      // figurent sur ce cliché. C'est la TROISIÈME fois que ce pari se révèle faux — après le
+      // neuvième et le dixième —, et il a ceci de particulier qu'il ne se rattrape pas par le
+      // tracé : un repère déclaré absent n'est jamais dessiné, même tracé. CE CLICHÉ N'A PLUS
+      // DE LEURRE.
+      //
+      // Les quatre premiers repères sont lus sans ambiguïté. Les DEUX LÉSIONS SONT POSÉES, PAS
+      // RECONNUES, et leur ATTRIBUTION aussi est une supposition : j'ai mis la lacune
+      // volumineuse à l'apex de la dent au tenon — l'histoire clinique la plus courante — et
+      // l'élargissement débutant à celui de la dent du milieu. Si c'est l'inverse, son tracé
+      // le corrige, les deux repères étant désormais déclarés présents.
+      cibles:['carie','screw_post','couronne_metal','composite','lesion','parodontite'],
       zones:{
+        // ÉBAUCHE : lacune volumineuse cherchée à l'apex de la dent au tenon.
+        lesion: {poly:[[70,96],[92,88],[114,94],[122,112],[116,130],[96,137],[76,131],[66,114]]},
+        // ÉBAUCHE : élargissement discret cherché à l'apex de la dent du milieu.
+        parodontite: {poly:[[176,126],[194,121],[210,128],[212,144],[198,152],[180,149],[172,138]]},
         // Tenon vissé : son filetage se voit nettement sur le bord droit de la colonne.
         screw_post: {poly:[[98,142],[110,142],[118,156],[121,173],[122,190],[117,200],
                            [107,200],[99,187],[96,167],[95,151]]},
