@@ -406,7 +406,10 @@ async function valideEtLis(page){
         annee: 'TCEO1', faculte: 'UFR Odontologie Dijon', approved: true
       }));
       localStorage.setItem('endodiag-radio-traces-v1', JSON.stringify({
-        endo_composite_fibre: { traitement_radiculaire: c }
+        endo_composite_fibre: { traitement_radiculaire: c },
+        // Le douzieme cliche portait ce repere sous « gutta » : ce second saut doit marcher
+        // aussi, sans quoi les contours publies sous ce nom-la seraient perdus.
+        gutta_radix:          { gutta: c }
       }));
     }, carre);
     const p = await ctxM.newPage();
@@ -423,12 +426,14 @@ async function valideEtLis(page){
         id: n.dataset.rid,
         pts: n.getAttribute('points').split(' ').map(s => s.split(',').map(Number))
       })));
-      if (vu.some(z => z.id === 'traitement_radiculaire')) {
-        ko('reprise des traces : l\'ancien nom « traitement_radiculaire » est encore dessine');
+      for (const vieux of ['traitement_radiculaire', 'gutta']) {
+        if (vu.some(z => z.id === vieux)) {
+          ko('reprise des traces : l\'ancien nom « ' + vieux + ' » est encore dessine');
+        }
       }
-      const g = vu.find(z => z.id === 'gutta');
+      const g = vu.find(z => z.id === 'obturation_canalaire');
       if (!g) {
-        ko('reprise des traces : rien n\'est dessine pour « gutta » sur le dixieme cliche');
+        ko('reprise des traces : rien n\'est dessine pour « obturation_canalaire » sur le dixieme cliche');
       } else {
         const cx = g.pts.reduce((s, p) => s + p[0], 0) / g.pts.length;
         const cy = g.pts.reduce((s, p) => s + p[1], 0) / g.pts.length;
@@ -438,6 +443,29 @@ async function valideEtLis(page){
           ko('reprise des traces : la zone dessinee est centree en (' + cx.toFixed(0) + ', ' +
              cy.toFixed(0) + ') au lieu du trace repris, centre en (280, 67) — le contour '
              + 'dessine a la main sous l\'ancien nom a ete perdu');
+        }
+      }
+
+      // Le DEUXIEME ancien nom, sur le cliche qui le portait. Une table de reprise qui ne
+      // traiterait qu'un des deux sauts passerait le controle precedent sans rien prouver
+      // pour l'autre, et les contours publies sous « gutta » seraient perdus en silence.
+      await p.selectOption('#radio-choix', 'gutta_radix');
+      await p.waitForTimeout(500);
+      await p.click('#radio-submit-btn');
+      await p.waitForTimeout(500);
+      const vu2 = await p.$$eval('#radio-overlay polygon[data-rid]', ns => ns.map(n => ({
+        id: n.dataset.rid,
+        pts: n.getAttribute('points').split(' ').map(s => s.split(',').map(Number))
+      })));
+      const g2 = vu2.find(z => z.id === 'obturation_canalaire');
+      if (!g2) {
+        ko('reprise des traces : rien n\'est dessine pour « obturation_canalaire » sur le douzieme cliche');
+      } else {
+        const cx = g2.pts.reduce((s, p) => s + p[0], 0) / g2.pts.length;
+        const cy = g2.pts.reduce((s, p) => s + p[1], 0) / g2.pts.length;
+        if (Math.abs(cx - 280) > 20 || Math.abs(cy - 67) > 20) {
+          ko('reprise des traces : le contour publie sous « gutta » n\'est pas repris — zone '
+             + 'centree en (' + cx.toFixed(0) + ', ' + cy.toFixed(0) + ') au lieu de (280, 67)');
         }
       }
     }
