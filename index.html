@@ -6114,17 +6114,24 @@
       image:'radios/retro-alveolaire-09.png',
       caption:'',
       legende:['inlay_core_simple','couronne_cm','onlay','composite','lesion','fragment','sinus'],
-      // L'énoncé ne séparait pas les bonnes légendes des fausses. Le partage retenu suit la
-      // règle que l'enseignante avait elle-même posée — les repères présents, plus deux faux,
-      // pas davantage : cinq cibles et deux leurres. Les deux leurres sont ceux que je ne
-      // trouve pas sur le film : aucune coiffe céramo-métallique, aucune radioclarté apicale.
-      cibles:['inlay_core_simple','onlay','composite','fragment','sinus'],
+      // L'enseignante a tranché : les sept légendes figurent sur ce cliché. J'avais classé en
+      // leurres la coiffe céramo-métallique et la lésion apicale FAUTE DE LES VOIR, et son
+      // tracé montre qu'elles y sont. C'est la seconde fois que ce pari se révèle faux — sur
+      // ce film-ci comme sur le dixième, mon « je ne le vois pas » valait moins que son œil.
+      cibles:['inlay_core_simple','couronne_cm','onlay','composite','lesion','fragment','sinus'],
       zones:{
-        // Le seul repère certain du cliché : masse coulée très dense, prolongée vers le haut
-        // par son tenon effilé.
-        inlay_core_simple: {poly:[[150,86],[158,88],[164,124],[172,150],[200,152],[228,160],
-                                  [243,178],[245,202],[238,226],[220,242],[196,248],[172,242],
-                                  [156,226],[150,202],[152,176],[150,140],[148,110]]},
+        // Contours de SECOURS. Ce cliché est tracé par l'enseignante : ses contours, publiés
+        // sur le serveur, priment sur ceux-ci, qui ne servent que si le serveur est
+        // injoignable. Ils sont relevés sur sa capture d'écran, donc approximatifs.
+        // La reconstitution et la coiffe sont deux zones distinctes : le tenon et la partie
+        // haute du noyau pour l'une, la masse qui l'enveloppe en bas pour l'autre.
+        inlay_core_simple: {poly:[[150,84],[160,84],[166,116],[176,146],[200,152],[218,160],
+                                  [226,172],[214,178],[186,174],[164,170],[152,160],[148,124]]},
+        couronne_cm: {poly:[[150,162],[178,156],[212,158],[240,168],[250,188],[248,214],
+                            [236,236],[212,250],[182,252],[158,244],[146,224],[144,192]]},
+        // Région apicale de la dent reconstituée.
+        lesion: {poly:[[154,58],[178,52],[200,58],[212,76],[210,100],[196,116],[172,120],
+                       [154,112],[146,90],[146,70]]},
         // Fin trait radio-opaque qui prolonge le canal AU-DELÀ de la pointe du tenon, et
         // nettement plus mince que lui : c'est ce qui le fait lire comme un fragment.
         // Le contour s'arrête au-dessus de la pointe du tenon : s'ils se chevauchaient, un
