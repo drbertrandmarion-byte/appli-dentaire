@@ -983,6 +983,10 @@
   }
   .radio-lecons b{display:block;}
   .radio-lecons-titre{margin:20px 0 0; font-size:0.95rem; color:var(--radio-accent-dark);}
+  /* Une explication de famille ne porte pas de pastille : elle ne designe pas un repère,
+     elle donne la règle qui sert à en situer plusieurs. */
+  .radio-lecon-famille{padding-left:22px; color:var(--muted);}
+  .radio-lecon-famille b{color:var(--ink);}
 
   /* Le cliché et ses points : « touch-action:none » est indispensable, sinon le
      navigateur mobile interprète le glissement d'un point comme un défilement de page
@@ -5688,8 +5692,10 @@
   var RADIO_REPERES = [
     {id:'couronne_cm',       label:'Couronne céramo-métallique',                color:'#f2b134',
      note:'La chape métallique est très opaque et nettement dessinée ; le pourtour céramique l\'est beaucoup moins. Ce sont ces DEUX densités dans une même coiffe qui la signent.'},
-    {id:'bridge_cantilever', label:'Bridge avec cantilever métallique',         color:'#2563eb'},
-    {id:'osteite',           label:'Ostéite condensante',                       color:'#a16207'},
+    {id:'bridge_cantilever', label:'Bridge avec cantilever métallique',         color:'#2563eb',
+     note:'Bridge dont une dent est « en suspension » à une extrémité, et non au centre entre deux piliers : c\'est cette partie en suspension qu\'on appelle le cantilever.'},
+    {id:'osteite',           label:'Ostéite condensante',                       color:'#a16207',
+     note:'RADIO-OPACITÉ osseuse concentrique à l\'apex d\'une dent, avec toujours la présence du ligament dentaire — c\'est lui qui permet de la différencier d\'une cémentose.'},
     {id:'inlay_core',        label:'Inlay-core à clavette',                     color:'#22d3ee',
      note:'Corps coulé à DEUX ancrages canalaires, logés dans deux racines différentes — c\'est ce double ancrage qui le distingue de l\'inlay-core simple.'},
     {id:'inlay_core_simple', label:'Inlay-core simple',                         color:'#f97316',
@@ -5704,8 +5710,10 @@
     // a tranché pour le libellé du deuxième cliché, qui vaut donc partout.
     {id:'parodontite',       label:'Lésion apicale débutante (parodontite apicale)', color:'#a3e635',
      note:'Simple ÉLARGISSEMENT du ligament péri-apical, radioclair : un liseré qui s\'épaissit autour de l\'apex, sans lacune constituée.'},
-    {id:'debris',            label:'Débris radiculaire',                        color:'#ec4899'},
-    {id:'fragment',          label:'Fragment instrumental cassé',               color:'#7f1d1d'},
+    {id:'debris',            label:'Débris radiculaire',                        color:'#ec4899',
+     note:'Fragment de racine, RADIO-OPAQUE, souvent entouré d\'os spongieux.'},
+    {id:'fragment',          label:'Fragment instrumental cassé',               color:'#7f1d1d',
+     note:'Radio-opacité PLUS forte que celle des obturations canalaires, avec plus ou moins de filetage. Souvent trop rectiligne pour être naturel.'},
     // Vert foncé et non plus turquoise : sur le quatrième cliché, l'amalgame et le composite
     // sont deux zones voisines, et leurs anciennes couleurs — #14b8a6 et #06b6d4 — ne se
     // distinguaient ni sur le cliché ni entre deux pastilles de la légende.
@@ -5714,7 +5722,8 @@
     // Libellé élargi : le signe est le même quel que soit le matériau qui fuit, et le
     // quatorzième cliché le fait porter sur une restauration qui n'est pas un amalgame.
     // Un second repère presque identique n'aurait ajouté qu'une ambiguïté de plus.
-    {id:'amalgame_infiltre', label:'Perte d\'étanchéité d\'une restauration',  color:'#64748b'},
+    {id:'amalgame_infiltre', label:'Perte d\'étanchéité d\'une restauration',  color:'#64748b',
+     note:'Légère radioclarté sous une restauration : un espace mince, souvent rectiligne, entre la restauration et la limite dentaire.'},
     {id:'rhizalyse',         label:'Rhizalyse radiculaire sur dent vivante',    color:'#a855f7',
      note:'Apex RACCOURCI, dont le foramen apical n\'est plus visible : la racine paraît tronquée.'},
     {id:'screw_post',        label:'Screw post',                                color:'#1d4ed8',
@@ -5723,7 +5732,8 @@
      note:'Très radio-opaque, aux contours nets et bien définis sur toute son épaisseur.'},
     {id:'resorption_externe',label:'Résorption externe',                        color:'#e11d48',
      note:'Radioclarté au sein de la dentine, mais NON centrée sur le canal — c\'est ce décentrage qui la distingue de la résorption interne, qui part du canal et l\'élargit.'},
-    {id:'resorption_interne',label:'Résorption interne',                        color:'#7e22ce'},
+    {id:'resorption_interne',label:'Résorption interne',                        color:'#7e22ce',
+     note:'Radioclarté concentrique, située sur le trajet du canal dentaire — c\'est ce centrage sur le canal qui la distingue de la résorption externe.'},
     {id:'composite',         label:'Composite dentaire',                        color:'#06b6d4',
      note:'Radio-opaque, mais nettement moins que tout ce qui est métallique : un composite se lit en gris clair là où un amalgame est franchement blanc.'},
     // Prune et non plus doré : le sixième cliché fait figurer la lésion carieuse et la
@@ -5731,12 +5741,15 @@
     // de 14 — deux contours jumeaux sur le film. La mesure est désormais faite par le test.
     {id:'carie',             label:'Lésion carieuse',                           color:'#86198f',
      note:'Perte radioclaire, concentrique, dans la dentine et/ou l\'émail, plus ou moins profonde.'},
-    {id:'calcification',     label:'Dent avec une calcification diffuse',       color:'#9f1239'},
+    {id:'calcification',     label:'Dent avec une calcification diffuse',       color:'#9f1239',
+     note:'Perte du volume pulpaire, de façon concentrique, à la fois dans la chambre et dans les canaux.'},
     // Deux entrées d'une nature différente des autres : elles ne désignent pas une lésion ni
     // un matériau mais demandent d'identifier une dent par son numéro. La zone attendue est
     // alors la dent entière.
-    {id:'dent_16',           label:'Dent numéro 16',                            color:'#facc15'},
-    {id:'dent_27',           label:'Dent numéro 27',                            color:'#0284c7'},
+    {id:'dent_16',           label:'Dent numéro 16',                            color:'#facc15',
+     familles:['numerotation']},
+    {id:'dent_27',           label:'Dent numéro 27',                            color:'#0284c7',
+     familles:['numerotation']},
     // Repère anatomique et non pathologique : le sinus est une cavité normale, qu'il s'agit
     // de reconnaître pour ne pas la confondre avec une lésion. Sa couleur est choisie claire,
     // le sinus étant la région la plus sombre du cliché.
@@ -5746,30 +5759,65 @@
      note:'Opacité qui suit le trajet des canaux sur toute leur longueur.'},
     {id:'couronne_transitoire',   label:'Couronne transitoire',                 color:'#a8a29e',
      note:'En résine : sa densité est proche de celle d\'un composite, bien moindre que celle d\'une couronne définitive.'},
-    {id:'composite_fibre',   label:'Préparation coronaire en composite fibré',  color:'#d97706'},
-    {id:'dent_24',           label:'Dent numéro 24',                            color:'#78350f'},
+    {id:'composite_fibre',   label:'Préparation coronaire en composite fibré',  color:'#d97706',
+     note:'Moignon dentaire sous une couronne prothétique, reconstitué en composite fibré : même densité radiographique qu\'un composite classique.'},
+    {id:'dent_24',           label:'Dent numéro 24',                            color:'#78350f',
+     familles:['numerotation']},
     // Une RACINE et non une dent entière : le repère demande de distinguer, parmi les racines
     // d'une molaire supérieure, celle qui est palatine.
-    {id:'racine_palatine_26', label:'Racine palatine de la dent 26',            color:'#22c55e'},
+    {id:'racine_palatine_26', label:'Racine palatine de la dent 26',            color:'#22c55e',
+     familles:['numerotation']},
     // Trois repères anatomiques de plus, et un tissu : l'émail, couche la plus dense de la
     // couronne. Les deux chambres pulpaires sont volontairement d'un rouge et d'un vert
     // francs — ce sont deux réponses différentes, et les confondre serait l'erreur même que
     // le leurre cherche à provoquer.
-    {id:'email_46',          label:'Émail de la dent 46',                       color:'#facc15'},
-    {id:'chambre_pulpaire_45', label:'Chambre pulpaire de la dent 45',          color:'#dc2626'},
-    {id:'chambre_pulpaire_36', label:'Chambre pulpaire de la dent 36',          color:'#22c55e'},
-    {id:'foramen_mentonnier', label:'Foramen mentonnier',                       color:'#44403c'},
-    {id:'gutta',             label:'Gutta-percha',                              color:'#1e3a8a'},
-    {id:'lesion_parodontale', label:'Lésion parodontale verticale',             color:'#4d7c0f'},
-    {id:'radix_entomolaris', label:'Radix entomolaris',                         color:'#c026d3'},
-    {id:'implant',           label:'Implant dentaire',                          color:'#0284c7'},
-    {id:'racine_mesiale_17', label:'Racine mésiale de la dent 17',              color:'#c026d3'},
+    {id:'email_46',          label:'Émail de la dent 46',                       color:'#facc15',
+     familles:['numerotation','tissus']},
+    {id:'chambre_pulpaire_45', label:'Chambre pulpaire de la dent 45',          color:'#dc2626',
+     familles:['numerotation','tissus']},
+    {id:'chambre_pulpaire_36', label:'Chambre pulpaire de la dent 36',          color:'#22c55e',
+     familles:['numerotation','tissus']},
+    {id:'foramen_mentonnier', label:'Foramen mentonnier',                       color:'#44403c',
+     note:'Émergence du nerf alvéolaire inférieur, souvent à l\'aplomb de l\'apex des deuxièmes prémolaires mandibulaires : un rond concentrique radioclair.'},
+    {id:'gutta',             label:'Gutta-percha',                              color:'#1e3a8a',
+     note:'Obturation siégeant dans les canaux. Pour être satisfaisante, elle doit aller jusqu\'à l\'apex et être dense et homogène sur l\'intégralité du système canalaire.'},
+    {id:'lesion_parodontale', label:'Lésion parodontale verticale',             color:'#4d7c0f',
+     note:'Perte de substance osseuse VERTICALE, en inter-dentaire.'},
+    {id:'radix_entomolaris', label:'Radix entomolaris',                         color:'#c026d3',
+     note:'Racine surnuméraire des molaires mandibulaires, partant de la racine distale et se terminant souvent en inter-radiculaire.'},
+    {id:'implant',           label:'Implant dentaire',                          color:'#0284c7',
+     note:'Fausse racine en titane, posée là où il n\'y a plus de racine naturelle : son volume et son filetage la signent.'},
+    {id:'racine_mesiale_17', label:'Racine mésiale de la dent 17',              color:'#c026d3',
+     familles:['numerotation']},
     // Deux repères anatomiques de plus : un relief osseux, et un nerf — ce dernier du
     // maxillaire inférieur, donc absent par construction d'un cliché maxillaire supérieur.
     // Le jaune suit la convention des planches d'anatomie.
-    {id:'tuberosite',        label:'Tubérosité maxillaire',                     color:'#a16207'},
-    {id:'nerf_alveolaire',   label:'Nerf alvéolaire inférieur',                 color:'#facc15'}
+    {id:'tuberosite',        label:'Tubérosité maxillaire',                     color:'#a16207',
+     note:'Protubérance osseuse naturelle, située derrière les dernières molaires maxillaires.'},
+    {id:'nerf_alveolaire',   label:'Nerf alvéolaire inférieur',                 color:'#facc15',
+     note:'Radioclarté tubulaire, située dans la mandibule — donc absente par construction d\'un cliché maxillaire.'}
   ];
+
+  // Certains repères ne décrivent pas un signe : ils demandent de SITUER quelque chose. Une
+  // explication par entrée répéterait la même chose autant de fois qu'il y a de dents nommées,
+  // et la liste enflerait à chaque cliché ajouté. Elles sont donc écrites une fois, par famille,
+  // et affichées une seule fois quand au moins un repère de la famille figure sur le cliché.
+  var RADIO_FAMILLES = {
+    numerotation: {
+      titre: 'Situer une dent sur le cliché',
+      texte: 'Le secteur se lit à la position des molaires. Au MAXILLAIRE : molaires à gauche ' +
+             'du cliché, c\'est le secteur 1 ; molaires à droite, le secteur 2. À la MANDIBULE : ' +
+             'molaires à droite, c\'est le secteur 4 ; molaires à gauche, le secteur 3. Le secteur ' +
+             'connu, les dents se comptent depuis la ligne médiane.'
+    },
+    tissus: {
+      titre: 'Les tissus de la dent',
+      texte: 'L\'ÉMAIL est le tissu dentaire le plus opaque : un liseré sur la couronne, ' +
+             'surtout sur sa face occlusale. La DENTINE, constituant majeur de la dent, est ' +
+             'radio-opaque elle aussi, mais moins que l\'émail. La CHAMBRE PULPAIRE est la ' +
+             'cavité radioclaire centrale, au niveau coronaire.'
+    }
+  };
 
   var RADIO_REPERE_BY_ID = {};
   RADIO_REPERES.forEach(function(r){ RADIO_REPERE_BY_ID[r.id] = r; });
@@ -7267,12 +7315,26 @@
       return '<li><i class="dot" style="background:' + rep.color + '"></i>' +
              '<span><b>' + rep.label + '</b>' + rep.note + '</span></li>';
     }).filter(Boolean).join('');
+    // Les explications de famille, une seule fois chacune, et seulement si un repère de cette
+    // famille figure sur le cliché.
+    var vues = {}, blocsFamille = '';
+    radioCase.cibles.forEach(function(id){
+      var rep = RADIO_REPERE_BY_ID[id];
+      (rep && rep.familles || []).forEach(function(nom){
+        if(vues[nom] || !RADIO_FAMILLES[nom]) return;
+        vues[nom] = true;
+        blocsFamille += '<li class="radio-lecon-famille"><span><b>' +
+          RADIO_FAMILLES[nom].titre + '</b>' + RADIO_FAMILLES[nom].texte + '</span></li>';
+      });
+    });
+
     var boite = document.getElementById('radio-lecons-boite');
-    boite.innerHTML = lecons
+    var tout = lecons + blocsFamille;
+    boite.innerHTML = tout
       ? '<h3 class="radio-lecons-titre">Comment se lisent ces repères</h3>' +
-        '<ul class="radio-lecons">' + lecons + '</ul>'
+        '<ul class="radio-lecons">' + tout + '</ul>'
       : '';
-    (lecons ? showEl : hideEl)(boite);
+    (tout ? showEl : hideEl)(boite);
 
     document.getElementById('radio-verdicts').innerHTML = lignes.map(function(l){
       return '<li class="' + (l.ok ? 'v-ok' : 'v-ko') + '">' +

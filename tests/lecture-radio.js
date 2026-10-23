@@ -467,6 +467,12 @@ async function valideEtLis(page){
       if (!b || b.classList.contains('hidden')) return null;
       return [].slice.call(b.querySelectorAll('li')).map(li => (li.textContent || '').trim());
     });
+    // Les explications de FAMILLE — la regle qui sert a situer une dent, les tissus de la
+    // couronne — sont ecrites une fois pour toutes et ne doivent paraitre qu'une fois par
+    // cliche, si un repere de la famille y figure.
+    const familles = await a.evaluate(() => [].slice.call(
+      document.querySelectorAll('#radio-lecons-boite .radio-lecon-famille b')
+    ).map(e => e.textContent.trim()));
     await a.close();
 
     vus.add(enonce);
@@ -501,6 +507,20 @@ async function valideEtLis(page){
           ko(etiquette + ' : la correction explique « ' + libelles[id] + ' », qui ne figure PAS sur ce cliche');
         }
       });
+    }
+    {
+      const doublons = familles.filter((t, i) => familles.indexOf(t) !== i);
+      if (doublons.length) {
+        ko(etiquette + ' : l\'explication de famille « ' + doublons[0] + ' » est repetee');
+      }
+      // Un cliche qui nomme une dent doit porter la regle qui permet de la situer.
+      const nomme = reperes.some(id => zones.some(z => z.id === id) && /^(dent_|racine_|chambre_|email_)/.test(id));
+      if (nomme && !familles.some(t => /Situer une dent/.test(t))) {
+        ko(etiquette + ' : ce cliche demande d\'identifier une dent, mais la regle des secteurs n\'est pas rappelee');
+      }
+      if (!nomme && familles.some(t => /Situer une dent/.test(t))) {
+        ko(etiquette + ' : la regle des secteurs est rappelee alors qu\'aucun repere ne nomme de dent');
+      }
     }
     if (!nuAvant) ko(etiquette + ' : la copie sans annotation s\'affiche avant la validation, alors que le film est deja nu');
     if (!nu) {
