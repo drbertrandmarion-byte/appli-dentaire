@@ -1115,7 +1115,10 @@ async function valideEtLis(page){
       // prouve pas que la section 3 en a eprouve la geometrie. Le compteur de couverture ne
       // doit mesurer que ce que le tirage a reellement propose.
 
-      // Le choix doit survivre a « Nouveau cliche » : sinon elle le reperdrait a chaque tour.
+      // « Nouveau cliche » doit RENDRE LA MAIN AU TIRAGE. Le contraire a ete teste ici
+      // pendant un temps — le choix survivait d'un tour a l'autre — et c'etait une erreur
+      // de conception : le bouton rouvrait indefiniment le meme film et paraissait sans
+      // effet. Le choix vaut pour le cliche qu'on ouvre, pas pour tous les suivants.
       await p.click('#radio-submit-btn');
       await p.waitForTimeout(400);
       if (await p.$eval('#radio-choix-wrap', e => e.classList.contains('hidden'))) {
@@ -1133,10 +1136,20 @@ async function valideEtLis(page){
       if (!await p.$eval('#radio-nu', e => e.classList.contains('hidden'))) {
         ko('copie sans annotation : elle reste affichee apres « Nouveau cliche », avant toute validation');
       }
-      if (await ouverte() !== vue) ko('liste enseignante : « Nouveau cliche » abandonne le cliche choisi');
+      const suivant = await ouverte();
+      if (suivant === vue) {
+        ko('liste enseignante : « Nouveau cliche » rouvre le cliche choisi (' + vue + ') au lieu de retirer au sort');
+      }
+      if (!attendus.includes(suivant)) {
+        ko('liste enseignante : « Nouveau cliche » ouvre une image inconnue (' + suivant + ')');
+      }
+      // La liste doit afficher « Tirage au hasard » : sinon elle annonce un cliche qui n'est
+      // plus a l'ecran, et on tracerait sur un film en croyant travailler sur un autre.
+      const reste = await p.$eval('#radio-choix', s => s.value);
+      if (reste !== '') ko('liste enseignante : apres « Nouveau cliche » elle montre encore « ' + reste +' »');
       const dit = await p.textContent('#radio-choix-actuel');
-      if (!dit || dit.indexOf(vue.split('/').pop()) < 0) {
-        ko('liste enseignante : la ligne « a l\'ecran » n\'annonce pas ' + vue + ' (lu : ' + dit + ')');
+      if (!dit || dit.indexOf(suivant.split('/').pop()) < 0) {
+        ko('liste enseignante : la ligne « a l\'ecran » n\'annonce pas ' + suivant + ' (lu : ' + dit + ')');
       }
     }
 
@@ -1149,6 +1162,45 @@ async function valideEtLis(page){
       await p.waitForTimeout(500);
       if (!attendus.includes(await ouverte())) ko('liste enseignante : le retour au tirage au hasard n\'ouvre aucun cliche connu');
     }
+    await p.close();
+  }
+
+  // ---- 3septies. Le tirage epuise les cliches avant d'en reproposer un ----
+  // Au hasard pur, revoir deux fois le meme film en trois tours est banal, et un cliche que
+  // le sort n'a jamais propose reste un cliche jamais travaille. Le tirage vide donc un sac
+  // avant de le rebattre. Deux choses a prouver : aucun doublon a l'interieur d'un sac, et
+  // pas de doublon non plus au raccord entre deux sacs.
+  {
+    const p = await context.newPage();
+    await boot(p, 11);
+    await ouvreCliche(p);
+    const N = attendus.length;
+    const suite = [await p.getAttribute('#radio-film img', 'src')];
+    for (let i = 0; i < 2 * N - 1; i++) {
+      await p.click('#radio-submit-btn');
+      await p.waitForTimeout(160);
+      await p.click('#radio-next-btn');
+      await p.waitForTimeout(320);
+      suite.push(await p.getAttribute('#radio-film img', 'src'));
+    }
+    const sac1 = suite.slice(0, N), sac2 = suite.slice(N);
+    const doublons = l => l.length - new Set(l).size;
+    if (doublons(sac1)) {
+      ko('tirage : ' + doublons(sac1) + ' doublon(s) dans les ' + N + ' premiers tours — un cliche revient avant que tous soient passes');
+    }
+    if (new Set(sac1).size !== N) {
+      ko('tirage : seulement ' + new Set(sac1).size + ' cliches distincts sur ' + N + ' en ' + N + ' tours');
+    }
+    if (doublons(sac2)) {
+      ko('tirage : ' + doublons(sac2) + ' doublon(s) dans le deuxieme tour complet');
+    }
+    if (suite[N] === suite[N - 1]) {
+      ko('tirage : le meme cliche au raccord entre deux series (' + suite[N] + ' deux fois de suite)');
+    }
+    // Controle du controle : la meme mesure sur une suite deliberement fautive doit crier.
+    // Sans lui, un « 0 doublon » ne prouverait pas que le detecteur fonctionne.
+    const faux = attendus.slice(0, N - 1).concat([attendus[0]]);
+    if (!doublons(faux)) ko('AUTOCONTROLE : le detecteur de doublons ne voit pas une repetition posee exprès');
     await p.close();
   }
 

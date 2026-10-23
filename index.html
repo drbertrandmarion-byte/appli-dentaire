@@ -7168,10 +7168,40 @@
     radioApresTrace();
   });
 
+  // Le tirage n'est pas un hasard pur : c'est un sac qu'on vide avant de le rebattre. Au
+  // hasard pur, revoir deux fois le même film en trois tours est banal, et un cliché que le
+  // sort n'a jamais proposé reste un cliché jamais travaillé. Ici les seize passent tous
+  // avant qu'aucun ne revienne.
+  var radioSac = [];
+
+  function radioRebatLeSac(){
+    radioSac = RADIO_CASES.slice();
+    for(var i = radioSac.length - 1; i > 0; i--){ // mélange de Fisher-Yates
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = radioSac[i]; radioSac[i] = radioSac[j]; radioSac[j] = t;
+    }
+  }
+
   function randomRadioCase(){
-    var pool = RADIO_CASES.filter(function(c){ return c.id !== lastRadioCaseId; });
-    if(!pool.length) pool = RADIO_CASES;
-    return pool[Math.floor(Math.random() * pool.length)];
+    if(!radioSac.length) radioRebatLeSac();
+    var i = radioSac.length - 1;
+    // Le cliché qu'on vient de quitter ne doit pas revenir tout de suite. Deux cas le
+    // mettent au sommet du sac : le raccord entre deux sacs, et surtout un cliché ouvert
+    // par la liste enseignante — ouvert sans être tiré, il n'a pas été sorti du sac et
+    // pouvait en ressortir au tour suivant. On prend alors celui d'en dessous, et on le
+    // laisse à sa place pour plus tard.
+    if(radioSac[i].id === lastRadioCaseId){
+      if(radioSac.length > 1){
+        i--;
+      } else {
+        // Seul au fond du sac, et c'est justement celui qu'on quitte : on rebat sans
+        // attendre, faute de quoi il n'y aurait rien d'autre à proposer.
+        radioRebatLeSac();
+        i = radioSac.length - 1;
+        if(radioSac.length > 1 && radioSac[i].id === lastRadioCaseId) i--;
+      }
+    }
+    return radioSac.splice(i, 1)[0];
   }
 
   function radioCaseParId(id){
@@ -7179,12 +7209,20 @@
     return null;
   }
 
-  // Le cliché imposé par la liste enseignante, s'il y en a un. La liste cachée ne compte pas :
-  // un étudiant ne doit pas pouvoir forcer le tirage en bricolant le DOM.
-  function radioCaseImpose(){
+  // La liste cachée ne compte pas : un étudiant ne doit pas pouvoir forcer le tirage en
+  // bricolant le DOM — ni en cliquant, ni en déclenchant l'évènement à la main.
+  function radioPeutChoisir(){
     var wrap = document.getElementById('radio-choix-wrap');
-    if(!wrap || wrap.classList.contains('hidden')) return null;
-    return radioCaseParId(document.getElementById('radio-choix').value);
+    return !!wrap && !wrap.classList.contains('hidden');
+  }
+
+  // Le choix vaut pour LE cliché qu'on ouvre, pas pour tous les suivants. Tant qu'il survivait
+  // d'un tour à l'autre, « Nouveau cliché » rouvrait indéfiniment le même film et paraissait
+  // sans effet : on remet donc la liste sur « Tirage au hasard » avant de relancer.
+  function radioRendAuHasard(){
+    var sel = document.getElementById('radio-choix');
+    if(sel) sel.value = '';
+    startRadioCase();
   }
 
   function radioEcritChoix(){
@@ -7206,10 +7244,10 @@
 
   function startRadioCase(choix){
     flushPendingFades();
-    // « Nouveau cliché » branche startRadioCase directement sur le clic : le premier argument
-    // est alors l'évènement. Seule une chaîne est prise pour une demande explicite.
-    var demande = typeof choix === 'string' ? radioCaseParId(choix) : null;
-    radioCase = demande || radioCaseImpose() || randomRadioCase();
+    // Seule une chaîne est prise pour une demande explicite : branchée sur un clic, cette
+    // fonction recevrait l'évènement en premier argument et croirait à un cliché demandé.
+    var demande = (typeof choix === 'string' && radioPeutChoisir()) ? radioCaseParId(choix) : null;
+    radioCase = demande || randomRadioCase();
     lastRadioCaseId = radioCase.id;
     radioPlacements = {};
     radioSelected = null;
@@ -7382,9 +7420,9 @@
     radioChargeCorrige();
     showMode(modeRadioIntro);
   });
-  document.getElementById('start-radio-btn').addEventListener('click', startRadioCase);
+  document.getElementById('start-radio-btn').addEventListener('click', radioRendAuHasard);
   document.getElementById('radio-submit-btn').addEventListener('click', submitRadio);
-  document.getElementById('radio-next-btn').addEventListener('click', startRadioCase);
+  document.getElementById('radio-next-btn').addEventListener('click', radioRendAuHasard);
   document.getElementById('radio-home-btn').addEventListener('click', goHome);
 
   // Le troisième bouton reste caché jusqu'à ce que le compte connecté soit reconnu comme
@@ -7410,6 +7448,7 @@
     sel.addEventListener('change', function(){
       // Changer de cliché relance la lecture : les points posés et les contours lissés
       // appartiennent au cliché qu'on quitte.
+      if(!radioPeutChoisir()) return;
       startRadioCase(sel.value || undefined);
     });
   })();
