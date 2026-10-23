@@ -948,6 +948,41 @@
   }
   .radio-wip ul{margin:8px 0 0; padding-left:18px;}
   .radio-wip li{margin-bottom:4px;}
+  /* Rappel de lecture, en tête du mode : il s'adresse aux étudiants et doit se lire avant le
+     premier cliché, pas se fondre dans la page. */
+  .radio-rappel{
+    background:var(--card);
+    border:1px solid var(--border);
+    border-left:4px solid var(--radio-accent);
+    border-radius:12px;
+    padding:14px 16px;
+    margin:12px 0 16px;
+    font-size:0.88rem;
+    line-height:1.5;
+  }
+  .radio-rappel h3{margin:0 0 8px; font-size:0.95rem; color:var(--radio-accent-dark);}
+  .radio-rappel p{margin:0 0 8px;}
+  .radio-rappel ul{margin:0 0 8px; padding-left:18px;}
+  .radio-rappel li{margin-bottom:6px;}
+  .radio-rappel-fin{color:var(--muted); font-size:0.84rem; margin-bottom:0 !important;}
+  /* Comment se lit chaque repère, affiché à la correction — uniquement pour ceux que le
+     cliché porte réellement. */
+  .radio-lecons{margin:18px 0 0; padding:0; list-style:none;}
+  .radio-lecons > li{
+    display:flex;
+    gap:9px;
+    align-items:flex-start;
+    padding:9px 0;
+    border-top:1px solid var(--border);
+    font-size:0.85rem;
+    line-height:1.45;
+  }
+  .radio-lecons .dot{
+    width:13px; height:13px; border-radius:50%; flex:0 0 auto; margin-top:3px;
+    border:1.5px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,0.25);
+  }
+  .radio-lecons b{display:block;}
+  .radio-lecons-titre{margin:20px 0 0; font-size:0.95rem; color:var(--radio-accent-dark);}
 
   /* Le cliché et ses points : « touch-action:none » est indispensable, sinon le
      navigateur mobile interprète le glissement d'un point comme un défilement de page
@@ -1479,34 +1514,30 @@
     <div id="mode-radio-intro" class="hidden">
       <button class="btn-secondary back-hub-btn" type="button" data-back>← Changer de mode d'entraînement</button>
 
-      <div class="radio-wip">
-        <b>En construction, visible de vous seule.</b> Le bouton n'existe pas dans le menu des
-        étudiants : il n'apparaît que pour un compte enseignant. Rien n'est enregistré dans les
-        statistiques ni dans le back-office pour l'instant.
+      <!-- Rappel de lecture, destiné aux ÉTUDIANTS : le mode n'est plus réservé à
+           l'enseignante, et l'encadré qui tenait ici disait encore qu'un seul cliché existait et
+           que rien n'était enregistré — trois affirmations devenues fausses. -->
+      <div class="radio-rappel">
+        <h3>Avant de commencer : clair ou opaque ?</h3>
+        <p>Une radiographie ne montre que des <b>différences de densité</b>. Tout se lit à partir
+          de là.</p>
         <ul>
-          <li><b>Un seul cliché pour l'instant</b>, le vôtre. Les quatre radiographies dessinées qui
-            servaient à mettre au point le geste ont été retirées : leur vocabulaire — chambre
-            pulpaire, canal, apex — n'était pas le vôtre, et la légende doit rester commune à tous
-            les cas.</li>
-          <li><b>Les zones sont une première lecture, à corriger.</b> Je les ai placées d'après ce que
-            je crois lire sur le cliché. Validez une lecture vide : la correction trace en pointillés
-            chaque zone attendue. Dites-moi celles qui tombent à côté — en particulier la rhizalyse et
-            la lésion, dont je suis le moins sûr.</li>
-          <li><b>La marge de tolérance</b> est propre à chaque repère : large pour une couronne, plus
-            étroite pour une clavette. Les pointillés la montrent telle qu'elle est.</li>
-          <li><b>La notation.</b> Le cas est compté réussi si tous les repères présents sont bien
-            placés <i>et</i> qu'aucun leurre n'a été posé. À voir si un oubli doit peser autant qu'un
-            faux positif.</li>
-          <li><b>Pas d'énoncé clinique ici, et c'est voulu.</b> Ce mode n'entraîne qu'à la lecture du
-            cliché. L'histoire du patient viendra plus tard, dans un cas clinique complet qui
-            enchaînera les trois étapes — tables de diagnostic, lecture radiographique, choix
-            thérapeutique. On s'y mettra une fois la partie radiographique terminée.</li>
+          <li><b>Radioclair</b> — ce qui apparaît <b>plus noir</b> : les rayons ont traversé sans
+            être arrêtés. Ce sont les tissus et matériaux <b>peu denses</b> : granulome, kyste,
+            abcès, lésion carieuse, nerf dentaire, cavité sinusienne.</li>
+          <li><b>Radio-opaque</b> — ce qui apparaît <b>plus blanc</b> : les rayons ont été arrêtés.
+            Ce sont les tissus et matériaux <b>durs</b> : émail, métal, os cortical.</li>
         </ul>
+        <p class="radio-rappel-fin">Entre les deux, toute une échelle de gris : la dentine est moins
+          dense que l'émail, un composite moins dense qu'un amalgame, une résine provisoire moins
+          dense qu'une couronne définitive. C'est souvent cette échelle, et non le noir ou le blanc
+          franc, qui permet de nommer ce qu'on voit.</p>
       </div>
 
-      <p>Principe : un cliché est tiré au hasard. Sous le cliché, une légende de points colorés — la
-        même pour tous les cas, leurres compris. L'étudiant fait glisser sur le cliché les points qui
-        correspondent à ce qu'il y voit, et laisse dans la légende ceux qui n'y sont pas.</p>
+      <p>Principe : un cliché est tiré au hasard, accompagné de sa propre légende de points
+        colorés. Faites glisser sur le cliché ceux qui correspondent à ce que vous y reconnaissez,
+        et laissez dans la légende ceux qui n'y figurent pas. La correction montre ensuite les zones
+        attendues, et explique comment se lit chacun des repères réellement présents.</p>
 
       <div class="mode-buttons">
         <button class="btn-primary" id="start-radio-btn">Essayer un cliché</button>
@@ -1787,6 +1818,8 @@
       <div class="verdict" id="radio-verdict"></div>
       <div class="score-recap" id="radio-score"></div>
       <ul class="radio-verdicts" id="radio-verdicts"></ul>
+      <!-- Les repères du cliché et leur lecture, remplis à la validation. -->
+      <div id="radio-lecons-boite" class="hidden"></div>
       <div class="result-actions">
         <button class="btn-primary" id="radio-next-btn">Nouveau cliché</button>
         <button class="btn-secondary" id="radio-home-btn">Retour à l'accueil</button>
@@ -5653,38 +5686,51 @@
   // La parodontite apicale débutante, elle, est bien une lecture radiographique distincte :
   // un simple élargissement ligamentaire, et non une lacune.
   var RADIO_REPERES = [
-    {id:'couronne_cm',       label:'Couronne céramo-métallique',                color:'#f2b134'},
+    {id:'couronne_cm',       label:'Couronne céramo-métallique',                color:'#f2b134',
+     note:'La chape métallique est très opaque et nettement dessinée ; le pourtour céramique l\'est beaucoup moins. Ce sont ces DEUX densités dans une même coiffe qui la signent.'},
     {id:'bridge_cantilever', label:'Bridge avec cantilever métallique',         color:'#2563eb'},
     {id:'osteite',           label:'Ostéite condensante',                       color:'#a16207'},
-    {id:'inlay_core',        label:'Inlay-core à clavette',                     color:'#22d3ee'},
-    {id:'inlay_core_simple', label:'Inlay-core simple',                         color:'#f97316'},
-    {id:'onlay',             label:'Onlay céramique / composite',               color:'#22c55e'},
-    {id:'lesion',            label:'Lésion apicale infectieuse radioclaire (granulome, kyste ou abcès)', color:'#dc2626'},
+    {id:'inlay_core',        label:'Inlay-core à clavette',                     color:'#22d3ee',
+     note:'Corps coulé à DEUX ancrages canalaires, logés dans deux racines différentes — c\'est ce double ancrage qui le distingue de l\'inlay-core simple.'},
+    {id:'inlay_core_simple', label:'Inlay-core simple',                         color:'#f97316',
+     note:'Un seul ancrage canalaire, dans une seule racine.'},
+    {id:'onlay',             label:'Onlay céramique / composite',               color:'#22c55e',
+     note:'Peu radio-opaque, avec un liseré de collage composite un peu plus opaque qui dessine sa limite.'},
+    {id:'lesion',            label:'Lésion apicale infectieuse radioclaire (granulome, kyste ou abcès)', color:'#dc2626',
+     note:'Radioclarté apicale VOLUMINEUSE, bien plus large qu\'un élargissement ligamentaire : c\'est sa taille et sa forme de lacune qui la distinguent d\'une parodontite débutante.'},
     // Un seul libellé pour l'élargissement ligamentaire sans lacune constituée, que
     // l'enseignante l'ait appelé « débutante » sur un cliché et « aiguë » sur un autre : c'est
     // la même lecture radiographique, et deux entrées imposeraient un choix indécidable. Elle
     // a tranché pour le libellé du deuxième cliché, qui vaut donc partout.
-    {id:'parodontite',       label:'Lésion apicale débutante (parodontite apicale)', color:'#a3e635'},
+    {id:'parodontite',       label:'Lésion apicale débutante (parodontite apicale)', color:'#a3e635',
+     note:'Simple ÉLARGISSEMENT du ligament péri-apical, radioclair : un liseré qui s\'épaissit autour de l\'apex, sans lacune constituée.'},
     {id:'debris',            label:'Débris radiculaire',                        color:'#ec4899'},
     {id:'fragment',          label:'Fragment instrumental cassé',               color:'#7f1d1d'},
     // Vert foncé et non plus turquoise : sur le quatrième cliché, l'amalgame et le composite
     // sont deux zones voisines, et leurs anciennes couleurs — #14b8a6 et #06b6d4 — ne se
     // distinguaient ni sur le cliché ni entre deux pastilles de la légende.
-    {id:'amalgame',          label:'Amalgame dentaire',                         color:'#15803d'},
+    {id:'amalgame',          label:'Amalgame dentaire',                         color:'#15803d',
+     note:'Très radio-opaque, aux contours granuleux et peu définis — l\'opacité la plus franche du cliché, avec un bord irrégulier.'},
     // Libellé élargi : le signe est le même quel que soit le matériau qui fuit, et le
     // quatorzième cliché le fait porter sur une restauration qui n'est pas un amalgame.
     // Un second repère presque identique n'aurait ajouté qu'une ambiguïté de plus.
     {id:'amalgame_infiltre', label:'Perte d\'étanchéité d\'une restauration',  color:'#64748b'},
-    {id:'rhizalyse',         label:'Rhizalyse radiculaire sur dent vivante',    color:'#a855f7'},
-    {id:'screw_post',        label:'Screw post',                                color:'#1d4ed8'},
-    {id:'couronne_metal',    label:'Couronne métallique',                       color:'#78716c'},
-    {id:'resorption_externe',label:'Résorption externe',                        color:'#e11d48'},
+    {id:'rhizalyse',         label:'Rhizalyse radiculaire sur dent vivante',    color:'#a855f7',
+     note:'Apex RACCOURCI, dont le foramen apical n\'est plus visible : la racine paraît tronquée.'},
+    {id:'screw_post',        label:'Screw post',                                color:'#1d4ed8',
+     note:'Reconnaissable aux SPIRES de son filetage, visibles sur le bord de la colonne : c\'est ce détail qui le sépare d\'un tenon lisse ou d\'une obturation canalaire.'},
+    {id:'couronne_metal',    label:'Couronne métallique',                       color:'#78716c',
+     note:'Très radio-opaque, aux contours nets et bien définis sur toute son épaisseur.'},
+    {id:'resorption_externe',label:'Résorption externe',                        color:'#e11d48',
+     note:'Radioclarté au sein de la dentine, mais NON centrée sur le canal — c\'est ce décentrage qui la distingue de la résorption interne, qui part du canal et l\'élargit.'},
     {id:'resorption_interne',label:'Résorption interne',                        color:'#7e22ce'},
-    {id:'composite',         label:'Composite dentaire',                        color:'#06b6d4'},
+    {id:'composite',         label:'Composite dentaire',                        color:'#06b6d4',
+     note:'Radio-opaque, mais nettement moins que tout ce qui est métallique : un composite se lit en gris clair là où un amalgame est franchement blanc.'},
     // Prune et non plus doré : le sixième cliché fait figurer la lésion carieuse et la
     // couronne céramo-métallique dans la même légende, et l'ancien doré n'en était distant que
     // de 14 — deux contours jumeaux sur le film. La mesure est désormais faite par le test.
-    {id:'carie',             label:'Lésion carieuse',                           color:'#86198f'},
+    {id:'carie',             label:'Lésion carieuse',                           color:'#86198f',
+     note:'Perte radioclaire, concentrique, dans la dentine et/ou l\'émail, plus ou moins profonde.'},
     {id:'calcification',     label:'Dent avec une calcification diffuse',       color:'#9f1239'},
     // Deux entrées d'une nature différente des autres : elles ne désignent pas une lésion ni
     // un matériau mais demandent d'identifier une dent par son numéro. La zone attendue est
@@ -5694,9 +5740,12 @@
     // Repère anatomique et non pathologique : le sinus est une cavité normale, qu'il s'agit
     // de reconnaître pour ne pas la confondre avec une lésion. Sa couleur est choisie claire,
     // le sinus étant la région la plus sombre du cliché.
-    {id:'sinus',             label:'Sinus maxillaire',                          color:'#8b5cf6'},
-    {id:'traitement_radiculaire', label:'Traitement radiculaire endodontique',  color:'#4338ca'},
-    {id:'couronne_transitoire',   label:'Couronne transitoire',                 color:'#a8a29e'},
+    {id:'sinus',             label:'Sinus maxillaire',                          color:'#8b5cf6',
+     note:'Présent au maxillaire seulement. Cavité radioclaire bordée d\'un liseré cortical radio-opaque, qu\'on suit d\'un bord à l\'autre du cliché.'},
+    {id:'traitement_radiculaire', label:'Traitement radiculaire endodontique',  color:'#4338ca',
+     note:'Opacité qui suit le trajet des canaux sur toute leur longueur.'},
+    {id:'couronne_transitoire',   label:'Couronne transitoire',                 color:'#a8a29e',
+     note:'En résine : sa densité est proche de celle d\'un composite, bien moindre que celle d\'une couronne définitive.'},
     {id:'composite_fibre',   label:'Préparation coronaire en composite fibré',  color:'#d97706'},
     {id:'dent_24',           label:'Dent numéro 24',                            color:'#78350f'},
     // Une RACINE et non une dent entière : le repère demande de distinguer, parmi les racines
@@ -7208,6 +7257,22 @@
     document.getElementById('radio-score').textContent =
       bons + ' / ' + total + ' repères présents correctement identifiés' +
       (detail.length ? ' — ' + detail.join(', ') + '.' : '.');
+
+    // Comment se lit chacun des repères RÉELLEMENT PRÉSENTS sur ce cliché. Les leurres en sont
+    // exclus : expliquer comment reconnaître une structure que l'étudiant n'a pas sous les yeux
+    // allongerait la correction sans rien lui apprendre de ce cliché-là.
+    var lecons = radioCase.cibles.map(function(id){
+      var rep = RADIO_REPERE_BY_ID[id];
+      if(!rep || !rep.note) return '';
+      return '<li><i class="dot" style="background:' + rep.color + '"></i>' +
+             '<span><b>' + rep.label + '</b>' + rep.note + '</span></li>';
+    }).filter(Boolean).join('');
+    var boite = document.getElementById('radio-lecons-boite');
+    boite.innerHTML = lecons
+      ? '<h3 class="radio-lecons-titre">Comment se lisent ces repères</h3>' +
+        '<ul class="radio-lecons">' + lecons + '</ul>'
+      : '';
+    (lecons ? showEl : hideEl)(boite);
 
     document.getElementById('radio-verdicts').innerHTML = lignes.map(function(l){
       return '<li class="' + (l.ok ? 'v-ok' : 'v-ko') + '">' +

@@ -420,6 +420,11 @@ async function valideEtLis(page){
     const nuAvant = await a.$eval('#radio-nu', e => e.classList.contains('hidden'));
     const consigne = (await a.textContent('#radio-def')).trim();
     const palette = await couleursDeLaLegende(a);
+    const libelles = await a.$$eval('.radio-chip', es => {
+      const o = {};
+      es.forEach(e => { o[e.getAttribute('data-rid')] = (e.textContent || '').replace(/×\d+$/, '').trim(); });
+      return o;
+    });
     const zones = await zonesAttendues(a);
     // La lecture doit etre consignee comme n'importe quel cas, sinon le back-office ne voit
     // rien de ce que les etudiants font dans ce mode. Supabase etant coupe, l'enregistrement
@@ -457,6 +462,11 @@ async function valideEtLis(page){
         charge: i.naturalWidth
       };
     });
+    const lecons = await a.evaluate(() => {
+      const b = document.getElementById('radio-lecons-boite');
+      if (!b || b.classList.contains('hidden')) return null;
+      return [].slice.call(b.querySelectorAll('li')).map(li => (li.textContent || '').trim());
+    });
     await a.close();
 
     vus.add(enonce);
@@ -475,6 +485,22 @@ async function valideEtLis(page){
              ', plancher ' + ECART_MINI + ') — on ne saurait pas quel contour va avec quelle entree');
         }
       }
+    }
+    // Les explications de lecture ne doivent porter QUE sur les reperes presents : decrire
+    // comment reconnaitre une structure que l'etudiant n'a pas sous les yeux allongerait la
+    // correction sans rien lui apprendre de ce cliche-la — et lui ferait croire qu'elle y est.
+    if (lecons === null) {
+      ko(etiquette + ' : la correction n\'explique aucun repere');
+    } else if (!lecons.length) {
+      ko(etiquette + ' : la boite des explications est affichee mais vide');
+    } else {
+      reperes.forEach(id => {
+        const present = zones.some(z => z.id === id);
+        const cite = lecons.some(t => t.indexOf(libelles[id] || '\u0000') === 0);
+        if (!present && cite) {
+          ko(etiquette + ' : la correction explique « ' + libelles[id] + ' », qui ne figure PAS sur ce cliche');
+        }
+      });
     }
     if (!nuAvant) ko(etiquette + ' : la copie sans annotation s\'affiche avant la validation, alors que le film est deja nu');
     if (!nu) {
