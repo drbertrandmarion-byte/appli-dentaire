@@ -327,6 +327,123 @@ async function valideEtLis(page){
     await page.close();
   }
 
+  // ---- 1bis. Le catalogue de legendes ne doit porter aucun doublon ----
+  // Deux entrees qui designent le MEME signe sous deux noms differents est le defaut que
+  // l'enseignante a demande de chasser : un etudiant qui a appris l'un ne reconnait pas
+  // l'autre, et la meme correction s'ecrit alors de deux facons selon le cliche. Ce qui se
+  // mesure mecaniquement se mesure ici ; ce qui releve du sens reste de son ressort.
+  {
+    const src = fs.readFileSync(__dirname + '/../index.html', 'utf8');
+    const cat = src.slice(src.indexOf('var RADIO_REPERES'), src.indexOf('var RADIO_FAMILLES'));
+    const reperes = [];
+    const re = /\{id:'([a-z0-9_]+)',\s*label:'((?:[^'\\]|\\.)*)'/g;
+    let m;
+    while ((m = re.exec(cat))) reperes.push({ id: m[1], label: m[2].replace(/\\'/g, "'") });
+    if (reperes.length < 20) {
+      ko('catalogue : seulement ' + reperes.length + ' reperes lus dans la source — la lecture '
+         + 'a echoue, et tous les controles de cette section ne prouveraient plus rien');
+    }
+    const compte = (liste) => liste.reduce((o, k) => (o[k] = (o[k] || 0) + 1, o), {});
+    const doubles = (o) => Object.keys(o).filter(k => o[k] > 1);
+
+    for (const id of doubles(compte(reperes.map(r => r.id)))) {
+      ko('catalogue : l\'identifiant « ' + id + ' » est declare deux fois');
+    }
+    // Deux libelles identiques, ce sont deux pastilles de couleurs differentes portant le
+    // meme texte : le cliche designerait deux reponses distinctes avec le meme mot.
+    for (const l of doubles(compte(reperes.map(r => r.label.toLowerCase())))) {
+      ko('catalogue : le libelle « ' + l +' » est porte par deux reperes differents');
+    }
+    // Une entree que plus aucun cliche n'emploie est une legende morte : elle ne se voit
+    // nulle part, donc rien ne signale qu'elle a diverge du reste.
+    const legendes = [];
+    const rl = /legende:\[([\s\S]*?)\]/g;
+    while ((m = rl.exec(src))) legendes.push((m[1].match(/'([a-z0-9_]+)'/g) || []).map(s => s.replace(/'/g, '')));
+    const employes = new Set(legendes.flat());
+    for (const r of reperes) {
+      if (!employes.has(r.id)) ko('catalogue : « ' + r.label + ' » n\'est utilise par aucun cliche');
+    }
+    for (let i = 0; i < legendes.length; i++) {
+      for (const id of doubles(compte(legendes[i]))) {
+        ko('cliche ' + (i + 1) + ' : « ' + id + ' » figure deux fois dans sa propre legende');
+      }
+      for (const id of legendes[i]) {
+        if (!reperes.some(r => r.id === id)) {
+          ko('cliche ' + (i + 1) + ' : « ' + id + ' » ne correspond a aucune entree du catalogue');
+        }
+      }
+    }
+    // Controle du controle : sans lui, un « aucun doublon » ne distinguerait pas un catalogue
+    // sain d'un detecteur en panne.
+    if (!doubles(compte(['a', 'b', 'a'])).length) {
+      ko('AUTOCONTROLE : le detecteur de doublons ne voit pas une repetition posee exprès');
+    }
+  }
+
+  // ---- 1ter. Un repere renomme emporte les traces deja publiees ----
+  // Fusionner deux legendes renomme un repere. Si la table de reprise est oubliee, le contour
+  // que l'enseignante a dessine a la main disparait sans un mot et seule l'ebauche subsiste.
+  // Eprouve par le CHEMIN REEL plutot que par la fonction interne : un trace range sous
+  // l'ancien nom dans la memoire du navigateur doit ressortir a la correction sous le
+  // nouveau, et a sa place — pas a celle de mon ebauche.
+  {
+    // CONTEXTE A PART. La memoire du navigateur est partagee par toutes les pages d'un meme
+    // contexte : seme dans celui des autres sections, ce trace les contaminait, et c'est
+    // l'atelier qui tombait en panne trois sections plus loin, pour une raison sans rapport
+    // apparent avec lui.
+    const ctxM = await browser.newContext({ viewport: { width: 1280, height: 1500 } });
+    ctxM.route('**ujkpnlcbxzhwcftvxgcd.supabase.co**', r => r.abort('failed'));
+    // Carre volontairement loin de l'ebauche declaree, pour que les deux ne puissent pas
+    // etre confondus : s'il apparait, c'est bien le trace repris qui est dessine.
+    const carre = [[250, 40], [310, 40], [310, 95], [250, 95]];
+    await ctxM.addInitScript((c) => {
+      localStorage.setItem('endodiag-session', JSON.stringify({
+        access_token: 'test', refresh_token: 'test',
+        expires_at: Date.now() + 3600000, user_id: 'test-user', email: 'test@example.com'
+      }));
+      localStorage.setItem('endodiag-profile', JSON.stringify({
+        id: 'test-user', email: 'test@example.com', prenom: 'Test', nom: 'Auto',
+        annee: 'TCEO1', faculte: 'UFR Odontologie Dijon', approved: true
+      }));
+      localStorage.setItem('endodiag-radio-traces-v1', JSON.stringify({
+        endo_composite_fibre: { traitement_radiculaire: c }
+      }));
+    }, carre);
+    const p = await ctxM.newPage();
+    await boot(p, 3);
+    await ouvreCliche(p);
+    if (await p.$eval('#radio-choix-wrap', e => e.classList.contains('hidden'))) {
+      ko('reprise des traces : la liste enseignante est inatteignable, le cliche 10 ne peut pas etre ouvert');
+    } else {
+      await p.selectOption('#radio-choix', 'endo_composite_fibre');
+      await p.waitForTimeout(500);
+      await p.click('#radio-submit-btn');
+      await p.waitForTimeout(500);
+      const vu = await p.$$eval('#radio-overlay polygon[data-rid]', ns => ns.map(n => ({
+        id: n.dataset.rid,
+        pts: n.getAttribute('points').split(' ').map(s => s.split(',').map(Number))
+      })));
+      if (vu.some(z => z.id === 'traitement_radiculaire')) {
+        ko('reprise des traces : l\'ancien nom « traitement_radiculaire » est encore dessine');
+      }
+      const g = vu.find(z => z.id === 'gutta');
+      if (!g) {
+        ko('reprise des traces : rien n\'est dessine pour « gutta » sur le dixieme cliche');
+      } else {
+        const cx = g.pts.reduce((s, p) => s + p[0], 0) / g.pts.length;
+        const cy = g.pts.reduce((s, p) => s + p[1], 0) / g.pts.length;
+        // Centre du carre seme : (280, 67). L'ebauche declaree est bien plus a gauche et
+        // plus bas — une erreur de reprise s'y verrait tout de suite.
+        if (Math.abs(cx - 280) > 20 || Math.abs(cy - 67) > 20) {
+          ko('reprise des traces : la zone dessinee est centree en (' + cx.toFixed(0) + ', ' +
+             cy.toFixed(0) + ') au lieu du trace repris, centre en (280, 67) — le contour '
+             + 'dessine a la main sous l\'ancien nom a ete perdu');
+        }
+      }
+    }
+    await ctxM.close();
+  }
+
   // ---- 2. Le branchement de la porte enseignant, cote source ----
   // Un test en boite noire ne peut pas simuler un compte enseignant (Supabase est coupe) :
   // on verifie donc que l'appel reste bien dans enterApp et que le bouton part cache.

@@ -5767,8 +5767,12 @@
     // le sinus étant la région la plus sombre du cliché.
     {id:'sinus',             label:'Sinus maxillaire',                          color:'#8b5cf6',
      note:'Présent au maxillaire seulement. Cavité radioclaire bordée d\'un liseré cortical radio-opaque, qu\'on suit d\'un bord à l\'autre du cliché.'},
-    {id:'traitement_radiculaire', label:'Traitement radiculaire endodontique',  color:'#4338ca',
-     note:'Opacité qui suit le trajet des canaux sur toute leur longueur.'},
+    // « Traitement radiculaire endodontique » a vécu ici jusqu'au vingtième cliché. C'était le
+    // MÊME signe que « Gutta-percha », nommé deux fois : une opacité qui suit les canaux. Un
+    // étudiant ayant appris l'un ne reconnaissait pas l'autre. Les deux ont fusionné sous le
+    // nom du matériau, qui est ce qu'on voit — et qui se distingue maintenant du cône d'argent,
+    // entré au catalogue avec le vingtième cliché. Voir RADIO_ANCIENS_IDS pour la reprise des
+    // tracés déjà publiés sous l'ancien nom.
     {id:'couronne_transitoire',   label:'Couronne transitoire',                 color:'#a8a29e',
      note:'En résine : sa densité est proche de celle d\'un composite, bien moindre que celle d\'une couronne définitive.'},
     {id:'composite_fibre',   label:'Préparation coronaire en composite fibré',  color:'#d97706',
@@ -6184,20 +6188,20 @@
       titre:'Rétro-alvéolaire — secteur postérieur mandibulaire',
       image:'radios/retro-alveolaire-10.jpg',
       caption:'',
-      legende:['traitement_radiculaire','couronne_transitoire','onlay','composite_fibre',
+      legende:['gutta','couronne_transitoire','onlay','composite_fibre',
                'lesion','composite'],
       // L'enseignante a tranché : les six légendes figurent sur ce cliché, aucune n'est
       // fausse. Mes quatre cibles de départ en manquaient deux — l'onlay et la lésion —, et
       // trois des quatre étaient rattachées à la mauvaise dent. Les contours ci-dessous
       // suivent son propre tracé.
-      cibles:['traitement_radiculaire','couronne_transitoire','onlay','composite_fibre',
+      cibles:['gutta','couronne_transitoire','onlay','composite_fibre',
               'lesion','composite'],
       zones:{
         // Les deux obturations canalaires de la molaire du milieu, et la chambre qui les
         // relie : un seul traitement, donc une seule zone en V, l'espace inter-radiculaire
         // restant en dehors. Denses, continues, effilées vers l'apex — c'est le seul repère
         // de ce cliché qui ne prête pas à discussion.
-        traitement_radiculaire: {poly:[[124,96],[152,90],[196,96],[208,124],[214,172],
+        gutta: {poly:[[124,96],[152,90],[196,96],[208,124],[214,172],
                                        [211,210],[203,222],[196,212],[190,170],[180,132],
                                        [168,120],[156,132],[146,176],[140,226],[132,240],
                                        [124,232],[122,180],[120,130]]},
@@ -6643,9 +6647,30 @@
   // priment sur ceux déclarés dans le code : c'est le seul moyen qu'elle a de corriger une
   // zone sans passer par moi, et c'est la correction qui fait foi.
   var RADIO_TRACES_KEY = 'endodiag-radio-traces-v1';
+
+  // Quand deux légendes qui désignaient le même signe fusionnent, les tracés déjà publiés sous
+  // l'ancien nom doivent suivre. Sans cette table, le contour que l'enseignante a dessiné à la
+  // main disparaissait sans un mot le jour de la fusion, et seule mon ébauche restait. Un
+  // renommage de repère s'inscrit donc ICI, jamais seulement dans le catalogue.
+  var RADIO_ANCIENS_IDS = { traitement_radiculaire: 'gutta' };
+
+  function radioMigreZones(zones){
+    if(!zones) return zones;
+    Object.keys(RADIO_ANCIENS_IDS).forEach(function(vieux){
+      var neuf = RADIO_ANCIENS_IDS[vieux];
+      // Un tracé déjà fait sous le NOUVEAU nom l'emporte : il est forcément plus récent.
+      if(zones[vieux] && !zones[neuf]) zones[neuf] = zones[vieux];
+      delete zones[vieux];
+    });
+    return zones;
+  }
+
   var radioTraces = (function(){
-    try{ return JSON.parse(localStorage.getItem(RADIO_TRACES_KEY)) || {}; }
+    var t;
+    try{ t = JSON.parse(localStorage.getItem(RADIO_TRACES_KEY)) || {}; }
     catch(e){ return {}; }
+    Object.keys(t).forEach(function(cas){ radioMigreZones(t[cas]); });
+    return t;
   })();
 
   function radioTracesDuCas(){
@@ -6692,7 +6717,7 @@
     radioChargement = window.EndoApi('/rest/v1/radio_traces?select=case_id,zones')
       .then(function(rows){
         (rows || []).forEach(function(r){
-          if(r && r.case_id && r.zones) radioTraces[r.case_id] = r.zones;
+          if(r && r.case_id && r.zones) radioTraces[r.case_id] = radioMigreZones(r.zones);
         });
         radioSyncEtat = 'charge';
         radioSyncMsg  = (rows || []).length + ' cliché(s) corrigé(s) reçus du serveur';
