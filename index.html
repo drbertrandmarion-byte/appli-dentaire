@@ -5703,7 +5703,12 @@
      note:'Bridge dont une dent est « en suspension » à une extrémité, et non au centre entre deux piliers : c\'est cette partie en suspension qu\'on appelle le cantilever.'},
     {id:'osteite',           label:'Ostéite condensante',                       color:'#a16207',
      note:'RADIO-OPACITÉ osseuse concentrique à l\'apex d\'une dent, avec toujours la présence du ligament dentaire — c\'est lui qui permet de la différencier d\'une cémentose.'},
-    {id:'inlay_core',        label:'Inlay-core à clavette',                     color:'#22d3ee',
+    // Bleu franc et non plus cyan clair : le dix-neuvième cliché met pour la première fois
+    // l'inlay-core à clavette et le composite dans la même légende, et les deux cyans n'étaient
+    // distants que de 11 — deux pastilles jumelles pour deux réponses opposées, l'une présente
+    // et l'autre leurre. Le bleu est la seule direction encore libre dans les trois légendes
+    // où ce repère figure ; l'écart minimal y passe de 11 à 42.
+    {id:'inlay_core',        label:'Inlay-core à clavette',                     color:'#1206ef',
      note:'Corps coulé à DEUX ancrages canalaires, logés dans deux racines différentes — c\'est ce double ancrage qui le distingue de l\'inlay-core simple.'},
     {id:'inlay_core_simple', label:'Inlay-core simple',                         color:'#f97316',
      note:'Un seul ancrage canalaire, dans une seule racine.'},
@@ -6469,6 +6474,43 @@
         carie: {poly:[[29,450],[71,442],[99,457],[97,488],[64,501],[33,493],[24,471]]},
         // ÉBAUCHE : esquille dense sous l'ancrage, lue comme un reliquat radiculaire.
         debris: {poly:[[222,544],[242,541],[249,564],[240,580],[223,576],[216,560]]}
+      }
+    },
+    {
+      id:'ancrages_couronne',
+      titre:'Rétro-alvéolaire — secteur postérieur maxillaire',
+      image:'radios/retro-alveolaire-19.png',
+      caption:'',
+      legende:['carie','amalgame','couronne_cm','inlay_core_simple','inlay_core','composite'],
+      cibles:['carie','amalgame','couronne_cm','inlay_core_simple','inlay_core'],
+      // Quatre masses denses alignées, et c'est tout le problème de ce cliché : il faut les
+      // DISTINGUER les unes des autres, pas seulement les repérer.
+      //
+      // CE QUE JE LIS VRAIMENT, et ce que je devine. L'amalgame de gauche est sûr : contour
+      // festonné, aucun ancrage sous lui. Les deux ancrages coulés sont sûrs aussi — chacun
+      // prolonge un tenon dans son canal. Ce que je ne tranche PAS, c'est lequel porte la
+      // clavette : j'ai lu le second départ de la masse centrale comme un deuxième tenon et
+      // lui ai donné la clavette, à la droite l'ancrage simple. Si c'est l'inverse, les deux
+      // zones sont à échanger. La couronne céramo-métallique et surtout la carie sont POSÉES,
+      // PAS RECONNUES.
+      zones:{
+        // Masse festonnée de la dent de gauche, sans tenon dessous.
+        amalgame: {poly:[[28,199],[48,190],[69,194],[89,191],[106,200],[108,216],[100,230],
+                         [80,236],[59,233],[40,236],[28,223],[24,210]]},
+        // Ancrage central, celui dont je lis un SECOND départ vers la droite.
+        inlay_core: {poly:[[157,133],[167,132],[171,159],[187,169],[201,175],[203,191],
+                           [196,208],[181,215],[159,216],[139,211],[127,200],[130,183],
+                           [144,171],[153,159]]},
+        // Ancrage de droite, à tenon unique.
+        inlay_core_simple: {poly:[[319,150],[329,149],[334,175],[344,186],[349,204],[345,225],
+                                  [334,240],[316,243],[302,235],[296,218],[301,201],[311,182],
+                                  [316,165]]},
+        // ÉBAUCHE : la masse intermédiaire, lue comme une coiffe céramo-métallique.
+        couronne_cm: {poly:[[219,201],[240,195],[266,198],[283,205],[285,223],[277,244],
+                            [260,255],[239,256],[222,250],[215,234],[213,216]]},
+        // ÉBAUCHE : zone sombre au collet, sous l'amalgame de gauche.
+        carie: {poly:[[30,240],[50,244],[70,247],[90,245],[104,241],[103,256],[80,262],
+                      [54,261],[32,254]]}
       }
     }
   ];
