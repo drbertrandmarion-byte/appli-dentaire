@@ -6241,6 +6241,49 @@
         foramen_mentonnier: {poly:[[146,206],[168,200],[188,208],[194,224],[186,240],
                                    [166,246],[148,240],[140,224]]}
       }
+    },
+    {
+      id:'maxillaire_charge',
+      titre:'Rétro-alvéolaire — secteur postérieur maxillaire',
+      image:'radios/retro-alveolaire-16.png',
+      caption:'',
+      legende:['amalgame','carie','couronne_metal','fragment','composite','inlay_core_simple',
+               'parodontite','couronne_cm','sinus'],
+      cibles:['amalgame','carie','couronne_metal','fragment','composite','inlay_core_simple',
+              'parodontite','couronne_cm','sinus'],
+      // LE CLICHÉ LE PLUS CHARGÉ DE LA SÉRIE, et celui où mes ébauches valent le moins. Quatre
+      // repères tiennent à une lecture défendable : le sinus, le fragment, l'inlay-core et la
+      // coiffe métallique de droite. Les cinq autres — distinguer une coiffe céramo-métallique
+      // d'un amalgame et d'un composite, situer la carie et la parodontite — sont posés dans
+      // des régions plausibles, pas reconnus. C'est le cliché à retracer en premier.
+      zones:{
+        // Cavité sinusienne, au-dessus du liseré qui court d'un bord à l'autre.
+        sinus: {poly:[[96,18],[160,12],[230,14],[300,20],[318,44],[300,66],[262,78],[214,92],
+                      [166,86],[122,66],[98,42]]},
+        // Fin trait dense dans le canal, au-dessus de la masse coulée et nettement plus mince
+        // qu'elle : la signature d'un fragment, comme au neuvième cliché.
+        fragment: {poly:[[56,58],[66,56],[72,74],[74,94],[70,102],[62,100],[56,82],[54,68]]},
+        // Masse coulée sous ce fragment.
+        inlay_core_simple: {poly:[[46,122],[64,118],[80,126],[86,146],[82,166],[70,178],
+                                  [54,176],[44,160],[42,138]]},
+        // Coiffe de droite, dense et uniforme sur toute son épaisseur.
+        couronne_metal: {poly:[[264,146],[290,140],[310,144],[316,170],[314,200],[306,224],
+                               [288,232],[270,228],[262,206],[260,174]]},
+        // ÉBAUCHE : la grande restauration centrale, lue comme céramo-métallique.
+        couronne_cm: {poly:[[132,180],[150,167],[176,162],[204,165],[222,172],[226,196],
+                            [220,220],[200,231],[172,232],[146,226],[132,206]]},
+        // ÉBAUCHE : la portion distale, plus dense, lue comme un amalgame distinct.
+        amalgame: {poly:[[228,170],[246,164],[258,176],[258,200],[250,218],[234,222],
+                         [226,206],[224,186]]},
+        // ÉBAUCHE : restauration de la dent de gauche.
+        composite: {poly:[[94,162],[114,157],[126,168],[126,188],[114,198],[96,196],[88,182],
+                          [89,170]]},
+        // ÉBAUCHE : zone sombre au collet, entre cette dent et la restauration voisine.
+        carie: {poly:[[118,200],[134,196],[142,206],[138,218],[124,222],[114,214],[112,206]]},
+        // ÉBAUCHE : région apicale centrale.
+        parodontite: {poly:[[158,112],[182,106],[202,114],[208,132],[200,150],[178,156],
+                            [158,148],[150,130]]}
+      }
     }
   ];
 
