@@ -270,6 +270,8 @@
 
   /* Hub : choix du type d'entraînement */
   .hub-intro{margin-top:0;}
+  .envoi-ko{margin:0 0 16px;padding:10px 14px;border-radius:10px;font-size:.94rem;line-height:1.5;
+            background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
   .hub-buttons{
     display:flex;
     flex-wrap:wrap;
@@ -1424,6 +1426,11 @@
 
   <!-- Intro screen -->
   <div class="card intro-card" id="intro-card">
+
+    <!-- Dit tout haut qu'un résultat n'a pas pu être enregistré. Sans cette ligne, un refus
+         du serveur ne se voyait que par une absence dans le back-office — indiscernable d'un
+         étudiant qui ne travaille pas, et c'est précisément le doute qu'il a fallu lever. -->
+    <p class="envoi-ko hidden" id="envoi-ko"></p>
 
     <div id="hub-choice">
       <p class="hub-intro">Choisissez un type d'entraînement :</p>
@@ -7818,7 +7825,47 @@
   // Les résultats sont d'abord mis en file dans le navigateur, puis envoyés. Si le
   // réseau est indisponible au moment où l'étudiant termine un cas, rien n'est perdu :
   // la file est vidée à la prochaine connexion réussie.
-  var PENDING_KEY = 'endodiag-pending';
+  var PENDING_KEY  = 'endodiag-pending';
+  var REFUSES_KEY  = 'endodiag-refuses';   // lignes refusées pour de bon, mises de côté
+  var ENVOI_KO_KEY = 'endodiag-envoi-ko';  // dernier refus, pour pouvoir le dire
+
+  // Un refus 4xx ne se répare pas en réessayant : colonne absente, contrainte qui n'accepte
+  // pas ce mode, droit manquant. Renvoyer ces lignes indéfiniment les met en travers de tout
+  // ce qui suit — un seul mode refusé par le serveur empêchait alors l'enregistrement de TOUS
+  // les résultats, y compris ceux des deux autres. Elles sont donc mises de côté, pas perdues.
+  function refusDefinitif(st){
+    return st >= 400 && st < 500 && st !== 401 && st !== 408 && st !== 429;
+  }
+
+  // Si le serveur se remet à accepter ces lignes — contrainte corrigée, colonne ajoutée —,
+  // celles mises de côté doivent repartir d'elles-mêmes. On les remet en file une seule fois
+  // par ouverture : en cas de nouveau refus elles retournent de côté, sans boucler.
+  var refusRejoues = false;
+  function rejoueRefuses(){
+    if(refusRejoues) return;
+    var r = readStore(REFUSES_KEY);
+    if(!r || !r.length) return;
+    refusRejoues = true;
+    writeStore(REFUSES_KEY, null);
+    writeStore(PENDING_KEY, r.concat(readStore(PENDING_KEY) || []));
+  }
+
+  function noteEnvoi(ko){
+    writeStore(ENVOI_KO_KEY, ko);
+    montreEnvoiKo();
+  }
+
+  function montreEnvoiKo(){
+    var el = document.getElementById('envoi-ko');
+    if(!el) return;
+    var ko = readStore(ENVOI_KO_KEY);
+    if(!ko){ el.classList.add('hidden'); return; }
+    el.textContent = '⚠ ' + ko.combien +
+      (ko.combien > 1 ? ' résultats n\'ont pas pu être enregistrés' : ' résultat n\'a pas pu être enregistré') +
+      (ko.statut ? ' — erreur ' + ko.statut : '') + (ko.message ? ' : ' + ko.message : '') +
+      '. Votre travail n\'apparaîtra pas dans le suivi tant que ce n\'est pas réglé : signalez-le.';
+    el.classList.remove('hidden');
+  }
 
   function queuePush(item){
     var q = readStore(PENDING_KEY) || [];
@@ -7839,14 +7886,28 @@
       else            series.push({user_id:uid, mode:i.mode, serie:i.serie, score:i.score});
     });
 
-    var jobs = [];
-    if(cases.length)  jobs.push(authed('/rest/v1/case_results', {method:'POST', body:cases,  prefer:'return=minimal'}));
-    if(series.length) jobs.push(authed('/rest/v1/results',      {method:'POST', body:series, prefer:'return=minimal'}));
+    // Les deux tables partent SÉPARÉMENT. Groupées, l'échec de l'une remettait l'autre en
+    // file alors qu'elle était déjà passée, et les séries se dédoublaient en silence.
+    var echec = false;
+    function envoie(lignes, path, brutes){
+      if(!lignes.length) return Promise.resolve();
+      return authed(path, {method:'POST', body:lignes, prefer:'return=minimal'})
+        .catch(function(err){
+          echec = true;
+          noteEnvoi({quand: Date.now(), statut: err.status || 0, combien: brutes.length,
+                     message: err.message || 'envoi impossible'});
+          if(refusDefinitif(err.status)){
+            writeStore(REFUSES_KEY, (readStore(REFUSES_KEY) || []).concat(brutes).slice(-500));
+          } else {
+            writeStore(PENDING_KEY, brutes.concat(readStore(PENDING_KEY) || []));
+          }
+        });
+    }
 
-    return Promise.all(jobs).catch(function(){
-      // Échec d'envoi : on remet en file pour la prochaine tentative.
-      writeStore(PENDING_KEY, q.concat(readStore(PENDING_KEY) || []));
-    });
+    return Promise.all([
+      envoie(cases,  '/rest/v1/case_results', q.filter(function(i){ return i.k === 'c'; })),
+      envoie(series, '/rest/v1/results',      q.filter(function(i){ return i.k !== 'c'; }))
+    ]).then(function(){ if(!echec) noteEnvoi(null); });
   }
 
   // Nombre de cas ratés conservés pour relecture. Au-delà, les plus anciens sont
@@ -8019,7 +8080,8 @@
     // reste à l'enseignante seule : il modifie le corrigé sur lequel les étudiants sont notés.
     var accesRadio = isAdmin || !!(profile && profile.radio);
     if(window.EndoTeacherModes) window.EndoTeacherModes(accesRadio, isAdmin);
-    if(!offline){ touchLastSeen(); flushQueue(); }
+    montreEnvoiKo(); // un refus de la veille doit se revoir à l'ouverture
+    if(!offline){ touchLastSeen(); rejoueRefuses(); flushQueue(); }
     if(window.EndoRefreshRevision) window.EndoRefreshRevision();
     window.EndoAccount = { profile: profile, isAdmin: isAdmin, accesRadio: accesRadio,
                            offline: offline, userId: session && session.user_id };

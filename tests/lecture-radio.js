@@ -1321,6 +1321,107 @@ async function valideEtLis(page){
     await p.close();
   }
 
+  // ---- 7. Un refus du serveur doit se VOIR, et ne doit rien bloquer ----
+  // L'enseignante a fait plusieurs lectures radio sans en voir trace dans le back-office. Si
+  // le serveur refuse la ligne — contrainte qui n'accepte pas ce mode, colonne absente —, le
+  // code se contentait de la remettre en file sans rien dire. Deux consequences : personne
+  // n'apprenait que l'enregistrement avait echoue, et la ligne refusee repassait devant TOUT
+  // ce qui suivait, bloquant aussi les resultats des deux autres modes. Trois choses a
+  // prouver : le refus s'affiche, il ne bloque pas la file, et il se rejoue une fois reparé.
+  {
+    const ctx = await browser.newContext({ viewport: { width: 1280, height: 1500 } });
+    let refuseLesCas = true;
+    const recus = { cas: 0, series: 0 };
+    await ctx.route('**ujkpnlcbxzhwcftvxgcd.supabase.co/**', route => {
+      const req = route.request(), url = req.url(), m = req.method();
+      const json = (status, body) => route.fulfill({
+        status, contentType: 'application/json', body: JSON.stringify(body)
+      });
+      if (url.includes('/rest/v1/case_results') && m === 'POST') {
+        if (refuseLesCas) {
+          return json(400, { message: 'new row for relation "case_results" violates check constraint "case_results_mode_check"' });
+        }
+        recus.cas += JSON.parse(req.postData() || '[]').length;
+        return json(201, []);
+      }
+      if (url.includes('/rest/v1/results') && m === 'POST') {
+        recus.series += JSON.parse(req.postData() || '[]').length;
+        return json(201, []);
+      }
+      if (url.includes('/rest/v1/profiles') && m === 'GET') {
+        return json(200, [{ id: 'test-user', email: 'test@example.com', prenom: 'Test', nom: 'Auto',
+                            annee: 'TCEO1', faculte: 'UFR Odontologie Dijon', approved: true, radio: true }]);
+      }
+      if (url.includes('/rest/v1/admins')) return json(200, []);
+      return json(200, []);
+    });
+    await ctx.addInitScript(() => {
+      localStorage.setItem('endodiag-session', JSON.stringify({
+        access_token: 'test', refresh_token: 'test',
+        expires_at: Date.now() + 3600000, user_id: 'test-user', email: 'test@example.com'
+      }));
+    });
+
+    const lit = (p, k) => p.evaluate(key => {
+      try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
+    }, k);
+
+    const p = await ctx.newPage();
+    await p.goto(URL);
+    await p.evaluate(() => { const s = document.getElementById('splash-screen'); if (s) s.remove(); });
+    await p.waitForSelector('#auth-gate.hidden', { state: 'attached', timeout: 15000 });
+    await p.waitForTimeout(600);
+    // Le compte porte le drapeau radio : pas besoin de forcer l'affichage, et c'est le
+    // chemin reel d'un etudiant a qui l'enseignante a ouvert ce mode.
+    if (await p.$eval('#hub-radio-btn', e => e.classList.contains('hidden'))) {
+      ko('refus serveur : le drapeau radio du profil n\'ouvre pas le mode, la suite ne peut rien eprouver');
+    } else {
+      await p.click('#hub-radio-btn');
+      await p.waitForTimeout(400);
+      await p.click('#start-radio-btn');
+      await p.waitForTimeout(700);
+      await p.click('#radio-submit-btn');
+      await p.waitForTimeout(900);
+
+      const banniere = await p.evaluate(() => {
+        const e = document.getElementById('envoi-ko');
+        return e ? { cache: e.classList.contains('hidden'), texte: (e.textContent || '').trim() } : null;
+      });
+      if (!banniere) {
+        ko('refus serveur : aucune ligne #envoi-ko dans la page, le refus ne peut pas se dire');
+      } else if (banniere.cache) {
+        ko('refus serveur : le refus reste muet, rien ne s\'affiche a l\'ecran');
+      } else if (banniere.texte.indexOf('400') < 0) {
+        ko('refus serveur : le message n\'annonce pas le code 400 (lu : ' + banniere.texte + ')');
+      }
+
+      const enFile = await lit(p, 'endodiag-pending') || [];
+      const misDeCote = await lit(p, 'endodiag-refuses') || [];
+      if (enFile.some(x => x && x.k === 'c')) {
+        ko('refus serveur : la ligne refusee reste en file et repassera devant tous les resultats suivants');
+      }
+      if (!misDeCote.some(x => x && x.mode === 'radio')) {
+        ko('refus serveur : la ligne refusee n\'est pas mise de cote, elle est perdue');
+      }
+
+      // Repare : la ligne mise de cote doit repartir d'elle-meme a la prochaine ouverture,
+      // et la banniere s'effacer. Sans cela, le travail deja fait resterait invisible meme
+      // une fois la base corrigee.
+      refuseLesCas = false;
+      await p.goto(URL);
+      await p.evaluate(() => { const s = document.getElementById('splash-screen'); if (s) s.remove(); });
+      await p.waitForSelector('#auth-gate.hidden', { state: 'attached', timeout: 15000 });
+      await p.waitForTimeout(1200);
+      if (!recus.cas) ko('refus serveur : une fois le serveur reparé, la ligne mise de cote n\'est jamais renvoyee');
+      const encore = await p.evaluate(() => {
+        const e = document.getElementById('envoi-ko');
+        return e ? !e.classList.contains('hidden') : false;
+      });
+      if (encore) ko('refus serveur : l\'avertissement reste affiche alors que l\'envoi est repasse');
+    }
+    await ctx.close();
+  }
+
   // Un leurre quelque part, sinon la regle du « signe pose a tort » n'est eprouvee nulle part :
   // chaque cliche peut legitimement s'en passer, l'ensemble non.
   if (!clichesAvecLeurre) {
