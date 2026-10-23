@@ -5802,7 +5802,16 @@
     {id:'tuberosite',        label:'Tubérosité maxillaire',                     color:'#a16207',
      note:'Protubérance osseuse naturelle, située derrière les dernières molaires maxillaires.'},
     {id:'nerf_alveolaire',   label:'Nerf alvéolaire inférieur',                 color:'#facc15',
-     note:'Radioclarté tubulaire, située dans la mandibule — donc absente par construction d\'un cliché maxillaire.'}
+     note:'Radioclarté tubulaire, située dans la mandibule — donc absente par construction d\'un cliché maxillaire.'},
+    // Dix-septième cliché. Deux dents nommées de plus, et un corps étranger à la pulpe qui
+    // n'est PAS une calcification diffuse : les deux se ressemblent et s'opposent, l'un
+    // occupant la chambre, l'autre l'effaçant. La note le dit explicitement.
+    {id:'email_25',          label:'Émail de la dent 25',                       color:'#ea580c',
+     familles:['numerotation','tissus']},
+    {id:'dent_28',           label:'Dent numéro 28',                            color:'#16a34a',
+     familles:['numerotation']},
+    {id:'pulpolithe',        label:'Pulpolithe',                                color:'#db2777',
+     note:'Nodule radio-opaque DANS la chambre pulpaire, de densité proche de celle de la dentine, la radioclarté de la chambre restant visible autour de lui. C\'est ce qui le sépare d\'une calcification diffuse, laquelle efface la chambre au lieu de l\'occuper.'}
   ];
 
   // Certains repères ne décrivent pas un signe : ils demandent de SITUER quelque chose. Une
@@ -6394,6 +6403,40 @@
         // ÉBAUCHE : région apicale centrale.
         parodontite: {poly:[[158,112],[182,106],[202,114],[208,132],[200,150],[178,156],
                             [158,148],[150,130]]}
+      }
+    },
+    {
+      id:'pulpolithe_28',
+      titre:'Rétro-alvéolaire — secteur postérieur maxillaire',
+      image:'radios/retro-alveolaire-17.png',
+      caption:'',
+      legende:['sinus','email_25','dent_28','gutta','pulpolithe','composite','dent_16'],
+      cibles:['sinus','email_25','dent_28','gutta','pulpolithe','composite'],
+      // Molaires à droite du film, maxillaire : secteur 2 — ce que la règle de famille dit, et
+      // ce que les numéros annoncés confirment. En partant de la droite : 28, 27 (la dent
+      // traitée, celle dont les canaux sont obturés), 26, 25, puis 24 coupée par le bord.
+      //
+      // CE QUE JE LIS VRAIMENT, et ce que je devine. Le sinus, la gutta et la dent 28 tiennent
+      // à une lecture défendable. L'émail de 25, le composite et SURTOUT le pulpolithe sont
+      // posés dans des régions plausibles, pas reconnus : je ne distingue pas avec certitude le
+      // nodule pulpaire des autres opacités de la couronne. Ces trois-là sont à retracer en
+      // priorité ; les zones ci-dessous ne servent qu'en attendant.
+      zones:{
+        // Cavité radioclaire du quart supérieur gauche, bordée de son liseré cortical.
+        sinus: {poly:[[22,22],[65,16],[108,27],[135,48],[124,75],[86,92],[49,81],[24,54]]},
+        // Obturation canalaire de 27 : le faisceau de traits denses qui converge vers la couronne.
+        gutta: {poly:[[189,32],[226,24],[264,30],[259,75],[245,124],[232,162],[216,162],
+                      [205,108],[191,65]]},
+        // La dent entière, la plus distale du cliché.
+        dent_28: {poly:[[269,108],[307,94],[345,108],[350,151],[345,216],[318,248],[286,242],
+                        [267,205],[264,151]]},
+        // ÉBAUCHE : la coiffe d'émail de la deuxième dent en partant de la gauche.
+        email_25: {poly:[[35,186],[65,178],[94,189],[97,213],[75,226],[46,224],[33,205]]},
+        // ÉBAUCHE : le nodule est cherché dans la chambre de 26 — c'est le repère dont je suis
+        // le moins sûr de toute la série.
+        pulpolithe: {poly:[[143,168],[162,163],[175,173],[171,189],[155,195],[141,187]]},
+        // ÉBAUCHE : restauration lue à l'occlusal de 26, sous la chambre.
+        composite: {poly:[[116,205],[151,200],[178,208],[175,226],[140,232],[116,221]]}
       }
     }
   ];
