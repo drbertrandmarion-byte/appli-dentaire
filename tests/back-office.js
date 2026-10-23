@@ -37,13 +37,41 @@ for (let i = 0; i < 2; i++) CASES.push({ user_id:'u3', mode:'radio', diagnosis_i
   const ctx = await browser.newContext({ acceptDownloads: true, viewport:{width:1100,height:900} });
   const page = await ctx.newPage();
 
+  // Le serveur BORNE le nombre de lignes qu'il renvoie, et annonce le total dans
+  // « Content-Range ». Le faux serveur fait pareil, par tranches de TRANCHE_MOCK : sans quoi
+  // la pagination du back-office ne serait jamais eprouvee, et la troncature silencieuse —
+  // celle qui fait passer un etudiant pour inactif — resterait invisible.
+  const TRANCHE_MOCK = 20;
+  let tronqueSansLeDire = false;
   await page.route('**://*.supabase.co/**', route => {
     const u = route.request().url();
+    const entetes = route.request().headers();
     const json = b => route.fulfill({ status:200, contentType:'application/json', body:JSON.stringify(b) });
+    const page_ = (tout) => {
+      const m = (entetes['range'] || '0-').match(/(\d+)-(\d+)?/);
+      const debut = m ? +m[1] : 0;
+      const lot = tout.slice(debut, debut + TRANCHE_MOCK);
+      // Le mode « tronque sans le dire » renvoie une seule tranche en annoncant le vrai total :
+      // c'est exactement ce que fait un serveur dont la limite est atteinte.
+      const corps = tronqueSansLeDire && debut > 0 ? [] : lot;
+      return route.fulfill({
+        status: 206, contentType:'application/json',
+        headers: {
+          'content-range': debut + '-' + (debut + corps.length - 1) + '/' + tout.length,
+          // Sans cet en-tete, le navigateur CACHE « Content-Range » a la page : la requete est
+          // d'origine differente, et seuls les en-tetes explicitement exposes sont lisibles.
+          // Supabase l'envoie ; le faux serveur doit faire pareil, sinon le test ne reproduit
+          // pas les conditions reelles.
+          'access-control-expose-headers': 'content-range',
+          'access-control-allow-origin': '*'
+        },
+        body: JSON.stringify(corps)
+      });
+    };
     if (u.includes('/rest/v1/admins'))       return json([{ user_id:'admin1' }]);
-    if (u.includes('/rest/v1/profiles'))     return json(PROFILES);
-    if (u.includes('/rest/v1/results'))      return json(RESULTS);
-    if (u.includes('/rest/v1/case_results')) return json(CASES);
+    if (u.includes('/rest/v1/profiles'))     return page_(PROFILES);
+    if (u.includes('/rest/v1/results'))      return page_(RESULTS);
+    if (u.includes('/rest/v1/case_results')) return page_(CASES);
     return json([]);
   });
   await page.addInitScript(() => {
@@ -120,6 +148,25 @@ for (let i = 0; i < 2; i++) CASES.push({ user_id:'u3', mode:'radio', diagnosis_i
   console.log('\n4bis. comptes valides, cas par mode :');
   console.log('    Alice :', alice ? alice[5] : '—');
   console.log('    Bruno :', bruno ? bruno[5] : '—');
+  pbJs.forEach(x => console.log('  ! ' + x));
+  if (pbJs.length) process.exitCode = 1;
+
+  // --- la troncature silencieuse, celle qui fait passer un etudiant pour inactif ---
+  // Le serveur annonce un total mais n'en livre qu'une partie. Sans avertissement, les
+  // chiffres affichés sont sous-estimes et rien ne le laisse voir : on conclut que
+  // l'etudiant ne fait rien alors que son travail est simplement au-dela de la coupure.
+  tronqueSansLeDire = true;
+  await page.reload();
+  await page.waitForSelector('#admin-view:not(.hidden)', { timeout:15000 });
+  const alerte = ((await page.textContent('#global-msg')) || '').replace(/\s+/g, ' ');
+  if (!/Chargement incomplet/.test(alerte)) {
+    pbJs.push('troncature : le back-office affiche moins de lignes que le serveur n\'en annonce, '
+              + 'et ne le dit pas — lu « ' + alerte.trim() + ' »');
+  }
+  console.log('\n4ter. troncature annoncee :', alerte.trim() || '(rien)');
+  tronqueSansLeDire = false;
+  await page.reload();
+  await page.waitForSelector('#admin-view:not(.hidden)', { timeout:15000 });
   pbJs.forEach(x => console.log('  ! ' + x));
   if (pbJs.length) process.exitCode = 1;
 
