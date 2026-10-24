@@ -41,7 +41,7 @@ async function brancher(browser, base, etat){
       return json({ access_token:'at', refresh_token:'rt', expires_in:3600,
                     user:{ id:UID, email:base.profil.email } });
     }
-    if (u.includes('/rest/v1/admins')) return json([]);
+    if (u.includes('/rest/v1/admins')) return json(etat.admin ? [{ user_id: UID }] : []);
     if (u.includes('/rest/v1/profiles')){
       if (req.method() === 'PATCH'){
         base.patches++;
@@ -60,7 +60,13 @@ async function brancher(browser, base, etat){
 async function seConnecter(page){
   await page.goto(URL);
   await page.evaluate(() => { const s = document.getElementById('splash-screen'); if (s) s.remove(); });
-  await page.waitForSelector('#auth-view-login:not(.hidden)', { timeout:15000 });
+  // Le formulaire peut ne JAMAIS apparaitre : si l'application s'ouvre d'elle-meme, c'est deja
+  // un resultat — et c'en est un que plusieurs scenarios cherchent justement a prendre en
+  // defaut. Attendre le formulaire sans issue de secours ferait planter la suite sur un
+  // timeout muet, au lieu de laisser le controle suivant NOMMER le probleme.
+  const formulaire = await page.waitForSelector('#auth-view-login:not(.hidden)', { timeout:15000 })
+    .then(() => true).catch(() => false);
+  if (!formulaire) { await page.waitForTimeout(300); return; }
   await page.fill('#login-email', 'e@x.fr');
   await page.fill('#login-password', 'motdepasse');
   await page.click('#login-btn');
@@ -93,7 +99,10 @@ async function revenirSurLOnglet(page){
   const erreurs = [];
   const exiger = (c, m) => { if (!c) erreurs.push(m); };
 
-  // ===== 1. Deux appareils, un seul compte =====
+  // ===== 1. C'est le PREMIER connecte qui tient =====
+  // La regle a ete inversee a la demande de l'enseignante. Avant, le dernier connecte
+  // l'emportait, et deux appareils pouvaient se reprendre la session sans fin. Desormais le
+  // detenteur garde la main tant qu'il donne signe de vie, et l'autre reste a la porte.
   const base = nouvelleBase();
   const etat = { panne:false };
   const telephone = await brancher(browser, base, etat);
@@ -102,38 +111,50 @@ async function revenirSurLOnglet(page){
   await seConnecter(telephone);
   const claimA = base.profil.active_session;
   exiger(!!claimA, 'la connexion ne revendique aucune session');
-  exiger(await telephone.evaluate(DANS_L_APP), 'le premier appareil n’entre pas dans l’application');
-  console.log(`1. téléphone connecté — session revendiquée : ${String(claimA).slice(0, 8)}…`);
+  exiger(await telephone.evaluate(DANS_L_APP), 'le premier appareil n\u2019entre pas dans l\u2019application');
+  console.log(`1. t\u00e9l\u00e9phone connect\u00e9 \u2014 session revendiqu\u00e9e : ${String(claimA).slice(0, 8)}\u2026`);
 
   await seConnecter(portable);
-  const claimB = base.profil.active_session;
-  exiger(!!claimB && claimB !== claimA, 'la seconde connexion ne reprend pas la session');
-  exiger(await portable.evaluate(DANS_L_APP), 'le second appareil n’entre pas dans l’application');
-  console.log(`2. portable connecté  — session revendiquée : ${String(claimB).slice(0, 8)}…`);
+  const entre2 = await portable.evaluate(DANS_L_APP);
+  const msg2   = await portable.evaluate(MESSAGE);
+  exiger(!entre2, 'le second appareil entre alors que le premier tient la session');
+  exiger(msg2 && /autre appareil/i.test(msg2),
+    `message de refus absent ou muet sur la cause : ${JSON.stringify(msg2)}`);
+  exiger(base.profil.active_session === claimA,
+    'le second appareil a vol\u00e9 la session au premier, qui \u00e9tait pourtant vivant');
+  console.log(`2. portable refus\u00e9 \u2014 \u00ab ${(msg2 || '').slice(0, 70)}\u2026 \u00bb`);
 
   await revenirSurLOnglet(telephone);
-  const dedans = await telephone.evaluate(DANS_L_APP);
-  const texte  = await telephone.evaluate(MESSAGE);
-  exiger(!dedans, 'le premier appareil reste dans l’application alors que le compte a été repris');
-  exiger(texte && /autre appareil/i.test(texte),
-    `message d’éviction absent ou muet sur la cause : ${JSON.stringify(texte)}`);
-  console.log(`3. téléphone : ${dedans ? 'TOUJOURS DEDANS' : 'refermé'} — « ${(texte || '').slice(0, 70)}… »`);
+  exiger(await telephone.evaluate(DANS_L_APP),
+    'le premier appareil a \u00e9t\u00e9 \u00e9vinc\u00e9 alors qu\u2019aucun autre n\u2019a pris la session');
+  console.log('3. t\u00e9l\u00e9phone : toujours dans l\u2019application');
 
-  exiger(await portable.evaluate(DANS_L_APP), 'le second appareil a été évincé alors qu’il détient la session');
-  console.log('4. portable  : toujours dans l’application');
-
-  // La session ne doit pas repartir toute seule : une éviction laisse le compte au portable.
-  exiger(base.profil.active_session === claimB,
-    'l’appareil évincé a repris la session sans nouvelle connexion');
-
+  // Et il ne revient pas davantage en insistant : tant que l'autre est connecte, c'est non.
+  await seConnecter(portable);
+  exiger(!await portable.evaluate(DANS_L_APP),
+    'le second appareil finit par entrer en insistant : l\u2019\u00e9vinc\u00e9 ne doit pas revenir tant que l\u2019autre est l\u00e0');
+  console.log('4. portable : toujours refus\u00e9 \u00e0 la seconde tentative');
   await telephone.close(); await portable.close();
 
-  // ===== 2. Se reconnecter après avoir été remplacé =====
-  // Un étudiant qui se déconnecte proprement garde son identifiant local. Si un autre appareil prend
-  // la main entre-temps, sa reconnexion doit lui rendre la session — et non le rejeter à l'instant
-  // même où il vient de taper son mot de passe. C'est la revendication faite AU MOMENT DE LA
-  // CONNEXION qui l'en préserve : sans elle, la vérification qui suit constate un identifiant
-  // périmé et referme aussitôt l'application.
+  // ===== 2. Une session abandonnee se libere =====
+  // Sans ce relachement, un etudiant qui ferme son navigateur sans se deconnecter se
+  // verrouillerait lui-meme dehors jusqu'a la fin des temps.
+  const baseV = nouvelleBase();
+  const etatV = { panne:false };
+  baseV.profil.active_session    = 'claim-fantome';
+  baseV.profil.active_session_at = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+  const tardif = await brancher(browser, baseV, etatV);
+  await seConnecter(tardif);
+  exiger(await tardif.evaluate(DANS_L_APP),
+    'une session abandonn\u00e9e depuis une demi-heure bloque encore : l\u2019\u00e9tudiant est enferm\u00e9 dehors');
+  exiger(baseV.profil.active_session !== 'claim-fantome',
+    'la session abandonn\u00e9e n\u2019a pas \u00e9t\u00e9 reprise');
+  console.log('5. session muette depuis 30 min : reprise par le nouvel appareil');
+  await tardif.close();
+
+  // ===== 3. Se deconnecter RENVOIE la session =====
+  // Se deconnecter, c'est dire « j'ai fini » : l'autre appareil doit pouvoir entrer aussitot,
+  // sans attendre que le silence du premier soit constate.
   const baseR = nouvelleBase();
   const etatR = { panne:false };
   const premier = await brancher(browser, baseR, etatR);
@@ -143,22 +164,20 @@ async function revenirSurLOnglet(page){
   await premier.click('#account-btn');
   await premier.click('#acct-logout-btn');
   await premier.waitForSelector('#auth-view-login:not(.hidden)', { timeout:15000 });
+  await premier.waitForTimeout(400);
+  exiger(!baseR.profil.active_session,
+    'la d\u00e9connexion ne rend pas la session : l\u2019\u00e9tudiant reste bloqu\u00e9 sur son autre appareil');
 
   await seConnecter(second);
-  const claimSecond = baseR.profil.active_session;
-
-  await seConnecter(premier);
-  await premier.waitForTimeout(400);
-  const revenu = await premier.evaluate(DANS_L_APP);
-  exiger(revenu, 'après une déconnexion propre, la reconnexion est évincée immédiatement');
-  exiger(baseR.profil.active_session !== claimSecond, 'la reconnexion ne reprend pas la session');
-  console.log(`5. reconnexion après déconnexion propre : ${revenu ? 'dans l’application' : 'ÉVINCÉ AUSSITÔT'}`);
+  exiger(await second.evaluate(DANS_L_APP),
+    'apr\u00e8s une d\u00e9connexion propre, l\u2019autre appareil reste refus\u00e9');
+  console.log('6. d\u00e9connexion propre : l\u2019autre appareil entre aussit\u00f4t');
   await premier.close(); await second.close();
 
-  // ===== 3. Session individuelle : l'éviction a lieu dès le cas validé =====
-  // C'est le cas qui échappait au contrôle : en « Session individuelle », on enchaîne les cas sans
-  // jamais terminer de série ni quitter l'onglet. Sans vérification à chaque cas, un compte repris
-  // ailleurs pouvait continuer à travailler indéfiniment.
+  // ===== 3bis. L'eviction a lieu des le cas valide =====
+  // C'est le cas qui echappait au controle : en « Session individuelle », on enchaine les cas
+  // sans jamais terminer de serie ni quitter l'onglet. Le repreneur n'entre ici que parce que
+  // la session a ete laissee muette assez longtemps pour etre liberee.
   const baseI = nouvelleBase();
   const etatI = { panne:false };
   const travaille = await brancher(browser, baseI, etatI);
@@ -169,18 +188,37 @@ async function revenirSurLOnglet(page){
   await travaille.click('#start-single-btn');
   await travaille.waitForTimeout(300);
 
-  // Un autre appareil prend la main pendant qu'il travaille.
+  // Le detenteur est repute muet : un autre appareil peut alors prendre la main.
+  baseI.profil.active_session_at = new Date(Date.now() - 30 * 60 * 1000).toISOString();
   await seConnecter(repreneur);
+  exiger(await repreneur.evaluate(DANS_L_APP), 'le repreneur n\u2019entre pas alors que la session \u00e9tait libre');
 
-  // Il valide son cas SANS avoir quitté l'onglet : aucun retour d'onglet, aucune fin de série.
+  // Il valide son cas SANS avoir quitte l'onglet : aucun retour d'onglet, aucune fin de serie.
   await travaille.selectOption('#diagnosis-select', 'necrose');
   await travaille.click('#guess-btn');
   await travaille.waitForTimeout(1200);
 
   const encoreLa = await travaille.evaluate(DANS_L_APP);
-  exiger(!encoreLa, 'en session individuelle, le compte repris ailleurs continue de travailler : le cas validé ne déclenche aucun contrôle');
-  console.log(`\n6. session individuelle, cas validé : ${encoreLa ? 'TOUJOURS DEDANS' : 'refermé'}`);
+  exiger(!encoreLa, 'en session individuelle, le compte repris ailleurs continue de travailler : le cas valid\u00e9 ne d\u00e9clenche aucun contr\u00f4le');
+  console.log(`7. session individuelle, cas valid\u00e9 : ${encoreLa ? 'TOUJOURS DEDANS' : 'referm\u00e9'}`);
   await travaille.close(); await repreneur.close();
+
+  // ===== 3ter. L'enseignante, et elle seule, tient plusieurs appareils =====
+  // Elle travaille du telephone et de l'ordinateur, souvent en meme temps. Le controle se
+  // retournerait contre elle. Les etudiants, eux, restent a un appareil — c'est la section 1.
+  const baseE = nouvelleBase();
+  const etatE = { panne:false, admin:true };
+  const ordi = await brancher(browser, baseE, etatE);
+  const tel  = await brancher(browser, baseE, etatE);
+  await seConnecter(ordi);
+  await seConnecter(tel);
+  exiger(await ordi.evaluate(DANS_L_APP) && await tel.evaluate(DANS_L_APP),
+    'le compte enseignant est limit\u00e9 \u00e0 un appareil : le contr\u00f4le se retourne contre elle');
+  await revenirSurLOnglet(ordi);
+  exiger(await ordi.evaluate(DANS_L_APP),
+    'le premier appareil de l\u2019enseignante est \u00e9vinc\u00e9 par le second');
+  console.log('8. compte enseignant : deux appareils ouverts en m\u00eame temps');
+  await ordi.close(); await tel.close();
 
   // ===== 4. Une connexion capricieuse ne doit jamais déconnecter =====
   const base2 = nouvelleBase();
@@ -191,14 +229,14 @@ async function revenirSurLOnglet(page){
   await revenirSurLOnglet(seul);
   const survecu = await seul.evaluate(DANS_L_APP);
   exiger(survecu, 'une simple panne réseau déconnecte l’étudiant — le garde-fou se retourne contre lui');
-  console.log(`7. réseau coupé pendant la vérification : ${survecu ? 'maintenu dans l’application' : 'ÉVINCÉ'}`);
+  console.log(`9. réseau coupé pendant la vérification : ${survecu ? 'maintenu dans l’application' : 'ÉVINCÉ'}`);
   await seul.close();
 
   // ===== 5. Repli hors ligne : jamais refusé, quel que soit le temps écoulé =====
   // Une panne du serveur ne doit JAMAIS priver un étudiant de ses révisions — c'est arrivé en
   // octobre 2026, et une limite de 24 h posée ici aurait transformé une panne de trois jours en
   // blocage général. Ce test interdit qu'une telle limite réapparaisse.
-  let etape = 7;   // les sept premières étapes sont numérotées à la main plus haut
+  let etape = 9;   // les neuf premières étapes sont numérotées à la main plus haut
   async function replieHorsLigne(etiquette, avecIdentifiant){
     const page = await browser.newPage({ viewport:{ width:900, height:900 } });
     await page.route('**://*.supabase.co/**', r => r.abort('failed'));

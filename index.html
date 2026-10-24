@@ -8285,34 +8285,74 @@
     return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2, 12);
   }
 
+  // C'EST LE PREMIER CONNECTÉ QUI TIENT, et non plus le dernier. Tant que l'appareil détenteur
+  // donne signe de vie, aucun autre ne peut prendre sa place : celui qui essaie est refusé à la
+  // porte, et celui qui a été évincé ne revient pas tant que l'autre est là. L'ancienne règle —
+  // le dernier l'emporte — permettait à deux appareils de se reprendre la session sans fin.
+  //
+  // Le signe de vie est une date rafraîchie régulièrement. Sans elle, un étudiant qui ferme son
+  // navigateur sans se déconnecter se verrouillerait lui-même dehors jusqu'à la fin des temps.
+  var SESSION_TTL_MS = 5 * 60 * 1000;  // au-delà de ce silence, la session est réputée libre
+  var BATTEMENT_MS   = 90 * 1000;      // trois battements manqués avant de la libérer
+  var dernierBattement = 0;
+
+  // Le seul compte autorisé à plusieurs appareils : celui de l'enseignante, qui travaille du
+  // téléphone et de l'ordinateur, souvent en même temps. Les étudiants restent à un appareil —
+  // l'accès est une récompense, et un compte ouvert sur cinq appareils lui ôterait sa valeur.
+  function plusieursAppareilsPermis(){ return isAdmin; }
+
+  function sessionTenue(distant, quand){
+    if(!distant) return false;
+    var t = quand ? Date.parse(quand) : NaN;
+    // Fiche d'avant cette mise à jour, sans date : on la considère LIBRE. L'inverse
+    // verrouillerait dehors, et sans recours, tout compte dont la fiche date d'avant.
+    if(isNaN(t)) return false;
+    return (Date.now() - t) < SESSION_TTL_MS;
+  }
+
   function claimSession(){
     if(!session || !session.user_id) return Promise.resolve();
     var id = newClaim();
     writeStore(CLAIM_KEY, id);
+    dernierBattement = Date.now();
     return authed('/rest/v1/profiles?id=eq.' + session.user_id, {
       method: 'PATCH', prefer: 'return=minimal',
       body: { active_session: id, active_session_at: new Date().toISOString() }
     }).catch(function(){});
   }
 
-  function evictSession(){
+  // Le signe de vie du détenteur. Espacé : c'est lui qui dit « je suis toujours là », et le
+  // rafraîchir à chaque geste ferait une requête par clic.
+  function battementSession(){
+    if(!session || !session.user_id || offline) return Promise.resolve();
+    if(Date.now() - dernierBattement < BATTEMENT_MS) return Promise.resolve();
+    dernierBattement = Date.now();
+    return authed('/rest/v1/profiles?id=eq.' + session.user_id, {
+      method: 'PATCH', prefer: 'return=minimal',
+      body: { active_session_at: new Date().toISOString() }
+    }).catch(function(){});
+  }
+
+  function evictSession(raison){
     clearSession();
     writeStore(CLAIM_KEY, null);
     showView('login');
-    msg('login-msg',
-      'Votre compte vient d\'être ouvert sur un autre appareil. ' +
-      'Une seule session peut rester active à la fois : reconnectez-vous pour reprendre ici.', 'err');
+    msg('login-msg', raison, 'err');
   }
 
-  // Renvoie true si ce navigateur détient toujours la session.
-  function ownsSession(distant){
+  // Renvoie true si ce navigateur peut tenir la session.
+  function ownsSession(distant, quand){
+    if(plusieursAppareilsPermis()) return true;
     var local = readStore(CLAIM_KEY);
-    // Aucun identifiant local (premier lancement après cette mise à jour) ou aucun identifiant
-    // distant (fiche jamais revendiquée) : on revendique plutôt que de déconnecter. Les autres
-    // navigateurs du compte se refermeront à leur prochaine vérification.
-    if(!local || !distant){ claimSession(); return true; }
-    if(local === distant) return true;
-    evictSession();
+    if(local && local === distant){ battementSession(); return true; }
+    // Personne ne la tient, ou le détenteur s'est tu assez longtemps : on la prend.
+    if(!sessionTenue(distant, quand)){ claimSession(); return true; }
+    // Un autre appareil la tient, et il est vivant.
+    evictSession(local
+      ? 'Votre compte vient d\'être ouvert sur un autre appareil, et c\'est lui qui garde la ' +
+        'session. Fermez-le — ou attendez quelques minutes — avant de vous reconnecter ici.'
+      : 'Ce compte est déjà ouvert sur un autre appareil. Une seule session à la fois : fermez ' +
+        'l\'autre, ou attendez quelques minutes, puis réessayez.');
     return false;
   }
 
@@ -8321,9 +8361,11 @@
   // l'étudiant de l'application.
   function checkSingleSession(){
     if(!session || !session.user_id || offline) return Promise.resolve(true);
-    return authed('/rest/v1/profiles?select=active_session&id=eq.' + session.user_id)
+    if(plusieursAppareilsPermis()) return Promise.resolve(true);
+    return authed('/rest/v1/profiles?select=active_session,active_session_at&id=eq.' + session.user_id)
       .then(function(rows){
-        return ownsSession(rows && rows[0] && rows[0].active_session);
+        var r = (rows && rows[0]) || {};
+        return ownsSession(r.active_session, r.active_session_at);
       })
       .catch(function(){ return true; });
   }
@@ -8332,6 +8374,11 @@
   document.addEventListener('visibilitychange', function(){
     if(!document.hidden) checkSingleSession();
   });
+
+  // Et un battement régulier tant que l'onglet est à l'écran : c'est lui qui dit à l'autre
+  // appareil que la place est prise. Sans battement, la session serait réputée libre au bout
+  // de cinq minutes alors que l'étudiant est en train de travailler.
+  setInterval(function(){ if(!document.hidden) checkSingleSession(); }, BATTEMENT_MS);
 
   function touchLastSeen(){
     if(!profile) return Promise.resolve();
@@ -8387,7 +8434,7 @@
       .then(function(){
         offline = false;
         // La fiche vient d'être lue : la vérification de session est ici gratuite.
-        if(profile && !ownsSession(profile.active_session)) return;
+        if(profile && !ownsSession(profile.active_session, profile.active_session_at)) return;
         if(isAdmin || (profile && profile.approved)) enterApp();
         else {
           showPending();
@@ -8475,10 +8522,10 @@
     // le navigateur autorise le son, et il coïncide avec le départ du dessin du logo.
     if(window.EndoOpeningChime) window.EndoOpeningChime.onLoaderDraw();
     request('/auth/v1/token?grant_type=password', { method:'POST', body:{ email:email, password:pass } })
-      // La revendication précède route() : c'est elle qui fait de ce navigateur le détenteur de la
-      // session, faute de quoi route() constaterait aussitôt qu'il ne l'est pas et se déconnecterait.
-      .then(function(data){ saveSession(data); return claimSession(); })
-      .then(function(){ return route(); })
+      // On ne revendique PLUS d'office : c'est route() qui lit la fiche et décide. Revendiquer
+      // ici, c'était voler la session à l'appareil qui la tenait — exactement ce que la règle
+      // interdit désormais. route() la prend si elle est libre, et refuse l'entrée sinon.
+      .then(function(data){ saveSession(data); return route(); })
       .catch(function(err){ showView('login'); msg('login-msg', humanError(err), 'err'); })
       .then(function(){ busy($('login-btn'), false, '', 'Se connecter'); });
   }
@@ -8526,8 +8573,18 @@
 
   function doLogout(){
     if(session){
+      // La session est RENDUE, et pas seulement quittée : sans cela, un étudiant qui se
+      // déconnecte proprement de son téléphone pour passer à l'ordinateur resterait à la porte
+      // le temps que son propre silence soit constaté. Se déconnecter, c'est dire « j'ai fini ».
+      if(session.user_id && !plusieursAppareilsPermis()){
+        authed('/rest/v1/profiles?id=eq.' + session.user_id, {
+          method: 'PATCH', prefer: 'return=minimal',
+          body: { active_session: null, active_session_at: null }
+        }).catch(function(){});
+      }
       authed('/auth/v1/logout', { method:'POST' }).catch(function(){});
     }
+    writeStore(CLAIM_KEY, null);
     clearSession();
     hide(menu); hide(dropdown);
     window.EndoAccount = null;
