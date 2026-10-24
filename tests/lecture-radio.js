@@ -356,6 +356,32 @@ async function valideEtLis(page){
     }
   }
 
+  // ---- 1quater. Une couleur ne designe qu'une seule legende ----
+  // Six teintes servaient a quatorze reperes : le vert valait l'onlay sur un cliche, la racine
+  // palatine de 26 sur un autre, la chambre pulpaire de 36 sur un troisieme. La mesure d'ecart
+  // ne l'interdisait pas — elle ne regarde qu'a l'interieur d'une meme legende — mais un
+  // etudiant qui passe d'un cliche a l'autre y perdait son repere de couleur.
+  {
+    const src = fs.readFileSync(__dirname + '/../index.html', 'utf8');
+    const cat = src.slice(src.indexOf('var RADIO_REPERES'), src.indexOf('var RADIO_FAMILLES'));
+    const par = {};
+    let m; const re = /\{id:'([a-z0-9_]+)',\s*label:'((?:[^'\\]|\\.)*)',\s*color:'(#[0-9a-f]+)'/g;
+    while ((m = re.exec(cat))) (par[m[3]] = par[m[3]] || []).push(m[2].replace(/\\'/g, "'"));
+    const lus = Object.values(par).reduce((n, l) => n + l.length, 0);
+    if (lus < 20) ko('couleurs : seulement ' + lus + ' reperes lus, ce controle ne prouverait rien');
+    Object.keys(par).forEach(c => {
+      if (par[c].length > 1) {
+        ko('couleurs : la teinte ' + c + ' designe ' + par[c].length + ' legendes differentes — '
+           + par[c].join(' | '));
+      }
+    });
+    // Controle du controle.
+    const faux = { '#111111': ['a', 'b'] };
+    if (!Object.keys(faux).some(c => faux[c].length > 1)) {
+      ko('AUTOCONTROLE : le detecteur de couleur partagee ne voit pas un doublon pose expres');
+    }
+  }
+
   // ---- 1bis. Le catalogue de legendes ne doit porter aucun doublon ----
   // Deux entrees qui designent le MEME signe sous deux noms differents est le defaut que
   // l'enseignante a demande de chasser : un etudiant qui a appris l'un ne reconnait pas
@@ -1675,6 +1701,34 @@ async function valideEtLis(page){
         const cle = await p.$eval('.radio-cle', e => (e.textContent || '').trim()).catch(() => '');
         if (!/pointill/i.test(cle) || !/trait plein/i.test(cle)) {
           ko('plein/pointilles : la ligne qui explique le code est absente ou muette (lu : ' + cle + ')');
+        }
+
+        // LES PASTILLES NUMEROTEES. Elles donnent un second chemin entre une zone et son nom,
+        // qui ne passe pas par la couleur : environ un homme sur douze confond certaines
+        // teintes et ne peut pas faire ce lien-la. Sans elles, la correction n'est lisible
+        // qu'a condition de distinguer huit couleurs.
+        const nums = await p.$$eval('#radio-overlay text[data-num]', ns => ns.map(t => t.textContent.trim()));
+        const attendusNum = await p.$$eval('#radio-overlay polygon[data-rid]',
+          ns => new Set(ns.map(n => n.dataset.rid)).size);
+        if (!nums.length) {
+          ko('pastilles : aucune zone ne porte de numero a la correction — la correction ne se '
+             + 'lit qu\'en distinguant les couleurs');
+        } else {
+          const uniques = [...new Set(nums)].map(Number).sort((a, b) => a - b);
+          if (uniques.length !== attendusNum) {
+            ko('pastilles : ' + uniques.length + ' numero(s) pour ' + attendusNum + ' zone(s)');
+          }
+          if (uniques.some((v, i) => v !== i + 1)) {
+            ko('pastilles : la numerotation ne va pas de 1 a ' + attendusNum + ' (lue : ' + uniques.join(',') + ')');
+          }
+          // Et le MEME numero doit ouvrir la ligne correspondante : un numero sur le film qui
+          // ne se retrouve pas dans la liste ne menerait nulle part.
+          const lignes = await p.$$eval('#radio-verdicts .vlabel', ns => ns.map(t => t.textContent.trim()));
+          const numerotees = lignes.filter(l => /^\d+\. /.test(l)).length;
+          if (numerotees !== attendusNum) {
+            ko('pastilles : ' + numerotees + ' ligne(s) de correction numerotee(s) pour ' +
+               attendusNum + ' zone(s) — lues : ' + lignes.join(' / '));
+          }
         }
       }
     }

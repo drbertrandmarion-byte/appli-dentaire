@@ -5847,17 +5847,17 @@
      familles:['numerotation']},
     // Une RACINE et non une dent entière : le repère demande de distinguer, parmi les racines
     // d'une molaire supérieure, celle qui est palatine.
-    {id:'racine_palatine_26', label:'Racine palatine de la dent 26',            color:'#22c55e',
+    {id:'racine_palatine_26', label:'Racine palatine de la dent 26',            color:'#fc8a72',
      familles:['numerotation']},
     // Trois repères anatomiques de plus, et un tissu : l'émail, couche la plus dense de la
     // couronne. Les deux chambres pulpaires sont volontairement d'un rouge et d'un vert
     // francs — ce sont deux réponses différentes, et les confondre serait l'erreur même que
     // le leurre cherche à provoquer.
-    {id:'email_46',          label:'Émail de la dent 46',                       color:'#facc15',
+    {id:'email_46',          label:'Émail de la dent 46',                       color:'#663060',
      familles:['numerotation','tissus']},
-    {id:'chambre_pulpaire_45', label:'Chambre pulpaire de la dent 45',          color:'#dc2626',
+    {id:'chambre_pulpaire_45', label:'Chambre pulpaire de la dent 45',          color:'#5a5418',
      familles:['numerotation','tissus']},
-    {id:'chambre_pulpaire_36', label:'Chambre pulpaire de la dent 36',          color:'#22c55e',
+    {id:'chambre_pulpaire_36', label:'Chambre pulpaire de la dent 36',          color:'#b4a860',
      familles:['numerotation','tissus']},
     {id:'foramen_mentonnier', label:'Foramen mentonnier',                       color:'#44403c',
      note:'Émergence du nerf alvéolaire inférieur, souvent à l\'aplomb de l\'apex des deuxièmes prémolaires mandibulaires : un rond concentrique radioclair.'},
@@ -5871,16 +5871,16 @@
      note:'Perte de substance osseuse VERTICALE, en inter-dentaire.'},
     {id:'radix_entomolaris', label:'Radix entomolaris',                         color:'#c026d3',
      note:'Racine surnuméraire des molaires mandibulaires, partant de la racine distale et se terminant souvent en inter-radiculaire.'},
-    {id:'implant',           label:'Implant dentaire',                          color:'#0284c7',
+    {id:'implant',           label:'Implant dentaire',                          color:'#a2a80c',
      note:'Fausse racine en titane, posée là où il n\'y a plus de racine naturelle : son volume et son filetage la signent.'},
-    {id:'racine_mesiale_17', label:'Racine mésiale de la dent 17',              color:'#c026d3',
+    {id:'racine_mesiale_17', label:'Racine mésiale de la dent 17',              color:'#00c600',
      familles:['numerotation']},
     // Deux repères anatomiques de plus : un relief osseux, et un nerf — ce dernier du
     // maxillaire inférieur, donc absent par construction d'un cliché maxillaire supérieur.
     // Le jaune suit la convention des planches d'anatomie.
-    {id:'tuberosite',        label:'Tubérosité maxillaire',                     color:'#a16207',
+    {id:'tuberosite',        label:'Tubérosité maxillaire',                     color:'#c096f0',
      note:'Protubérance osseuse naturelle, située derrière les dernières molaires maxillaires.'},
-    {id:'nerf_alveolaire',   label:'Nerf alvéolaire inférieur',                 color:'#facc15',
+    {id:'nerf_alveolaire',   label:'Nerf alvéolaire inférieur',                 color:'#00665a',
      note:'Radioclarté tubulaire, située dans la mandibule — donc absente par construction d\'un cliché maxillaire.'},
     // Dix-septième cliché. Deux dents nommées de plus, et un corps étranger à la pulpe qui
     // n'est PAS une calcification diffuse : les deux se ressemblent et s'opposent, l'un
@@ -5889,6 +5889,14 @@
      familles:['numerotation','tissus']},
     {id:'dent_28',           label:'Dent numéro 28',                            color:'#16a34a',
      familles:['numerotation']},
+    // UNE COULEUR NE DÉSIGNE QU'UNE SEULE LÉGENDE. Six teintes servaient à quatorze repères :
+    // le vert valait l'onlay sur un cliché, la racine palatine de 26 sur un autre, la chambre
+    // pulpaire de 36 sur un troisième. La règle d'écart de 30 ne l'interdisait pas — elle ne
+    // regarde qu'à l'intérieur d'une même légende, et ces repères ne s'y croisent jamais —
+    // mais un étudiant qui passe d'un cliché à l'autre y perdait son repère de couleur.
+    // Huit teintes ont donc été réattribuées, chacune choisie par recherche exhaustive pour
+    // s'éloigner le plus possible de tout le reste du catalogue.
+    //
     // Vingtième cliché : une obturation canalaire d'un autre temps, qu'on ne pose plus mais
     // qu'on retrouve encore sous les prothèses anciennes.
     // Turquoise choisi par recherche exhaustive : 50 d'écart avec ses voisins de légende, 32
@@ -6763,6 +6771,8 @@
   // id de repère -> un booléen par contour : l'étudiant a-t-il atteint CETTE zone-là. Rempli
   // à la validation, lu par le dessin de la correction.
   var radioZonesTrouvees = {};
+  // id de repère -> son numéro à la correction. Vide tant qu'aucune lecture n'est validée.
+  var radioNumeros = {};
 
   // Sommets saisis par l'enseignante dans l'atelier de tracé, par cliché puis par repère. Ils
   // priment sur ceux déclarés dans le code : c'est le seul moyen qu'elle a de corriger une
@@ -7040,6 +7050,23 @@
     }).join('');
   }
 
+  // La pastille numérotée, posée au centre de la zone. Petite — huit unités de rayon sur une
+  // largeur de film de 360 — pour ne pas masquer ce qu'il faut justement regarder. Le nom
+  // écrit en toutes lettres a été essayé : sur un cliché chargé il déborde du film, se coupe,
+  // recouvre les zones voisines, et oblige à raccourcir les libellés jusqu'à leur ôter ce qui
+  // les distingue les uns des autres.
+  function radioPastille(poly, n, couleur){
+    if(!n) return '';
+    var cx = 0, cy = 0;
+    poly.forEach(function(p){ cx += p[0]; cy += p[1]; });
+    cx /= poly.length; cy /= poly.length;
+    return '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="8" fill="' +
+           couleur + '" stroke="#000" stroke-width="1.2"/>' +
+           '<text x="' + cx.toFixed(1) + '" y="' + cy.toFixed(1) + '" data-num="' + n + '"' +
+           ' text-anchor="middle" dominant-baseline="central" font-size="11" font-weight="700"' +
+           ' paint-order="stroke" stroke="#000" stroke-width="1.6" fill="#fff">' + n + '</text>';
+  }
+
   // Les contours sont tracés en SVG, dans le même repère que les coordonnées : ils suivent donc
   // le cliché quelle que soit sa taille d'affichage, sans recalcul au redimensionnement.
   function renderRadioOverlay(){
@@ -7066,7 +7093,8 @@
                ' fill="' + rep.color + '" fill-opacity="' + (manquee ? '0.08' : '0.16') + '"' +
                ' stroke="#00000066" stroke-width="3.4" stroke-linejoin="round"' + tirets + '/>' +
                '<polygon points="' + pts + '" fill="none" stroke="' + rep.color +
-               '" stroke-width="1.8" stroke-linejoin="round"' + tirets + '/>';
+               '" stroke-width="1.8" stroke-linejoin="round"' + tirets + '/>' +
+               radioPastille(poly, radioNumeros[id], rep.color);
         }).join('');
       }).join('');
       html += '<svg class="radio-zones" viewBox="0 0 ' + RADIO_W + ' ' + hUnites.toFixed(1) +
@@ -7651,6 +7679,7 @@
     radioChecked = false;
     radioZonesLissees = null; // les contours lissés appartiennent au cliché précédent
     radioZonesTrouvees = {};  // et les zones atteintes, à la lecture précédente
+    radioNumeros = {};
     if(radioTracing) radioFermeTrace();
 
     hideEl(introCard);
@@ -7709,6 +7738,13 @@
     // manqué. La phrase « la zone attendue (en pointillés) » promettait ce code depuis le
     // début sans que rien ne le dessine.
     radioZonesTrouvees = {};
+    // Le NUMÉRO de chaque repère présent, dans l'ordre de la légende du cliché. Il est posé
+    // sur sa zone et repris en tête de sa ligne de correction : un second chemin entre la
+    // zone et son nom, qui ne passe pas par la couleur. Environ un homme sur douze confond
+    // certaines teintes — le rouge et le vert en premier lieu — et ce chemin-là lui est
+    // ferme. Les couleurs restent : elles relient la légende au point qu'on pose.
+    radioNumeros = {};
+    radioCase.cibles.forEach(function(id, i){ radioNumeros[id] = i + 1; });
     // Le sort de CHAQUE entrée de la légende, leurres compris : c'est ce détail qui permettra
     // au back-office de classer les erreurs par type de repère et non par cliché.
     var detail = [];
@@ -7821,7 +7857,9 @@
     document.getElementById('radio-verdicts').innerHTML = lignes.map(function(l){
       return '<li class="' + (l.ok ? 'v-ok' : 'v-ko') + '">' +
         '<i class="dot" style="background:' + l.rep.color + '"></i>' +
-        '<span><span class="vlabel">' + l.rep.label + '</span> — <span class="vmsg">' + l.msg + '</span></span></li>';
+        '<span><span class="vlabel">' +
+        (radioNumeros[l.rep.id] ? radioNumeros[l.rep.id] + '. ' : '') + l.rep.label +
+        '</span> — <span class="vmsg">' + l.msg + '</span></span></li>';
     }).join('');
 
     renderRadioLegend();

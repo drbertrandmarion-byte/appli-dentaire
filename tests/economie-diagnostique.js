@@ -13,7 +13,20 @@ const SCENARIOS = [
 (async () => {
   const browser = await chromium.launch();
   const page = await browser.newPage();
-  await page.route('**://*.supabase.co/**', r => r.abort());
+  // Supabase est SIMULE et non coupe. Depuis que les trois modes d'entrainement sont fermes
+  // hors ligne — un serveur injoignable voulant dire corrige non charge et resultats non
+  // enregistres —, couper le reseau ferme aussi les boutons que cette suite doit cliquer.
+  await page.route('**://*.supabase.co/**', r => {
+    const u = r.request().url();
+    const j = b => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(b) });
+    if (u.includes('/rest/v1/profiles') && r.request().method() === 'GET') {
+      return j([{ id: 'test-user', email: 'test@example.com', prenom: 'Test', nom: 'Auto',
+                 annee: 'TCEO1', faculte: 'UFR Odontologie Dijon', approved: true,
+                 active_session: null, active_session_at: null }]);
+    }
+    if (u.includes('/rest/v1/')) return j([]);
+    return r.fulfill({ status: 204, body: '' });
+  });
   await page.addInitScript(() => {
     localStorage.setItem('endodiag-session', JSON.stringify({
       access_token:'t', refresh_token:'t', expires_at:Date.now()+36e5, user_id:'u', email:'e@e.fr' }));

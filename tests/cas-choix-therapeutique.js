@@ -154,8 +154,20 @@ async function run() {
   // injoignable depuis le bac a sable, le repli hors ligne laisse entrer.
   // Coupe net l'acces a Supabase : le repli hors ligne s'active immediatement,
   // au lieu d'attendre le delai maximal de 12 s a chaque cas.
-  await page.route('**ujkpnlcbxzhwcftvxgcd.supabase.co**', r => r.abort('failed'));
-
+  // Supabase est SIMULE et non coupe. Depuis que les trois modes d'entrainement sont fermes
+  // hors ligne — un serveur injoignable voulant dire corrige non charge et resultats non
+  // enregistres —, couper le reseau ferme aussi les boutons que cette suite doit cliquer.
+  await page.route('**://*.supabase.co/**', r => {
+    const u = r.request().url();
+    const j = b => r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(b) });
+    if (u.includes('/rest/v1/profiles') && r.request().method() === 'GET') {
+      return j([{ id: 'test-user', email: 'test@example.com', prenom: 'Test', nom: 'Auto',
+                 annee: 'TCEO1', faculte: 'UFR Odontologie Dijon', approved: true,
+                 active_session: null, active_session_at: null }]);
+    }
+    if (u.includes('/rest/v1/')) return j([]);
+    return r.fulfill({ status: 204, body: '' });
+  });
   await page.addInitScript(() => {
     localStorage.setItem('endodiag-session', JSON.stringify({
       access_token: 'test', refresh_token: 'test',
