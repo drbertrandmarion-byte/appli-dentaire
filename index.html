@@ -6579,10 +6579,8 @@
       image:'radios/retro-alveolaire-19.png',
       caption:'',
       valide:true,
-      legende:['carie','amalgame','couronne_cm','inlay_core_simple','inlay_core',
-               'racine_distale_26','composite'],
-      cibles:['carie','amalgame','couronne_cm','inlay_core_simple','inlay_core',
-              'racine_distale_26'],
+      legende:['carie','amalgame','couronne_cm','inlay_core_simple','inlay_core','composite'],
+      cibles:['carie','amalgame','couronne_cm','inlay_core_simple','inlay_core'],
       // Quatre masses denses alignées, et c'est tout le problème de ce cliché : il faut les
       // DISTINGUER les unes des autres, pas seulement les repérer.
       //
@@ -6612,14 +6610,7 @@
                             [260,255],[239,256],[222,250],[215,234],[213,216]]},
         // ÉBAUCHE : zone sombre au collet, sous l'amalgame de gauche.
         carie: {poly:[[30,240],[50,244],[70,247],[90,245],[104,241],[103,256],[80,262],
-                      [54,261],[32,254]]},
-        // ÉBAUCHE, ET UNE SUPPOSITION DE PLUS. J'ai compté les quatre dents de gauche à droite
-        // comme 24, 25, 26, 27 — molaires à droite, maxillaire, donc secteur 2 — ce qui fait
-        // de la TROISIÈME la dent 26. Sa racine distale est alors celle de droite, la ligne
-        // médiane étant à gauche du cliché. Si la numérotation est décalée d'un rang, ce
-        // contour est sur la mauvaise dent : son tracé le corrige.
-        racine_distale_26: {poly:[[264,92],[278,90],[287,110],[285,140],[280,168],[272,186],
-                                  [264,184],[260,160],[259,128],[260,106]]}
+                      [54,261],[32,254]]}
       }
     },
     {
@@ -6629,9 +6620,9 @@
       caption:'',
       valide:true,
       legende:['inlay_core_simple','cone_argent','couronne_metal','couronne_cm','carie',
-               'parodontite','lesion'],
+               'parodontite','lesion','racine_distale_26'],
       cibles:['inlay_core_simple','cone_argent','couronne_metal','couronne_cm','carie',
-              'parodontite','lesion'],
+              'parodontite','lesion','racine_distale_26'],
       // SEUL CLICHÉ DE LA SÉRIE SANS AUCUN LEURRE : les sept légendes y figurent toutes.
       //
       // C'est aussi le seul qui vienne d'une PHOTOGRAPHIE D'ÉCRAN et non d'un export. J'ai
@@ -6671,7 +6662,15 @@
         // ÉBAUCHE : élargissement discret à l'apex de la dent de gauche.
         parodontite: {poly:[[31,192],[47,187],[60,196],[61,213],[48,222],[32,219],[26,206]]},
         // ÉBAUCHE : encoche sombre au collet distal de la coiffe de droite.
-        carie: {poly:[[214,268],[233,263],[249,272],[250,290],[234,298],[216,294],[209,281]]}
+        carie: {poly:[[214,268],[233,263],[249,272],[250,290],[234,298],[216,294],[209,281]]},
+        // ÉBAUCHE, ET UNE SUPPOSITION SUR LA DENT. La molaire du milieu — celle que coiffe la
+        // couronne métallique et que traversent les deux cônes — est lue comme la 26. La ligne
+        // médiane étant à gauche du cliché, sa racine DISTALE est celle de droite : le contour
+        // est posé entre les cônes et la dent suivante, au-dessus du collet. Si la molaire
+        // n'est pas la 26, ou si le cliché est orienté dans l'autre sens, ce contour est à
+        // refaire — son tracé le corrige.
+        racine_distale_26: {poly:[[210,200],[232,194],[254,202],[262,222],[258,244],[240,256],
+                                  [220,252],[208,232],[206,214]]}
       }
     }
   ];
