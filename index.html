@@ -1002,7 +1002,7 @@
     margin:14px auto 6px;
     border-radius:10px;
   }
-  .radio-film{
+  .radio-film{scroll-margin-top:12px;
     position:relative;
     width:100%;
     touch-action:none;
@@ -1448,7 +1448,7 @@
         </button>
         <!-- Troisième mode : n'est démasqué que pour un compte enseignant (window.EndoTeacherModes). -->
         <button class="hub-card hidden" id="hub-radio-btn" type="button">
-          <span class="hub-icon">🦷</span>
+          <span class="hub-icon">🩻</span>
           <span class="hub-title">La lecture radiographique</span>
           <span class="hub-desc">Placez sur le cliché les repères anatomiques et les signes pathologiques, choisis dans une légende commune à tous les cas.</span>
           <span class="hub-flag">Enseignant · en construction</span>
@@ -7607,12 +7607,35 @@
     filmEl.innerHTML = '<img class="radio-img" src="' + radioCase.image + '" alt="Cliché radiographique">';
     // Tant que l'image n'est pas chargée, le cadre n'a pas de hauteur et son format n'est pas
     // connu : la couche des points est donc retracée à l'arrivée de l'image.
-    filmEl.firstChild.onload = renderRadioOverlay;
+    // Le cliché n'a PAS ENCORE DE HAUTEUR au moment où l'on fait défiler : l'image n'est pas
+    // chargée. Le défilement visait donc une carte haute de quelques dizaines de pixels, et
+    // l'arrivée de l'image repoussait ensuite le cliché hors de l'écran — on se retrouvait en
+    // bas de page, devant la légende, sans la radiographie. On refait donc le geste une fois
+    // l'image arrivée, quand la carte a sa vraie taille.
+    filmEl.firstChild.onload = function(){
+      renderRadioOverlay();
+      radioMontreLeCliche();
+    };
 
     renderRadioLegend();
     renderRadioOverlay();
     setBackTarget(backToRadioIntro);
-    radioCaseCard.scrollIntoView({behavior:'smooth', block:'start'});
+    radioMontreLeCliche();
+  }
+
+  // Amène la radiographie elle-même sous les yeux, et non le haut de la carte : la consigne
+  // qui la précède occupe à elle seule un écran de téléphone.
+  //
+  // LE DÉFILEMENT ATTEND LA FIN DU FONDU. L'écran d'introduction ne quitte la page qu'au bout
+  // de FADE_MS — jusque-là il occupe encore sa place. Viser le cliché avant cette échéance,
+  // c'était viser une position que la page abandonnait aussitôt : tout remontait de trois
+  // cents pixels et l'on se retrouvait SOUS le cliché, devant la légende. C'est exactement ce
+  // que décrivait l'enseignante, et la mesure le confirmait — film.top à -303.
+  function radioMontreLeCliche(){
+    setTimeout(function(){
+      var film = document.getElementById('radio-film');
+      (film || radioCaseCard).scrollIntoView({behavior:'smooth', block:'start'});
+    }, FADE_MS + 30);
   }
 
   function submitRadio(){

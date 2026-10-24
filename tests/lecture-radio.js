@@ -1495,6 +1495,47 @@ async function valideEtLis(page){
     await p.close();
   }
 
+  // ---- 5ter. Le cliche doit etre A L'ECRAN quand il s'ouvre ----
+  // Il s'ouvrait EN BAS DE PAGE, devant la legende, sans la radiographie. Le defilement avait
+  // lieu avant la fin du fondu de l'ecran d'introduction : celui-ci occupait encore sa place,
+  // on visait donc une position que la page abandonnait aussitot, et tout remontait de trois
+  // cents pixels. Mesure sur un ecran de TELEPHONE, ou le defaut se voit : sur un grand ecran
+  // la page entiere tient parfois a l'image et le defaut passe inapercu.
+  {
+    const ctxT = await browser.newContext({ viewport: { width: 390, height: 780 } });
+    ctxT.route('**ujkpnlcbxzhwcftvxgcd.supabase.co**', r => r.abort('failed'));
+    await ctxT.addInitScript(() => {
+      localStorage.setItem('endodiag-session', JSON.stringify({
+        access_token:'t', refresh_token:'t', expires_at: Date.now() + 36e5,
+        user_id:'test-user', email:'t@x.fr' }));
+      localStorage.setItem('endodiag-profile', JSON.stringify({
+        id:'test-user', email:'t@x.fr', prenom:'T', nom:'A', annee:'TCEO1',
+        faculte:'UFR Odontologie Dijon', approved:true }));
+    });
+    const p = await ctxT.newPage();
+    await p.goto(URL);
+    await p.evaluate(() => { const s = document.getElementById('splash-screen'); if (s) s.remove(); });
+    await p.waitForSelector('#auth-gate.hidden', { state:'attached', timeout:15000 });
+    await p.waitForTimeout(900);
+    await p.evaluate(() => window.EndoTeacherModes(true, true));
+    await p.click('#hub-radio-btn');
+    await p.waitForTimeout(400);
+    await p.click('#start-radio-btn');
+    await p.waitForTimeout(2200);   // fondu, chargement de l'image, puis defilement
+    const vu = await p.evaluate(() => {
+      const f = document.getElementById('radio-film').getBoundingClientRect();
+      const dedans = Math.max(0, Math.min(f.bottom, window.innerHeight) - Math.max(f.top, 0));
+      return { part: f.height ? dedans / f.height : 0, top: Math.round(f.top), h: Math.round(f.height) };
+    });
+    if (!vu.h) {
+      ko('ouverture : le cliche n\'a aucune hauteur, la mesure ne prouverait rien');
+    } else if (vu.part < 0.6) {
+      ko('ouverture : seulement ' + Math.round(100 * vu.part) + ' % du cliche est a l\'ecran (haut a ' +
+         vu.top + ') — l\'ecran ne s\'ouvre pas sur la radiographie');
+    }
+    await ctxT.close();
+  }
+
   // ---- 5quater. Un cliche non valide par l'enseignante ne sort pas de son atelier ----
   // Quinze des vingt cliches portaient au moins un contour que j'avais moi-meme marque
   // « ebauche », et rien ne le disait a l'etudiant : il pouvait etre note faux parce que MA
