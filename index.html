@@ -7645,6 +7645,9 @@
     // manqué. La phrase « la zone attendue (en pointillés) » promettait ce code depuis le
     // début sans que rien ne le dessine.
     radioZonesTrouvees = {};
+    // Le sort de CHAQUE entrée de la légende, leurres compris : c'est ce détail qui permettra
+    // au back-office de classer les erreurs par type de repère et non par cliché.
+    var detail = [];
     var lignes = [], bons = 0, leurres = 0, oublis = 0, decales = 0;
     // Un repère figurant à plusieurs endroits attend autant de points qu'il a de zones, et
     // une zone laissée sans point ne compte pas pour acquise : c'est le dénombrement, autant
@@ -7656,6 +7659,9 @@
       var contours = cible ? (radioZone(rep.id) || []) : [];
 
       if(!cible){
+        // Laisser un leurre de côté EST une bonne réponse, et doit compter comme telle :
+        // sinon le classement par type ne dirait rien des signes qu'on croit voir à tort.
+        detail.push({id:rep.id, ok:!pts.length});
         if(pts.length){
           leurres++;
           lignes.push({rep:rep, ok:false, msg:'ce signe n\'est pas présent sur ce cliché : il fallait laisser ce point dans la légende'});
@@ -7664,6 +7670,7 @@
       }
       if(!pts.length){
         oublis++;
+        detail.push({id:rep.id, ok:false});
         lignes.push({rep:rep, ok:false, msg:'oublié : ce repère est visible sur ce cliché'});
         return;
       }
@@ -7677,7 +7684,9 @@
       radioZonesTrouvees[rep.id] = atteintes;
       var couvertes = atteintes.filter(Boolean).length;
 
-      if(!horsZone && couvertes === contours.length && pts.length === contours.length){
+      var parfait = !horsZone && couvertes === contours.length && pts.length === contours.length;
+      detail.push({id:rep.id, ok:parfait});
+      if(parfait){
         bons++;
         lignes.push({rep:rep, ok:true, msg:contours.length > 1
           ? 'les ' + contours.length + ' zones sont bien repérées'
@@ -7760,6 +7769,8 @@
     if(window.EndoStats && window.EndoStats.recordCase){
       var fichier = (radioCase.image || '').split('/').pop().replace(/\.[a-z]+$/i, '');
       window.EndoStats.recordCase('radio', fichier, reussi);
+      // Et le détail, sous un mode à part pour ne pas se mêler au décompte des clichés.
+      if(window.EndoStats.recordDetails) window.EndoStats.recordDetails('radio_repere', detail);
     }
 
     hideEl(document.getElementById('radio-submit-row'));
@@ -8313,6 +8324,21 @@
       // sans jamais quitter l'onglet ni terminer de série — et donc, auparavant, sans jamais être
       // vérifié. L'exposition maximale tombe à un cas.
       checkSingleSession();
+    },
+
+    // Le DÉTAIL d'une lecture, repère par repère. Jusqu'ici on ne gardait que « ce cliché est
+    // réussi ou raté » : le back-office pouvait dire combien, jamais QUOI. Or chaque correction
+    // calcule déjà, pour chaque entrée de la légende, si l'étudiant s'en est tiré — et le
+    // jetait. C'est cette information qui dit à l'enseignante ce qu'il faut reprendre en cours.
+    //
+    // Une seule mise en file pour tout le lot, et AUCUN contrôle de session : le cas lui-même
+    // vient de le déclencher, et six requêtes de plus par cliché ne diraient rien de neuf.
+    recordDetails: function(mode, items){
+      if(!session || !items || !items.length) return;
+      items.forEach(function(it){
+        if(it && it.id) queuePush({k:'c', mode:mode, diagnosis_id:it.id, correct:!!it.ok});
+      });
+      flushQueue();
     },
 
     recordSeries: function(mode, serie, score){

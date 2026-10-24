@@ -200,6 +200,22 @@
     </div>
   </div>
 
+  <!-- Ce que les etudiants confondent EN LECTURE RADIOGRAPHIQUE. Le tableau ci-dessus compte
+       les cliches ; celui-ci compte les REPERES, et c'est lui qui dit quoi reprendre en cours :
+       « sept etudiants sur dix appellent la ceramo-metallique une couronne metallique » ne se
+       lit nulle part ailleurs. -->
+  <div class="card" id="radio-card">
+    <h2>Lecture radiographique — erreurs par type de repère</h2>
+    <div class="tbl-wrap"><table>
+      <thead><tr>
+        <th>Repère</th><th>Rencontré</th><th>Erreurs</th><th>Taux d'erreur</th>
+        <th style="width:22%"></th>
+      </tr></thead>
+      <tbody id="radio-body"></tbody>
+    </table></div>
+    <p class="hint" id="radio-note" style="margin-top:10px;"></p>
+  </div>
+
 </div>
 
 <script>
@@ -236,6 +252,55 @@
   }
 
   // Noms lisibles des pathologies (doivent correspondre aux identifiants de l'application)
+  // Les libelles des reperes radiographiques, recopies du catalogue de index.html. Cette
+  // duplication est deliberee : les deux fichiers sont autonomes et ne partagent rien. Elle est
+  // tenue par un controle de la suite back-office, qui relit les deux et refuse qu'ils divergent
+  // — sans quoi un repere renomme d'un cote s'afficherait sous son ancien nom de l'autre.
+  var RADIO_LABELS = {
+    couronne_cm: 'Couronne céramo-métallique',
+    bridge_cantilever: 'Bridge avec cantilever métallique',
+    osteite: 'Ostéite condensante',
+    inlay_core: 'Inlay-core à clavette',
+    inlay_core_simple: 'Inlay-core simple',
+    onlay: 'Onlay céramique / composite',
+    lesion: 'Lésion apicale infectieuse radioclaire (granulome, kyste ou abcès)',
+    parodontite: 'Lésion apicale débutante (parodontite apicale)',
+    debris: 'Débris radiculaire',
+    fragment: 'Fragment instrumental cassé',
+    amalgame: 'Amalgame dentaire',
+    amalgame_infiltre: 'Perte d\'étanchéité d\'une restauration',
+    rhizalyse: 'Rhizalyse radiculaire sur dent vivante',
+    screw_post: 'Screw post',
+    couronne_metal: 'Couronne métallique',
+    resorption_externe: 'Résorption externe',
+    resorption_interne: 'Résorption interne',
+    composite: 'Composite dentaire',
+    carie: 'Lésion carieuse',
+    calcification: 'Dent avec une calcification diffuse',
+    dent_16: 'Dent numéro 16',
+    dent_27: 'Dent numéro 27',
+    sinus: 'Sinus maxillaire',
+    couronne_transitoire: 'Couronne transitoire',
+    composite_fibre: 'Préparation coronaire en composite fibré',
+    dent_24: 'Dent numéro 24',
+    racine_palatine_26: 'Racine palatine de la dent 26',
+    email_46: 'Émail de la dent 46',
+    chambre_pulpaire_45: 'Chambre pulpaire de la dent 45',
+    chambre_pulpaire_36: 'Chambre pulpaire de la dent 36',
+    foramen_mentonnier: 'Foramen mentonnier',
+    obturation_canalaire: 'Obturation canalaire',
+    lesion_parodontale: 'Lésion parodontale verticale',
+    radix_entomolaris: 'Radix entomolaris',
+    implant: 'Implant dentaire',
+    racine_mesiale_17: 'Racine mésiale de la dent 17',
+    tuberosite: 'Tubérosité maxillaire',
+    nerf_alveolaire: 'Nerf alvéolaire inférieur',
+    email_25: 'Émail de la dent 25',
+    dent_28: 'Dent numéro 28',
+    cone_argent: 'Cône d\'argent',
+    pulpolithe: 'Pulpolithe',
+  };
+
   var DIAG_LABELS = {
     saine:'Dent saine', hyperhemie:'Hyperhémie pulpaire', reversible:'Pulpite réversible',
     irreversible:'Pulpite aiguë irréversible', syndrome_mixte:'Syndrome mixte',
@@ -443,6 +508,7 @@
 
     renderPromoFilter();
     renderWeak();
+    renderRadio();
   }
 
   // ---------- Pathologies les plus ratées, par promotion ----------
@@ -475,7 +541,7 @@
     caseResults.forEach(function(c){
       // La lecture radiographique porte sur un cliché, pas sur une pathologie : l'inclure
       // ferait apparaître des noms de fichiers dans le tableau des pathologies faibles.
-      if(c.mode === 'radio') return;
+      if(c.mode === 'radio' || c.mode === 'radio_repere') return;
       if(promo !== TOUTES && promoOf(c.user_id) !== promo) return;
       var d = byDiag[c.diagnosis_id] ||
               (byDiag[c.diagnosis_id] = { total:0, wrong:0, dTot:0, dErr:0, tTot:0, tErr:0 });
@@ -524,20 +590,68 @@
         : 'Toutes les pathologies comptent au moins 10 cas traités.';
   }
 
+  // Les reperes radiographiques, classes par taux d'erreur. Laisser un leurre de cote compte
+  // comme une reussite : sinon le classement ne dirait rien des signes qu'on croit voir a tort,
+  // qui sont justement la moitie de ce qui s'apprend ici.
+  function radioRows(promoVoulue){
+    var promo = promoVoulue || $('promo-filter').value || TOUTES;
+    var par = {};
+    caseResults.forEach(function(c){
+      if(c.mode !== 'radio_repere') return;
+      if(promo !== TOUTES && promoOf(c.user_id) !== promo) return;
+      var d = par[c.diagnosis_id] || (par[c.diagnosis_id] = { total:0, wrong:0 });
+      d.total++;
+      if(!c.correct) d.wrong++;
+    });
+    return Object.keys(par).map(function(k){
+      return { id:k, label: RADIO_LABELS[k] || k, total: par[k].total,
+               wrong: par[k].wrong, rate: par[k].wrong / par[k].total };
+    }).sort(function(a, b){ return b.rate - a.rate || b.total - a.total; });
+  }
+
+  function renderRadio(){
+    var rows = radioRows();
+    var promo = $('promo-filter').value || TOUTES;
+    $('radio-body').innerHTML = rows.length ? rows.map(function(r){
+      var p = Math.round(r.rate * 100);
+      return '<tr>' +
+        '<td>' + esc(r.label) + '</td>' +
+        '<td>' + r.total + '</td>' +
+        '<td>' + r.wrong + '</td>' +
+        '<td><b>' + p + ' %</b></td>' +
+        '<td><div class="bar"><i style="width:' + p + '%"></i></div></td>' +
+        '</tr>';
+    }).join('')
+      : '<tr><td colspan="5"><div class="empty">Aucune lecture radiographique enregistrée' +
+        (promo === TOUTES ? '' : ' pour cette promotion') + ' pour le moment.</div></td></tr>';
+
+    var maigres = rows.filter(function(r){ return r.total < 10; }).length;
+    $('radio-note').textContent = !rows.length ? ''
+      : maigres
+        ? maigres + ' repère' + (maigres > 1 ? 's ont' : ' a') + ' été rencontré' +
+          (maigres > 1 ? 's' : '') + ' moins de 10 fois : le taux y est encore peu significatif.'
+        : 'Tous les repères ont été rencontrés au moins 10 fois.';
+  }
+
   function stat(v, l){ return '<div class="stat"><div class="v">' + v + '</div><div class="l">' + l + '</div></div>'; }
 
   // TROIS modes desormais. Tout ce qui n'etait pas « therapeutique » etait compte comme
   // diagnostic : la lecture radiographique s'y serait fondue sans bruit, et les noms de
   // cliches seraient apparus dans le tableau des pathologies.
+  // QUATRE valeurs desormais. Tout ce qui n'etait pas reconnu tombait dans « Diagnostic » :
+  // le detail repere par repere s'y serait fondu sans bruit et aurait multiplie par six le
+  // nombre de cas de diagnostic de chaque etudiant.
   function modeLabel(m){
     return m === 'radio' ? 'Lecture radiographique'
+         : m === 'radio_repere' ? 'Détail radiographique'
          : m === 'therapeutique' ? 'Choix thérapeutique'
          : 'Diagnostic';
   }
   // Un cas de lecture radiographique porte un nom de cliche, pas une pathologie.
   function objetCas(c){
     return c.mode === 'radio' ? ('Cliché ' + c.diagnosis_id)
-                              : (DIAG_LABELS[c.diagnosis_id] || c.diagnosis_id);
+         : c.mode === 'radio_repere' ? (RADIO_LABELS[c.diagnosis_id] || c.diagnosis_id)
+         : (DIAG_LABELS[c.diagnosis_id] || c.diagnosis_id);
   }
 
   // Les cas d'un etudiant pour UN mode : leur nombre et leur taux de reussite. Un mode jamais
@@ -954,7 +1068,7 @@
 
   // ---------- actions ----------
   document.addEventListener('change', function(e){
-    if(e.target && e.target.id === 'promo-filter') renderWeak();
+    if(e.target && e.target.id === 'promo-filter'){ renderWeak(); renderRadio(); }
   });
 
   document.addEventListener('click', function(e){

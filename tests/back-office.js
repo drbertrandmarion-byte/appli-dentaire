@@ -31,6 +31,44 @@ CASES.push({ user_id:'u4', mode:'diagnostic', diagnosis_id:'necrose', correct:tr
 // fichiers dans le tableau des pathologies faibles.
 for (let i = 0; i < 8; i++) CASES.push({ user_id:'u1', mode:'radio', diagnosis_id:'retro-alveolaire-03', correct:i < 5, created_at:quand() });
 for (let i = 0; i < 2; i++) CASES.push({ user_id:'u3', mode:'radio', diagnosis_id:'retro-alveolaire-07', correct:false, created_at:quand() });
+// Le DETAIL d'une lecture, repere par repere : c'est lui qui dit QUOI les etudiants
+// confondent, la ou le mode « radio » ne dit que combien de cliches sont rates. Trois
+// reperes, trois taux d'erreur nettement differents, pour que le classement soit verifiable.
+for (let i = 0; i < 20; i++) CASES.push({ user_id:'u1', mode:'radio_repere', diagnosis_id:'couronne_cm',    correct:i < 4,  created_at:quand() }); // 80 % d'erreur
+for (let i = 0; i < 20; i++) CASES.push({ user_id:'u1', mode:'radio_repere', diagnosis_id:'couronne_metal', correct:i < 12, created_at:quand() }); // 40 %
+for (let i = 0; i < 6;  i++) CASES.push({ user_id:'u3', mode:'radio_repere', diagnosis_id:'sinus',          correct:true,   created_at:quand() }); // 0 %, et moins de 10 fois
+
+// --- les libelles des reperes ne doivent pas diverger entre les deux fichiers ---
+// index.html et admin.html sont autonomes et ne partagent rien : la table des libelles est
+// donc recopiee. Sans ce controle, un repere renomme d'un cote — « Gutta-percha » devenue
+// « Obturation canalaire » — continuerait de s'afficher sous son ancien nom de l'autre, et
+// l'enseignante lirait un tableau qui ne parle plus la meme langue que l'application.
+function controleLibelles(){
+  const pb = [];
+  const app   = fs.readFileSync(__dirname + '/../index.html', 'utf8');
+  const admin = fs.readFileSync(__dirname + '/../admin.html', 'utf8');
+  const cat = app.slice(app.indexOf('var RADIO_REPERES'), app.indexOf('var RADIO_FAMILLES'));
+  const vrais = {};
+  let m; const re = /\{id:'([a-z0-9_]+)',\s*label:'((?:[^'\\]|\\.)*)'/g;
+  while ((m = re.exec(cat))) vrais[m[1]] = m[2].replace(/\\'/g, "'");
+  const bloc = admin.slice(admin.indexOf('var RADIO_LABELS'), admin.indexOf('var DIAG_LABELS'));
+  const copies = {};
+  const re2 = /([a-z0-9_]+):\s*'((?:[^'\\]|\\.)*)'/g;
+  while ((m = re2.exec(bloc))) copies[m[1]] = m[2].replace(/\\'/g, "'");
+  if (Object.keys(vrais).length < 20) pb.push('libelles : le catalogue de index.html n\'a pas pu etre lu');
+  if (Object.keys(copies).length < 20) pb.push('libelles : la table RADIO_LABELS de admin.html n\'a pas pu etre lue');
+  Object.keys(vrais).forEach(id => {
+    if (!(id in copies)) pb.push('libelles : « ' + vrais[id] + ' » manque dans admin.html');
+    else if (copies[id] !== vrais[id]) {
+      pb.push('libelles : « ' + id + ' » diverge — application « ' + vrais[id] +
+              ' », back-office « ' + copies[id] + ' »');
+    }
+  });
+  Object.keys(copies).forEach(id => {
+    if (!(id in vrais)) pb.push('libelles : « ' + id + ' » existe dans admin.html et plus dans l\'application');
+  });
+  return pb;
+}
 
 (async () => {
   const browser = await chromium.launch({ acceptDownloads: true });
@@ -141,6 +179,34 @@ for (let i = 0; i < 2; i++) CASES.push({ user_id:'u3', mode:'radio', diagnosis_i
   if (/retro-alveolaire/.test(patho)) {
     pbJs.push('pathologies faibles : un cliche de lecture radiographique y figure comme pathologie');
   }
+  // Le detail par repere ne doit pas se meler au reste : ni aux pathologies, ni aux cliches,
+  // ni aux compteurs du bandeau. Fondu dedans, il gonflerait les chiffres d'un facteur six.
+  if (/couronne_cm|couronne_metal/.test(patho)) {
+    pbJs.push('pathologies faibles : un repere radiographique y figure comme pathologie');
+  }
+  {
+    const radio = (await page.textContent('#radio-body')) || '';
+    if (!/Couronne céramo-métallique/.test(radio)) {
+      pbJs.push('erreurs par repere : le tableau n\'affiche pas le libelle du repere — lu « ' + radio.slice(0, 120) + ' »');
+    }
+    if (/couronne_cm/.test(radio)) {
+      pbJs.push('erreurs par repere : l\'identifiant brut s\'affiche au lieu du libelle');
+    }
+    if (!/80 %/.test(radio) || !/40 %/.test(radio)) {
+      pbJs.push('erreurs par repere : les taux attendus (80 % et 40 %) ne sont pas affiches — lu « ' + radio.replace(/\s+/g,' ').slice(0, 200) + ' »');
+    }
+    // Le classement doit aller du plus rate au moins rate : c'est tout l'interet du tableau.
+    const ordre = ['Couronne céramo-métallique', 'Couronne métallique', 'Sinus maxillaire']
+      .map(l => radio.indexOf(l));
+    if (ordre.some(i => i < 0) || ordre[0] > ordre[1] || ordre[1] > ordre[2]) {
+      pbJs.push('erreurs par repere : le classement ne va pas du plus rate au moins rate — positions ' + ordre.join(', '));
+    }
+    const note = (await page.textContent('#radio-note')) || '';
+    if (!/moins de 10 fois/.test(note)) {
+      pbJs.push('erreurs par repere : un repere vu 6 fois seulement, et rien ne rappelle que le taux y est peu significatif — lu « ' + note.trim() + ' »');
+    }
+  }
+  controleLibelles().forEach(x => pbJs.push(x));
   const resume = (await page.textContent('#stats')).replace(/\s+/g, ' ');
   if (!/cas diagnostic/.test(resume) || !/cas thérapeutique/.test(resume) || !/lectures radio/.test(resume)) {
     pbJs.push('bandeau : le total des cas ne distingue pas les trois modes — lu « ' + resume.trim() + ' »');
@@ -256,10 +322,21 @@ for x in pb: print('  ! ' + x)
 sys.exit(1 if pb else 0)
 `;
   console.log('\n6. controle structurel du classeur :');
+  let classeurKo = false;
   try {
     console.log(execFileSync('python3', ['-c', script], { encoding:'utf8' }).trimEnd());
   } catch (e) {
     console.log((e.stdout || '') + (e.stderr || ''));
+    classeurKo = true;
     process.exitCode = 1;
   }
+
+  // LA DERNIERE LIGNE DOIT DIRE LA VERITE. Le controle structurel du classeur imprimait
+  // « Problemes : 0 » meme quand les controles cote page avaient echoue plus haut : un
+  // lecteur pressé — ou un depouillement qui ne lit que la derniere ligne — y aurait vu une
+  // suite verte. Le code de sortie, lui, etait juste ; c'est l'affichage qui mentait.
+  console.log('\nback-office               Problemes : ' + pbJs.length +
+              (classeurKo ? ' cote page, et le controle du classeur a aussi echoue' : ''));
+  pbJs.forEach(x => console.log('  ! ' + x));
+  if (pbJs.length) process.exitCode = 1;
 })();
