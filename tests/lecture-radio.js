@@ -664,14 +664,28 @@ async function valideEtLis(page){
         charge: i.naturalWidth
       };
     });
+    // Les explications PAR REPERE vivent desormais dans la liste des verdicts, collees sous
+    // le repere qu'elles expliquent : elles etaient dans une seconde liste plus bas, et il
+    // fallait y retrouver le meme nom pour savoir pourquoi on s'etait trompe.
     const lecons = await a.evaluate(() => {
-      const b = document.getElementById('radio-lecons-boite');
-      if (!b || b.classList.contains('hidden')) return null;
-      return [].slice.call(b.querySelectorAll('li')).map(li => (li.textContent || '').trim());
+      const l = [].slice.call(document.querySelectorAll('#radio-verdicts li'))
+        .filter(li => li.querySelector('.vlecon'))
+        .map(li => (li.querySelector('.vlabel').textContent || '').replace(/^\d+\.\s*/, '').trim()
+                 + (li.querySelector('.vlecon').textContent || '').trim());
+      return l.length ? l : null;
     });
     // Les explications de FAMILLE — la regle qui sert a situer une dent, les tissus de la
     // couronne — sont ecrites une fois pour toutes et ne doivent paraitre qu'une fois par
     // cliche, si un repere de la famille y figure.
+    // Chaque ligne de verdict porte une marque lisible d'un coup d'oeil. « bien place » et
+    // « pose a cote » se ressemblent trop a la lecture rapide pour qu'on distingue une
+    // reussite d'un echec sans les lire en entier. LU ICI, page encore ouverte : le meme
+    // controle place plus bas s'executait apres a.close() et emportait toute la suite.
+    const marques = await a.evaluate(() => [].slice.call(
+      document.querySelectorAll('#radio-verdicts li')).map(li => ({
+        ok: li.classList.contains('v-ok'),
+        ico: (li.querySelector('.vico') || {}).textContent || ''
+      })));
     const familles = await a.evaluate(() => [].slice.call(
       document.querySelectorAll('#radio-lecons-boite .radio-lecon-famille b')
     ).map(e => e.textContent.trim()));
@@ -699,8 +713,6 @@ async function valideEtLis(page){
     // correction sans rien lui apprendre de ce cliche-la — et lui ferait croire qu'elle y est.
     if (lecons === null) {
       ko(etiquette + ' : la correction n\'explique aucun repere');
-    } else if (!lecons.length) {
-      ko(etiquette + ' : la boite des explications est affichee mais vide');
     } else {
       reperes.forEach(id => {
         const present = zones.some(z => z.id === id);
@@ -711,6 +723,16 @@ async function valideEtLis(page){
       });
     }
     {
+      if (!marques.length) {
+        ko(etiquette + ' : aucune ligne de verdict, ce controle ne prouverait rien');
+      }
+      marques.forEach(m => {
+        const attendu = m.ok ? '✅' : '❌';
+        if (m.ico.trim() !== attendu) {
+          ko(etiquette + ' : une ligne ' + (m.ok ? 'reussie' : 'ratee') + ' porte « ' +
+             m.ico.trim() + ' » au lieu de « ' + attendu + ' »');
+        }
+      });
       const doublons = familles.filter((t, i) => familles.indexOf(t) !== i);
       if (doublons.length) {
         ko(etiquette + ' : l\'explication de famille « ' + doublons[0] + ' » est repetee');

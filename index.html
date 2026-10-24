@@ -272,6 +272,10 @@
   .hub-intro{margin-top:0;}
   .hors-ligne-note{margin:0 0 16px;padding:12px 14px;border-radius:10px;font-size:.94rem;
                    line-height:1.55;background:#fffbeb;border:1px solid #fde68a;color:#78350f;}
+  .vico{font-size:1rem;line-height:1;vertical-align:-2px;margin:0 2px;}
+  /* L'explication du repère, sous son verdict : même bloc, retrait léger, ton plus discret
+     que le verdict lui-même — on lit d'abord si c'est juste, ensuite pourquoi. */
+  .vlecon{margin:4px 0 0;font-size:.88rem;line-height:1.5;color:#475569;}
   .radio-cle{margin:8px 0 14px;font-size:.88rem;color:#475569;line-height:1.5;}
   .envoi-ko{margin:0 0 16px;padding:10px 14px;border-radius:10px;font-size:.94rem;line-height:1.5;
             background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
@@ -7855,15 +7859,6 @@
       bons + ' / ' + total + ' repères présents correctement identifiés' +
       (detail.length ? ' — ' + detail.join(', ') + '.' : '.');
 
-    // Comment se lit chacun des repères RÉELLEMENT PRÉSENTS sur ce cliché. Les leurres en sont
-    // exclus : expliquer comment reconnaître une structure que l'étudiant n'a pas sous les yeux
-    // allongerait la correction sans rien lui apprendre de ce cliché-là.
-    var lecons = radioCase.cibles.map(function(id){
-      var rep = RADIO_REPERE_BY_ID[id];
-      if(!rep || !rep.note) return '';
-      return '<li><i class="dot" style="background:' + rep.color + '"></i>' +
-             '<span><b>' + rep.label + '</b>' + rep.note + '</span></li>';
-    }).filter(Boolean).join('');
     // Les explications de famille, une seule fois chacune, et seulement si un repère de cette
     // famille figure sur le cliché.
     var vues = {}, blocsFamille = '';
@@ -7877,20 +7872,27 @@
       });
     });
 
+    // Les règles générales restent à part : elles ne portent pas sur UN repère mais sur une
+    // famille, et les répéter sous chaque dent nommée les rendrait assommantes.
     var boite = document.getElementById('radio-lecons-boite');
-    var tout = lecons + blocsFamille;
-    boite.innerHTML = tout
-      ? '<h3 class="radio-lecons-titre">Comment se lisent ces repères</h3>' +
-        '<ul class="radio-lecons">' + tout + '</ul>'
+    boite.innerHTML = blocsFamille
+      ? '<h3 class="radio-lecons-titre">Les règles qui servent ici</h3>' +
+        '<ul class="radio-lecons">' + blocsFamille + '</ul>'
       : '';
-    (tout ? showEl : hideEl)(boite);
+    (blocsFamille ? showEl : hideEl)(boite);
 
+    // UNE SEULE LISTE. Le verdict et l'explication d'un même repère vivaient dans deux listes
+    // séparées, l'une au-dessus de l'autre : pour savoir pourquoi on s'était trompé, il fallait
+    // retrouver le même nom plus bas. Ils sont désormais réunis, repère par repère.
     document.getElementById('radio-verdicts').innerHTML = lignes.map(function(l){
+      var note = l.rep.note
+        ? '<p class="vlecon">' + l.rep.note + '</p>' : '';
       return '<li class="' + (l.ok ? 'v-ok' : 'v-ko') + '">' +
         '<i class="dot" style="background:' + l.rep.color + '"></i>' +
         '<span><span class="vlabel">' +
         (radioNumeros[l.rep.id] ? radioNumeros[l.rep.id] + '. ' : '') + l.rep.label +
-        '</span> — <span class="vmsg">' + l.msg + '</span></span></li>';
+        '</span> <span class="vico" aria-hidden="true">' + (l.ok ? '✅' : '❌') + '</span>' +
+        ' <span class="vmsg">' + l.msg + '</span>' + note + '</span></li>';
     }).join('');
 
     renderRadioLegend();
