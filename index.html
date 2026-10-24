@@ -5879,6 +5879,11 @@
     // règle exige, le second évite qu'une pastille ressemble à une autre d'un cliché voisin.
     {id:'cone_argent',       label:'Cône d\'argent',                            color:'#00b499',
      note:'Ancien matériau d\'obturation canalaire : des cônes d\'argent fins et TRÈS RADIO-OPAQUES, d\'un calibre parfaitement constant sur toute leur longueur. C\'est cette régularité de diamètre — impossible à un cône de gutta, qui se conifie — qui les signe. Leur dépose demande une analyse préopératoire : la technique peut être difficile.'},
+    // Vingt-et-unième légende anatomique : une RACINE précise d'une molaire précise. Rose
+    // sourd choisi par recherche exhaustive — 50 d'écart avec ses voisins du dix-neuvième
+    // cliché, 34 avec la teinte la plus proche de tout le catalogue.
+    {id:'racine_distale_26', label:'Racine distale de la dent 26',              color:'#bd6c87',
+     familles:['numerotation']},
     {id:'pulpolithe',        label:'Pulpolithe',                                color:'#db2777',
      note:'Nodule radio-opaque DANS la chambre pulpaire, de densité proche de celle de la dentine, la radioclarté de la chambre restant visible autour de lui. C\'est ce qui le sépare d\'une calcification diffuse, laquelle efface la chambre au lieu de l\'occuper.'}
   ];
@@ -6574,8 +6579,10 @@
       image:'radios/retro-alveolaire-19.png',
       caption:'',
       valide:true,
-      legende:['carie','amalgame','couronne_cm','inlay_core_simple','inlay_core','composite'],
-      cibles:['carie','amalgame','couronne_cm','inlay_core_simple','inlay_core'],
+      legende:['carie','amalgame','couronne_cm','inlay_core_simple','inlay_core',
+               'racine_distale_26','composite'],
+      cibles:['carie','amalgame','couronne_cm','inlay_core_simple','inlay_core',
+              'racine_distale_26'],
       // Quatre masses denses alignées, et c'est tout le problème de ce cliché : il faut les
       // DISTINGUER les unes des autres, pas seulement les repérer.
       //
@@ -6605,7 +6612,14 @@
                             [260,255],[239,256],[222,250],[215,234],[213,216]]},
         // ÉBAUCHE : zone sombre au collet, sous l'amalgame de gauche.
         carie: {poly:[[30,240],[50,244],[70,247],[90,245],[104,241],[103,256],[80,262],
-                      [54,261],[32,254]]}
+                      [54,261],[32,254]]},
+        // ÉBAUCHE, ET UNE SUPPOSITION DE PLUS. J'ai compté les quatre dents de gauche à droite
+        // comme 24, 25, 26, 27 — molaires à droite, maxillaire, donc secteur 2 — ce qui fait
+        // de la TROISIÈME la dent 26. Sa racine distale est alors celle de droite, la ligne
+        // médiane étant à gauche du cliché. Si la numérotation est décalée d'un rang, ce
+        // contour est sur la mauvaise dent : son tracé le corrige.
+        racine_distale_26: {poly:[[264,92],[278,90],[287,110],[285,140],[280,168],[272,186],
+                                  [264,184],[260,160],[259,128],[260,106]]}
       }
     },
     {
