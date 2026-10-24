@@ -1547,8 +1547,8 @@
       </div>
 
       <p>Principe : un cliché est tiré au hasard, accompagné de sa propre légende de points
-        colorés. Faites glisser sur le cliché ceux qui correspondent à ce que vous y reconnaissez,
-        et laissez dans la légende ceux qui n'y figurent pas. La correction montre ensuite les zones
+        colorés. Touchez une entrée de la légende, puis l'endroit du cliché qui lui correspond ;
+        laissez dans la légende celles qui n'y figurent pas. La correction montre ensuite les zones
         attendues, et explique comment se lit chacun des repères réellement présents.</p>
 
       <div class="mode-buttons">
@@ -1763,7 +1763,11 @@
     <p class="radio-caption" id="radio-caption"></p>
     <!-- La consigne, au-dessus du cliché, dit déjà quoi faire. Cette ligne ne garde que ce
          qu'elle seule apporte : comment le faire. -->
-    <p class="radio-hint" id="radio-hint">Glissez le point de la légende jusqu'à la zone voulue. Sur écran tactile, vous pouvez aussi toucher le point de la légende puis l'endroit du cliché : il reste choisi, de sorte qu'un même repère puisse être posé plusieurs fois de suite ; touchez son entrée à nouveau pour le relâcher. Pour retirer un point posé, touchez-le.</p>
+    <!-- Le geste ANNONCÉ EN PREMIER doit être celui qu'on fait vraiment. Cette phrase a longtemps
+         commencé par « Glissez le point… » : le glissement existe et fonctionne, mais personne ne
+         s'en sert, et l'enseignante a dû deviner seule qu'il fallait toucher la légende puis la
+         zone. Une consigne qui décrit un geste de secours avant le geste courant laisse chercher. -->
+    <p class="radio-hint" id="radio-hint">Touchez une entrée de la légende, puis la zone du cliché qui lui correspond. L'entrée reste choisie : un même repère peut ainsi être posé plusieurs fois de suite ; touchez-la à nouveau pour la relâcher. Pour retirer un point posé, touchez-le. À la souris, vous pouvez aussi faire glisser le point de la légende jusqu'à la zone.</p>
 
     <div class="radio-legend" id="radio-legend"></div>
 
@@ -5714,8 +5718,9 @@
   // ---------------------------------------------------------------------------
   // Troisième mode : lecture radiographique (maquette, compte enseignant seulement)
   // ---------------------------------------------------------------------------
-  // L'étudiant fait glisser sur le cliché des points colorés pris dans une légende
-  // identique d'un cas à l'autre : plusieurs repères de cette légende sont donc
+  // L'étudiant touche une entrée de la légende puis la zone du cliché qui lui correspond — le
+  // glissement depuis la légende marche aussi, mais c'est le geste de secours, pas celui
+  // qu'on annonce. La légende est propre à chaque cas : plusieurs repères y sont donc
   // volontairement absents du cliché tiré, et les laisser en place fait partie de la
   // bonne réponse. Chaque repère attendu porte sa propre marge de tolérance, en unités
   // du viewBox : un apex se pointe plus précisément qu'une plage d'os trabéculaire.

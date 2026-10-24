@@ -327,6 +327,35 @@ async function valideEtLis(page){
     await page.close();
   }
 
+  // ---- 1-zero. La consigne annonce le geste qu'on fait VRAIMENT ----
+  // Elle a longtemps commence par « Glissez le point de la legende… ». Le glissement existe et
+  // fonctionne — cette suite s'en sert pour tous ses placements — mais ce n'est pas le geste
+  // courant, et l'enseignante a du deviner seule qu'il fallait toucher la legende puis la zone.
+  // Une consigne qui decrit le geste de secours avant le geste courant laisse chercher.
+  {
+    const src = fs.readFileSync(__dirname + '/../index.html', 'utf8');
+    const hint = (src.match(/id="radio-hint"[^>]*>([\s\S]*?)<\/p>/) || [])[1] || '';
+    const principe = (src.match(/Principe : un cliché est tiré au hasard([\s\S]*?)<\/p>/) || [])[1] || '';
+    if (!hint) {
+      ko('consigne : le texte de #radio-hint est introuvable, ce controle ne prouverait rien');
+    } else {
+      if (/^\s*Gliss/i.test(hint)) {
+        ko('consigne : elle s\'ouvre encore sur le glissement, qui est le geste de secours');
+      }
+      // Le geste courant doit y etre, et dans le bon ordre : la legende D'ABORD, la zone ensuite.
+      const iLegende = hint.search(/touchez une entrée de la légende/i);
+      const iZone    = hint.search(/zone du cliché/i);
+      if (iLegende < 0 || iZone < 0 || iLegende > iZone) {
+        ko('consigne : elle ne dit pas « toucher la legende, puis la zone » dans cet ordre');
+      }
+    }
+    if (!principe) {
+      ko('consigne : le paragraphe « Principe » est introuvable');
+    } else if (/faites glisser/i.test(principe)) {
+      ko('consigne : le paragraphe d\'accueil annonce encore le glissement comme geste principal');
+    }
+  }
+
   // ---- 1bis. Le catalogue de legendes ne doit porter aucun doublon ----
   // Deux entrees qui designent le MEME signe sous deux noms differents est le defaut que
   // l'enseignante a demande de chasser : un etudiant qui a appris l'un ne reconnait pas
