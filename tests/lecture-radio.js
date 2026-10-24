@@ -1495,6 +1495,77 @@ async function valideEtLis(page){
     await p.close();
   }
 
+  // ---- 5quater. Un cliche non valide par l'enseignante ne sort pas de son atelier ----
+  // Quinze des vingt cliches portaient au moins un contour que j'avais moi-meme marque
+  // « ebauche », et rien ne le disait a l'etudiant : il pouvait etre note faux parce que MA
+  // zone etait fausse. Les vingt actuels sont relus et declares bons dans le code ; tout
+  // cliche AJOUTE ENSUITE reste invisible tant qu'elle ne l'a pas publie depuis l'atelier.
+  {
+    const p = await context.newPage();
+    await boot(p, 13);
+    // Compte autorise a LIRE les cliches mais pas a les tracer — le cas d'Axel-William, et
+    // celui ou la porte compte vraiment : il voit la liste de choix.
+    await p.evaluate(() => {
+      window.EndoAccount = Object.assign({}, window.EndoAccount, { isAdmin: false, accesRadio: true });
+      window.EndoTeacherModes(true, false);
+    });
+    const cobaye = await p.evaluate(() => {
+      if (!window.EndoRadioCas || !window.EndoRadioVisibles) return null;
+      const c = window.EndoRadioCas[window.EndoRadioCas.length - 1];
+      delete c.valide;                       // comme un cliche tout juste ajoute
+      window.EndoRemplitChoix && window.EndoRemplitChoix();
+      return c.id;
+    });
+    if (!cobaye) {
+      ko('porte de validation : window.EndoRadioCas ou EndoRadioVisibles est introuvable, '
+         + 'la porte n\'est eprouvee nulle part');
+    } else {
+      const visibles = await p.evaluate(() => window.EndoRadioVisibles());
+      if (visibles.indexOf(cobaye) !== -1) {
+        ko('porte de validation : un cliche non valide reste propose aux comptes non enseignants');
+      }
+      if (visibles.length !== attendus.length - 1) {
+        ko('porte de validation : ' + visibles.length + ' cliches visibles au lieu de ' +
+           (attendus.length - 1) + ' — la porte en retient plus ou moins qu\'il ne faut');
+      }
+      // Il ne doit pas non plus etre atteignable par la liste, ni par une demande forcee.
+      await ouvreCliche(p);
+      const options = await p.$$eval('#radio-choix option', os => os.map(o => o.value));
+      if (options.indexOf(cobaye) !== -1) {
+        ko('porte de validation : le cliche non valide figure encore dans la liste de choix');
+      }
+      const force = await p.evaluate((id) => {
+        const sel = document.getElementById('radio-choix');
+        const opt = document.createElement('option');
+        opt.value = id; sel.appendChild(opt); sel.value = id;
+        sel.dispatchEvent(new Event('change'));
+        return true;
+      }, cobaye);
+      await p.waitForTimeout(500);
+      const ouvert = await p.getAttribute('#radio-film img', 'src');
+      const imageCobaye = await p.evaluate((id) =>
+        (window.EndoRadioCas.find(c => c.id === id) || {}).image, cobaye);
+      if (force && ouvert === imageCobaye) {
+        ko('porte de validation : le cliche non valide s\'ouvre quand on force la liste');
+      }
+      // L'enseignante, elle, doit continuer a le voir : c'est dans l'atelier qu'elle valide.
+      await p.evaluate(() => {
+        window.EndoAccount = Object.assign({}, window.EndoAccount, { isAdmin: true });
+        window.EndoTeacherModes(true, true);
+      });
+      const optionsEns = await p.$$eval('#radio-choix option', os => os.map(o => o.value));
+      if (optionsEns.indexOf(cobaye) === -1) {
+        ko('porte de validation : l\'enseignante ne voit plus le cliche qu\'elle doit justement valider');
+      }
+      // Controle du controle : la liste enseignante doit bien etre plus longue que l'autre.
+      if (optionsEns.length <= options.length) {
+        ko('AUTOCONTROLE : la liste enseignante n\'est pas plus longue que celle d\'un etudiant, '
+           + 'les deux controles precedents ne prouveraient rien');
+      }
+    }
+    await p.close();
+  }
+
   // ---- 6bis. Trouve en trait plein, manque en pointilles ----
   // La correction promettait « la zone attendue (en pointillés) » alors que TOUTES les zones
   // etaient tracees en trait plein : la phrase renvoyait a un code qui n'existait pas. Le
