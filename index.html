@@ -7076,11 +7076,43 @@
   // écrit en toutes lettres a été essayé : sur un cliché chargé il déborde du film, se coupe,
   // recouvre les zones voisines, et oblige à raccourcir les libellés jusqu'à leur ôter ce qui
   // les distingue les uns des autres.
+  // LE CENTRE D'UNE ZONE N'EST PAS LA MOYENNE DE SES SOMMETS. Sur un contour dont les points
+  // sont serrés d'un côté — ce que produit le lissage d'une courbe inégale — cette moyenne
+  // penche vers ce côté-là ; sur une zone creusée, elle peut même tomber dehors. On prend
+  // donc le centre de SURFACE, et s'il tombe hors du contour, le milieu de la plus large
+  // tranche horizontale qui passe par lui — un point toujours intérieur.
+  function radioCentre(poly){
+    var A = 0, cx = 0, cy = 0, i, j;
+    for(i = 0, j = poly.length - 1; i < poly.length; j = i++){
+      var f = poly[j][0] * poly[i][1] - poly[i][0] * poly[j][1];
+      A += f; cx += (poly[j][0] + poly[i][0]) * f; cy += (poly[j][1] + poly[i][1]) * f;
+    }
+    if(Math.abs(A) > 1e-9){
+      cx /= (3 * A); cy /= (3 * A);
+      if(radioDansPolygone(poly, {x:cx, y:cy})) return [cx, cy];
+    } else {
+      cx = 0; cy = 0;
+      poly.forEach(function(p){ cx += p[0]; cy += p[1]; });
+      cx /= poly.length; cy /= poly.length;
+    }
+    var xs = [];
+    for(i = 0, j = poly.length - 1; i < poly.length; j = i++){
+      var y1 = poly[j][1], y2 = poly[i][1];
+      if((y1 > cy) === (y2 > cy)) continue;
+      xs.push(poly[j][0] + (cy - y1) / (y2 - y1) * (poly[i][0] - poly[j][0]));
+    }
+    xs.sort(function(a, b){ return a - b; });
+    var large = null;
+    for(i = 0; i + 1 < xs.length; i += 2){
+      var w = xs[i + 1] - xs[i];
+      if(!large || w > large[0]) large = [w, (xs[i] + xs[i + 1]) / 2];
+    }
+    return large ? [large[1], cy] : [cx, cy];
+  }
+
   function radioPastille(poly, n, couleur){
     if(!n) return '';
-    var cx = 0, cy = 0;
-    poly.forEach(function(p){ cx += p[0]; cy += p[1]; });
-    cx /= poly.length; cy /= poly.length;
+    var c = radioCentre(poly), cx = c[0], cy = c[1];
     return '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="8" fill="' +
            couleur + '" stroke="#000" stroke-width="1.2"/>' +
            '<text x="' + cx.toFixed(1) + '" y="' + cy.toFixed(1) + '" data-num="' + n + '"' +

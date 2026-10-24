@@ -667,6 +667,27 @@ async function valideEtLis(page){
     // Les explications PAR REPERE vivent desormais dans la liste des verdicts, collees sous
     // le repere qu'elles expliquent : elles etaient dans une seconde liste plus bas, et il
     // fallait y retrouver le meme nom pour savoir pourquoi on s'etait trompe.
+    // CHAQUE NUMERO DOIT TOMBER DANS SA ZONE. Le centre etait la moyenne des sommets : sur un
+    // contour dont les points sont serres d'un cote, elle penche de ce cote-la, et sur une
+    // zone creusee elle tombe dehors. L'enseignante l'a vu sur le douzieme cliche, ou le
+    // numero de la lesion etait pose sur son bord. LU ICI, page encore ouverte ; juge plus
+    // bas, ou l'etiquette du cliche existe.
+    const places = await a.evaluate(() => {
+      const svg = document.querySelector('#radio-overlay .radio-numeros');
+      if (!svg) return null;
+      const zones = [].slice.call(document.querySelectorAll(
+          '#radio-overlay .radio-zones:not(.radio-numeros) polygon[data-rid]'))
+        .map(pg => ({ id: pg.dataset.rid,
+                      pts: pg.getAttribute('points').trim().split(/\s+/).map(t => t.split(',').map(Number)) }));
+      // Une pastille par contour, emises dans le MEME ORDRE : le numero i appartient au
+      // contour i. Se contenter de « dans une zone quelconque » laisserait passer un numero
+      // tombe dans la zone du voisin.
+      return [].slice.call(svg.querySelectorAll('circle')).map((c, i) => ({
+        x: +c.getAttribute('cx'), y: +c.getAttribute('cy'),
+        id: (zones[i] || {}).id || null, sienne: (zones[i] || {}).pts || null
+      }));
+    });
+
     const lecons = await a.evaluate(() => {
       const l = [].slice.call(document.querySelectorAll('#radio-verdicts li'))
         .filter(li => li.querySelector('.vlecon'))
@@ -693,6 +714,21 @@ async function valideEtLis(page){
 
     vus.add(enonce);
     const etiquette = 'cliche #' + vus.size;
+
+    if (places === null) {
+      ko(etiquette + ' : la couche des numeros est absente, leur position n\'est verifiee nulle part');
+    } else if (!places.length) {
+      ko(etiquette + ' : aucun numero dessine, ce controle ne prouverait rien');
+    } else {
+      places.forEach((p, i) => {
+        if (!p.sienne) {
+          ko(etiquette + ' : le numero ' + (i + 1) + ' ne correspond a aucun contour');
+        } else if (!dansPolygone(p.sienne, p.x, p.y)) {
+          ko(etiquette + ' : le numero de « ' + p.id + ' » est pose HORS de sa propre zone (' +
+             p.x.toFixed(0) + ', ' + p.y.toFixed(0) + ')');
+        }
+      });
+    }
 
     // Deux entrees de la MEME legende ne doivent pas se ressembler : la couleur est le seul
     // lien entre une entree et son contour, et deux teintes voisines rendent ce lien ambigu.
