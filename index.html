@@ -5929,10 +5929,13 @@
   var RADIO_FAMILLES = {
     numerotation: {
       titre: 'Situer une dent sur le cliché',
-      texte: 'Le secteur se lit à la position des molaires. Au MAXILLAIRE : molaires à gauche ' +
-             'du cliché, c\'est le secteur 1 ; molaires à droite, le secteur 2. À la MANDIBULE : ' +
-             'molaires à droite, c\'est le secteur 4 ; molaires à gauche, le secteur 3. Le secteur ' +
-             'connu, les dents se comptent depuis la ligne médiane.'
+      // Deux indices, et le premier dit l'arcade. L'ancienne version supposait connue
+      // l'arcade et n'en donnait aucun signe ; elle inversait en outre les secteurs 3 et 4.
+      texte: 'Deux indices suffisent, et le premier dit l\'arcade. RACINES VERS LE HAUT, c\'est ' +
+             'le MAXILLAIRE : dents les plus postérieures à GAUCHE du cliché, secteur 1 ; à ' +
+             'DROITE, secteur 2. RACINES VERS LE BAS, c\'est la MANDIBULE : postérieures à ' +
+             'DROITE, secteur 3 ; à GAUCHE, secteur 4. Le secteur connu, les dents se comptent ' +
+             'depuis la ligne médiane.'
     },
     tissus: {
       titre: 'Les tissus de la dent',
