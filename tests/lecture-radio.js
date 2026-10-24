@@ -1729,6 +1729,28 @@ async function valideEtLis(page){
             ko('pastilles : ' + numerotees + ' ligne(s) de correction numerotee(s) pour ' +
                attendusNum + ' zone(s) — lues : ' + lignes.join(' / '));
           }
+          // La RANGEE DE LEGENDES sous le cliche doit les porter aussi : c'est elle qu'on a
+          // sous les yeux en remontant du film, et l'enseignante l'a signalee muette.
+          const chips = await p.$$eval('.radio-chip .radio-chip-num', ns => ns.map(t => t.textContent.trim()));
+          if (chips.length !== attendusNum) {
+            ko('pastilles : ' + chips.length + ' entree(s) de legende numerotee(s) pour ' +
+               attendusNum + ' zone(s) — la rangee sous le cliche ne relie rien aux numeros du film');
+          }
+          // Et le NUMERO DOIT PASSER AU-DESSUS des points poses par l'etudiant : un point
+          // tombe au meme endroit masquait le numero, ce qui lui otait sa seule raison d'etre.
+          const dessus = await p.evaluate(() => {
+            const enf = [...document.getElementById('radio-overlay').children];
+            const num = enf.findIndex(e => e.classList && e.classList.contains('radio-numeros'));
+            const pts = enf.map((e, i) => e.classList && e.classList.contains('radio-pt') ? i : -1)
+                           .filter(i => i >= 0);
+            return { num, dernierPoint: pts.length ? Math.max(...pts) : -1, points: pts.length };
+          });
+          if (dessus.num < 0) {
+            ko('pastilles : la couche des numeros est introuvable dans la correction');
+          } else if (dessus.points && dessus.num < dessus.dernierPoint) {
+            ko('pastilles : les numeros sont dessines SOUS les points de l\'etudiant — un point '
+               + 'pose au meme endroit masque le numero');
+          }
         }
       }
     }

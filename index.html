@@ -1203,6 +1203,15 @@
   /* Pendant le tracé, le cliché reçoit les clics qui posent les sommets : le curseur le dit. */
   .radio-film.tracing{cursor:crosshair;}
   .radio-film.tracing .radio-pt{pointer-events:none;}
+  /* À la correction, le point posé par l'étudiant se fait discret : il doit encore dire OÙ il
+     a visé, sans couvrir ni la radiographie ni le numéro du repère. */
+  .radio-pt.ok, .radio-pt.ko{width:13px;height:13px;margin:-6.5px 0 0 -6.5px;border-width:2px;
+                             box-shadow:0 1px 3px rgba(0,0,0,0.5);}
+  .radio-numeros{pointer-events:none;}
+  .radio-chip-num{font-style:normal;font-weight:700;margin-right:6px;
+                  display:inline-flex;align-items:center;justify-content:center;
+                  min-width:18px;height:18px;border-radius:999px;
+                  background:#1e293b;color:#fff;font-size:.72rem;padding:0 4px;}
 
   /* ---------- Comptes étudiants ---------- */
   /* Menu de compte : symétrique du bouton son, ancré au bord gauche du contenu. */
@@ -7044,9 +7053,14 @@
         if(n){ cls += ' pose'; compteur = '<em class="radio-chip-n">×' + n + '</em>'; }
         if(radioSelected === rep.id) cls += ' sel';
       }
+      // À LA CORRECTION, le numéro est repris ICI AUSSI. La liste de verdicts le portait
+      // déjà, mais c'est cette rangée-ci qu'on a sous les yeux en remontant du cliché : sans
+      // le numéro, elle ne disait rien des pastilles posées sur le film.
+      var num = (radioChecked && !radioTracing && radioNumeros[rep.id])
+        ? '<em class="radio-chip-num">' + radioNumeros[rep.id] + '</em>' : '';
       return '<button type="button" class="' + cls + '" data-rid="' + rep.id + '"' +
              (radioChecked && !radioTracing ? ' disabled' : '') + '>' +
-             '<i class="dot" style="background:' + rep.color + '"></i>' + rep.label + compteur + '</button>';
+             num + '<i class="dot" style="background:' + rep.color + '"></i>' + rep.label + compteur + '</button>';
     }).join('');
   }
 
@@ -7070,7 +7084,7 @@
   // Les contours sont tracés en SVG, dans le même repère que les coordonnées : ils suivent donc
   // le cliché quelle que soit sa taille d'affichage, sans recalcul au redimensionnement.
   function renderRadioOverlay(){
-    var html = '';
+    var html = '', pastilles = '';
     var hUnites = radioHauteurUnites();
     if(radioChecked && radioCase){
       var formes = radioCase.cibles.map(function(id){
@@ -7093,12 +7107,22 @@
                ' fill="' + rep.color + '" fill-opacity="' + (manquee ? '0.08' : '0.16') + '"' +
                ' stroke="#00000066" stroke-width="3.4" stroke-linejoin="round"' + tirets + '/>' +
                '<polygon points="' + pts + '" fill="none" stroke="' + rep.color +
-               '" stroke-width="1.8" stroke-linejoin="round"' + tirets + '/>' +
-               radioPastille(poly, radioNumeros[id], rep.color);
+               '" stroke-width="1.8" stroke-linejoin="round"' + tirets + '/>';
         }).join('');
       }).join('');
       html += '<svg class="radio-zones" viewBox="0 0 ' + RADIO_W + ' ' + hUnites.toFixed(1) +
               '" preserveAspectRatio="none">' + formes + '</svg>';
+      // Les numéros sont dessinés DANS UNE COUCHE À PART, ajoutée après les points de
+      // l'étudiant : un élément plus tard dans la page passe au-dessus. Mélangés aux zones,
+      // ils passaient dessous, et un point posé au même endroit masquait le numéro — ce qui
+      // ôtait au repère numéroté sa seule raison d'être.
+      pastilles = radioCase.cibles.map(function(id){
+        var rep = RADIO_REPERE_BY_ID[id], contours = radioZone(id);
+        if(!contours) return '';
+        return contours.map(function(poly){
+          return radioPastille(poly, radioNumeros[id], rep.color);
+        }).join('');
+      }).join('');
     } else if(radioTracing && radioCase){
       // Pendant le tracé : tous les contours du cliché, le courant mis en évidence, et les
       // sommets saisis sous forme de poignées — sans quoi l'enseignante dessine à l'aveugle.
@@ -7153,6 +7177,10 @@
                 ';background:' + rep.color + '"></span>';
       });
     });
+    if(pastilles){
+      html += '<svg class="radio-zones radio-numeros" viewBox="0 0 ' + RADIO_W + ' ' +
+              hUnites.toFixed(1) + '" preserveAspectRatio="none">' + pastilles + '</svg>';
+    }
     radioOverlay.innerHTML = html;
   }
 
