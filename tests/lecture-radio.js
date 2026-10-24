@@ -512,11 +512,13 @@ async function valideEtLis(page){
     // drapeau « radio » ; l'atelier reste a l'enseignante seule. Un appel qui passerait le
     // meme argument aux deux rendrait le corrige modifiable par un compte simplement autorise
     // a lire les cliches.
-    if (!/EndoTeacherModes\(accesRadio,\s*isAdmin\)/.test(corps)) {
+    if (!/EndoTeacherModes\(accesRadio,\s*!offline && isAdmin\)/.test(corps)) {
       ko('enterApp n\'appelle plus EndoTeacherModes(accesRadio, isAdmin) : soit le mode ne '
          + 's\'ouvrirait jamais, soit l\'atelier s\'ouvrirait a qui n\'est pas enseignant');
     }
-    if (!/isAdmin\s*\|\|\s*!!\(profile && profile\.radio\)/.test(corps)) {
+    // Le drapeau « radio » du profil doit toujours ouvrir le mode, et l'etat hors ligne le
+    // fermer a tout le monde : les deux conditions vivent dans la meme expression.
+    if (!/!offline\s*&&\s*\(isAdmin\s*\|\|\s*!!\(profile && profile\.radio\)\)/.test(corps)) {
       ko('enterApp ne lit plus le drapeau « radio » du profil : le compte autorise n\'aurait pas le mode');
     }
     if (!/<button class="hub-card hidden" id="hub-radio-btn"/.test(src)) {

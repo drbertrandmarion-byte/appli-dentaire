@@ -270,6 +270,8 @@
 
   /* Hub : choix du type d'entraînement */
   .hub-intro{margin-top:0;}
+  .hors-ligne-note{margin:0 0 16px;padding:12px 14px;border-radius:10px;font-size:.94rem;
+                   line-height:1.55;background:#fffbeb;border:1px solid #fde68a;color:#78350f;}
   .radio-cle{margin:8px 0 14px;font-size:.88rem;color:#475569;line-height:1.5;}
   .envoi-ko{margin:0 0 16px;padding:10px 14px;border-radius:10px;font-size:.94rem;line-height:1.5;
             background:#fef2f2;border:1px solid #fecaca;color:#991b1b;}
@@ -1433,6 +1435,18 @@
          étudiant qui ne travaille pas, et c'est précisément le doute qu'il a fallu lever. -->
     <p class="envoi-ko hidden" id="envoi-ko"></p>
 
+    <!-- HORS LIGNE, AUCUN DES TROIS MODES N'EST OUVERT. Le repli a longtemps laissé réviser
+         sans réseau ; il a fallu y renoncer, et pour une raison qui vaut mieux que le confort :
+         sans serveur, le corrigé de l'enseignante n'est pas chargé, la lecture radiographique
+         est corrigée sur mes contours de secours, et aucun résultat n'est enregistré. Un
+         étudiant travaillait donc pour rien, noté sur des zones que personne n'a validées,
+         sans que rien le lui dise. -->
+    <p class="hors-ligne-note hidden" id="hub-offline">
+      <b>Serveur injoignable.</b> Les exercices ne sont pas accessibles sans connexion :
+      le corrigé de l'enseignante ne peut pas être chargé, et vos résultats ne seraient
+      pas enregistrés. Rétablissez la connexion, puis rechargez la page.
+    </p>
+
     <div id="hub-choice">
       <p class="hub-intro">Choisissez un type d'entraînement :</p>
       <div class="hub-buttons">
@@ -1826,6 +1840,9 @@
            pas distinguer « mon tracé n'a pas été enregistré » de « je ne regarde pas le bon
            cliché », et le doute suffit à faire refaire le travail. -->
       <p class="radio-etat" id="radio-trace-etat"></p>
+      <!-- L'avancement de TOUTE la serie : sans lui, il faut ouvrir les vingt cliches pour
+           savoir lesquels restent a finir. -->
+      <p class="radio-etat" id="radio-trace-avancement"></p>
       <p class="radio-hint">Coordonnées de vos tracés, à me transmettre pour les inscrire définitivement :</p>
       <textarea id="radio-trace-code" rows="8" readonly></textarea>
     </div>
@@ -6849,6 +6866,7 @@
         });
         radioSyncEtat = 'charge';
         radioRemplitChoix();   // ce que le serveur valide change ce que la liste propose
+        radioEcritAvancement();
         radioSyncMsg  = (rows || []).length + ' cliché(s) corrigé(s) reçus du serveur';
         radioZonesLissees = null;
         renderRadioOverlay();
@@ -7415,13 +7433,41 @@
       var rep = RADIO_REPERE_BY_ID[id];
       return (rep ? rep.label : id) + (n > 1 ? ' (' + n + ' zones)' : '');
     }).join(' · ');
-    el.textContent = 'Cliché « ' + fichier + ' » : ' + noms.length +
-                     (noms.length > 1 ? ' repères tracés' : ' repère tracé') +
-                     ' — ' + detail + '.' + sync;
+    // COMBIEN SUR COMBIEN. « Trois repères tracés » ne dit pas s'il en manque quatre. Un
+    // cliché publié mais incomplet passe la porte de validation et retombe, pour les repères
+    // non tracés, sur mes contours de secours — sans que rien le signale.
+    var attendus = radioCase.cibles.length;
+    var traces = radioCase.cibles.filter(function(id){
+      return !!radioNormaliseContours(cas[id]);
+    }).length;
+    var compte = traces + ' repère' + (traces > 1 ? 's' : '') + ' tracé' + (traces > 1 ? 's' : '') +
+                 ' sur ' + attendus + ' présent' + (attendus > 1 ? 's' : '') +
+                 (traces < attendus ? ' — les ' + (attendus - traces) + ' autres gardent mes contours d\'origine' : ' ✓ complet');
+    el.textContent = 'Cliché « ' + fichier + ' » : ' + compte + '. ' + detail + '.' + sync;
+  }
+
+  // L'état de TOUTE la série, en une ligne : combien de clichés sont complètement tracés.
+  // Sans ce décompte, il faut ouvrir les vingt pour savoir lesquels restent à finir.
+  function radioEcritAvancement(){
+    var el = document.getElementById('radio-trace-avancement');
+    if(!el) return;
+    var complets = 0, entames = 0, vides = 0;
+    RADIO_CASES.forEach(function(c){
+      var z = radioTraces[c.id] || {};
+      var n = c.cibles.filter(function(id){ return !!radioNormaliseContours(z[id]); }).length;
+      if(n === 0) vides++;
+      else if(n < c.cibles.length) entames++;
+      else complets++;
+    });
+    el.textContent = 'Sur les ' + RADIO_CASES.length + ' clichés : ' + complets +
+      ' entièrement tracé' + (complets > 1 ? 's' : '') + ', ' + entames + ' partiel' +
+      (entames > 1 ? 's' : '') + ', ' + vides + ' sans aucun tracé' +
+      (complets === RADIO_CASES.length ? ' — rien ne repose plus sur mes contours d\'origine.' : '.');
   }
 
   function radioEcritCode(){
     radioEcritEtat();
+    radioEcritAvancement();
     var cas = radioTracesDuCas();
     var ids = Object.keys(cas).filter(function(k){ return !!radioNormaliseContours(cas[k]); });
     var txt = ids.length
@@ -8563,8 +8609,31 @@
     // La lecture radiographique s'ouvre à l'enseignante et aux comptes qui portent le drapeau
     // « radio » dans leur profil — accordé depuis le back-office. L'ATELIER DE TRACÉ, lui,
     // reste à l'enseignante seule : il modifie le corrigé sur lequel les étudiants sont notés.
-    var accesRadio = isAdmin || !!(profile && profile.radio);
-    if(window.EndoTeacherModes) window.EndoTeacherModes(accesRadio, isAdmin);
+    // Hors ligne, aucun mode n'est ouvert — pas même à l'enseignante : son atelier publierait
+    // dans le vide et son corrigé ne serait pas à jour.
+    var accesRadio = !offline && (isAdmin || !!(profile && profile.radio));
+    if(window.EndoTeacherModes) window.EndoTeacherModes(accesRadio, !offline && isAdmin);
+    // Les trois modes d'entraînement sont fermés hors ligne, l'enseignante comprise : sans
+    // serveur, son atelier publierait dans le vide et son corrigé ne serait pas à jour.
+    // hide/show de CE bloc, et non hideEl/showEl : les deux blocs de script sont des
+    // fermetures séparées et ne partagent aucune fonction. Le premier essai a casse
+    // enterApp en silence sur un ReferenceError.
+    var mot = document.getElementById('hub-offline');
+    if(mot) (offline ? show : hide)(mot);
+    // On masque la ligne « Choisissez un type d'entraînement », pas le conteneur : masquer le
+    // bloc entier rendait les boutons INATTEIGNABLES même à qui a le droit de les voir, un
+    // ancêtre caché l'emportant sur tout. C'est la suite de tests qui l'a dit, en échouant à
+    // ouvrir un cliché pour un compte enseignant simulé.
+    var invite = document.querySelector('#hub-choice .hub-intro');
+    if(invite) (offline ? hide : show)(invite);
+    // Chaque bouton est fermé POUR LUI-MÊME : un état qui ne tient qu'à un ancêtre se rouvre
+    // au premier remaniement de la page, sans que rien le signale. Le bouton radio garde SA
+    // porte — il n'est montré qu'aux comptes qui y ont droit.
+    [['hub-diagnostic-btn', true], ['hub-tx-btn', true], ['hub-radio-btn', accesRadio]]
+      .forEach(function(p){
+        var b = document.getElementById(p[0]);
+        if(b) (offline || !p[1] ? hide : show)(b);
+      });
     montreEnvoiKo(); // un refus de la veille doit se revoir à l'ouverture
     if(!offline){ touchLastSeen(); rejoueRefuses(); flushQueue(); }
     if(window.EndoRefreshRevision) window.EndoRefreshRevision();

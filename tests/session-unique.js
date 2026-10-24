@@ -232,10 +232,14 @@ async function revenirSurLOnglet(page){
   console.log(`9. réseau coupé pendant la vérification : ${survecu ? 'maintenu dans l’application' : 'ÉVINCÉ'}`);
   await seul.close();
 
-  // ===== 5. Repli hors ligne : jamais refusé, quel que soit le temps écoulé =====
-  // Une panne du serveur ne doit JAMAIS priver un étudiant de ses révisions — c'est arrivé en
-  // octobre 2026, et une limite de 24 h posée ici aurait transformé une panne de trois jours en
-  // blocage général. Ce test interdit qu'une telle limite réapparaisse.
+  // ===== 5. Repli hors ligne : on entre, mais AUCUN exercice n'est ouvert =====
+  // La regle a change a la demande de l'enseignante. Le repli laissait reviser sans reseau ;
+  // elle y a renonce pour une raison qui vaut mieux que le confort : sans serveur, le corrige
+  // n'est pas charge, la lecture radiographique est corrigee sur des contours de secours que
+  // personne n'a valides, et aucun resultat n'est enregistre. L'etudiant travaillait pour rien.
+  //
+  // On ENTRE toujours — un compte valide n'est pas rejete pour une panne de reseau, et il faut
+  // pouvoir lire la raison — mais les trois modes sont fermes et la raison est ecrite.
   let etape = 9;   // les neuf premières étapes sont numérotées à la main plus haut
   async function replieHorsLigne(etiquette, avecIdentifiant){
     const page = await browser.newPage({ viewport:{ width:900, height:900 } });
@@ -252,9 +256,22 @@ async function revenirSurLOnglet(page){
     await page.evaluate(() => { const s = document.getElementById('splash-screen'); if (s) s.remove(); });
     await page.waitForTimeout(1500);
     const dedans = await page.evaluate(DANS_L_APP);
+    const modes = await page.evaluate(() => {
+      const vis = id => { const e = document.getElementById(id); return !!e && !e.classList.contains('hidden'); };
+      const inv = document.querySelector('#hub-choice .hub-intro');
+      return { diag: vis('hub-diagnostic-btn'), tx: vis('hub-tx-btn'), radio: vis('hub-radio-btn'),
+               choix: !!inv && !inv.classList.contains('hidden'), mot: vis('hub-offline') };
+    });
     await page.close();
-    exiger(dedans, `le repli hors ligne refuse un étudiant (${etiquette}) : une panne du serveur le priverait de ses révisions`);
-    console.log(`${String(++etape).padStart(2)}. hors ligne, ${etiquette.padEnd(30)} : ${dedans ? 'révision autorisée' : 'REFUSÉ'}`);
+    exiger(dedans, `le repli hors ligne rejette un étudiant (${etiquette}) : il ne peut même pas lire la raison`);
+    if (modes.diag || modes.tx || modes.radio || modes.choix) {
+      erreurs.push(`hors ligne (${etiquette}) : un mode d'entraînement reste ouvert — ` +
+        `diagnostic ${modes.diag}, thérapeutique ${modes.tx}, radio ${modes.radio}, invitation ${modes.choix}`);
+    }
+    exiger(modes.mot, `hors ligne (${etiquette}) : rien n'explique pourquoi les exercices sont fermés`);
+    console.log(`${String(++etape).padStart(2)}. hors ligne, ${etiquette.padEnd(30)} : ` +
+      `${dedans ? 'entre' : 'REJETE'}, exercices ${modes.diag || modes.tx || modes.radio ? 'OUVERTS' : 'fermes'}, ` +
+      `raison ${modes.mot ? 'affichee' : 'ABSENTE'}`);
     return dedans;
   }
 
