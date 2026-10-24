@@ -6581,23 +6581,25 @@
       //
       // CE QUE JE LIS VRAIMENT, et ce que je devine. L'amalgame de gauche est sûr : contour
       // festonné, aucun ancrage sous lui. Les deux ancrages coulés sont sûrs aussi — chacun
-      // prolonge un tenon dans son canal. Ce que je ne tranche PAS, c'est lequel porte la
-      // clavette : j'ai lu le second départ de la masse centrale comme un deuxième tenon et
-      // lui ai donné la clavette, à la droite l'ancrage simple. Si c'est l'inverse, les deux
-      // zones sont à échanger. La couronne céramo-métallique et surtout la carie sont POSÉES,
-      // PAS RECONNUES.
+      // prolonge un tenon dans son canal.
+      //
+      // J'AVAIS INVERSÉ LES DEUX. J'avais lu un second départ sur la masse centrale et lui
+      // avais donné la clavette ; l'enseignante a tranché : l'ancrage SIMPLE est celui de
+      // gauche, la CLAVETTE celui de droite. Les deux zones sont échangées ici.
+      //
+      // La couronne céramo-métallique et surtout la carie restent POSÉES, PAS RECONNUES.
       zones:{
         // Masse festonnée de la dent de gauche, sans tenon dessous.
         amalgame: {poly:[[28,199],[48,190],[69,194],[89,191],[106,200],[108,216],[100,230],
                          [80,236],[59,233],[40,236],[28,223],[24,210]]},
-        // Ancrage central, celui dont je lis un SECOND départ vers la droite.
-        inlay_core: {poly:[[157,133],[167,132],[171,159],[187,169],[201,175],[203,191],
-                           [196,208],[181,215],[159,216],[139,211],[127,200],[130,183],
-                           [144,171],[153,159]]},
-        // Ancrage de droite, à tenon unique.
-        inlay_core_simple: {poly:[[319,150],[329,149],[334,175],[344,186],[349,204],[345,225],
-                                  [334,240],[316,243],[302,235],[296,218],[301,201],[311,182],
-                                  [316,165]]},
+        // Ancrage de GAUCHE des deux : c'est le simple. J'avais lu l'inverse.
+        inlay_core_simple: {poly:[[157,133],[167,132],[171,159],[187,169],[201,175],[203,191],
+                                  [196,208],[181,215],[159,216],[139,211],[127,200],[130,183],
+                                  [144,171],[153,159]]},
+        // Ancrage de DROITE : c'est lui qui porte la clavette.
+        inlay_core: {poly:[[319,150],[329,149],[334,175],[344,186],[349,204],[345,225],
+                           [334,240],[316,243],[302,235],[296,218],[301,201],[311,182],
+                           [316,165]]},
         // ÉBAUCHE : la masse intermédiaire, lue comme une coiffe céramo-métallique.
         couronne_cm: {poly:[[219,201],[240,195],[266,198],[283,205],[285,223],[277,244],
                             [260,255],[239,256],[222,250],[215,234],[213,216]]},
@@ -6619,9 +6621,12 @@
       // SEUL CLICHÉ DE LA SÉRIE SANS AUCUN LEURRE : les sept légendes y figurent toutes.
       //
       // C'est aussi le seul qui vienne d'une PHOTOGRAPHIE D'ÉCRAN et non d'un export. J'ai
-      // retiré les bandes bleues du moniteur et la dominante de couleur ; restent le moiré de
-      // la trame et le pointeur de souris posé sur la coiffe de droite. Un export du logiciel
-      // d'imagerie remplacerait avantageusement ce fichier.
+      // retiré les bandes bleues du moniteur, la dominante de couleur, et — à sa demande — le
+      // pointeur de souris qui se trouvait sur la coiffe de droite. CETTE DERNIÈRE RETOUCHE
+      // MODIFIE L'IMAGE : la structure du cliché est reconstruite verticalement sous la zone
+      // effacée, et seule la trame du moiré y est empruntée à une zone voisine. Elle porte sur
+      // 39 × 51 pixels de métal uniforme, loin de tout repère de la légende. Le moiré, lui,
+      // reste : un export du logiciel d'imagerie remplacerait avantageusement ce fichier.
       //
       // CE QUE JE LIS VRAIMENT. Les deux cônes d'argent sont certains : deux traits métalliques
       // de calibre rigoureusement constant d'un bout à l'autre, ce qu'aucun cône de gutta ne
