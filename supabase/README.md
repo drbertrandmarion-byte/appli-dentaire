@@ -3,6 +3,14 @@
 Ce dossier contient tout ce qui concerne la base de données. Il n'a **aucun effet
 sur l'application tant que le script n'a pas été exécuté** dans Supabase.
 
+## Si votre base existe déjà
+
+Le script est **ré-exécutable** : relancez-le tel quel dans l'éditeur SQL après
+chaque mise à jour de l'application. Il ne supprime aucune donnée, crée ce qui
+manque, et remplace la contrainte de `case_results` — une contrainte posée à la
+création d'une table ne bouge pas toute seule, et tant qu'elle n'est pas
+remplacée la base **refuse toute lecture radiographique**.
+
 ## Mise en place — à faire une seule fois
 
 ### 1. Créer les tables
@@ -56,6 +64,8 @@ visible dans le code de la page — personne ne peut contourner ces règles.
 | | Se déclarer administrateur |
 | | S'accorder la lecture radiographique (`radio`) |
 | | Se retirer des statistiques (`staff`) |
+| Enregistrer ses propres lectures radiographiques | Enregistrer une lecture au nom d'un autre |
+| | Modifier le corrigé tracé (`radio_traces`) |
 
 L'administratrice, elle, lit tous les profils et résultats, valide et supprime.
 
@@ -69,7 +79,7 @@ si ce mode devait un jour se refermer.
 
 ## Vérifier soi-même ces garanties
 
-`test-rls.sql` rejoue ces quinze situations sur une base PostgreSQL jetable
+`test-rls.sql` rejoue ces dix-neuf situations sur une base PostgreSQL jetable
 (pas sur la base de production). Il sert de preuve reproductible que les règles
 de sécurité font bien ce qui est annoncé, notamment après toute modification du
 schéma.
@@ -92,6 +102,8 @@ psql -h /tmp -p 5433 -d endodiag_test -f test-rls.sql
 | `admins` | Comptes enseignants — volontairement hors de `profiles` |
 | `results` | Une ligne par série terminée (score, nombre de cas, mode) |
 | `case_results` | Une ligne par cas traité — sert aux pathologies les plus ratées |
+| `radio_traces` | Les contours tracés par l'enseignante — le corrigé sur lequel tous sont notés |
+| `radio_lectures` | Les vingt dernières lectures radiographiques de chaque étudiant, **avec la position de ses points** |
 
 ## Données personnelles
 

@@ -76,6 +76,23 @@ for (let i = 0; i < 25; i++) CASES.push({ user_id:'a1', mode:'radio_repere',  di
 for (let i = 0; i < 7;  i++) CASES.push({ user_id:'t3', mode:'diagnostic',    diagnosis_id:'necrose',           correct:true, created_at:quand() });
 for (let i = 0; i < 7;  i++) CASES.push({ user_id:'t4', mode:'diagnostic',    diagnosis_id:'necrose',           correct:true, created_at:quand() });
 
+// Les lectures radiographiques : OU l'etudiant a pose ses reperes. C'est la seule vue qui
+// montre le geste plutot que le decompte — deux etudiants qui ratent la meme structure y sont
+// enfin distinguables, et c'est ce qui se reprend en cours.
+// Alice en a deux, dont une ou la couronne est posee loin de sa zone et le sinus jamais pose ;
+// Bruno aucune. Les coordonnees sont celles du viewBox du cliche, 360 x 270.
+const LECTURES = [
+  { id:1, user_id:'u1', case_id:'retro-alveolaire-03', image:'radios/retro-alveolaire-03.png',
+    correct:false, created_at:'2026-08-20T10:00:00Z',
+    points:[ { id:'couronne_cm',    label:'Couronne céramo-métallique', color:'#c084fc', x:300, y:40,  ok:false },
+             { id:'obturation_canalaire', label:'Obturation canalaire', color:'#38bdf8', x:150, y:150, ok:true } ],
+    manques:[ { id:'sinus', label:'Sinus maxillaire', color:'#fbbf24' } ] },
+  { id:2, user_id:'u1', case_id:'retro-alveolaire-07', image:'radios/retro-alveolaire-07.png',
+    correct:true, created_at:'2026-08-19T10:00:00Z',
+    points:[ { id:'lesion', label:'Lésion apicale', color:'#f87171', x:120, y:200, ok:true } ],
+    manques:[] }
+];
+
 // --- les libelles des reperes ne doivent pas diverger entre les deux fichiers ---
 // index.html et admin.html sont autonomes et ne partagent rien : la table des libelles est
 // donc recopiee. Sans ce controle, un repere renomme d'un cote — « Gutta-percha » devenue
@@ -153,6 +170,10 @@ function controleLibelles(){
       const corps = JSON.parse(route.request().postData() || '{}');
       Object.keys(corps).forEach(k => { cible[k] = corps[k]; });
       return route.fulfill({ status:204, headers:{ 'access-control-allow-origin':'*' }, body:'' });
+    }
+    if (u.includes('/rest/v1/radio_lectures')) {
+      const m = u.match(/user_id=eq\.([^&]+)/);
+      return json(LECTURES.filter(l => l.user_id === (m && m[1])));
     }
     if (u.includes('/rest/v1/admins'))       return json([{ user_id:ADMIN_ID }]);
     if (u.includes('/rest/v1/profiles'))     return page_(PROFILES);
@@ -440,6 +461,97 @@ function controleLibelles(){
   pbJs.forEach(x => console.log('  ! ' + x));
   if (pbJs.length) process.exitCode = 1;
 
+  // --- les lectures radiographiques, dans la fiche d'un etudiant ---
+  // Ce que montre cette section n'est pas un chiffre mais un GESTE : le point la ou l'etudiant
+  // l'a pose. Le test verifie donc le dessin lui-meme — un point par position enregistree, a la
+  // bonne coordonnee, de la couleur du repere, cercle de vert ou de rouge selon qu'il tombe
+  // juste. Compter les lignes de legende ne prouverait rien : c'est le cliche qu'on regarde.
+  {
+    await page.click('#approved-body tr:has-text("Alice") [data-detail]');
+    await page.waitForFunction(
+      () => document.querySelectorAll('#detail-radio-liste .lecture').length > 0,
+      null, { timeout:10000 }).catch(() => {});
+
+    const vues = await page.$$eval('#detail-radio-liste .lecture', cartes => cartes.map(c => ({
+      titre:  c.querySelector('.lecture-tete b').textContent.trim(),
+      image:  (c.querySelector('img') || {}).getAttribute
+                ? c.querySelector('img').getAttribute('src') : null,
+      // Le halo blanc est un troisieme cercle, sans remplissage : on ne garde que les disques
+      // colores, qui sont les points eux-memes.
+      points: [...c.querySelectorAll('svg circle')].filter(ci => ci.getAttribute('fill') !== 'none')
+        .map(ci => ({
+          x: +ci.getAttribute('cx'), y: +ci.getAttribute('cy'),
+          fill: ci.getAttribute('fill'), anneau: ci.getAttribute('stroke'),
+          pointille: !!ci.getAttribute('stroke-dasharray')
+        })),
+      legende: c.textContent.replace(/\s+/g, ' ')
+    })));
+
+    if (vues.length !== LECTURES.length) {
+      pbJs.push('lectures radio : ' + vues.length + ' lecture(s) affichée(s) pour Alice au lieu de ' + LECTURES.length);
+    } else {
+      LECTURES.forEach((att, i) => {
+        const vue = vues[i];
+        if (vue.titre !== att.case_id) {
+          pbJs.push('lectures radio : la lecture ' + (i + 1) + ' annonce « ' + vue.titre + ' » au lieu de « ' + att.case_id + ' »');
+        }
+        if (vue.image !== att.image) {
+          pbJs.push('lectures radio : la lecture ' + (i + 1) + ' montre « ' + vue.image + ' » au lieu du cliché « ' + att.image + ' »');
+        }
+        if (vue.points.length !== att.points.length) {
+          pbJs.push('lectures radio : ' + vue.points.length + ' point(s) dessiné(s) sur « ' + att.case_id +
+                    ' » au lieu de ' + att.points.length + ' — on ne verrait pas où l\'étudiant a cliqué');
+          return;
+        }
+        att.points.forEach((p, j) => {
+          const d = vue.points[j];
+          if (d.x !== p.x || d.y !== p.y) {
+            pbJs.push('lectures radio : « ' + p.label +' » est dessiné en (' + d.x + ', ' + d.y +
+                      ') au lieu de (' + p.x + ', ' + p.y + ') — le point ne tombe pas où il a été posé');
+          }
+          if (d.fill !== p.color) {
+            pbJs.push('lectures radio : « ' + p.label + ' » n\'a pas la couleur de son repère (' + d.fill + ')');
+          }
+          // Vert si bien place, rouge sinon : c'est le croisement des deux informations —
+          // quel repere, et bien place ou non — qui apprend quelque chose.
+          const attendu = p.ok ? '#0f9488' : '#b91c1c';
+          if (d.anneau !== attendu) {
+            pbJs.push('lectures radio : « ' + p.label + ' » est cerclé de ' + d.anneau +
+                      ' au lieu de ' + attendu + ' — juste et faux ne se distinguent plus');
+          }
+          // Et la forme du trait, qui ne depend d'aucune couleur : un repere de teinte verte
+          // rendait l'anneau vert illisible, et un lecteur sur douze environ ne separe pas le
+          // rouge du vert. Plein = bien place, pointille = a cote.
+          if (d.pointille === !!p.ok) {
+            pbJs.push('lectures radio : l\'anneau de « ' + p.label + ' » est ' +
+                      (d.pointille ? 'pointillé' : 'plein') + ' alors que le point est ' +
+                      (p.ok ? 'bien placé' : 'à côté') + ' — le verdict ne tient plus qu\'à la couleur');
+          }
+        });
+      });
+      // Un repere attendu et JAMAIS pose ne laisse aucun point : sans mention explicite, il
+      // serait indiscernable d'un repere absent du cliche.
+      if (!/Sinus maxillaire — jamais posé/.test(vues[0].legende)) {
+        pbJs.push('lectures radio : un repère jamais posé n\'est pas signalé — lu « ' + vues[0].legende.slice(0, 160) + ' »');
+      }
+    }
+    console.log('\n5ter. lectures radio d\'Alice :', vues.map(v =>
+      v.titre + ' (' + v.points.length + ' point(s))').join(', ') || '(aucune)');
+
+    // Et l'etudiant qui n'en a aucune : la section doit le DIRE. Laissee vide, elle se lirait
+    // comme un chargement en echec.
+    await page.click('#approved-body tr:has-text("Bruno") [data-detail]');
+    await page.waitForFunction(
+      () => /Aucune lecture radiographique/.test(document.getElementById('detail-radio-liste').textContent),
+      null, { timeout:10000 }).catch(() => {});
+    const vide = (await page.textContent('#detail-radio-liste')) || '';
+    if (!/Aucune lecture radiographique/.test(vide)) {
+      pbJs.push('lectures radio : Bruno n\'en a aucune et la section ne le dit pas — lu « ' + vide.trim().slice(0, 80) + ' »');
+    }
+    pbJs.forEach(x => console.log('  ! ' + x));
+    if (pbJs.length) process.exitCode = 1;
+  }
+
   // --- export du classeur ---
   const [dl] = await Promise.all([
     page.waitForEvent('download', { timeout:15000 }),
@@ -454,6 +566,14 @@ function controleLibelles(){
   await page.locator('.card').last().screenshot({ path:'/tmp/admin.png' });
   // La carte des comptes hors statistiques est elle aussi a relire a l'oeil : c'est elle qui dit
   // qui n'est pas compte, et pourquoi.
+  // La section des lectures radiographiques est elle aussi a relire a l'oeil : c'est un dessin,
+  // et aucun controle automatique ne dit si l'on y voit quelque chose.
+  await page.click('#approved-body tr:has-text("Alice") [data-detail]');
+  await page.waitForTimeout(700);
+  if (await page.$('#detail-radio-liste .lecture')) {
+    await page.locator('#detail-radio-liste').screenshot({ path:'/tmp/admin-lectures.png' });
+    console.log('   lectures radio -> /tmp/admin-lectures.png');
+  }
   if (await page.$('#hors-stats-card:not(.hidden)')) {
     await page.locator('#hors-stats-card').screenshot({ path:'/tmp/admin-hors-stats.png' });
     console.log('   carte hors stats -> /tmp/admin-hors-stats.png');

@@ -7832,6 +7832,19 @@
     // Le sort de CHAQUE entrée de la légende, leurres compris : c'est ce détail qui permettra
     // au back-office de classer les erreurs par type de repère et non par cliché.
     var detail = [];
+    // OÙ l'étudiant a posé ses repères, et non seulement combien il en a ratés. Deux étudiants
+    // qui se trompent de la même façon sont indiscernables dans un taux d'erreur ; ils ne le
+    // sont plus une fois leurs points redessinés sur le cliché. C'est ce que le back-office
+    // affiche, et c'est ce qui dit qu'une promotion entière place la même structure au même
+    // mauvais endroit.
+    //
+    // Le libellé et la couleur partent AVEC le point, tels que l'étudiant les avait sous les
+    // yeux : une légende renommée ou recolorée plus tard ne doit pas réécrire ce qu'il a vu.
+    var positions = [], manques = [];
+    function notePoint(rep, pt, ok){
+      positions.push({ id:rep.id, label:rep.label, color:rep.color,
+                       x:Math.round(pt.x * 10) / 10, y:Math.round(pt.y * 10) / 10, ok:!!ok });
+    }
     var lignes = [], bons = 0, leurres = 0, oublis = 0, decales = 0;
     // Un repère figurant à plusieurs endroits attend autant de points qu'il a de zones, et
     // une zone laissée sans point ne compte pas pour acquise : c'est le dénombrement, autant
@@ -7846,6 +7859,7 @@
         // Laisser un leurre de côté EST une bonne réponse, et doit compter comme telle :
         // sinon le classement par type ne dirait rien des signes qu'on croit voir à tort.
         detail.push({id:rep.id, ok:!pts.length});
+        pts.forEach(function(pt){ notePoint(rep, pt, false); });
         if(pts.length){
           leurres++;
           lignes.push({rep:rep, ok:false, msg:'ce signe n\'est pas présent sur ce cliché : il fallait laisser ce point dans la légende'});
@@ -7855,11 +7869,15 @@
       if(!pts.length){
         oublis++;
         detail.push({id:rep.id, ok:false});
+        manques.push({ id:rep.id, label:rep.label, color:rep.color });
         lignes.push({rep:rep, ok:false, msg:'oublié : ce repère est visible sur ce cliché'});
         return;
       }
 
       var horsZone = pts.filter(function(p){ return !radioWellPlaced(rep.id, p); }).length;
+      // Point par point, et non repère par repère : un repère posé deux fois peut être juste
+      // d'un côté et faux de l'autre, et c'est précisément ce qu'il s'agit de voir.
+      pts.forEach(function(pt){ notePoint(rep, pt, radioWellPlaced(rep.id, pt)); });
       var atteintes = contours.map(function(poly){
         return pts.some(function(p){
           return radioDansPolygone(poly, p) || radioDistanceAuBord(poly, p) <= RADIO_CONTACT;
@@ -7955,6 +7973,10 @@
       window.EndoStats.recordCase('radio', fichier, reussi);
       // Et le détail, sous un mode à part pour ne pas se mêler au décompte des clichés.
       if(window.EndoStats.recordDetails) window.EndoStats.recordDetails('radio_repere', detail);
+      // Et les points eux-mêmes, pour que le back-office puisse les redessiner sur le cliché.
+      if(window.EndoStats.recordRadioLecture){
+        window.EndoStats.recordRadioLecture(radioCase.id, radioCase.image, positions, manques, reussi);
+      }
     }
 
     hideEl(document.getElementById('radio-submit-row'));
@@ -8530,6 +8552,22 @@
       flushQueue();
     },
 
+    // Une lecture radiographique entière, avec les points là où l'étudiant les a posés. Elle ne
+    // passe PAS par la file d'attente des statistiques : celle-ci ne transporte que des lignes
+    // minuscules et uniformes, et une lecture pèse une centaine de fois plus. Comme pour les cas
+    // à revoir, l'envoi est direct, et un échec reste sans conséquence — le décompte des erreurs,
+    // lui, est déjà parti par la file.
+    recordRadioLecture: function(caseId, image, points, manques, correct){
+      if(!session || !session.user_id || offline || !caseId) return;
+      authed('/rest/v1/radio_lectures', {
+        method: 'POST', prefer: 'return=minimal',
+        body: {
+          user_id: session.user_id, case_id: caseId, image: image || '',
+          points: points || [], manques: manques || [], correct: !!correct
+        }
+      }).then(trimRadioLectures).catch(function(){});
+    },
+
     recordSeries: function(mode, serie, score){
       if(!session || !serie) return;
       queuePush({k:'s', mode:mode, serie:serie, score:score});
@@ -8586,6 +8624,22 @@
   };
 
   // Ne garde que les REVIEW_KEEP cas les plus récents.
+  // Nombre de lectures radiographiques conservees par etudiant. Au-dela, les plus anciennes
+  // sont effacees : une lecture pese une centaine de fois plus qu'une ligne de statistique, et
+  // le volume doit rester borne pour une promotion entiere.
+  var RADIO_KEEP = 20;
+
+  function trimRadioLectures(){
+    return authed('/rest/v1/radio_lectures?select=id&user_id=eq.' + session.user_id +
+                  '&order=created_at.desc&offset=' + RADIO_KEEP)
+      .then(function(vieilles){
+        if(!vieilles || !vieilles.length) return;
+        var ids = vieilles.map(function(r){ return r.id; }).join(',');
+        return authed('/rest/v1/radio_lectures?id=in.(' + ids + ')',
+                      { method:'DELETE', prefer:'return=minimal' });
+      }).catch(function(){});
+  }
+
   function trimReview(){
     return authed('/rest/v1/review_cases?select=id&user_id=eq.' + session.user_id +
                   '&order=created_at.desc&offset=' + REVIEW_KEEP)

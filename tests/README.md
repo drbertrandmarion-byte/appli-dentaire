@@ -379,6 +379,25 @@ s'interrompait **sans nommer le défaut**, et les erreurs déjà relevées étai
 Ses mutations de contrôle : ne plus écarter personne, et ignorer tour à tour chacun des quatre
 chemins. Toutes sont signalées, chacune nommant les comptes qu'elle laisse passer.
 
+Il contrôle enfin la section **« Lectures radiographiques »** de la fiche d'un étudiant, qui ne
+montre pas un chiffre mais un **geste** : le point là où l'étudiant l'a posé. Les deux tableaux
+d'erreurs de la page disent qu'une structure est ratée ; ils ne disent pas que toute la promotion
+la place trois millimètres trop bas, ni laquelle elle désigne à sa place — et c'est cela qui se
+reprend en cours.
+
+Le test vérifie donc le **dessin lui-même**, et non le nombre de lignes de légende : un cercle par
+position enregistrée, aux coordonnées exactes du viewBox d'origine (360 × 270), de la couleur du
+repère, et le bon cliché derrière. Un point décalé de vingt unités est signalé repère par repère.
+
+Le verdict de chaque point se lit par **deux canaux indépendants** : la couleur de l'anneau — vert
+s'il est bien placé, rouge sinon — et sa **forme**, plein ou pointillé, la même convention que la
+correction de l'application. Le test exige les deux. La couleur seule ne suffisait pas : un repère
+de teinte verte rendait son anneau vert illisible, et environ un homme sur douze ne sépare pas le
+rouge du vert. Un repère attendu et **jamais posé** ne laisse aucun point : il est nommé dans la
+légende, faute de quoi il serait indiscernable d'un repère absent du cliché. Un étudiant qui n'a
+fait aucune lecture doit le lire explicitement — une section laissée vide se confondrait avec un
+chargement en échec.
+
 Il télécharge ensuite le classeur Excel et le contrôle : archive ZIP intègre, XML bien
 formé dans chaque partie, **compteurs de styles cohérents** (`<fonts count="4">` doit
 réellement contenir quatre polices — un écart est la cause classique du message « contenu

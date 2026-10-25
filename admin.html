@@ -82,6 +82,28 @@
   .bar{height:7px; background:var(--border); border-radius:4px; overflow:hidden; min-width:70px;}
   .bar i{display:block; height:100%; background:var(--ko);}
 
+  /* Les lectures radiographiques, cliché par cliché. Deux colonnes sur un écran large, une
+     seule en dessous : le cliché doit rester assez grand pour qu'on voie où tombe un point. */
+  .lectures{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px;}
+  .lecture{border:1px solid var(--border); border-radius:11px; padding:12px; background:var(--bg);}
+  .lecture-tete{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; margin-bottom:9px;}
+  .lecture-date{font-size:0.8rem; color:var(--muted);}
+  .lecture-film{
+    position:relative; width:100%; background:#000; border-radius:8px; overflow:hidden;
+    /* Le cliché et la couche des points partagent le même repère : le film impose donc le
+       rapport du viewBox d'origine (360 × 270), sans quoi les points glisseraient. */
+    aspect-ratio:360 / 270;
+  }
+  .lecture-film img{width:100%; height:100%; display:block; object-fit:fill;}
+  .lecture-film svg{position:absolute; inset:0; width:100%; height:100%;}
+  .lecture-legende{margin:9px 0 0; padding:0; list-style:none; font-size:0.78rem;}
+  .lecture-legende li{display:flex; align-items:flex-start; gap:6px; margin-bottom:3px; line-height:1.4;}
+  .lecture-legende .pastille{
+    flex:0 0 auto; width:11px; height:11px; border-radius:50%; margin-top:3px;
+    border:1.5px solid rgba(0,0,0,0.35);
+  }
+  .lecture-manque{color:var(--muted);}
+
   .login-box{max-width:400px; margin:8vh auto 0;}
   .field{margin-bottom:13px;}
   .field label{display:block; font-size:0.78rem; font-weight:700; margin-bottom:5px;}
@@ -195,6 +217,15 @@
         <thead><tr><th>Date</th><th>Mode</th><th>Pathologie ou cliché</th><th>Résultat</th></tr></thead>
         <tbody id="detail-cases-body"></tbody>
       </table></div>
+
+      <!-- OÙ l'étudiant a posé ses repères. Les deux tableaux de la page comptent les erreurs ;
+           celui-ci montre le geste. Un taux dit qu'une structure est ratée, il ne dit pas que
+           toute la promotion la place trois millimètres trop bas, ni laquelle elle désigne à sa
+           place — et c'est cela qui se reprend en cours. -->
+      <h3 style="margin:26px 0 4px;font-size:1rem;">Lectures radiographiques
+        <span id="detail-radio-count"></span></h3>
+      <p class="hint" id="detail-radio-hint"></p>
+      <div id="detail-radio-liste" class="lectures"></div>
     </div>
 
     <div class="card">
@@ -248,6 +279,10 @@
   // qui permet de DIRE lesquels ne sont pas comptes, et de remettre dans les chiffres celui qu'on
   // en a sorti par erreur.
   var horsStats = [], raisonsHS = {};
+  // Les lectures radiographiques, chargees seulement quand on ouvre la fiche d'un etudiant :
+  // elles pesent une centaine de fois plus qu'une ligne de statistique, et les charger toutes
+  // a l'ouverture de la page ralentirait un ecran dont on ne consulte qu'une fiche a la fois.
+  var lecturesPar = {};
   // Ce que le serveur dit detenir mais que l'ecran n'a pas pu charger.
   var manqueALAppel = [];
 
@@ -510,6 +545,11 @@
       }).map(function(p){
         return p[1].length + ' ' + p[0] + ' affichés sur ' + p[1].totalServeur + ' existants';
       });
+
+      // Les lectures deja chargees sont oubliees : apres un rechargement, la fiche qu'on
+      // rouvre doit montrer ce que le serveur detient maintenant, et non ce qu'il en disait
+      // avant qu'un etudiant ne valide une lecture de plus.
+      lecturesPar = {};
 
       var idsAdmin = {};
       (r[3] || []).forEach(function(a){ if(a && a.user_id) idsAdmin[a.user_id] = true; });
@@ -850,8 +890,111 @@
              + ' cas plus anciens. Le classeur Excel les contient tous.</div></td></tr>' : '')
       : '<tr><td colspan="4"><div class="empty">Aucun cas joué.</div></td></tr>';
 
+    chargeLectures(id);
+
     $('detail-card').style.display = '';
     $('detail-card').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  // ---------- Les lectures radiographiques d'un etudiant ----------
+  // Combien on en montre. Le serveur n'en conserve que les vingt dernieres par etudiant ;
+  // cinq suffisent a voir une habitude, et au-dela la page devient un mur d'images.
+  var LECTURES_MONTREES = 5;
+  // Le repere du cliche, identique a celui de l'application : les points sont enregistres dans
+  // ces unites, et les redessiner dans un autre repere les deplacerait tous.
+  var RADIO_W = 360, RADIO_H = 270;
+
+  function chargeLectures(id){
+    var hint = $('detail-radio-hint'), liste = $('detail-radio-liste');
+    $('detail-radio-count').innerHTML = '';
+    if(lecturesPar[id]){ rendLectures(id); return; }
+    hint.textContent = 'Chargement…';
+    liste.innerHTML = '';
+    authed('/rest/v1/radio_lectures?select=*&user_id=eq.' + id +
+           '&order=created_at.desc&limit=' + LECTURES_MONTREES)
+      .then(function(rows){
+        lecturesPar[id] = rows || [];
+        rendLectures(id);
+      })
+      .catch(function(err){
+        // La table peut ne pas exister : le script supabase/schema.sql est a reexecuter. Le
+        // dire ici plutot que laisser une section vide, qu'on lirait comme « cet etudiant n'a
+        // jamais fait de lecture » — exactement le contresens que ce back-office doit eviter.
+        liste.innerHTML = '';
+        hint.innerHTML = '<span style="color:var(--ko)">Impossible de charger les lectures : ' +
+          esc(err.message) + ' — la table « radio_lectures » existe-t-elle ? ' +
+          'Si non, réexécutez <code>supabase/schema.sql</code> dans Supabase.</span>';
+      });
+  }
+
+  function rendLectures(id){
+    var rows = lecturesPar[id] || [];
+    var hint = $('detail-radio-hint'), liste = $('detail-radio-liste');
+    if(!rows.length){
+      $('detail-radio-count').innerHTML = '';
+      liste.innerHTML = '<div class="empty">Aucune lecture radiographique enregistrée.</div>';
+      hint.textContent = 'Les lectures apparaissent ici dès que l\'étudiant en valide une.';
+      return;
+    }
+    $('detail-radio-count').innerHTML = '<span class="tag tag-ok">' + rows.length + '</span>';
+    hint.textContent = rows.length === 1
+      ? 'Sa dernière lecture, avec ses points là où il les a posés.'
+      : 'Ses ' + rows.length + ' dernières lectures, avec ses points là où il les a posés. ' +
+        'Anneau plein et vert : le point est bien placé. Anneau pointillé et rouge : il tombe ' +
+        'à côté de la zone attendue. La couleur du disque est celle du repère dans la légende.';
+    liste.innerHTML = rows.map(uneLecture).join('');
+  }
+
+  // Un point porte DEUX informations, et il faut les lire separement : de quel repere il
+  // s'agit — c'est la couleur du disque, celle de la legende que l'etudiant avait sous les
+  // yeux — et s'il tombe juste. Leur croisement est tout l'interet de cette vue : « la
+  // couronne, toujours sur la racine d'a cote ».
+  //
+  // Le verdict ne tient donc PAS a la seule couleur de l'anneau. Un repere dont la teinte
+  // approche le vert rendait son anneau vert illisible, et environ un homme sur douze ne
+  // separe de toute facon pas le rouge du vert. L'anneau est donc PLEIN quand le point est
+  // bien place et POINTILLE quand il tombe a cote — la meme convention que la correction de
+  // l'application, ou la zone trouvee est en trait plein et la zone manquee en pointilles.
+  //
+  // Un troisieme cercle, blanc et place dessous, detache l'ensemble du film : sans lui, un
+  // point sombre pose sur une racine sombre disparaissait.
+  function uneLecture(l){
+    var pts = Array.isArray(l.points) ? l.points : [];
+    var manques = Array.isArray(l.manques) ? l.manques : [];
+    var dessin = pts.map(function(p){
+      var x = +p.x || 0, y = +p.y || 0;
+      var anneau = p.ok ? '#0f9488' : '#b91c1c';
+      return '<circle cx="' + x + '" cy="' + y + '" r="6.4" fill="none" ' +
+               'stroke="#fff" stroke-width="1.6" opacity="0.85"/>' +
+             '<circle cx="' + x + '" cy="' + y + '" r="5" ' +
+               'fill="' + esc(p.color || '#fff') + '" stroke="' + anneau + '" stroke-width="2.4"' +
+               (p.ok ? '' : ' stroke-dasharray="2.6 2"') + '/>';
+    }).join('');
+
+    var legende = pts.map(function(p){
+      return '<li><span class="pastille" style="background:' + esc(p.color || '#fff') + '"></span>' +
+        '<span>' + esc(p.label || p.id) + ' ' + (p.ok ? '✅' : '❌') + '</span></li>';
+    }).join('') + manques.map(function(m){
+      return '<li class="lecture-manque"><span class="pastille" style="background:' +
+        esc(m.color || '#fff') + ';opacity:0.45"></span>' +
+        '<span>' + esc(m.label || m.id) + ' — jamais posé</span></li>';
+    }).join('');
+
+    return '<div class="lecture">' +
+      '<div class="lecture-tete">' +
+        '<b>' + esc(l.case_id || '') + '</b>' +
+        (l.correct ? '<span class="tag tag-ok">réussie</span>'
+                   : '<span class="tag tag-ko">ratée</span>') +
+        '<span class="lecture-date">' + fmtDateTime(l.created_at) + '</span>' +
+      '</div>' +
+      '<div class="lecture-film">' +
+        // Le chemin vient du serveur : il est posé en attribut échappé, et le cliché est de
+        // toute façon servi par le même site que cette page.
+        '<img src="' + esc(l.image || '') + '" alt="Cliché ' + esc(l.case_id || '') + '">' +
+        '<svg viewBox="0 0 ' + RADIO_W + ' ' + RADIO_H + '" aria-hidden="true">' + dessin + '</svg>' +
+      '</div>' +
+      (legende ? '<ul class="lecture-legende">' + legende + '</ul>' : '') +
+    '</div>';
   }
 
   // ---------- Écriture d'un classeur Excel, sans bibliothèque ----------

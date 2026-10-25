@@ -242,11 +242,25 @@ create policy "results_insert" on public.results
 create table if not exists public.case_results (
   id           bigint generated always as identity primary key,
   user_id      uuid not null references auth.users(id) on delete cascade,
-  mode         text not null check (mode in ('diagnostic', 'therapeutique')),
-  diagnosis_id text not null,        -- ex. 'abces_aigu', 'necrose'
+  -- QUATRE modes, et non deux. L'application écrit aussi « radio » (un cliché lu en entier)
+  -- et « radio_repere » (le détail, repère par repère). Tant qu'ils manquaient ici, chaque
+  -- ligne de lecture radiographique était refusée par la base avec un code 400 — que
+  -- l'application tient pour un refus définitif et met de côté sans rien dire. Les deux
+  -- tableaux du back-office consacrés à la radiographie restaient donc vides, et rien ne
+  -- l'expliquait.
+  mode         text not null check (mode in ('diagnostic', 'therapeutique', 'radio', 'radio_repere')),
+  diagnosis_id text not null,        -- ex. 'abces_aigu', 'necrose', ou le nom du cliché
   correct      boolean not null,
   created_at   timestamptz not null default now()
 );
+
+-- « create table if not exists » ne touche pas à une table déjà créée : sur une base
+-- existante, l'ancienne contrainte à deux modes resterait en place et continuerait de refuser
+-- les lectures radiographiques. On la remplace donc explicitement. Relancer ce script est sans
+-- risque : la contrainte est supprimée puis reposée à l'identique.
+alter table public.case_results drop constraint if exists case_results_mode_check;
+alter table public.case_results add constraint case_results_mode_check
+  check (mode in ('diagnostic', 'therapeutique', 'radio', 'radio_repere'));
 
 alter table public.case_results enable row level security;
 
@@ -298,6 +312,80 @@ create policy "review_cases_insert" on public.review_cases
 -- anciens et maintenir le plafond de vingt.
 drop policy if exists "review_cases_delete" on public.review_cases;
 create policy "review_cases_delete" on public.review_cases
+  for delete using (user_id = auth.uid() or public.is_admin());
+
+
+-- -----------------------------------------------------------------------------
+-- 6. Corriges traces par l'enseignante
+-- -----------------------------------------------------------------------------
+-- Les contours que l'enseignante dessine dans l'atelier. Sans cette table, sa correction
+-- resterait prisonniere de l'appareil ou elle l'a faite, et les etudiants seraient notes sur
+-- les ebauches ecrites dans le code.
+--
+-- Elle manquait a ce script alors que l'application l'interroge a chaque ouverture du mode.
+-- L'ecriture est reservee a l'administratrice : c'est le corrige sur lequel tout le monde est
+-- note. La lecture est ouverte a tout compte connecte, puisque c'est elle qui corrige.
+
+create table if not exists public.radio_traces (
+  case_id    text primary key,       -- identifiant du cliche
+  zones      jsonb not null,         -- contours, par repere
+  updated_at timestamptz not null default now(),
+  updated_by uuid references auth.users(id) on delete set null
+);
+
+alter table public.radio_traces enable row level security;
+
+drop policy if exists "radio_traces_select" on public.radio_traces;
+create policy "radio_traces_select" on public.radio_traces
+  for select using (auth.uid() is not null);
+
+drop policy if exists "radio_traces_write" on public.radio_traces;
+create policy "radio_traces_write" on public.radio_traces
+  for all using (public.is_admin()) with check (public.is_admin());
+
+
+-- -----------------------------------------------------------------------------
+-- 7. Lectures radiographiques conservees pour relecture
+-- -----------------------------------------------------------------------------
+-- OU l'etudiant a pose ses reperes, et non seulement combien il en a rate. C'est ce que
+-- case_results ne peut pas dire : il n'y garde qu'un verdict par repere, sans coordonnees, et
+-- deux etudiants qui se trompent de la meme facon y sont indiscernables.
+--
+-- Une ligne par lecture validee. Les points sont conserves tels que l'etudiant les a poses,
+-- dans les unites du viewBox du cliche (360 x 270), avec le libelle et la couleur qu'il avait
+-- sous les yeux : ainsi le back-office redessine ce qu'il a vu, sans dependre d'un catalogue
+-- qui aura peut-etre change depuis.
+--
+-- L'application n'en garde que les vingt dernieres par personne et efface les plus anciennes,
+-- comme pour review_cases : le volume reste borne quel que soit l'usage.
+
+create table if not exists public.radio_lectures (
+  id         bigint generated always as identity primary key,
+  user_id    uuid not null references auth.users(id) on delete cascade,
+  case_id    text not null,          -- identifiant du cliche
+  image      text not null,          -- chemin du fichier, pour que le back-office l'affiche
+  points     jsonb not null,         -- [{id, label, color, x, y, ok}] tels que poses
+  manques    jsonb not null default '[]'::jsonb,  -- reperes attendus et jamais poses
+  correct    boolean not null,       -- lecture juste en entier
+  created_at timestamptz not null default now()
+);
+
+alter table public.radio_lectures enable row level security;
+
+create index if not exists radio_lectures_user_idx
+  on public.radio_lectures (user_id, created_at desc);
+
+drop policy if exists "radio_lectures_select" on public.radio_lectures;
+create policy "radio_lectures_select" on public.radio_lectures
+  for select using (user_id = auth.uid() or public.is_admin());
+
+drop policy if exists "radio_lectures_insert" on public.radio_lectures;
+create policy "radio_lectures_insert" on public.radio_lectures
+  for insert with check (user_id = auth.uid());
+
+-- Necessaire pour que l'application puisse effacer ses propres lectures les plus anciennes.
+drop policy if exists "radio_lectures_delete" on public.radio_lectures;
+create policy "radio_lectures_delete" on public.radio_lectures
   for delete using (user_id = auth.uid() or public.is_admin());
 
 

@@ -80,6 +80,24 @@ values ('22222222-2222-2222-2222-222222222222', 'therapeutique', 5, 5);
 \echo '-- 9. tente de se declarer administrateur (doit ECHOUER)'
 insert into public.admins (user_id) values ('11111111-1111-1111-1111-111111111111');
 
+\echo ''
+\echo '-- 9bis. enregistre SA lecture radiographique (doit REUSSIR)'
+insert into public.radio_lectures (user_id, case_id, image, points, correct)
+values ('11111111-1111-1111-1111-111111111111', 'retro-alveolaire-03', 'radios/x.png',
+        '[{"id":"sinus","x":120,"y":80,"ok":true}]'::jsonb, true);
+
+\echo ''
+\echo '-- 9ter. tente d enregistrer une lecture au nom d un AUTRE (doit ECHOUER)'
+insert into public.radio_lectures (user_id, case_id, image, points, correct)
+values ('22222222-2222-2222-2222-222222222222', 'retro-alveolaire-03', 'radios/x.png',
+        '[]'::jsonb, true);
+
+\echo ''
+\echo '-- 9quater. tente de MODIFIER le corrige trace par l enseignante (doit ECHOUER)'
+-- C est le corrige sur lequel toute la promotion est notee.
+insert into public.radio_traces (case_id, zones)
+values ('retro-alveolaire-03', '{"sinus":[[[0,0],[1,1],[2,2]]]}'::jsonb);
+
 reset role;
 
 \echo ''
@@ -90,6 +108,11 @@ set request.jwt.claim.sub = '33333333-3333-3333-3333-333333333333';
 
 \echo '-- 10. voit-elle tous les profils ? (attendu: 2)'
 select count(*) as "profils visibles" from public.profiles;
+
+\echo ''
+\echo '-- 10bis. voit-elle les lectures radiographiques de ses etudiants ? (attendu: 1)'
+-- C est tout l interet de la section du back-office : voir OU ils ont pose leurs reperes.
+select count(*) as "lectures visibles (attendu: 1)" from public.radio_lectures;
 
 \echo ''
 \echo '-- 11. valide un etudiant (doit REUSSIR, et horodater)'
