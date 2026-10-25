@@ -291,6 +291,16 @@ lit son compteur, et vérifie que le repère **reste choisi** après la dépose 
 à la suite — tout en pouvant être relâché d'un nouveau toucher. Sans cette dernière mesure, un repère
 resterait collé au pointeur et chaque clic ajouterait un point involontaire.
 
+Il contrôle aussi **ce qui part dans les statistiques, repère par repère** — et non le réseau,
+puisque la suite tourne hors ligne, mais ce que `submitRadio` passe à l'enregistreur : des objets
+portant un identifiant, et non du texte. Ce contrôle est né d'un défaut réel. Une variable
+`detail` portait le sort de chaque repère ; une **seconde déclaration du même nom**, plus bas dans
+la même fonction, l'écrasait par trois phrases de bilan (« 6 repères oubliés »). Un `var`
+redéclaré ne crée pas une seconde variable, il réassigne la première. Les lignes envoyées
+n'avaient donc plus d'identifiant, aucune n'était mise en file, et le tableau « erreurs par type
+de repère » du back-office restait vide **sans que rien ne le signale** — du 24 au 25 octobre
+2026. Réintroduire la redéclaration fait échouer le contrôle en nommant ce qu'il lit.
+
 Il contrôle enfin que les trois fautes sont comptées **séparément** (repère mal situé, repère oublié,
 signe posé à tort), et les gestes sans lesquels l'exercice serait inutilisable : un point lâché hors
 du cliché ne se pose pas, un point déjà posé se déplace sans se dupliquer, un simple toucher le

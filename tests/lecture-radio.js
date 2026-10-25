@@ -636,6 +636,61 @@ async function valideEtLis(page){
     }
   }
 
+  // ---- 2ter. Ce qui part VRAIMENT dans les statistiques, repere par repere ----
+  // Le back-office classe les erreurs par type de repere : « sept etudiants sur dix appellent
+  // la ceramo-metallique une couronne metallique ». Cela suppose qu'une ligne parte par repere,
+  // avec son identifiant.
+  //
+  // Elles ne partaient pas. Une variable « detail » portait le sort de chaque repere, et une
+  // SECONDE declaration du meme nom, plus bas dans la fonction, l'ecrasait par trois phrases de
+  // bilan — « 6 reperes oublies ». Les lignes envoyees n'avaient plus d'identifiant, aucune
+  // n'etait mise en file, et le tableau du back-office restait vide sans que rien ne le dise.
+  // Un « var » redeclare ne cree pas une seconde variable : il reassigne la premiere.
+  //
+  // Le controle ne regarde donc pas le reseau — la suite tourne hors ligne — mais ce que
+  // submitRadio PASSE a l'enregistreur : des objets portant un identifiant, et non du texte.
+  {
+    const p = await context.newPage();
+    await boot(p, 11);
+    await ouvreCliche(p);
+    await p.evaluate(() => {
+      window.__recu = null;
+      const S = window.EndoStats;
+      const vrai = S.recordDetails;
+      S.recordDetails = function(mode, items){
+        if (mode === 'radio_repere') window.__recu = items;
+        if (vrai) return vrai.call(this, mode, items);
+      };
+    });
+    await p.click('#radio-submit-btn');
+    await p.waitForTimeout(600);
+    const recu = await p.evaluate(() => window.__recu);
+
+    if (recu === null) {
+      ko('statistiques par repere : submitRadio n\'enregistre plus le detail — le tableau du '
+         + 'back-office « erreurs par type de repere » resterait vide');
+    } else if (!Array.isArray(recu) || !recu.length) {
+      ko('statistiques par repere : le detail transmis est vide (' + JSON.stringify(recu) + ')');
+    } else {
+      const mauvais = recu.filter(x => !x || typeof x !== 'object' || typeof x.id !== 'string' || !x.id);
+      const sansVerdict = recu.filter(x => !x || typeof x.ok !== 'boolean');
+      if (mauvais.length) {
+        ko('statistiques par repere : ' + mauvais.length + ' entree(s) sans identifiant de repere — '
+           + 'elles ne seraient jamais enregistrees. Lu : ' + JSON.stringify(recu).slice(0, 160));
+      }
+      // Et le verdict de chaque repere, sans lequel on compterait des rencontres sans erreurs.
+      if (sansVerdict.length) {
+        ko('statistiques par repere : une entree ne dit pas si le repere a ete reconnu — '
+           + JSON.stringify(recu).slice(0, 160));
+      }
+      // La ligne de journal ne doit pas rassurer quand le controle vient d'echouer : lue seule,
+      // elle ferait passer un defaut pour un succes.
+      console.log('  detail par repere transmis :', recu.length, 'entree(s),',
+                  (mauvais.length || sansVerdict.length) ? 'MAIS INCOMPLETES' : 'toutes identifiees');
+    }
+    await p.close();
+  }
+
   // ---- 3. Le cliche lui-meme, cas par cas ----
   // Le nombre de cliches n'est pas fige : la suite parcourt des graines et eprouve chaque
   // cliche distinct qu'elle rencontre. Une graine qui ne rapporte rien de nouveau coute une

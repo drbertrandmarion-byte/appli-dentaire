@@ -7918,13 +7918,19 @@
       ? '<span class="icon">✓</span> Lecture complète et exacte !'
       : '<span class="icon">✗</span> Lecture à revoir.';
 
-    var detail = [];
-    if(decales) detail.push(decales + (decales > 1 ? ' repères mal situés' : ' repère mal situé'));
-    if(oublis)  detail.push(oublis + (oublis > 1 ? ' repères oubliés' : ' repère oublié'));
-    if(leurres) detail.push(leurres + (leurres > 1 ? ' signes posés à tort' : ' signe posé à tort'));
+    // « resume », et surtout PAS « detail » : ce nom-là est déjà pris plus haut par le sort de
+    // chaque repère, celui qui part dans les statistiques. Un second « var detail » ne crée pas
+    // une seconde variable — il écrase la première, qui vaut alors trois phrases de bilan au
+    // lieu des repères. Les lignes envoyées n'avaient plus d'identifiant, aucune ne partait, et
+    // le tableau « erreurs par type de repère » du back-office restait vide sans que rien ne le
+    // dise. Il l'est resté du 24 au 25 octobre 2026.
+    var resume = [];
+    if(decales) resume.push(decales + (decales > 1 ? ' repères mal situés' : ' repère mal situé'));
+    if(oublis)  resume.push(oublis + (oublis > 1 ? ' repères oubliés' : ' repère oublié'));
+    if(leurres) resume.push(leurres + (leurres > 1 ? ' signes posés à tort' : ' signe posé à tort'));
     document.getElementById('radio-score').textContent =
       bons + ' / ' + total + ' repères présents correctement identifiés' +
-      (detail.length ? ' — ' + detail.join(', ') + '.' : '.');
+      (resume.length ? ' — ' + resume.join(', ') + '.' : '.');
 
     // Les explications de famille, une seule fois chacune, et seulement si un repère de cette
     // famille figure sur le cliché.
