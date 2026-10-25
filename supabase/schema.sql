@@ -78,6 +78,28 @@ create table if not exists public.profiles (
 alter table public.profiles add column if not exists active_session    text;
 alter table public.profiles add column if not exists active_session_at timestamptz;
 
+-- Accès au mode de lecture radiographique, accordé compte par compte depuis le back-office.
+-- Cette colonne manquait à ce script alors que le back-office l'écrit depuis sa création : une
+-- base installée à partir d'ici seule avait un bouton « 📷 Radio » qui échouait.
+--
+-- Elle figure, elle, dans protect_profile_fields() : sans cela un étudiant se l'accordait
+-- lui-même d'une seule requête sur sa propre fiche, et entrait dans un mode qui lui montre les
+-- corrigés.
+alter table public.profiles add column if not exists radio boolean not null default false;
+
+-- Comptes hors statistiques. Le back-office sert à suivre une promotion : le compte enseignant,
+-- et ceux dont on se sert pour vérifier régulièrement que l'application fonctionne, n'en font pas
+-- partie. Rien n'est effacé — les séries et les cas restent enregistrés — mais ils n'entrent dans
+-- aucun chiffre du back-office ni du classeur exporté.
+--
+-- Cette colonne est posée depuis le back-office plutôt que déduite d'une liste de noms écrite
+-- dans le code : un nom mal orthographié ferait manquer la correspondance en silence, et la
+-- promotion continuerait d'être comptée de travers sans que rien ne le dise.
+--
+-- Elle figure aussi dans protect_profile_fields() : sans cela un étudiant se retirerait lui-même
+-- des statistiques.
+alter table public.profiles add column if not exists staff boolean not null default false;
+
 alter table public.profiles enable row level security;
 
 create index if not exists profiles_approved_idx on public.profiles (approved, created_at desc);
@@ -107,6 +129,10 @@ create policy "profiles_delete" on public.profiles
 -- Garde-fou : un étudiant peut corriger son nom ou son année, mais ne peut pas
 -- s'auto-valider. Sans ce déclencheur, la règle "profiles_update" ci-dessus le
 -- laisserait passer approved à true lui-même.
+--
+-- Même raisonnement pour « radio » et « staff », qui s'ajoutent ici : la première ouvre un mode
+-- qui montre les corrigés, la seconde retire un compte des statistiques. Toutes deux se décident
+-- depuis le back-office, donc jamais depuis l'application.
 create or replace function public.protect_profile_fields()
 returns trigger
 language plpgsql
@@ -120,6 +146,8 @@ begin
     new.approved    := old.approved;
     new.approved_at := old.approved_at;
     new.created_at  := old.created_at;
+    new.radio       := old.radio;
+    new.staff       := old.staff;
   end if;
 
   -- Horodate automatiquement la validation.

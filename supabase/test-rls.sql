@@ -38,6 +38,18 @@ update public.profiles set approved = true where id = '11111111-1111-1111-1111-1
 select prenom, approved as "approved (attendu: f)" from public.profiles where id = '11111111-1111-1111-1111-111111111111';
 
 \echo ''
+\echo '-- 4bis. tente de S ACCORDER LA LECTURE RADIOGRAPHIQUE (radio doit rester false)'
+-- Ce mode montre les corriges : un etudiant qui se l accorde lui-meme voit les reponses.
+update public.profiles set radio = true where id = '11111111-1111-1111-1111-111111111111';
+select prenom, radio as "radio (attendu: f)" from public.profiles where id = '11111111-1111-1111-1111-111111111111';
+
+\echo ''
+\echo '-- 4ter. tente de SE RETIRER DES STATISTIQUES (staff doit rester false)'
+-- Un etudiant qui se declare hors statistiques travaillerait sans que rien ne remonte.
+update public.profiles set staff = true where id = '11111111-1111-1111-1111-111111111111';
+select prenom, staff as "staff (attendu: f)" from public.profiles where id = '11111111-1111-1111-1111-111111111111';
+
+\echo ''
 \echo '-- 5. corrige son annee (doit REUSSIR)'
 update public.profiles set annee = 'DFASO2' where id = '11111111-1111-1111-1111-111111111111';
 select annee as "annee (attendu: DFASO2)" from public.profiles where id = '11111111-1111-1111-1111-111111111111';

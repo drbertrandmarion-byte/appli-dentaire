@@ -54,12 +54,18 @@ visible dans le code de la page — personne ne peut contourner ces règles.
 | Lire ses propres résultats | Lire le profil ou les résultats d'un autre |
 | Enregistrer ses propres scores | Enregistrer un score au nom d'un autre |
 | | Se déclarer administrateur |
+| | S'accorder la lecture radiographique (`radio`) |
+| | Se retirer des statistiques (`staff`) |
 
 L'administratrice, elle, lit tous les profils et résultats, valide et supprime.
 
+Les deux dernières lignes se décident depuis le back-office, jamais depuis
+l'application : la première ouvre un mode qui montre les corrigés, la seconde
+retire un compte des chiffres de la promotion.
+
 ## Vérifier soi-même ces garanties
 
-`test-rls.sql` rejoue ces treize situations sur une base PostgreSQL jetable
+`test-rls.sql` rejoue ces quinze situations sur une base PostgreSQL jetable
 (pas sur la base de production). Il sert de preuve reproductible que les règles
 de sécurité font bien ce qui est annoncé, notamment après toute modification du
 schéma.
@@ -78,7 +84,7 @@ psql -h /tmp -p 5433 -d endodiag_test -f test-rls.sql
 
 | Table | Contenu |
 |---|---|
-| `profiles` | Nom, prénom, année, faculté, état de validation, dernière connexion |
+| `profiles` | Nom, prénom, année, faculté, état de validation, dernière connexion, accès radio (`radio`), hors statistiques (`staff`) |
 | `admins` | Comptes enseignants — volontairement hors de `profiles` |
 | `results` | Une ligne par série terminée (score, nombre de cas, mode) |
 | `case_results` | Une ligne par cas traité — sert aux pathologies les plus ratées |

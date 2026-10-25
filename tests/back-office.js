@@ -18,11 +18,18 @@ const PROFILES = [
   { id:'t1', email:'prof@x.fr',  prenom:'Marion',   nom:'Bertrand', annee:'3ème année', faculte:'UFR Odontologie Dijon', approved:true, created_at:'2025-09-01T09:00:00Z', last_seen_at:'2026-08-20T09:00:00Z' },
   { id:'t2', email:'cr@x.fr',    prenom:'ROUGEMON', nom:'Clement',  annee:'TCEO1',      faculte:'UFR Odontologie Dijon', approved:true, created_at:'2025-09-02T09:00:00Z', last_seen_at:'2026-08-20T09:00:00Z' },
   // Sa promotion n'existe que pour lui : elle ne doit pas etre proposee dans le filtre.
-  { id:'a1', email:'ad@x.fr',    prenom:'Hélène',   nom:'Durand',   annee:'Enseignants', faculte:'UFR Odontologie Dijon', approved:true, created_at:'2025-09-03T09:00:00Z', last_seen_at:'2026-08-20T09:00:00Z' }
+  { id:'a1', email:'ad@x.fr',    prenom:'Hélène',   nom:'Durand',   annee:'Enseignants', faculte:'UFR Odontologie Dijon', approved:true, created_at:'2025-09-03T09:00:00Z', last_seen_at:'2026-08-20T09:00:00Z' },
+  // t3 porte une adresse nommee dans admin.html sous un nom qui ne l'est pas : seule la
+  // correspondance par ADRESSE peut l'ecarter. C'est la plus sure des trois — un nom se saisit
+  // avec une faute, une adresse non.
+  { id:'t3', email:'drbertrandmarion@gmail.com', prenom:'Compte', nom:'Essai', annee:'TCEO1', faculte:'UFR Odontologie Dijon', approved:true, created_at:'2025-09-04T09:00:00Z', last_seen_at:'2026-08-20T09:00:00Z' },
+  // t4 n'est nomme nulle part : il porte la colonne « staff », posee par le bouton du
+  // back-office. C'est le seul chemin qui ne depende d'aucune orthographe.
+  { id:'t4', email:'t4@x.fr', prenom:'Autre', nom:'Essai', annee:'TCEO1', faculte:'UFR Odontologie Dijon', approved:true, created_at:'2025-09-05T09:00:00Z', last_seen_at:'2026-08-20T09:00:00Z', staff:true }
 ];
 // Les comptes a ecarter, et l'identifiant du compte connecte : le faux serveur declare « a1 »
 // administrateur, et c'est aussi lui qui consulte le back-office.
-const ENSEIGNANTS = ['t1', 't2', 'a1'];
+const ENSEIGNANTS = ['t1', 't2', 'a1', 't3', 't4'];
 const ADMIN_ID = 'a1';
 const estEns = id => ENSEIGNANTS.indexOf(id) !== -1;
 
@@ -66,6 +73,8 @@ for (let i = 0; i < 30; i++) CASES.push({ user_id:'t1', mode:'diagnostic',    di
 for (let i = 0; i < 15; i++) CASES.push({ user_id:'t2', mode:'therapeutique', diagnosis_id:'cellulite_diffuse', correct:true, created_at:quand() });
 for (let i = 0; i < 9;  i++) CASES.push({ user_id:'a1', mode:'radio',         diagnosis_id:'retro-alveolaire-03', correct:true, created_at:quand() });
 for (let i = 0; i < 25; i++) CASES.push({ user_id:'a1', mode:'radio_repere',  diagnosis_id:'couronne_cm',       correct:true, created_at:quand() });
+for (let i = 0; i < 7;  i++) CASES.push({ user_id:'t3', mode:'diagnostic',    diagnosis_id:'necrose',           correct:true, created_at:quand() });
+for (let i = 0; i < 7;  i++) CASES.push({ user_id:'t4', mode:'diagnostic',    diagnosis_id:'necrose',           correct:true, created_at:quand() });
 
 // --- les libelles des reperes ne doivent pas diverger entre les deux fichiers ---
 // index.html et admin.html sont autonomes et ne partagent rien : la table des libelles est
@@ -135,6 +144,16 @@ function controleLibelles(){
         body: JSON.stringify(corps)
       });
     };
+    // Le faux serveur APPLIQUE les ecritures. Sans cela un bouton pourrait « reussir » sans rien
+    // changer, et le test ne prouverait que l'envoi de la requete — pas son effet.
+    if (route.request().method() === 'PATCH' && u.includes('/rest/v1/profiles')) {
+      const m = u.match(/id=eq\.([^&]+)/);
+      const cible = PROFILES.filter(p => p.id === (m && m[1]))[0];
+      if (!cible) return route.fulfill({ status:404, contentType:'application/json', body:'{}' });
+      const corps = JSON.parse(route.request().postData() || '{}');
+      Object.keys(corps).forEach(k => { cible[k] = corps[k]; });
+      return route.fulfill({ status:204, headers:{ 'access-control-allow-origin':'*' }, body:'' });
+    }
     if (u.includes('/rest/v1/admins'))       return json([{ user_id:ADMIN_ID }]);
     if (u.includes('/rest/v1/profiles'))     return page_(PROFILES);
     if (u.includes('/rest/v1/results'))      return page_(RESULTS);
@@ -292,6 +311,109 @@ function controleLibelles(){
                 attenduAbces + ' — les cas d\'un enseignant y sont comptés');
     }
     console.log('\n4quater. comptes écartés :', note.trim() || '(rien)');
+
+    // La carte des comptes hors statistiques : ils ne doivent pas disparaitre SANS TRACE. Chacun
+    // doit y figurer avec la raison de son retrait — seule celle du bouton se defait sur place, et
+    // l'annoncer evite de chercher une action qui ne pourrait rien faire.
+    const horsStats = await page.$$eval('#hors-stats-body tr', rs => rs.map(r =>
+      [...r.querySelectorAll('td')].map(c => c.textContent.replace(/\s+/g, ' ').trim())));
+    const ligneHS = nom => horsStats.filter(l => l[0] && l[0].indexOf(nom) !== -1)[0];
+    [['Marion Bertrand', 'nommé dans le code du back-office'],
+     ['Durand',          'compte administrateur'],
+     ['Compte Essai',    'nommé dans le code du back-office'],
+     ['Autre Essai',     'retiré depuis cet écran']].forEach(([nom, raison]) => {
+      const l = ligneHS(nom);
+      if (!l) pbJs.push('hors stats : « ' + nom + ' » n\'est pas écarté, ou n\'apparaît pas dans la carte');
+      else if (l[3] !== raison) {
+        pbJs.push('hors stats : « ' + nom + ' » est écarté pour « ' + l[3] + ' » au lieu de « ' + raison + ' »');
+      }
+    });
+    // L'acces a la lecture radiographique doit rester reglable pour ces comptes : ils ne figurent
+    // plus dans la liste des etudiants, et sans ce bouton il n'y aurait plus aucun endroit pour
+    // le leur accorder ou le leur retirer.
+    if (!await page.$('#hors-stats-body [data-radio]')) {
+      pbJs.push('hors stats : l\'accès radio de ces comptes n\'est plus réglable nulle part');
+    }
+    console.log('5pre. carte hors stats :');
+    horsStats.forEach(l => console.log('    ', l[0].split(' ').slice(0, 2).join(' '), '→', l[3]));
+  }
+
+  // --- retirer un compte des statistiques, et le remettre ---
+  // C'est le seul chemin qui ne depende d'aucune orthographe, donc le seul utilisable pour un
+  // compte dont on ne sait pas exactement sous quel nom il s'est inscrit. Le test l'exerce de
+  // bout en bout : le compte quitte les chiffres, et les retrouve INTACTS quand on le remet.
+  {
+    // Le bandeau somme les TROIS modes qu'il affiche ; le detail repere par repere est compte
+    // ailleurs et n'y figure pas. L'attendu doit porter sur les memes trois modes, sans quoi le
+    // test reprocherait au back-office un ecart qui vient de son propre calcul.
+    const MODES_BANDEAU = ['diagnostic', 'therapeutique', 'radio'];
+    const casAlice = CASES.filter(c =>
+      c.user_id === 'u1' && MODES_BANDEAU.indexOf(c.mode) !== -1).length;
+    const lire = async () => {
+      const b = {};
+      (await page.$$eval('#stats .stat', els => els.map(e =>
+        [e.querySelector('.l').textContent.trim(), +e.querySelector('.v').textContent.trim()])))
+        .forEach(([l, v]) => { b[l] = v; });
+      b.cas = b['cas diagnostic'] + b['cas thérapeutique'] + b['lectures radio'];
+      return b;
+    };
+    const avant = await lire();
+
+    // Chaque bouton est CHERCHE avant d'etre clique, et son absence est un defaut nomme. Laisser
+    // Playwright echouer sur un delai d'attente interromprait la suite sans dire ce qui manque, et
+    // emporterait au passage les erreurs deja relevees — c'est le piege que ce projet connait
+    // deja ailleurs.
+    const bouton = async (ou, qui) => {
+      const l = page.locator('#' + ou + ' tr:has-text("' + qui + '") [data-staff]');
+      return (await l.count()) ? l.first() : null;
+    };
+
+    const sortir = await bouton('approved-body', 'Alice');
+    if (!sortir) {
+      pbJs.push('hors stats : aucun bouton pour retirer Alice des statistiques dans la liste des étudiants');
+      console.log('\n5bis. retrait d\'Alice : bouton absent');
+    } else {
+      await sortir.click();
+      await page.waitForFunction(
+        () => !/Alice/.test(document.getElementById('approved-body').textContent),
+        null, { timeout:10000 }).catch(() => {});
+      const apres = await lire();
+      const dansHS = ((await page.textContent('#hors-stats-body')) || '').indexOf('Alice') !== -1;
+
+      if (apres['comptes validés'] !== avant['comptes validés'] - 1) {
+        pbJs.push('hors stats : le bouton ne retire pas Alice des comptes validés (' +
+                  avant['comptes validés'] + ' → ' + apres['comptes validés'] + ')');
+      }
+      if (apres.cas !== avant.cas - casAlice) {
+        pbJs.push('hors stats : les ' + casAlice + ' cas d\'Alice restent comptés (' +
+                  avant.cas + ' → ' + apres.cas + ' au lieu de ' + (avant.cas - casAlice) + ')');
+      }
+      if (!dansHS) {
+        pbJs.push('hors stats : Alice ne compte plus et n\'apparaît pas dans la carte — ' +
+                  'elle a disparu sans trace, et rien ne permet de la remettre');
+      }
+
+      // Et le retour : rien n'a ete efface, tout son passe doit reapparaitre.
+      const remettre = dansHS ? await bouton('hors-stats-body', 'Alice') : null;
+      if (!remettre) {
+        if (dansHS) pbJs.push('hors stats : Alice est écartée sans aucun bouton pour la remettre dans les statistiques');
+        console.log('\n5bis. retrait puis retour d\'Alice :', avant.cas, '→', apres.cas,
+                    '→ (retour impossible)');
+      } else {
+        await remettre.click();
+        await page.waitForFunction(
+          () => /Alice/.test(document.getElementById('approved-body').textContent),
+          null, { timeout:10000 }).catch(() => {});
+        const revenu = await lire();
+        if (revenu.cas !== avant.cas || revenu['comptes validés'] !== avant['comptes validés']) {
+          pbJs.push('hors stats : remise dans les statistiques, Alice ne retrouve pas son passé (' +
+                    revenu.cas + ' cas et ' + revenu['comptes validés'] + ' comptes, attendus ' +
+                    avant.cas + ' et ' + avant['comptes validés'] + ')');
+        }
+        console.log('\n5bis. retrait puis retour d\'Alice :', avant.cas, '→', apres.cas, '→',
+                    revenu.cas, 'cas comptés');
+      }
+    }
   }
 
   controleLibelles().forEach(x => pbJs.push(x));
@@ -336,6 +458,12 @@ function controleLibelles(){
 
   await page.selectOption('#promo-filter', '__toutes__');
   await page.locator('.card').last().screenshot({ path:'/tmp/admin.png' });
+  // La carte des comptes hors statistiques est elle aussi a relire a l'oeil : c'est elle qui dit
+  // qui n'est pas compte, et pourquoi.
+  if (await page.$('#hors-stats-card:not(.hidden)')) {
+    await page.locator('#hors-stats-card').screenshot({ path:'/tmp/admin-hors-stats.png' });
+    console.log('   carte hors stats -> /tmp/admin-hors-stats.png');
+  }
   await browser.close();
 
   // --- controle structurel du classeur ---

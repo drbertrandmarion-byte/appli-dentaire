@@ -151,7 +151,9 @@
 
     <div class="card">
       <h2>Comptes validés <span id="approved-count"></span></h2>
-      <p class="hint">Cliquez sur un étudiant pour consulter ses résultats.</p>
+      <p class="hint">Cliquez sur un étudiant pour consulter ses résultats.
+        « ⊘ Hors stats » retire un compte des chiffres sans rien effacer — c'est ce qu'il faut
+        pour un compte d'essai.</p>
       <div class="tbl-wrap"><table>
         <thead><tr>
           <th>Nom</th><th>Année</th><th>Faculté</th><th>Dernière connexion</th><th>Séries</th>
@@ -161,6 +163,21 @@
         <tbody id="approved-body"></tbody>
       </table></div>
       <p class="hint" id="staff-note" style="margin-top:10px;"></p>
+    </div>
+
+    <!-- Les comptes sortis des chiffres. Cette carte n'existe que pour qu'ils ne disparaissent
+         pas SANS TRACE : un compte invisible qu'on ne peut plus remettre, ni dont on ne peut plus
+         régler l'accès radio, serait pire que le problème qu'on vient de corriger. -->
+    <div class="card hidden" id="hors-stats-card">
+      <h2>Comptes hors statistiques <span id="hors-stats-count"></span></h2>
+      <p class="hint">Ni leurs séries ni leurs cas joués n'entrent dans les chiffres de cet écran
+        ou du classeur. Rien n'est effacé : remis dans les statistiques, tout leur passé réapparaît.</p>
+      <div class="tbl-wrap"><table>
+        <thead><tr>
+          <th>Nom</th><th>Année</th><th>Dernière connexion</th><th>Pourquoi</th><th></th>
+        </tr></thead>
+        <tbody id="hors-stats-body"></tbody>
+      </table></div>
     </div>
 
     <div class="card" id="detail-card" style="display:none;">
@@ -227,9 +244,10 @@
   var SESSION_KEY  = 'endodiag-session';
 
   var session = null, profiles = [], results = [], caseResults = [];
-  // Les comptes qui ne sont pas ceux d'etudiants, retires de « profiles » mais conserves ici :
-  // c'est ce qui permet de DIRE lesquels ne sont pas comptes.
-  var enseignants = [];
+  // Les comptes retires de « profiles », conserves ici avec la raison de leur retrait : c'est ce
+  // qui permet de DIRE lesquels ne sont pas comptes, et de remettre dans les chiffres celui qu'on
+  // en a sorti par erreur.
+  var horsStats = [], raisonsHS = {};
   // Ce que le serveur dit detenir mais que l'ecran n'a pas pu charger.
   var manqueALAppel = [];
 
@@ -317,22 +335,34 @@
   };
 
   // ---------- Qui est étudiant, qui ne l'est pas ----------
-  // Ce back-office suit une promotion : les comptes enseignants n'en font pas partie. Les miens
-  // comme ceux de mes collègues gonflaient la « Vue d'ensemble », tiraient les taux d'erreur des
-  // pathologies — un enseignant qui ouvre un cas pour le montrer en cours y compte comme un
-  // étudiant qui le travaille — et s'affichaient au milieu des étudiants dans la liste des
-  // comptes validés. Ils sont donc écartés AVANT tout calcul : comptes, séries et cas joués. Tout
-  // ce que montre cet écran, et tout ce qu'exporte le classeur, ne porte dès lors que sur des
-  // étudiants.
+  // Ce back-office suit une promotion. Mon propre compte n'en fait pas partie, et pas davantage
+  // ceux dont je me sers pour vérifier régulièrement que l'application fonctionne : chaque cas
+  // ouvert pour un essai comptait comme un cas travaillé. Il gonflait la « Vue d'ensemble »,
+  // s'affichait au milieu des étudiants, et surtout tirait les taux d'erreur par pathologie — on
+  // reprenait alors en cours autre chose que ce qui est réellement raté.
   //
-  // Deux sources, parce qu'aucune ne suffit seule :
-  //   - la table « admins » du serveur, qui est la vérité pour les comptes administrateurs et
-  //     couvre d'avance tout collègue qu'on y ajoutera ;
-  //   - la liste ci-dessous, pour un compte enseignant qui n'y figure pas — on peut enseigner
-  //     avec un compte ordinaire sans être administrateur du back-office.
-  var ENSEIGNANTS = ['Marion Bertrand', 'Clément Rougemon', 'Thomas Parmentier'];
+  // Ces comptes sont donc écartés AVANT tout calcul : comptes, séries et cas joués. Rien n'est
+  // effacé en base — tout reste enregistré —, mais plus rien n'entre dans les chiffres de cet
+  // écran ni dans le classeur exporté.
+  //
+  // TROIS sources, parce qu'aucune ne suffit seule :
+  //   - la colonne « staff », posée depuis cet écran par le bouton « Hors stats ». C'est la seule
+  //     qui ne dépende pas de la façon dont un nom a été saisi, donc la seule sur laquelle on
+  //     puisse compter pour un compte dont l'orthographe exacte est inconnue : c'est celle à
+  //     utiliser ;
+  //   - la table « admins » du serveur, qui couvre d'office tout compte administrateur, le mien
+  //     comme celui d'un collègue qu'on y ajouterait ;
+  //   - les deux listes ci-dessous, qui gardent leur utilité tant que la colonne « staff »
+  //     n'existe pas en base : elles valent immédiatement, sans rien exécuter sur le serveur.
+  //
+  // Une adresse e-mail vaut mieux qu'un nom : elle ne se saisit qu'une fois, à l'inscription,
+  // alors qu'un nom peut l'être avec une faute — et une faute ferait manquer la correspondance en
+  // SILENCE, ce qui est le pire des cas : la promotion continuerait d'être comptée de travers
+  // sans que rien ne le signale.
+  var EMAILS_HORS_STATS = ['drbertrandmarion@gmail.com'];
+  var NOMS_HORS_STATS   = ['Marion Bertrand', 'Clément Rougemon', 'Thomas Parmentier'];
 
-  // La comparaison ignore la casse, les accents, la ponctuation et l'ORDRE des mots :
+  // La comparaison des noms ignore la casse, les accents, la ponctuation et l'ORDRE des mots :
   // « Bertrand Marion » et « Marion Bertrand » désignent la même personne, et un prénom composé
   // saisi avec ou sans trait d'union ne doit pas faire manquer la correspondance.
   function cleNom(texte){
@@ -341,14 +371,28 @@
     return s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
             .split(' ').filter(function(m){ return m; }).sort().join(' ');
   }
-  var CLES_ENSEIGNANTS = ENSEIGNANTS.map(cleNom);
+  var CLES_HORS_STATS  = NOMS_HORS_STATS.map(cleNom);
+  var MAILS_HORS_STATS = EMAILS_HORS_STATS.map(function(e){ return e.trim().toLowerCase(); });
 
-  function estEnseignant(p, idsAdmin){
-    if(!p) return false;
-    if(idsAdmin && idsAdmin[p.id]) return true;
+  // Pourquoi ce compte n'est pas compté, ou null s'il l'est. La RAISON importe autant que le
+  // résultat : seule celle du bouton se défait depuis cet écran, et l'annoncer évite de chercher
+  // un bouton qui ne pourrait rien faire.
+  function raisonHorsStats(p, idsAdmin){
+    if(!p) return null;
+    if(idsAdmin && idsAdmin[p.id]) return 'admin';
+    var mail = String(p.email == null ? '' : p.email).trim().toLowerCase();
+    if(mail && MAILS_HORS_STATS.indexOf(mail) !== -1) return 'liste';
     var k = cleNom((p.prenom || '') + ' ' + (p.nom || ''));
-    return !!k && CLES_ENSEIGNANTS.indexOf(k) !== -1;
+    if(k && CLES_HORS_STATS.indexOf(k) !== -1) return 'liste';
+    if(p.staff) return 'bouton';
+    return null;
   }
+
+  var RAISONS = {
+    admin:  'compte administrateur',
+    liste:  'nommé dans le code du back-office',
+    bouton: 'retiré depuis cet écran'
+  };
 
   // ---------- réseau ----------
   // Voir index.html : une connexion defaillante laisse la requete en suspens
@@ -469,9 +513,13 @@
 
       var idsAdmin = {};
       (r[3] || []).forEach(function(a){ if(a && a.user_id) idsAdmin[a.user_id] = true; });
-      enseignants = tousProfils.filter(function(p){ return estEnseignant(p, idsAdmin); });
+      horsStats = []; raisonsHS = {};
       var ecartes = {};
-      enseignants.forEach(function(p){ ecartes[p.id] = true; });
+      tousProfils.forEach(function(p){
+        var raison = raisonHorsStats(p, idsAdmin);
+        if(!raison) return;
+        ecartes[p.id] = true; raisonsHS[p.id] = raison; horsStats.push(p);
+      });
 
       profiles = tousProfils.filter(function(p){ return !ecartes[p.id]; });
       // Series et cas sont ecartes par leur auteur. Le filtre ne retient que les identifiants
@@ -563,25 +611,72 @@
           '<button class="btn' + (p.radio ? ' btn-ok' : '') + '" data-radio="' + esc(p.id) +
             '" data-radio-on="' + (p.radio ? '1' : '0') + '">' +
             (p.radio ? '📷 Radio : oui' : '📷 Radio : non') + '</button>' +
+          // Retirer des chiffres, sans rien effacer ni supprimer : c'est ce qu'il faut pour un
+          // compte d'essai, et c'est réversible depuis la carte « Comptes hors statistiques ».
+          '<button class="btn" data-staff="' + esc(p.id) + '" data-staff-on="0" ' +
+            'title="Ne plus compter ce compte dans les statistiques">⊘ Hors stats</button>' +
           '<button class="btn btn-ko" data-delete="' + esc(p.id) + '">Supprimer</button>' +
         '</div></td></tr>';
     }).join('') : '<tr><td colspan="8"><div class="empty">Aucun compte validé pour le moment.</div></td></tr>';
 
     // Ce qui est écarté doit se voir. Un chiffre qui baisse sans explication se lit comme une
     // perte de données, et il faut pouvoir vérifier d'un coup d'œil QUI n'est pas compté — un
-    // étudiant homonyme d'un enseignant se repérerait ici, et nulle part ailleurs.
-    var pluriel = enseignants.length > 1;
-    $('staff-note').textContent = enseignants.length
-      ? enseignants.length + ' compte' + (pluriel ? 's' : '') + ' enseignant' + (pluriel ? 's' : '') +
-        ' (' + enseignants.map(function(p){ return p.prenom + ' ' + p.nom; }).join(', ') + ') ' +
-        (pluriel ? 'sont écartés' : 'est écarté') + ' de ce tableau de bord : ni le compte, ' +
-        'ni les séries, ni les cas joués n\'entrent dans les chiffres ci-dessus, ' +
-        'dans les tableaux ci-dessous, ni dans le classeur exporté.'
+    // étudiant homonyme d'un compte d'essai se repérerait ici, et nulle part ailleurs.
+    var pluriel = horsStats.length > 1;
+    $('staff-note').textContent = horsStats.length
+      ? horsStats.length + ' compte' + (pluriel ? 's' : '') + ' ' +
+        (pluriel ? 'sont écartés' : 'est écarté') + ' des statistiques (' +
+        horsStats.map(function(p){ return p.prenom + ' ' + p.nom; }).join(', ') + ') : ' +
+        'ni le compte, ni les séries, ni les cas joués n\'entrent dans les chiffres ci-dessus, ' +
+        'dans les tableaux ci-dessous, ni dans le classeur exporté. Détail juste en dessous.'
       : '';
 
+    renderHorsStats();
     renderPromoFilter();
     renderWeak();
     renderRadio();
+  }
+
+  // Les comptes sortis des chiffres : qui, pourquoi, et comment revenir en arrière. Seul le
+  // retrait fait depuis cet écran se défait ici ; les deux autres raisons se corrigent ailleurs,
+  // et le dire évite de chercher un bouton qui ne pourrait rien faire.
+  function renderHorsStats(){
+    var carte = $('hors-stats-card');
+    if(!horsStats.length){ hide(carte); $('hors-stats-body').innerHTML = ''; return; }
+    show(carte);
+    $('hors-stats-count').innerHTML = '<span class="tag tag-wait">' + horsStats.length + '</span>';
+    $('hors-stats-body').innerHTML = horsStats.map(function(p){
+      var raison = raisonsHS[p.id];
+      // Le bouton de retour tient dans la rangée d'actions ; l'explication, elle, passe EN DESSOUS
+      // et revient à la ligne. Laissée dans la rangée, dont la règle interdit la coupure, elle
+      // sortait de la carte et se lisait tronquée.
+      var retour = raison === 'bouton'
+        ? '<button class="btn btn-ok" data-staff="' + esc(p.id) + '" data-staff-on="1">' +
+          '↩ Remettre dans les stats</button>'
+        : '';
+      var explication = raison === 'bouton' ? ''
+        : '<div style="margin-top:6px;font-size:0.78rem;color:var(--muted);' +
+          'white-space:normal;max-width:34ch">' +
+          (raison === 'admin'
+            ? 'Retirez ce compte de la table « admins » pour le recompter.'
+            : 'Retirez son nom de la liste en tête de admin.html pour le recompter.') +
+          '</div>';
+      return '<tr>' +
+        '<td><b>' + esc(p.prenom) + ' ' + esc(p.nom) + '</b><br>' +
+          '<span style="font-size:0.76rem;color:var(--muted)">' + esc(p.email) + '</span></td>' +
+        '<td>' + esc(p.annee) + '</td>' +
+        '<td>' + fmtDateTime(p.last_seen_at) + '</td>' +
+        '<td>' + esc(RAISONS[raison] || raison) + '</td>' +
+        '<td><div class="actions">' +
+          // L'accès à la lecture radiographique reste réglable ici : ces comptes ne figurent plus
+          // dans la liste des étudiants, et sans ce bouton il n'y aurait plus aucun endroit pour
+          // le leur accorder ou le leur retirer.
+          '<button class="btn' + (p.radio ? ' btn-ok' : '') + '" data-radio="' + esc(p.id) +
+            '" data-radio-on="' + (p.radio ? '1' : '0') + '">' +
+            (p.radio ? '📷 Radio : oui' : '📷 Radio : non') + '</button>' +
+          retour +
+        '</div>' + explication + '</td></tr>';
+    }).join('');
   }
 
   // ---------- Pathologies les plus ratées, par promotion ----------
@@ -1159,7 +1254,10 @@
     }
     else if((id = t.getAttribute('data-radio'))){
       var versOn = t.getAttribute('data-radio-on') !== '1';
-      var q = profiles.filter(function(x){ return x.id === id; })[0];
+      // Le bouton existe aussi sur la carte des comptes hors statistiques, dont les fiches ne
+      // sont plus dans « profiles » : sans ce second coup d'œil, le message n'aurait plus de nom.
+      var q = profiles.filter(function(x){ return x.id === id; })[0] ||
+              horsStats.filter(function(x){ return x.id === id; })[0];
       var nom = q ? (q.prenom + ' ' + q.nom) : 'ce compte';
       t.disabled = true; t.textContent = '…';
       authed('/rest/v1/profiles?id=eq.' + id, {
@@ -1175,6 +1273,33 @@
           msg('global-msg', 'Échec : ' + esc(err.message) +
               ' — la colonne « radio » existe-t-elle sur la table profiles ?', 'err');
           t.disabled = false; t.textContent = versOn ? '📷 Radio : non' : '📷 Radio : oui';
+        });
+    }
+    else if((id = t.getAttribute('data-staff'))){
+      // Retirer ou remettre un compte dans les statistiques. Rien n'est efface : seules les
+      // sommes changent, et le compte reapparait dans les chiffres si on le remet.
+      var sort = t.getAttribute('data-staff-on') !== '1';
+      var q2 = profiles.filter(function(x){ return x.id === id; })[0] ||
+               horsStats.filter(function(x){ return x.id === id; })[0];
+      var nom2 = q2 ? (q2.prenom + ' ' + q2.nom) : 'ce compte';
+      t.disabled = true; t.textContent = '…';
+      authed('/rest/v1/profiles?id=eq.' + id, {
+        method:'PATCH', body:{ staff: sort }, prefer:'return=minimal'
+      }).then(loadAll)
+        .then(function(){
+          msg('global-msg', sort
+            ? esc(nom2) + ' ne compte plus dans les statistiques. Ses séries et ses cas restent '
+              + 'enregistrés : le remettre les fera tous réapparaître.'
+            : esc(nom2) + ' compte de nouveau dans les statistiques, avec tout son passé.', 'ok');
+        })
+        .catch(function(err){
+          // La colonne peut ne pas exister : le script supabase/schema.sql est a reexecuter.
+          // Le dire ici plutot que laisser un bouton qui echoue sans expliquer pourquoi.
+          msg('global-msg', 'Échec : ' + esc(err.message) +
+              ' — la colonne « staff » existe-t-elle sur la table profiles ? ' +
+              'Si non, réexécutez <code>supabase/schema.sql</code> dans Supabase ; ' +
+              'elle y est créée sans toucher aux données existantes.', 'err');
+          t.disabled = false; t.textContent = sort ? '⊘ Hors stats' : '↩ Remettre dans les stats';
         });
     }
     else if((id = t.getAttribute('data-delete'))){
