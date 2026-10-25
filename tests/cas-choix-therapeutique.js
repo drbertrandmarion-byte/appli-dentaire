@@ -46,7 +46,7 @@ const IRREVERSIBLE = {
 });
 
 ['Frédéric', 'Amandine', 'Bruno', 'Nathalie', 'Olivier'].forEach(n => {
-  CASES[n] = { title: 'Syndrome mixte', urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['antalgique'] }, final: { geste: ['endo_complet'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
+  CASES[n] = { title: 'Syndrome mixte', urgence: { coronaire: ['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['ains', 'antalgique'] }, final: { geste: ['endo_complet'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
 });
 // Lésion carieuse ou restauration infiltrée : il y a de quoi cureter, et l'étanchéité est à refaire.
 ['Léon', 'Étienne', 'Noémie', 'Romain'].forEach(n => {
@@ -280,6 +280,60 @@ async function run() {
     }
   });
   console.log('Fiche recapitulative :', lignesFiche.length, 'lignes controlees');
+
+  // --- La fiche imprimee doit dire la MEME chose que le corrige ---
+  // Deux tables vivent cote a cote : TX_MULTISTEP_CASES, sur laquelle l'etudiant est note, et
+  // TX_RECAP_TYPES, qu'il imprime. Rien ne les reliait. L'AINS ajoute a l'urgence du syndrome
+  // mixte est entre dans les cas sans entrer dans la fiche, et la suite est restee muette : la
+  // fiche aurait appris le contraire de la correction. On confronte donc, pathologie par
+  // pathologie, les combinaisons d'actes des deux tables. La fiche ne garde qu'une ligne par
+  // situation distincte — c'est voulu —, donc on compare des ENSEMBLES de combinaisons, pas
+  // des listes : chaque situation de la fiche doit exister parmi les cas, et chaque situation
+  // des cas doit figurer sur la fiche.
+  {
+    const tables = await page.evaluate(() => {
+      if (!window.EndoTxTables) return null;
+      const cle = (o) => !o ? 'rien' : ['coronaire', 'chirurgical', 'medicamenteux', 'geste']
+        .map(a => a + '=' + ((o[a] || []).join('+') || '-')).join(' | ');
+      const lis = (table, champAxes, champFinal) => {
+        const out = {};
+        Object.keys(table).forEach(id => {
+          const ens = {};
+          (table[id] || []).forEach(v => {
+            ens[cle(v[champAxes]) + ' >>> ' + cle(v[champFinal])] = true;
+          });
+          out[id] = Object.keys(ens).sort();
+        });
+        return out;
+      };
+      return {
+        cas:   lis(window.EndoTxTables.cas,   'axes', 'finalAxes'),
+        fiche: lis(window.EndoTxTables.fiche, 'axes', 'finalAxes')
+      };
+    });
+    if (!tables) {
+      results.push('FICHE RECAP : window.EndoTxTables est absent — la confrontation ne prouverait rien');
+    } else {
+      const pathologies = Object.keys(tables.cas);
+      if (pathologies.length < 12) {
+        results.push('FICHE RECAP : seulement ' + pathologies.length + ' pathologies dans les cas, ce controle ne couvre pas tout');
+      }
+      pathologies.forEach(id => {
+        const fiche = tables.fiche[id];
+        if (!fiche) { results.push('FICHE RECAP : « ' + id + ' » n\'a aucune ligne sur la fiche imprimable'); return; }
+        tables.cas[id].forEach(c => {
+          if (fiche.indexOf(c) < 0) {
+            results.push('FICHE RECAP : « ' + id + ' » — une situation du corrige manque sur la fiche imprimee : ' + c);
+          }
+        });
+        fiche.forEach(f => {
+          if (tables.cas[id].indexOf(f) < 0) {
+            results.push('FICHE RECAP : « ' + id + ' » — la fiche imprimee annonce une situation que le corrige ignore : ' + f);
+          }
+        });
+      });
+    }
+  }
 
   // ---- Le tirage hors revision epuise les douze pathologies avant d'en repeter une ----
   // Au tirage avec remise, un etudiant pouvait revoir trois fois la meme pathologie avant
