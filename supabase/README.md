@@ -8,8 +8,8 @@ sur l'application tant que le script n'a pas été exécuté** dans Supabase.
 Le script est **ré-exécutable** : relancez-le tel quel dans l'éditeur SQL après
 chaque mise à jour de l'application. Il ne supprime aucune donnée, crée ce qui
 manque, et remplace la contrainte de `case_results` — une contrainte posée à la
-création d'une table ne bouge pas toute seule, et tant qu'elle n'est pas
-remplacée la base **refuse toute lecture radiographique**.
+création d'une table ne bouge pas toute seule, de sorte que ce script doit la
+reposer explicitement pour décrire ce que la base applique vraiment.
 
 ## Mise en place — à faire une seule fois
 

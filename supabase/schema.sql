@@ -243,11 +243,12 @@ create table if not exists public.case_results (
   id           bigint generated always as identity primary key,
   user_id      uuid not null references auth.users(id) on delete cascade,
   -- QUATRE modes, et non deux. L'application écrit aussi « radio » (un cliché lu en entier)
-  -- et « radio_repere » (le détail, repère par repère). Tant qu'ils manquaient ici, chaque
-  -- ligne de lecture radiographique était refusée par la base avec un code 400 — que
-  -- l'application tient pour un refus définitif et met de côté sans rien dire. Les deux
-  -- tableaux du back-office consacrés à la radiographie restaient donc vides, et rien ne
-  -- l'expliquait.
+  -- et « radio_repere » (le détail, repère par repère), et ce script était resté en arrière :
+  -- une base créée à partir de lui seul refusait toute lecture radiographique, avec un code
+  -- 400 que l'application tient pour un refus définitif et met de côté sans rien dire. La
+  -- base en service, elle, avait été élargie à la main — ce qui est précisément la raison de
+  -- remettre le script d'accord avec elle, sans quoi l'écart se paie à la prochaine
+  -- installation.
   mode         text not null check (mode in ('diagnostic', 'therapeutique', 'radio', 'radio_repere')),
   diagnosis_id text not null,        -- ex. 'abces_aigu', 'necrose', ou le nom du cliché
   correct      boolean not null,
@@ -255,9 +256,9 @@ create table if not exists public.case_results (
 );
 
 -- « create table if not exists » ne touche pas à une table déjà créée : sur une base
--- existante, l'ancienne contrainte à deux modes resterait en place et continuerait de refuser
--- les lectures radiographiques. On la remplace donc explicitement. Relancer ce script est sans
--- risque : la contrainte est supprimée puis reposée à l'identique.
+-- existante, la contrainte posée à la création resterait en place, quelle qu'elle soit. On la
+-- remplace donc explicitement, pour que ce script décrive bien ce que la base applique.
+-- Relancer ce script est sans risque : la contrainte est supprimée puis reposée à l'identique.
 alter table public.case_results drop constraint if exists case_results_mode_check;
 alter table public.case_results add constraint case_results_mode_check
   check (mode in ('diagnostic', 'therapeutique', 'radio', 'radio_repere'));
