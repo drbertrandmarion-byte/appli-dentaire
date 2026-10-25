@@ -327,6 +327,67 @@ async function valideEtLis(page){
     await page.close();
   }
 
+  // ---- 1-cinq. La pastille « Nouveau » tient sur son mot, et au milieu de la carte ----
+  // La carte du mode est une colonne flex : un enfant s'y etire sur toute la largeur si on ne
+  // dit rien. La pastille, pensee comme un badge arrondi, mesurait donc 650 px de large sur un
+  // ecran de bureau, avec le mot plante dans le coin gauche. On mesure les deux choses : sa
+  // largeur doit rester proche de celle de son texte, et son centre doit tomber sur celui de la
+  // carte. Les deux ecrans comptent — un telephone avait le meme defaut.
+  {
+    for (const vue of [{ nom: 'bureau', width: 1280, height: 1000 },
+                       { nom: 'telephone', width: 390, height: 844 }]) {
+      const ctx = await browser.newContext({ viewport: { width: vue.width, height: vue.height } });
+      ctx.route('**ujkpnlcbxzhwcftvxgcd.supabase.co**', r => r.abort('failed'));
+      await ctx.addInitScript(() => {
+        localStorage.setItem('endodiag-session', JSON.stringify({
+          access_token: 'test', refresh_token: 'test',
+          expires_at: Date.now() + 3600000, user_id: 'test-user', email: 'test@example.com'
+        }));
+        localStorage.setItem('endodiag-profile', JSON.stringify({
+          id: 'test-user', email: 'test@example.com', prenom: 'Test', nom: 'Auto',
+          annee: 'TCEO1', faculte: 'UFR Odontologie Dijon', approved: true
+        }));
+      });
+      const p = await ctx.newPage();
+      await boot(p, 11);
+      await p.evaluate(() => window.EndoTeacherModes(true, true));
+      await p.waitForTimeout(320);
+
+      const m = await p.evaluate(() => {
+        const carte = document.getElementById('hub-radio-btn');
+        const flag = carte.querySelector('.hub-flag');
+        if (!flag) return null;
+        // Largeur du seul texte, mesuree par une plage de selection : elle ignore le cadre.
+        const plage = document.createRange();
+        plage.selectNodeContents(flag);
+        const c = carte.getBoundingClientRect(), f = flag.getBoundingClientRect();
+        return {
+          carteLargeur: c.width, carteCentre: c.left + c.width / 2,
+          largeur: f.width, centre: f.left + f.width / 2,
+          mot: plage.getBoundingClientRect().width,
+          texte: (flag.textContent || '').trim()
+        };
+      });
+      if (!m) {
+        ko('pastille (' + vue.nom + ') : .hub-flag est introuvable sur la carte du mode radio');
+      } else {
+        if (!/^Nouveau$/i.test(m.texte)) {
+          ko('pastille (' + vue.nom + ') : elle ne porte plus le mot « Nouveau » mais « ' + m.texte + ' »');
+        }
+        // Le cadre ajoute ~18 px de remplissage. Au-dela de 40 px de rab, la pastille s'etire.
+        if (m.largeur > m.mot + 40) {
+          ko('pastille (' + vue.nom + ') : elle s\'etire sur ' + m.largeur.toFixed(0) +
+             ' px pour un mot de ' + m.mot.toFixed(0) + ' px — le mot se retrouve dans un coin');
+        }
+        if (Math.abs(m.centre - m.carteCentre) > 2) {
+          ko('pastille (' + vue.nom + ') : son centre est a ' +
+             (m.centre - m.carteCentre).toFixed(0) + ' px de celui de la carte, elle n\'est pas centree');
+        }
+      }
+      await ctx.close();
+    }
+  }
+
   // ---- 1-zero. La consigne annonce le geste qu'on fait VRAIMENT ----
   // Elle a longtemps commence par « Glissez le point de la legende… ». Le glissement existe et
   // fonctionne — cette suite s'en sert pour tous ses placements — mais ce n'est pas le geste

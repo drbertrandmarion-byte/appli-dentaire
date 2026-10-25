@@ -921,8 +921,13 @@
   #hub-radio-btn{background:var(--radio-accent-100);}
   #hub-radio-btn:hover{border-color:var(--radio-accent);}
   #hub-radio-btn .hub-title{color:var(--radio-accent-dark);}
+  /* La carte est une colonne flex : un enfant s'y étire sur toute la largeur. Sans
+     « align-self », la pastille devenait une barre de 650 px avec le mot au coin
+     gauche. On la referme sur son texte et on la centre sous la description. */
   .hub-flag{
     display:inline-block;
+    align-self:center;
+    text-align:center;
     margin-top:4px;
     font-size:0.64rem;
     font-weight:700;
