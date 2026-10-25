@@ -6,12 +6,34 @@ const PROFILES = [
   { id:'u1', email:'a@x.fr', prenom:'Alice',  nom:'Martin', annee:'3ème année', faculte:'UFR Odontologie Dijon', approved:true,  created_at:'2026-01-10T09:00:00Z', last_seen_at:'2026-08-19T09:00:00Z' },
   { id:'u2', email:'b@x.fr', prenom:'Bruno',  nom:'Dupont', annee:'3ème année', faculte:'UFR Odontologie Dijon', approved:true,  created_at:'2026-01-11T09:00:00Z', last_seen_at:'2026-08-18T09:00:00Z' },
   { id:'u3', email:'c@x.fr', prenom:'Chloé',  nom:'Bernard; "test"', annee:'TCEO1', faculte:'UFR Odontologie Dijon', approved:true, created_at:'2026-02-01T09:00:00Z', last_seen_at:null },
-  { id:'u4', email:'d@x.fr', prenom:'David',  nom:'Petit',  annee:'TCEO1',      faculte:'UFR Odontologie Dijon', approved:false, created_at:'2026-08-01T09:00:00Z', last_seen_at:null }
+  { id:'u4', email:'d@x.fr', prenom:'David',  nom:'Petit',  annee:'TCEO1',      faculte:'UFR Odontologie Dijon', approved:false, created_at:'2026-08-01T09:00:00Z', last_seen_at:null },
+  // --- comptes qui ne sont PAS des etudiants ---
+  // Ils ne doivent entrer dans aucun chiffre : ni le bandeau, ni la liste des comptes valides,
+  // ni les taux d'erreur par pathologie, ni le classeur. Les trois sont ecartes par des chemins
+  // differents, et c'est ce qui rend le controle utile :
+  //   t1 est nomme tel quel dans la liste de admin.html ;
+  //   t2 l'est aussi, mais saisi dans l'ordre inverse et sans accent — c'est ainsi qu'on eprouve
+  //      la comparaison insensible a l'ordre et aux accents ;
+  //   a1 n'est nomme nulle part : il n'est ecarte que parce qu'il figure dans la table « admins ».
+  { id:'t1', email:'prof@x.fr',  prenom:'Marion',   nom:'Bertrand', annee:'3ème année', faculte:'UFR Odontologie Dijon', approved:true, created_at:'2025-09-01T09:00:00Z', last_seen_at:'2026-08-20T09:00:00Z' },
+  { id:'t2', email:'cr@x.fr',    prenom:'ROUGEMON', nom:'Clement',  annee:'TCEO1',      faculte:'UFR Odontologie Dijon', approved:true, created_at:'2025-09-02T09:00:00Z', last_seen_at:'2026-08-20T09:00:00Z' },
+  // Sa promotion n'existe que pour lui : elle ne doit pas etre proposee dans le filtre.
+  { id:'a1', email:'ad@x.fr',    prenom:'Hélène',   nom:'Durand',   annee:'Enseignants', faculte:'UFR Odontologie Dijon', approved:true, created_at:'2025-09-03T09:00:00Z', last_seen_at:'2026-08-20T09:00:00Z' }
 ];
+// Les comptes a ecarter, et l'identifiant du compte connecte : le faux serveur declare « a1 »
+// administrateur, et c'est aussi lui qui consulte le back-office.
+const ENSEIGNANTS = ['t1', 't2', 'a1'];
+const ADMIN_ID = 'a1';
+const estEns = id => ENSEIGNANTS.indexOf(id) !== -1;
+
 const RESULTS = [
   { id:1, user_id:'u1', mode:'diagnostic',    serie:5, score:4, created_at:'2026-08-01T09:00:00Z' },
   { id:2, user_id:'u1', mode:'therapeutique', serie:5, score:3, created_at:'2026-08-02T09:00:00Z' },
-  { id:3, user_id:'u2', mode:'diagnostic',    serie:10, score:5, created_at:'2026-08-03T09:00:00Z' }
+  { id:3, user_id:'u2', mode:'diagnostic',    serie:10, score:5, created_at:'2026-08-03T09:00:00Z' },
+  // Les series des enseignants : comptees, elles feraient passer la promotion pour plus active
+  // qu'elle n'est, et tireraient sa moyenne vers le haut.
+  { id:4, user_id:'t1', mode:'diagnostic',    serie:10, score:10, created_at:'2026-08-04T09:00:00Z' },
+  { id:5, user_id:'a1', mode:'therapeutique', serie:10, score:10, created_at:'2026-08-05T09:00:00Z' }
 ];
 // 3eme annee rate massivement l'abces chronique ; TCEO1 rate la cellulite diffuse.
 const CASES = [];
@@ -37,6 +59,13 @@ for (let i = 0; i < 2; i++) CASES.push({ user_id:'u3', mode:'radio', diagnosis_i
 for (let i = 0; i < 20; i++) CASES.push({ user_id:'u1', mode:'radio_repere', diagnosis_id:'couronne_cm',    correct:i < 4,  created_at:quand() }); // 80 % d'erreur
 for (let i = 0; i < 20; i++) CASES.push({ user_id:'u1', mode:'radio_repere', diagnosis_id:'couronne_metal', correct:i < 12, created_at:quand() }); // 40 %
 for (let i = 0; i < 6;  i++) CASES.push({ user_id:'u3', mode:'radio_repere', diagnosis_id:'sinus',          correct:true,   created_at:quand() }); // 0 %, et moins de 10 fois
+// Ce qu'un enseignant a joue : un cas ouvert pour le montrer en cours, ou le corrige qu'il
+// relit. Compte, il doublerait les cas d'abces chronique de la 3eme annee et ferait tomber leur
+// taux d'erreur de moitie — on reprendrait en cours autre chose que ce qui est reellement rate.
+for (let i = 0; i < 30; i++) CASES.push({ user_id:'t1', mode:'diagnostic',    diagnosis_id:'abces_chronique',  correct:true, created_at:quand() });
+for (let i = 0; i < 15; i++) CASES.push({ user_id:'t2', mode:'therapeutique', diagnosis_id:'cellulite_diffuse', correct:true, created_at:quand() });
+for (let i = 0; i < 9;  i++) CASES.push({ user_id:'a1', mode:'radio',         diagnosis_id:'retro-alveolaire-03', correct:true, created_at:quand() });
+for (let i = 0; i < 25; i++) CASES.push({ user_id:'a1', mode:'radio_repere',  diagnosis_id:'couronne_cm',       correct:true, created_at:quand() });
 
 // --- les libelles des reperes ne doivent pas diverger entre les deux fichiers ---
 // index.html et admin.html sont autonomes et ne partagent rien : la table des libelles est
@@ -106,16 +135,16 @@ function controleLibelles(){
         body: JSON.stringify(corps)
       });
     };
-    if (u.includes('/rest/v1/admins'))       return json([{ user_id:'admin1' }]);
+    if (u.includes('/rest/v1/admins'))       return json([{ user_id:ADMIN_ID }]);
     if (u.includes('/rest/v1/profiles'))     return page_(PROFILES);
     if (u.includes('/rest/v1/results'))      return page_(RESULTS);
     if (u.includes('/rest/v1/case_results')) return page_(CASES);
     return json([]);
   });
-  await page.addInitScript(() => {
+  await page.addInitScript((id) => {
     localStorage.setItem('endodiag-session', JSON.stringify({
-      access_token:'t', refresh_token:'t', user_id:'admin1', email:'prof@x.fr' }));
-  });
+      access_token:'t', refresh_token:'t', user_id:id, email:'prof@x.fr' }));
+  }, ADMIN_ID);
 
   await page.goto('http://localhost:9300/admin.html');
   await page.waitForSelector('#admin-view:not(.hidden)', { timeout:15000 });
@@ -206,6 +235,65 @@ function controleLibelles(){
       pbJs.push('erreurs par repere : un repere vu 6 fois seulement, et rien ne rappelle que le taux y est peu significatif — lu « ' + note.trim() + ' »');
     }
   }
+  // --- les comptes enseignants ne sont PAS des etudiants ---
+  // Ce tableau de bord sert a suivre une promotion. Un enseignant qui ouvre des cas pour les
+  // montrer en cours y comptait comme un etudiant qui les travaille : il gonflait le bandeau,
+  // s'affichait au milieu des etudiants, et tirait les taux d'erreur par pathologie — on
+  // reprenait alors en cours autre chose que ce qui est reellement rate.
+  {
+    const texteValides = (await page.textContent('#approved-body')) || '';
+    ['Bertrand', 'ROUGEMON', 'Durand'].forEach(nom => {
+      if (texteValides.indexOf(nom) !== -1) {
+        pbJs.push('comptes valides : le compte enseignant « ' + nom + ' » figure dans la liste des étudiants');
+      }
+    });
+    // Ce qui est ecarte doit se VOIR : un chiffre qui baisse sans explication se lit comme une
+    // perte de donnees, et un etudiant homonyme d'un enseignant ne se repererait nulle part.
+    const note = ((await page.textContent('#staff-note')) || '').replace(/\s+/g, ' ');
+    ['Marion Bertrand', 'ROUGEMON Clement', 'Hélène Durand'].forEach(nom => {
+      if (note.indexOf(nom) === -1) {
+        pbJs.push('comptes écartés : « ' + nom + ' » n\'est pas compté et rien ne le dit — lu « ' + note.trim() + ' »');
+      }
+    });
+    // La promotion qui n'existe que pour un enseignant ne doit pas etre proposee au filtre.
+    if (promos.indexOf('Enseignants') !== -1) {
+      pbJs.push('filtre : une promotion d\'enseignants est proposée — lu ' + JSON.stringify(promos));
+    }
+    // Le bandeau, compteur par compteur, confronte a ce que le jeu d'essai contient APRES
+    // retrait des enseignants. Un total verifie a la main se perimerait au premier cas ajoute.
+    const bandeau = {};
+    (await page.$$eval('#stats .stat', els => els.map(e =>
+      [e.querySelector('.l').textContent.trim(), e.querySelector('.v').textContent.trim()])))
+      .forEach(([l, v]) => { bandeau[l] = v; });
+    const casEtudiants = m => String(CASES.filter(c => c.mode === m && !estEns(c.user_id)).length);
+    const attendu = {
+      'comptes validés':   String(PROFILES.filter(p => p.approved && !estEns(p.id)).length),
+      'séries terminées':  String(RESULTS.filter(r => !estEns(r.user_id)).length),
+      'cas diagnostic':    casEtudiants('diagnostic'),
+      'cas thérapeutique': casEtudiants('therapeutique'),
+      'lectures radio':    casEtudiants('radio')
+    };
+    Object.keys(attendu).forEach(l => {
+      if (bandeau[l] !== attendu[l]) {
+        pbJs.push('bandeau : « ' + l + ' » affiche ' + (bandeau[l] === undefined ? '(rien)' : bandeau[l]) +
+                  ' au lieu de ' + attendu[l] + ' — les comptes enseignants y sont comptés');
+      }
+    });
+    // Et la pathologie que l'enseignant a jouee trente fois : son nombre de cas traites doit
+    // rester celui des etudiants seuls.
+    const abces = (await page.$$eval('#weak-body tr', rs => rs.map(r =>
+      [...r.querySelectorAll('td')].map(c => c.textContent.trim()))))
+      .filter(l => l[0] === 'Abcès apical chronique')[0];
+    const attenduAbces = String(CASES.filter(c =>
+      c.diagnosis_id === 'abces_chronique' && !estEns(c.user_id)).length);
+    if (!abces) pbJs.push('pathologies : la ligne de l\'abcès apical chronique est introuvable');
+    else if (abces[1] !== attenduAbces) {
+      pbJs.push('pathologies : l\'abcès apical chronique compte ' + abces[1] + ' cas traités au lieu de ' +
+                attenduAbces + ' — les cas d\'un enseignant y sont comptés');
+    }
+    console.log('\n4quater. comptes écartés :', note.trim() || '(rien)');
+  }
+
   controleLibelles().forEach(x => pbJs.push(x));
   const resume = (await page.textContent('#stats')).replace(/\s+/g, ' ');
   if (!/cas diagnostic/.test(resume) || !/cas thérapeutique/.test(resume) || !/lectures radio/.test(resume)) {
@@ -307,6 +395,11 @@ try:
         noms = set(r[1].value for r in lignes)
         if 'Petit' in noms:
             pb.append('un compte NON valide figure dans la feuille des cas')
+        # Le classeur est ce que l'enseignante garde et relit : les comptes qui ne sont pas des
+        # etudiants n'y ont pas plus leur place qu'a l'ecran.
+        for ens in ('Bertrand', 'Clement', 'Durand'):
+            if ens in noms:
+                pb.append('un compte enseignant (%s) figure dans la feuille des cas' % ens)
         # L'ordre annonce est du plus recent au plus ancien.
         dates = [r[0].value for r in lignes]
         if dates != sorted(dates, reverse=True):

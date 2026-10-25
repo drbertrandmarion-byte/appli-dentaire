@@ -133,7 +133,8 @@
 
     <div class="card">
       <h2>Vue d'ensemble</h2>
-      <p class="hint">Chiffres de la promotion, mis à jour à chaque chargement.</p>
+      <p class="hint">Chiffres de la promotion, mis à jour à chaque chargement.
+        Les comptes enseignants n'y entrent pas : seuls les étudiants sont comptés.</p>
       <div class="stats" id="stats"></div>
     </div>
 
@@ -159,6 +160,7 @@
         </tr></thead>
         <tbody id="approved-body"></tbody>
       </table></div>
+      <p class="hint" id="staff-note" style="margin-top:10px;"></p>
     </div>
 
     <div class="card" id="detail-card" style="display:none;">
@@ -225,6 +227,9 @@
   var SESSION_KEY  = 'endodiag-session';
 
   var session = null, profiles = [], results = [], caseResults = [];
+  // Les comptes qui ne sont pas ceux d'etudiants, retires de « profiles » mais conserves ici :
+  // c'est ce qui permet de DIRE lesquels ne sont pas comptes.
+  var enseignants = [];
   // Ce que le serveur dit detenir mais que l'ecran n'a pas pu charger.
   var manqueALAppel = [];
 
@@ -310,6 +315,40 @@
     cellulite_sereuse:'Cellulite séreuse', cellulite_suppuree:'Cellulite suppurée',
     cellulite_diffuse:'Cellulite diffuse'
   };
+
+  // ---------- Qui est étudiant, qui ne l'est pas ----------
+  // Ce back-office suit une promotion : les comptes enseignants n'en font pas partie. Les miens
+  // comme ceux de mes collègues gonflaient la « Vue d'ensemble », tiraient les taux d'erreur des
+  // pathologies — un enseignant qui ouvre un cas pour le montrer en cours y compte comme un
+  // étudiant qui le travaille — et s'affichaient au milieu des étudiants dans la liste des
+  // comptes validés. Ils sont donc écartés AVANT tout calcul : comptes, séries et cas joués. Tout
+  // ce que montre cet écran, et tout ce qu'exporte le classeur, ne porte dès lors que sur des
+  // étudiants.
+  //
+  // Deux sources, parce qu'aucune ne suffit seule :
+  //   - la table « admins » du serveur, qui est la vérité pour les comptes administrateurs et
+  //     couvre d'avance tout collègue qu'on y ajoutera ;
+  //   - la liste ci-dessous, pour un compte enseignant qui n'y figure pas — on peut enseigner
+  //     avec un compte ordinaire sans être administrateur du back-office.
+  var ENSEIGNANTS = ['Marion Bertrand', 'Clément Rougemon', 'Thomas Parmentier'];
+
+  // La comparaison ignore la casse, les accents, la ponctuation et l'ORDRE des mots :
+  // « Bertrand Marion » et « Marion Bertrand » désignent la même personne, et un prénom composé
+  // saisi avec ou sans trait d'union ne doit pas faire manquer la correspondance.
+  function cleNom(texte){
+    var s = String(texte == null ? '' : texte);
+    if(s.normalize) s = s.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    return s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+            .split(' ').filter(function(m){ return m; }).sort().join(' ');
+  }
+  var CLES_ENSEIGNANTS = ENSEIGNANTS.map(cleNom);
+
+  function estEnseignant(p, idsAdmin){
+    if(!p) return false;
+    if(idsAdmin && idsAdmin[p.id]) return true;
+    var k = cleNom((p.prenom || '') + ' ' + (p.nom || ''));
+    return !!k && CLES_ENSEIGNANTS.indexOf(k) !== -1;
+  }
 
   // ---------- réseau ----------
   // Voir index.html : une connexion defaillante laisse la requete en suspens
@@ -407,19 +446,40 @@
       chargeTout('/rest/v1/results?select=*&order=created_at.desc'),
       // user_id et mode sont nécessaires pour ventiler les erreurs par promotion et distinguer
       // ce qui est mal diagnostiqué de ce qui est mal traité.
-      chargeTout('/rest/v1/case_results?select=user_id,mode,diagnosis_id,correct,created_at&order=created_at.desc')
+      chargeTout('/rest/v1/case_results?select=user_id,mode,diagnosis_id,correct,created_at&order=created_at.desc'),
+      // Les comptes administrateurs, pour les ecarter des chiffres de la promotion. La liste
+      // nominative couvrant deja les comptes connus, une table « admins » illisible ne doit pas
+      // empecher le back-office de s'ouvrir : on se rabat alors sur cette seule liste.
+      chargeTout('/rest/v1/admins?select=user_id').catch(function(){ return []; })
     ]).then(function(r){
-      profiles = r[0] || []; results = r[1] || []; caseResults = r[2] || [];
+      var tousProfils = r[0] || [], toutesSeries = r[1] || [], tousCas = r[2] || [];
       // Si malgre la pagination le compte n'y est pas, il faut le DIRE : un back-office qui
       // sous-rapporte sans le signaler fait conclure a l'inactivite d'un etudiant.
+      // Le controle porte sur ce que le SERVEUR a envoye, donc AVANT le tri des comptes
+      // enseignants : mesure apres, l'ecart qu'ils laissent passerait pour une reponse tronquee
+      // et la page crierait au chargement incomplet a chaque ouverture.
       manqueALAppel = [
-        ['comptes', profiles], ['séries', results], ['cas joués', caseResults]
+        ['comptes', tousProfils], ['séries', toutesSeries], ['cas joués', tousCas]
       ].filter(function(p){
         return p[1].totalServeur !== null && p[1].totalServeur !== undefined
             && p[1].length < p[1].totalServeur;
       }).map(function(p){
         return p[1].length + ' ' + p[0] + ' affichés sur ' + p[1].totalServeur + ' existants';
       });
+
+      var idsAdmin = {};
+      (r[3] || []).forEach(function(a){ if(a && a.user_id) idsAdmin[a.user_id] = true; });
+      enseignants = tousProfils.filter(function(p){ return estEnseignant(p, idsAdmin); });
+      var ecartes = {};
+      enseignants.forEach(function(p){ ecartes[p.id] = true; });
+
+      profiles = tousProfils.filter(function(p){ return !ecartes[p.id]; });
+      // Series et cas sont ecartes par leur auteur. Le filtre ne retient que les identifiants
+      // ecartes, plutot que de ne garder que « ce qui appartient a un etudiant connu » : un cas
+      // dont le profil manquerait a l'appel reste compte comme avant au lieu de disparaitre en
+      // silence, et c'est l'avertissement ci-dessus qui signale ce manque.
+      results     = toutesSeries.filter(function(x){ return !ecartes[x.user_id]; });
+      caseResults = tousCas.filter(function(x){ return !ecartes[x.user_id]; });
       // Le tri est refait ici plutot que laisse au serveur. « Dernier cas », le panneau de detail
       // et la feuille du classeur supposent tous un ordre decroissant : s'en remettre a la requete
       // ferait dependre trois affichages d'un detail distant, et une date fausse ne se verrait pas.
@@ -506,6 +566,18 @@
           '<button class="btn btn-ko" data-delete="' + esc(p.id) + '">Supprimer</button>' +
         '</div></td></tr>';
     }).join('') : '<tr><td colspan="8"><div class="empty">Aucun compte validé pour le moment.</div></td></tr>';
+
+    // Ce qui est écarté doit se voir. Un chiffre qui baisse sans explication se lit comme une
+    // perte de données, et il faut pouvoir vérifier d'un coup d'œil QUI n'est pas compté — un
+    // étudiant homonyme d'un enseignant se repérerait ici, et nulle part ailleurs.
+    var pluriel = enseignants.length > 1;
+    $('staff-note').textContent = enseignants.length
+      ? enseignants.length + ' compte' + (pluriel ? 's' : '') + ' enseignant' + (pluriel ? 's' : '') +
+        ' (' + enseignants.map(function(p){ return p.prenom + ' ' + p.nom; }).join(', ') + ') ' +
+        (pluriel ? 'sont écartés' : 'est écarté') + ' de ce tableau de bord : ni le compte, ' +
+        'ni les séries, ni les cas joués n\'entrent dans les chiffres ci-dessus, ' +
+        'dans les tableaux ci-dessous, ni dans le classeur exporté.'
+      : '';
 
     renderPromoFilter();
     renderWeak();

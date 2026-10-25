@@ -317,6 +317,28 @@ dépendent : la colonne « Dernier cas », le panneau de détail et cette feuill
 se verrait pas. Le jeu d'essai contient enfin les cas d'un compte **non validé**, qui ne doivent
 jamais figurer dans le classeur.
 
+Il contrôle aussi que les **comptes enseignants** n'entrent dans aucun chiffre. Ce tableau de bord
+sert à suivre une promotion : un enseignant qui ouvre des cas pour les montrer en cours y comptait
+comme un étudiant qui les travaille — il gonflait le bandeau, s'affichait au milieu des étudiants,
+et tirait les taux d'erreur par pathologie, de sorte qu'on reprenait en cours autre chose que ce qui
+est réellement raté. Les comptes, les séries et les cas joués sont donc écartés **avant tout
+calcul**, à l'écran comme dans le classeur. Deux sources les désignent, et le jeu d'essai éprouve
+les deux séparément : la table `admins` du serveur, et une liste nominative déclarée dans
+`admin.html` pour un collègue qui enseigne sans être administrateur du back-office. La
+correspondance par nom ignore la casse, les accents et l'**ordre des mots** — « Bertrand Marion »
+et « Marion Bertrand » désignent la même personne —, ce que le jeu d'essai vérifie en saisissant
+l'un des comptes à l'envers et sans accent.
+
+Les compteurs attendus ne sont pas recopiés à la main : le test les **recalcule** depuis son propre
+jeu d'essai, enseignants retirés. Un total écrit en dur se périmerait au premier cas ajouté, et
+c'est alors le test qu'on corrigerait plutôt que le défaut. Il exige enfin que ce qui est écarté se
+**voie** : la page nomme les comptes non comptés. Un chiffre qui baisse sans explication se lit
+comme une perte de données, et un étudiant homonyme d'un enseignant ne se repérerait nulle part
+ailleurs.
+
+Ses mutations de contrôle : ne plus écarter personne, ignorer la table `admins`, et ignorer la
+liste nominative. Les trois sont signalées, chacune nommant les comptes qu'elle laisse passer.
+
 Il télécharge ensuite le classeur Excel et le contrôle : archive ZIP intègre, XML bien
 formé dans chaque partie, **compteurs de styles cohérents** (`<fonts count="4">` doit
 réellement contenir quatre polices — un écart est la cause classique du message « contenu
