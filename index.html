@@ -1478,7 +1478,9 @@
           <span class="hub-title">Le choix thérapeutique</span>
           <span class="hub-desc">Le diagnostic est donné : à vous de choisir le traitement d'urgence et le traitement final.</span>
         </button>
-        <!-- Troisième mode : n'est démasqué que pour un compte enseignant (window.EndoTeacherModes). -->
+        <!-- Troisième mode, ouvert à tous depuis que la partie est terminée. Il part tout de même
+             caché : window.EndoTeacherModes le démasque une fois le compte connecté, et hors
+             ligne il reste fermé — le corrigé du serveur n'y serait pas chargé. -->
         <button class="hub-card hidden" id="hub-radio-btn" type="button">
           <span class="hub-icon">🩻</span>
           <span class="hub-title">La lecture radiographique</span>
@@ -1805,7 +1807,8 @@
 
     <div class="result-actions" id="radio-submit-row">
       <button class="btn-primary" id="radio-submit-btn">Valider ma lecture</button>
-      <!-- Part caché : seul un compte enseignant le démasque, comme le bouton du mode. -->
+      <!-- Part caché, et seul un compte enseignant le démasque. Le mode, lui, s'ouvre désormais
+           à tous : c'est cet atelier et le choix du cliché qui restent réservés. -->
       <button class="btn-secondary hidden" id="radio-trace-btn" type="button">✏️ Tracer les zones</button>
     </div>
 
@@ -5760,7 +5763,7 @@
   }
 
   // ---------------------------------------------------------------------------
-  // Troisième mode : lecture radiographique (maquette, compte enseignant seulement)
+  // Troisième mode : lecture radiographique — ouvert à tous les comptes connectés
   // ---------------------------------------------------------------------------
   // L'étudiant touche une entrée de la légende puis la zone du cliché qui lui correspond — le
   // glissement depuis la légende marche aussi, mais c'est le geste de secours, pas celui
@@ -7981,8 +7984,8 @@
   document.getElementById('radio-next-btn').addEventListener('click', radioRendAuHasard);
   document.getElementById('radio-home-btn').addEventListener('click', goHome);
 
-  // Le troisième bouton reste caché jusqu'à ce que le compte connecté soit reconnu comme
-  // enseignant : un étudiant ne doit pas même savoir que ce mode existe.
+  // Le troisième bouton reste caché jusqu'à ce que le compte soit connecté : il s'ouvre alors à
+  // tout le monde. Hors ligne il reste fermé, le corrigé du serveur n'étant pas chargé.
   // La liste des clichés, exposée pour que la suite de tests sache combien il y en a. Sans
   // elle, elle ne peut que tirer au hasard et conclure « plus rien de nouveau » — ce qui est
   // indiscernable d'un cliché que le tirage ne propose jamais, donc jamais vérifié. Le tirage
@@ -8033,17 +8036,22 @@
     });
   })();
 
-  // DEUX portes distinctes, et non plus une seule.
-  //   « mode »  : voir le mode de lecture et choisir le cliché sur lequel on travaille.
+  // TROIS portes distinctes, et non plus deux.
+  //   « mode »  : voir le mode de lecture — ouvert à tout compte connecté depuis que la partie
+  //               est terminée.
   //   « trace » : ouvrir l'atelier, qui modifie le corrigé sur lequel les étudiants sont notés.
-  // Un compte peut recevoir la première sans la seconde — pour éprouver le placement des
-  // repères sur chaque cliché sans pouvoir toucher aux contours. Appelée avec un seul
-  // argument, la fonction ouvre les deux, comme avant.
-  window.EndoTeacherModes = function(mode, trace){
+  //   « choix » : choisir son cliché au lieu de le recevoir au tirage.
+  // Le choix du cliché a quitté la première porte le jour où le mode s'est ouvert à tous. Les
+  // deux allaient ensemble tant que seule l'enseignante entrait ici ; offerte aux étudiants, la
+  // liste remplacerait le tirage, et chacun réviserait le cliché qu'il connaît déjà — l'exercice
+  // n'apprend rien si l'on choisit d'avance ce qu'on va voir.
+  // Appelée avec moins d'arguments, la fonction ouvre tout, comme avant.
+  window.EndoTeacherModes = function(mode, trace, choix){
     if(arguments.length < 2) trace = mode;
+    if(arguments.length < 3) choix = trace;
     (mode  ? showEl : hideEl)(document.getElementById('hub-radio-btn'));
     (trace ? showEl : hideEl)(document.getElementById('radio-trace-btn'));
-    (mode  ? showEl : hideEl)(document.getElementById('radio-choix-wrap'));
+    (choix ? showEl : hideEl)(document.getElementById('radio-choix-wrap'));
     // L'enseignante voit TOUS les clichés, y compris ceux qu'elle n'a pas encore validés :
     // c'est dans l'atelier qu'elle les valide. La liste se refait donc quand la porte s'ouvre.
     radioRemplitChoix();
@@ -8723,13 +8731,21 @@
     $('acct-name').textContent = profile ? (profile.prenom + ' ' + profile.nom) : '';
     $('acct-sub').textContent  = profile ? (profile.annee + ' · ' + profile.faculte) : '';
     (isAdmin ? show : hide)($('acct-admin-btn'));
-    // La lecture radiographique s'ouvre à l'enseignante et aux comptes qui portent le drapeau
-    // « radio » dans leur profil — accordé depuis le back-office. L'ATELIER DE TRACÉ, lui,
-    // reste à l'enseignante seule : il modifie le corrigé sur lequel les étudiants sont notés.
-    // Hors ligne, aucun mode n'est ouvert — pas même à l'enseignante : son atelier publierait
-    // dans le vide et son corrigé ne serait pas à jour.
-    var accesRadio = !offline && (isAdmin || !!(profile && profile.radio));
-    if(window.EndoTeacherModes) window.EndoTeacherModes(accesRadio, !offline && isAdmin);
+    // La lecture radiographique est désormais un mode ordinaire : la partie est terminée, elle
+    // s'ouvre donc à tout compte connecté et validé, sans drapeau à accorder un par un. Le
+    // drapeau « radio » du profil n'est plus lu — il a servi le temps de la mise au point, quand
+    // le mode n'était montré qu'aux comptes qui l'éprouvaient.
+    //
+    // DEUX choses restent à l'enseignante : l'ATELIER DE TRACÉ, qui modifie le corrigé sur
+    // lequel les étudiants sont notés, et le CHOIX DU CLICHÉ — laissé aux étudiants, il
+    // remplacerait le tirage par une liste, et chacun réviserait le cliché qu'il connaît déjà.
+    //
+    // Hors ligne, rien ne s'ouvre, pas même à l'enseignante : le corrigé du serveur n'est pas
+    // chargé, les étudiants seraient notés sur des contours périmés, et l'atelier publierait
+    // dans le vide.
+    var accesRadio       = !offline;
+    var accesEnseignante = !offline && isAdmin;
+    if(window.EndoTeacherModes) window.EndoTeacherModes(accesRadio, accesEnseignante, accesEnseignante);
     // Les trois modes d'entraînement sont fermés hors ligne, l'enseignante comprise : sans
     // serveur, son atelier publierait dans le vide et son corrigé ne serait pas à jour.
     // hide/show de CE bloc, et non hideEl/showEl : les deux blocs de script sont des

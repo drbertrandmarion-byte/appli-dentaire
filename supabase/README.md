@@ -59,9 +59,13 @@ visible dans le code de la page — personne ne peut contourner ces règles.
 
 L'administratrice, elle, lit tous les profils et résultats, valide et supprime.
 
-Les deux dernières lignes se décident depuis le back-office, jamais depuis
-l'application : la première ouvre un mode qui montre les corrigés, la seconde
-retire un compte des chiffres de la promotion.
+`staff` se décide depuis le back-office, jamais depuis l'application : il retire
+un compte des chiffres de la promotion.
+
+`radio` n'est plus lu : la lecture radiographique s'ouvre désormais à tout compte
+connecté. La colonne et sa protection sont conservées — effacer une colonne
+efface ce qu'elle contient, et un ancien drapeau ne doit pas redevenir une porte
+si ce mode devait un jour se refermer.
 
 ## Vérifier soi-même ces garanties
 
@@ -84,7 +88,7 @@ psql -h /tmp -p 5433 -d endodiag_test -f test-rls.sql
 
 | Table | Contenu |
 |---|---|
-| `profiles` | Nom, prénom, année, faculté, état de validation, dernière connexion, accès radio (`radio`), hors statistiques (`staff`) |
+| `profiles` | Nom, prénom, année, faculté, état de validation, dernière connexion, hors statistiques (`staff`), et `radio` — conservée, mais plus lue |
 | `admins` | Comptes enseignants — volontairement hors de `profiles` |
 | `results` | Une ligne par série terminée (score, nombre de cas, mode) |
 | `case_results` | Une ligne par cas traité — sert aux pathologies les plus ratées |

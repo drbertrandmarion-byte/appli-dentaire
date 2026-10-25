@@ -328,12 +328,6 @@ function controleLibelles(){
         pbJs.push('hors stats : « ' + nom + ' » est écarté pour « ' + l[3] + ' » au lieu de « ' + raison + ' »');
       }
     });
-    // L'acces a la lecture radiographique doit rester reglable pour ces comptes : ils ne figurent
-    // plus dans la liste des etudiants, et sans ce bouton il n'y aurait plus aucun endroit pour
-    // le leur accorder ou le leur retirer.
-    if (!await page.$('#hors-stats-body [data-radio]')) {
-      pbJs.push('hors stats : l\'accès radio de ces comptes n\'est plus réglable nulle part');
-    }
     console.log('5pre. carte hors stats :');
     horsStats.forEach(l => console.log('    ', l[0].split(' ').slice(0, 2).join(' '), '→', l[3]));
   }

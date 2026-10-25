@@ -78,13 +78,18 @@ create table if not exists public.profiles (
 alter table public.profiles add column if not exists active_session    text;
 alter table public.profiles add column if not exists active_session_at timestamptz;
 
--- Accès au mode de lecture radiographique, accordé compte par compte depuis le back-office.
--- Cette colonne manquait à ce script alors que le back-office l'écrit depuis sa création : une
--- base installée à partir d'ici seule avait un bouton « 📷 Radio » qui échouait.
+-- Accès au mode de lecture radiographique, le temps de sa mise au point : il n'était alors
+-- montré qu'aux comptes qui l'éprouvaient, et s'accordait un par un depuis le back-office.
 --
--- Elle figure, elle, dans protect_profile_fields() : sans cela un étudiant se l'accordait
--- lui-même d'une seule requête sur sa propre fiche, et entrait dans un mode qui lui montre les
--- corrigés.
+-- CETTE COLONNE N'EST PLUS LUE : la partie est terminée, et le mode s'ouvre à tout compte
+-- connecté. Elle est conservée plutôt que supprimée — effacer une colonne efface ce qu'elle
+-- contient, et rien ne l'exige. Elle reste protégée ci-dessous, pour qu'un ancien drapeau ne
+-- redevienne pas une porte si ce mode devait un jour se refermer.
+--
+-- Elle manquait à ce script alors que le back-office l'écrivait depuis sa création : une base
+-- installée à partir d'ici seule avait un bouton « 📷 Radio » qui échouait. Et rien ne la
+-- protégeait : un étudiant se l'accordait lui-même d'une seule requête sur sa propre fiche, et
+-- entrait dans un mode qui lui montrait les corrigés.
 alter table public.profiles add column if not exists radio boolean not null default false;
 
 -- Comptes hors statistiques. Le back-office sert à suivre une promotion : le compte enseignant,

@@ -60,7 +60,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 | `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion, cas joués et export Excel |
 | `confettis.js` | Que les confettis tombent sur un sans-faute, et **seulement** sur un sans-faute |
 | `session-unique.js` | Qu'un compte ne reste ouvert que sur un appareil, sans jamais bloquer la révision hors ligne |
-| `lecture-radio.js` | Que le troisième mode et le choix du cliché restent hors de portée des étudiants, que chaque cliché déclaré soit réellement éprouvé, et que la marge de tolérance du pointage fonctionne dans les deux sens |
+| `lecture-radio.js` | Que le troisième mode s'ouvre à tout compte connecté, que l'atelier de tracé et le choix du cliché restent hors de portée des étudiants, que chaque cliché déclaré soit réellement éprouvé, et que la marge de tolérance du pointage fonctionne dans les deux sens |
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
 un différentiel affiché sur une erreur et jamais sur une bonne réponse, et surtout un
@@ -207,14 +207,29 @@ Ses mutations de contrôle : supprimer l'éviction, supprimer la revendication f
 supprimer le contrôle en fin de cas, déconnecter sur une panne réseau, refuser le repli hors ligne,
 et y laisser entrer un compte non validé. Toutes sont signalées.
 
-`lecture-radio.js` couvre le troisième mode, celui de la lecture radiographique, réservé au compte
-enseignant. Il commence par le vérifier du côté de l'étudiant : le bouton doit être caché **et
-n'occuper aucune place** à l'écran — une classe `hidden` neutralisée par une règle plus spécifique
-laisserait un bouton invisible mais cliquable, défaut déjà rencontré trois fois dans ce projet. Comme
-Supabase est coupé, aucun test en boîte noire ne peut simuler une connexion enseignante : la suite
-contrôle donc **dans la source** que `enterApp` appelle encore `EndoTeacherModes(isAdmin)` et que le
-bouton part caché du HTML. Sans ces deux lignes, le mode disparaîtrait pour l'enseignante sans que
-rien ne le signale.
+`lecture-radio.js` couvre le troisième mode, celui de la lecture radiographique. Il est désormais
+**ouvert à tout compte connecté et validé** : la mise au point est terminée, et le drapeau `radio`
+qu'on accordait compte par compte depuis le back-office n'est plus lu. Deux portes restent fermées,
+et ce sont elles que la suite surveille :
+
+- **L'atelier de tracé**, qui modifie le corrigé sur lequel tous les étudiants sont notés.
+- **Le choix du cliché**, qui remplacerait le tirage par une liste : on réviserait alors celui
+  qu'on connaît déjà. Il suivait la même porte que le mode tant que l'enseignante y entrait seule ;
+  ouvrir le mode à tous a obligé à l'en séparer, d'où **trois** portes dans `EndoTeacherModes`.
+
+Le test éprouve le cas ordinaire — un étudiant connecté a le mode, et ni l'atelier ni la liste —,
+puis force chaque porte : un bouton caché n'est pas une porte fermée, et l'atelier doit refuser de
+s'ouvrir même appelé directement. Il vérifie aussi qu'**hors ligne le mode est fermé à tout le
+monde**, l'enseignante comprise : le corrigé du serveur n'y est pas chargé, et un étudiant serait
+noté sur des contours périmés. Le bouton doit alors être caché **et n'occuper aucune place** à
+l'écran — une classe `hidden` neutralisée par une règle plus spécifique laisserait un bouton
+invisible mais cliquable, défaut déjà rencontré trois fois dans ce projet.
+
+Comme Supabase est coupé, aucun test en boîte noire ne peut simuler un compte **en ligne** : la
+suite contrôle donc **dans la source** que `enterApp` ouvre le mode à tous (`accesRadio = !offline`,
+sans aucun reste de `profile.radio`), qu'il réserve les deux autres portes au compte enseignant, et
+que le bouton comme la liste partent cachés du HTML. Sans ces lignes, le mode se refermerait sur
+presque tous les comptes — ou l'atelier s'ouvrirait à un étudiant — sans que rien ne le signale.
 
 Le pointage lui-même ne peut pas être vérifié depuis une table de coordonnées recopiée : elle se
 périmerait au premier déplacement d'un repère. Le test **remplace `Math.random` par un générateur
@@ -286,7 +301,8 @@ Ce que la suite ne peut pas juger : la **justesse clinique** du corrigé de chaq
 zones attendues sont lues dans l'application elle-même. C'est à l'enseignante de valider la liste des
 repères de chaque cas — l'encadré affiché en tête du mode l'annonce explicitement.
 
-Ses mutations de contrôle : afficher le bouton aux étudiants, retirer l'appel dans `enterApp`,
+Ses mutations de contrôle : ouvrir le choix du cliché aux étudiants, leur ouvrir l'atelier de
+tracé, revenir au drapeau `radio` accordé compte par compte, retirer l'appel dans `enterApp`,
 multiplier la tolérance par quatre, l'annuler, poser les points hors du cliché, retirer un cliché de
 la liste déclarée, ignorer le choix de l'enseignante, la montrer aux étudiants dans le HTML, obéir à
 la liste même cachée, la faire disparaître à la validation, vider la ligne « à l'écran », remettre

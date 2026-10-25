@@ -1,7 +1,10 @@
-// Lecture radiographique (troisieme mode, reserve a l'enseignante).
+// Lecture radiographique (troisieme mode, ouvert a tous depuis que la partie est terminee ;
+// l'atelier de trace et le choix du cliche restent a l'enseignante).
 //
 // Ce que la suite verifie, dans l'ordre :
-//   1. Un etudiant ne voit pas le bouton — ni dans le menu, ni meme en cliquant dessus.
+//   1. Hors ligne, le mode reste ferme a tout le monde — le corrige du serveur n'y est pas
+//      charge. Et l'atelier de trace refuse de s'ouvrir pour un compte non enseignant, meme
+//      appele directement : un bouton cache n'est pas une porte fermee.
 //   2. Le cliche accepte un point depose a l'interieur du contour attendu.
 //   3. La marge de contact existe vraiment : un point pose JUSTE A L'EXTERIEUR du contour
 //      passe — le point a un rayon visible, le poser au contact designe bien la zone —,
@@ -297,7 +300,11 @@ async function valideEtLis(page){
     }
   }
 
-  // ---- 1. Cote etudiant : le mode n'existe pas ----
+  // ---- 1. Hors ligne : le mode reste ferme, et l'atelier refuse de s'ouvrir ----
+  // Le mode s'ouvre desormais a tout compte connecte. Il reste cependant ferme HORS LIGNE, a
+  // l'enseignante comprise : le corrige du serveur n'y est pas charge, et un etudiant serait
+  // note sur des contours perimes. C'est dans cet etat que « boot » place la page, Supabase
+  // etant coupe — le bouton doit donc etre cache, et ne pas meme occuper de place.
   {
     const page = await context.newPage();
     await boot(page, 7);
@@ -306,8 +313,8 @@ async function valideEtLis(page){
       const r = b.getBoundingClientRect();
       return { cache: b.classList.contains('hidden'), aire: r.width * r.height };
     });
-    if (!etat.cache) ko('le bouton « lecture radiographique » est visible pour un compte non enseignant');
-    if (etat.aire !== 0) ko('le bouton enseignant occupe encore de la place a l\'ecran (aire ' + etat.aire + ')');
+    if (!etat.cache) ko('hors ligne, le bouton « lecture radiographique » est visible : le corrige du serveur n\'y serait pas charge');
+    if (etat.aire !== 0) ko('hors ligne, le bouton du mode occupe encore de la place a l\'ecran (aire ' + etat.aire + ')');
     // Et le panneau du mode ne doit pas s'ouvrir tout seul.
     const panneau = await page.evaluate(() => document.getElementById('mode-radio-intro').classList.contains('hidden'));
     if (!panneau) ko('le panneau du mode radio est affiche d\'emblee');
@@ -595,18 +602,26 @@ async function valideEtLis(page){
     const src = fs.readFileSync(__dirname + '/../index.html', 'utf8');
     const enterApp = src.slice(src.indexOf('function enterApp(){'));
     const corps = enterApp.slice(0, enterApp.indexOf('\n  }'));
-    // Deux portes distinctes : le mode s'ouvre a l'enseignante ET aux comptes porteurs du
-    // drapeau « radio » ; l'atelier reste a l'enseignante seule. Un appel qui passerait le
-    // meme argument aux deux rendrait le corrige modifiable par un compte simplement autorise
-    // a lire les cliches.
-    if (!/EndoTeacherModes\(accesRadio,\s*!offline && isAdmin\)/.test(corps)) {
-      ko('enterApp n\'appelle plus EndoTeacherModes(accesRadio, isAdmin) : soit le mode ne '
-         + 's\'ouvrirait jamais, soit l\'atelier s\'ouvrirait a qui n\'est pas enseignant');
+    // TROIS portes distinctes. Le mode s'ouvre a tout compte connecte ; l'atelier de trace et
+    // le choix du cliche restent a l'enseignante. Un appel qui passerait le meme argument aux
+    // trois rendrait le corrige modifiable par un etudiant, et remplacerait son tirage par une
+    // liste — il reviserait alors le cliche qu'il connait deja.
+    if (!/EndoTeacherModes\(accesRadio,\s*accesEnseignante,\s*accesEnseignante\)/.test(corps)) {
+      ko('enterApp n\'appelle plus EndoTeacherModes(accesRadio, accesEnseignante, accesEnseignante) : '
+         + 'soit le mode ne s\'ouvrirait plus, soit l\'atelier ou le choix du cliche s\'ouvrirait a un etudiant');
     }
-    // Le drapeau « radio » du profil doit toujours ouvrir le mode, et l'etat hors ligne le
-    // fermer a tout le monde : les deux conditions vivent dans la meme expression.
-    if (!/!offline\s*&&\s*\(isAdmin\s*\|\|\s*!!\(profile && profile\.radio\)\)/.test(corps)) {
-      ko('enterApp ne lit plus le drapeau « radio » du profil : le compte autorise n\'aurait pas le mode');
+    // Le mode ne depend plus d'aucun drapeau de profil — seulement de l'etat hors ligne, qui le
+    // ferme a tout le monde. Un reste de « profile.radio » ici signifierait que la porte s'est
+    // refermee sur les comptes qui n'ont jamais porte ce drapeau, c'est-a-dire presque tous.
+    if (!/var accesRadio\s*=\s*!offline;/.test(corps)) {
+      ko('enterApp ne definit plus accesRadio = !offline : le mode n\'est plus ouvert a tous les comptes connectes');
+    }
+    if (/profile\.radio/.test(corps)) {
+      ko('enterApp lit encore le drapeau « radio » du profil, qui n\'a plus cours : le mode serait refuse a qui ne le porte pas');
+    }
+    // L'enseignante, elle, doit rester seule a pouvoir tracer ET choisir son cliche.
+    if (!/var accesEnseignante\s*=\s*!offline && isAdmin;/.test(corps)) {
+      ko('enterApp ne reserve plus l\'atelier et le choix du cliche au compte enseignant');
     }
     if (!/<button class="hub-card hidden" id="hub-radio-btn"/.test(src)) {
       ko('le bouton #hub-radio-btn ne part plus cache dans le HTML : un etudiant le verrait le temps du chargement');
@@ -1181,19 +1196,20 @@ async function valideEtLis(page){
     await p.close();
   }
 
-  // ---- 2bis. Le compte autorise a LIRE mais pas a TRACER ----
-  // Un compte peut recevoir le mode et le choix du cliche sans l'atelier. Si les deux portes
-  // se confondaient, le corrige sur lequel tous les etudiants sont notes deviendrait
-  // modifiable par quiconque a recu le droit de lire les cliches.
+  // ---- 2bis. L'etudiant connecte : le mode, mais ni l'atelier ni le choix du cliche ----
+  // C'est le cas ORDINAIRE depuis que la partie est terminee, et il tient en trois portes
+  // distinctes. Confondues, l'etudiant recevrait soit l'atelier — et le corrige sur lequel
+  // tous sont notes deviendrait modifiable par n'importe qui —, soit la liste des cliches,
+  // qui remplacerait son tirage et le laisserait reviser celui qu'il connait deja.
   {
     const p = await context.newPage();
     await boot(p, 4);
-    // L'etat exact du compte a creer : le drapeau « radio » accorde, mais pas enseignant.
-    // Sans le poser, la garde de l'atelier refuserait pour la mauvaise raison — parce que le
-    // compte n'a RIEN —, et une garde qui accepterait « accesRadio » passerait inapercue.
+    // L'etat exact du compte a reproduire : connecte, valide, pas enseignant. C'est ce que
+    // « enterApp » fait d'un etudiant en ligne. Sans poser isAdmin a false explicitement, la
+    // garde de l'atelier refuserait pour la mauvaise raison — parce que le compte n'a RIEN.
     await p.evaluate(() => {
       window.EndoAccount = Object.assign({}, window.EndoAccount, { isAdmin: false, accesRadio: true });
-      window.EndoTeacherModes(true, false);
+      window.EndoTeacherModes(true, false, false);
     });
     await p.waitForTimeout(420);
     const vu = await p.evaluate(() => {
@@ -1202,12 +1218,14 @@ async function valideEtLis(page){
       const t = document.getElementById('radio-trace-btn');
       const c = document.getElementById('radio-choix-wrap');
       return { mode: !b.classList.contains('hidden'), trace: !t.classList.contains('hidden'),
-               choix: !c.classList.contains('hidden'), aireTrace: aire(t) };
+               choix: !c.classList.contains('hidden'),
+               aireTrace: aire(t), aireChoix: aire(c) };
     });
-    if (!vu.mode)  ko('acces lecture seule : le mode n\'est pas ouvert');
-    if (!vu.choix) ko('acces lecture seule : le choix du cliche n\'est pas ouvert');
-    if (vu.trace)  ko('acces lecture seule : le bouton de l\'atelier est visible — le corrige serait modifiable');
-    if (vu.aireTrace !== 0) ko('acces lecture seule : le bouton de l\'atelier occupe encore de la place a l\'ecran');
+    if (!vu.mode)  ko('etudiant connecte : le mode de lecture radiographique ne s\'ouvre pas');
+    if (vu.trace)  ko('etudiant connecte : le bouton de l\'atelier est visible — le corrige serait modifiable');
+    if (vu.aireTrace !== 0) ko('etudiant connecte : le bouton de l\'atelier occupe encore de la place a l\'ecran');
+    if (vu.choix)  ko('etudiant connecte : le choix du cliche est ouvert — son tirage serait remplace par une liste');
+    if (vu.aireChoix !== 0) ko('etudiant connecte : la liste des cliches occupe encore de la place a l\'ecran');
 
     // Et le forcer ne doit rien ouvrir : l'atelier a sa propre garde, qui ne regarde que le
     // compte enseignant.

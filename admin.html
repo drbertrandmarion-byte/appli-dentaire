@@ -166,8 +166,8 @@
     </div>
 
     <!-- Les comptes sortis des chiffres. Cette carte n'existe que pour qu'ils ne disparaissent
-         pas SANS TRACE : un compte invisible qu'on ne peut plus remettre, ni dont on ne peut plus
-         régler l'accès radio, serait pire que le problème qu'on vient de corriger. -->
+         pas SANS TRACE : un compte invisible qu'on ne pourrait plus remettre serait pire que le
+         problème qu'on vient de corriger. -->
     <div class="card hidden" id="hors-stats-card">
       <h2>Comptes hors statistiques <span id="hors-stats-count"></span></h2>
       <p class="hint">Ni leurs séries ni leurs cas joués n'entrent dans les chiffres de cet écran
@@ -605,12 +605,6 @@
         '<td>' + moy + '</td>' +
         '<td><div class="actions">' +
           '<button class="btn" data-detail="' + esc(p.id) + '">Résultats</button>' +
-          // Accès au mode de lecture radiographique et au choix du cliché. L'atelier de
-          // tracé n'est PAS concerné : il reste au compte enseignant, puisqu'il modifie le
-          // corrigé sur lequel tous les étudiants sont notés.
-          '<button class="btn' + (p.radio ? ' btn-ok' : '') + '" data-radio="' + esc(p.id) +
-            '" data-radio-on="' + (p.radio ? '1' : '0') + '">' +
-            (p.radio ? '📷 Radio : oui' : '📷 Radio : non') + '</button>' +
           // Retirer des chiffres, sans rien effacer ni supprimer : c'est ce qu'il faut pour un
           // compte d'essai, et c'est réversible depuis la carte « Comptes hors statistiques ».
           '<button class="btn" data-staff="' + esc(p.id) + '" data-staff-on="0" ' +
@@ -668,12 +662,6 @@
         '<td>' + fmtDateTime(p.last_seen_at) + '</td>' +
         '<td>' + esc(RAISONS[raison] || raison) + '</td>' +
         '<td><div class="actions">' +
-          // L'accès à la lecture radiographique reste réglable ici : ces comptes ne figurent plus
-          // dans la liste des étudiants, et sans ce bouton il n'y aurait plus aucun endroit pour
-          // le leur accorder ou le leur retirer.
-          '<button class="btn' + (p.radio ? ' btn-ok' : '') + '" data-radio="' + esc(p.id) +
-            '" data-radio-on="' + (p.radio ? '1' : '0') + '">' +
-            (p.radio ? '📷 Radio : oui' : '📷 Radio : non') + '</button>' +
           retour +
         '</div>' + explication + '</td></tr>';
     }).join('');
@@ -1251,29 +1239,6 @@
       }).then(loadAll)
         .then(function(){ msg('global-msg', 'Compte validé. L\'étudiant a désormais accès aux cas cliniques.', 'ok'); })
         .catch(function(err){ msg('global-msg', 'Échec de la validation : ' + esc(err.message), 'err'); t.disabled = false; t.textContent = 'Valider'; });
-    }
-    else if((id = t.getAttribute('data-radio'))){
-      var versOn = t.getAttribute('data-radio-on') !== '1';
-      // Le bouton existe aussi sur la carte des comptes hors statistiques, dont les fiches ne
-      // sont plus dans « profiles » : sans ce second coup d'œil, le message n'aurait plus de nom.
-      var q = profiles.filter(function(x){ return x.id === id; })[0] ||
-              horsStats.filter(function(x){ return x.id === id; })[0];
-      var nom = q ? (q.prenom + ' ' + q.nom) : 'ce compte';
-      t.disabled = true; t.textContent = '…';
-      authed('/rest/v1/profiles?id=eq.' + id, {
-        method:'PATCH', body:{ radio: versOn }, prefer:'return=minimal'
-      }).then(loadAll)
-        .then(function(){
-          msg('global-msg', versOn
-            ? esc(nom) + ' a désormais accès à la lecture radiographique et au choix du cliché. '
-              + 'Le tracé des zones reste réservé à votre compte.'
-            : esc(nom) + ' n\'a plus accès à la lecture radiographique.', 'ok');
-        })
-        .catch(function(err){
-          msg('global-msg', 'Échec : ' + esc(err.message) +
-              ' — la colonne « radio » existe-t-elle sur la table profiles ?', 'err');
-          t.disabled = false; t.textContent = versOn ? '📷 Radio : non' : '📷 Radio : oui';
-        });
     }
     else if((id = t.getAttribute('data-staff'))){
       // Retirer ou remettre un compte dans les statistiques. Rien n'est efface : seules les
