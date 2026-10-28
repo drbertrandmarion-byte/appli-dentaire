@@ -1703,7 +1703,6 @@
     <div class="def" id="result-def"></div>
 
     <div class="diag-analysis is-diff hidden" id="diag-differential"></div>
-    <div class="diag-analysis is-eco hidden" id="diag-economy"></div>
 
     <div class="diagram-wrap">
       <div class="diagram-svg" id="result-diagram"></div>
@@ -4937,16 +4936,6 @@
   // Rang de la question à partir de laquelle le diagnostic était déjà certain : on rejoue
   // l'interrogatoire dans l'ordre où il a eu lieu, en éliminant à chaque réponse les tableaux
   // devenus incompatibles. Renvoie null si les questions posées ne suffisaient pas à trancher.
-  function decisiveRank(realId){
-    var candidats = Object.keys(DIAGNOSES);
-    for(var i = 0; i < askedIds.length; i++){
-      var qid = askedIds[i];
-      var attendu = signValue(DIAGNOSES[realId], qid);
-      candidats = candidats.filter(function(d){ return signValue(DIAGNOSES[d], qid) === attendu; });
-      if(candidats.length === 1) return i + 1;
-    }
-    return null;
-  }
 
   // Rappel affiché pendant la session. Il ne mentionne que la cible générale : donner ici le
   // minimum propre au cas en cours reviendrait à souffler la réponse.
@@ -5026,47 +5015,6 @@
   }
 
   // Économie diagnostique : combien de signes suffisaient réellement à affirmer ce diagnostic.
-  function renderEconomy(realId){
-    var box  = document.getElementById('diag-economy');
-    var mini = minimalIdentifyingSet(realId);
-    var pose = askedIds.length;
-    var trop = pose >= QUESTION_ALERT;
-
-    // Au-delà du seuil, l'encadré change de ton : ce n'est plus une information, c'est un conseil.
-    box.className = 'diag-analysis ' + (trop ? 'is-diff' : 'is-eco');
-
-    var html = '<h4>Économie diagnostique</h4>' +
-      '<p><b>' + mini.length + ' question' + (mini.length > 1 ? 's' : '') + '</b> suffisai' +
-      (mini.length > 1 ? 'ent' : 't') + ' à affirmer ce diagnostic et à écarter tous les autres : ' +
-      joinFr(mini.map(questionShort)) + '.';
-    if(pose === mini.length) html += ' Vous en avez posé exactement ' + pose + ' : parfait.';
-    else                     html += ' Vous en avez posé ' + pose + '.';
-    html += '</p>';
-
-    // Le reproche générique « trop de questions » n'apprend rien. Ce qui apprend, c'est de savoir
-    // à partir de quand les réponses n'apportaient plus aucune information nouvelle.
-    if(trop){
-      var rang = decisiveRank(realId);
-      if(rang !== null && rang < pose){
-        var inutiles = pose - rang;
-        html += '<p class="da-conclusion">Vos questions auraient pu être optimisées : dès la ' +
-                '<b>' + rang + (rang === 1 ? 'ʳᵉ' : 'ᵉ') + '</b>, plus aucun autre diagnostic ' +
-                'n\'était compatible avec vos réponses. Les <b>' + inutiles + '</b> suivante' +
-                (inutiles > 1 ? 's n\'apportaient' : ' n\'apportait') + ' plus rien.</p>';
-      } else if(rang === null){
-        html += '<p class="da-conclusion">Vos questions auraient pu être mieux ciblées : même après ' +
-                'les ' + pose + ', plusieurs tableaux restaient compatibles avec vos réponses. ' +
-                'Visez les signes qui séparent les diagnostics, pas ceux qu\'ils partagent.</p>';
-      } else {
-        html += '<p class="da-conclusion">Il vous a fallu ' + pose + ' questions pour lever le doute. ' +
-                'En choisissant chacune d\'après les réponses précédentes, ' + QUESTION_TARGET +
-                ' suffisent toujours.</p>';
-      }
-    }
-
-    box.innerHTML = html;
-    showEl(box);
-  }
 
   function submitGuess(){
     var guessId = diagnosisSelect.value;
@@ -5098,11 +5046,19 @@
     document.getElementById('result-title').textContent = actual.title;
     document.getElementById('result-def').textContent = actual.def;
 
-    // L'analyse différentielle n'a de sens que sur une erreur ; l'économie diagnostique se lit
-    // dans les deux cas — y compris après une bonne réponse trouvée en trop de questions.
+    // L'analyse différentielle n'a de sens que sur une erreur.
+    //
+    // L'ENCADRÉ « ÉCONOMIE DIAGNOSTIQUE » A ÉTÉ RETIRÉ D'ICI. Il annonçait le nombre minimal de
+    // questions qui auraient suffi — « 2 questions suffisaient à affirmer ce diagnostic et à
+    // écarter tous les autres » — et reprochait les questions au-delà. Le calcul était juste au
+    // sens logique, et faux au sens clinique : un signe posé ne suffit pas à conclure, il faut
+    // encore les réponses NÉGATIVES des autres pour écarter les diagnostics concurrents. Il
+    // apprenait donc à écourter l'interrogatoire là où il faut le compléter.
+    //
+    // Le rappel affiché PENDANT la série, lui, demeure : il invite à cibler les questions, sans
+    // prétendre qu'un nombre donné suffit.
     if(correct) hideEl(document.getElementById('diag-differential'));
     else        renderDifferential(guessId, caseId);
-    renderEconomy(caseId);
 
     var diagram = DIAGRAMS[caseId];
     var restoration = detectRestoration(currentVariant ? currentVariant.radio : actual.quotes.radio);

@@ -1,4 +1,4 @@
-// Analyse differentielle et economie diagnostique : verifie que la correction nomme bien
+// Analyse differentielle : verifie que la correction nomme bien
 // les signes qui separaient la reponse donnee du diagnostic reel, et distingue un signe
 // recueilli d'un signe jamais demande.
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
@@ -56,7 +56,6 @@ const GUESS  = 'necrose';                 // proposition fixe : fausse la plupar
 
     const r = await page.evaluate(() => {
       const diff = document.getElementById('diag-differential');
-      const eco  = document.getElementById('diag-economy');
       const lis  = [...diff.querySelectorAll('.da-signs li')].map(li => ({
         vu: li.classList.contains('da-seen'),
         txt: li.querySelector('.da-name').textContent.trim(),
@@ -66,8 +65,6 @@ const GUESS  = 'necrose';                 // proposition fixe : fausse la plupar
         titre: document.getElementById('result-title').textContent.trim(),
         juste: document.getElementById('verdict').className.indexOf('ok') !== -1,
         diffVisible: !diff.classList.contains('hidden'),
-        ecoVisible: !eco.classList.contains('hidden'),
-        ecoTxt: eco.textContent.replace(/\s+/g, ' ').trim(),
         conclusion: (diff.querySelector('.da-conclusion') || {}).textContent || '',
         lis
       };
@@ -79,8 +76,6 @@ const GUESS  = 'necrose';                 // proposition fixe : fausse la plupar
     // --- invariants ---
     if (r.juste && r.diffVisible) erreurs.push(`${r.titre} : differentiel affiche sur une BONNE reponse`);
     if (!r.juste && !r.diffVisible) erreurs.push(`${r.titre} : differentiel MANQUANT sur une erreur`);
-    if (!r.ecoVisible) erreurs.push(`${r.titre} : encadre economie manquant`);
-    if (!/\d+ question/.test(r.ecoTxt)) erreurs.push(`${r.titre} : economie sans nombre -> ${r.ecoTxt}`);
 
     // Seules « le test au froid » et « la douleur a la percussion » ont ete posees :
     // tout autre signe doit etre marque comme non pose, et ces deux-la comme vus.
@@ -97,7 +92,6 @@ const GUESS  = 'necrose';                 // proposition fixe : fausse la plupar
   for (const [t, r] of vus) {
     const n = r.lis.length;
     console.log(`${r.juste ? '✓' : '✗'} ${t}`);
-    console.log(`    economie : ${r.ecoTxt.replace('Économie diagnostique', '').trim().slice(0, 120)}`);
     if (r.diffVisible) {
       console.log(`    ${n} signe(s) discriminant(s) : ` +
         r.lis.map(l => `${l.vu ? '✓' : '✗'}${l.txt}`).join(', '));

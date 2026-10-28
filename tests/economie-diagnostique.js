@@ -1,5 +1,14 @@
-// Economie diagnostique : seuil de rappel a 7 questions, changement de ton de l'encadre,
-// et calcul du rang a partir duquel les questions n'apportaient plus rien.
+// Le rappel d'interrogatoire : son seuil de 7 questions, et l'ABSENCE de l'ancien encadre.
+//
+// Cette suite controlait un encadre « Economie diagnostique » qui annoncait le nombre minimal
+// de questions suffisantes et reprochait les suivantes. Il a ete retire : son calcul etait juste
+// au sens logique et faux au sens clinique — un signe pose ne suffit pas a conclure, il faut
+// encore les reponses NEGATIVES des autres pour ecarter les diagnostics concurrents. Il
+// apprenait a ecourter l'interrogatoire la ou il faut le completer.
+//
+// Ce qui reste a eprouver : le rappel affiche PENDANT la serie, qui invite a cibler ses
+// questions sans pretendre qu'un nombre donne suffise. Et le fait que l'encadre ne revienne
+// pas : c'est pour cela que cette suite survit a ce qu'elle controlait.
 const { chromium } = require('/opt/node22/lib/node_modules/playwright');
 
 // Trois interrogatoires de longueurs differentes, pour couvrir les trois branches.
@@ -67,27 +76,31 @@ const SCENARIOS = [
     await page.click('#guess-btn');
     await page.waitForTimeout(200);
 
-    const r = await page.evaluate(() => {
-      const e = document.getElementById('diag-economy');
-      return {
-        titre: document.getElementById('result-title').textContent.trim(),
-        ton: e.className,
-        txt: e.textContent.replace(/\s+/g,' ').trim(),
-        conclusion: (e.querySelector('.da-conclusion')||{}).textContent || ''
-      };
-    });
+    const r = await page.evaluate(() => ({
+      titre: document.getElementById('result-title').textContent.trim(),
+      // L'encadre ne doit plus EXISTER. Le chercher par son identifiant suffit : s'il
+      // reapparaissait, c'est par la qu'il reviendrait.
+      encadre: !!document.getElementById('diag-economy'),
+      // Et son contenu ne doit pas renaitre ailleurs sous une autre forme : la tournure
+      // « N question(s) suffisai(en)t » est la signature de ce qui a ete retire.
+      resultats: (document.getElementById('result-card') || document.body)
+        .textContent.replace(/\s+/g, ' ')
+    }));
 
-    const doitAlerter = sc.qs.length >= 7;
-    if (doitAlerter !== (r.ton.indexOf('is-diff') !== -1)) {
-      erreurs.push(`${sc.nom} : ton de l'encadre incorrect (${r.ton})`);
+    if (r.encadre) {
+      erreurs.push(`${sc.nom} : l'encadre « Economie diagnostique » est revenu dans les resultats`);
     }
-    if (doitAlerter && !r.conclusion) erreurs.push(`${sc.nom} : conseil d'optimisation manquant`);
-    if (!doitAlerter && r.conclusion) erreurs.push(`${sc.nom} : conseil affiche a tort`);
+    if (/suffisai(?:t|ent) a affirmer|suffisai(?:t|ent) à affirmer/.test(r.resultats)) {
+      erreurs.push(`${sc.nom} : les resultats annoncent de nouveau un nombre de questions suffisantes`);
+    }
+    if (/aurai(?:t|ent) pu etre optimis|auraient pu être optimis/.test(r.resultats)) {
+      erreurs.push(`${sc.nom} : les resultats reprochent de nouveau les questions superflues`);
+    }
 
     console.log(`--- ${sc.nom} — cas tire : ${r.titre}`);
     console.log(`    rappel en session : ${nudge.filter(Boolean).length} affichage(s), 1er a la question ${premier+1 || '—'}`);
     if (nudge.find(Boolean)) console.log(`    « ${nudge.find(Boolean).slice(0,150)} »`);
-    console.log(`    encadre : ${r.txt.slice(0, 260)}`);
+    console.log(`    encadre « Economie diagnostique » : ${r.encadre ? 'PRESENT' : 'absent, comme voulu'}`);
     console.log('');
   }
 

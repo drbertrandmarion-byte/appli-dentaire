@@ -53,7 +53,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 |---|---|
 | `cas-choix-therapeutique.js` | Le corrigé clinique des 86 cas nommés du mode « Choix thérapeutique », et la fiche récapitulative imprimable |
 | `analyse-differentielle.js` | La correction du mode « Diagnostic » : signes discriminants, signe posé ou non |
-| `economie-diagnostique.js` | Le rappel à partir de 7 questions et le calcul du rang décisif |
+| `economie-diagnostique.js` | Le rappel à partir de 7 questions, et l'absence de l'ancien encadré « Économie diagnostique » |
 | `barre-commandes.js` | Que les boutons retour / compte / son ne se chevauchent à aucune largeur d'écran |
 | `schemas-soins.js` | Que le schéma dessine bien le soin coronaire décrit par l'énoncé |
 | `legendes-schemas.js` | Que chaque entrée de légende corresponde au tracé : rien de superflu, rien de manquant |
@@ -63,6 +63,19 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 | `session-unique.js` | Qu'un compte ne reste ouvert que sur un appareil, sans jamais bloquer la révision hors ligne |
 | `videos.js` | Que la porte d'accueil à deux boutons et la rubrique vidéo restent hors de portée des étudiants, et que les deux chemins mènent où ils disent |
 | `lecture-radio.js` | Que le troisième mode s'ouvre à tout compte connecté, que l'atelier de tracé et le choix du cliché restent hors de portée des étudiants, que chaque cliché déclaré soit réellement éprouvé, et que la marge de tolérance du pointage fonctionne dans les deux sens |
+
+L'encadré **« Économie diagnostique »** a été retiré des résultats du mode diagnostic. Il
+annonçait le nombre minimal de questions qui auraient suffi — « 2 questions suffisaient à
+affirmer ce diagnostic et à écarter tous les autres » — et reprochait les suivantes. Son calcul
+était juste au sens logique et **faux au sens clinique** : un signe posé ne suffit pas à
+conclure, il faut encore les réponses **négatives** des autres pour écarter les diagnostics
+concurrents. Il apprenait donc à écourter l'interrogatoire là où il faut le compléter.
+
+`economie-diagnostique.js` lui survit, et change d'office : elle éprouve le rappel affiché
+**pendant** la série — qui invite à cibler ses questions sans prétendre qu'un nombre donné
+suffise — et surtout elle **garde la porte fermée**. Elle vérifie que l'encadré n'est pas
+revenu, ni sous son identifiant, ni sous une autre forme : les tournures « suffisaient à
+affirmer » et « auraient pu être optimisées » sont cherchées dans tout l'écran de résultat.
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
 un différentiel affiché sur une erreur et jamais sur une bonne réponse, et surtout un
