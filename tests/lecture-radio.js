@@ -699,13 +699,40 @@ async function valideEtLis(page){
   // que tirer au hasard et conclure « plus rien de nouveau », ce qui est indiscernable d'un
   // cliche que le tirage ne propose jamais — et un cliche jamais tire est un cliche jamais
   // verifie. C'est arrive : avec trois cliches, deux seulement etaient eprouves.
-  let attendus = [];
+  //
+  // TOUS les cliches declares ne sont pas tirables, et c'est voulu : un cliche ajoute reste
+  // hors du tirage tant que l'enseignante n'a pas repris ses contours dans l'atelier et ne les
+  // a pas publies — « valide:false ». Sans cette porte, une promotion entiere serait notee sur
+  // des ebauches. La suite ne peut donc pas exiger que chaque cliche declare soit tire : elle
+  // separe ce qu'un etudiant peut recevoir de ce qui attend encore d'etre valide, et NOMME le
+  // second groupe. Le taire reviendrait a laisser croire que tout a ete eprouve.
+  let attendus = [], enAttente = [];
   {
     const p = await context.newPage();
     await boot(p, 1);
-    attendus = await p.evaluate(() => window.EndoRadioCliches || []);
+    const tous = await p.evaluate(() => window.EndoRadioCliches || []);
+    // La porte elle-meme, telle que l'application la calcule — et non une regle recopiee ici,
+    // qui pourrait diverger d'elle sans que rien ne le dise.
+    const visibles = await p.evaluate(() => {
+      if (!window.EndoRadioVisibles || !window.EndoRadioCas) return null;
+      // EndoRadioVisibles rend des IDENTIFIANTS ; la suite raisonne sur des chemins d'image,
+      // puisque c'est par son image qu'un cliche tire s'identifie a l'ecran.
+      const ids = new Set(window.EndoRadioVisibles());
+      return window.EndoRadioCas.filter(c => ids.has(c.id)).map(c => c.image);
+    });
     await p.close();
-    if (!attendus.length) ko('l\'application ne declare aucun cliche (window.EndoRadioCliches)');
+    if (!tous.length) ko('l\'application ne declare aucun cliche (window.EndoRadioCliches)');
+    if (visibles === null) {
+      ko('window.EndoRadioVisibles est introuvable : impossible de savoir quels cliches un '
+         + 'etudiant peut recevoir, donc lesquels doivent etre eprouves');
+      attendus = tous;
+    } else {
+      attendus = tous.filter(i => visibles.includes(i));
+      enAttente = tous.filter(i => !visibles.includes(i));
+    }
+    if (enAttente.length) {
+      console.log('  cliches en attente de validation, NON eprouves :', enAttente.join(', '));
+    }
 
     // Cette liste ne peut pas etre son propre juge : si elle oubliait un cliche, la suite
     // eprouverait tout ce qu'elle declare et annoncerait « 2 / 2 » alors que la troisieme
@@ -717,7 +744,7 @@ async function valideEtLis(page){
     const fichiers = fs.readdirSync(__dirname + '/../radios')
       .filter(f => /\.(png|jpe?g)$/i.test(f))
       .map(f => 'radios/' + f);
-    const manquants = sourceImages.filter(i => !attendus.includes(i));
+    const manquants = sourceImages.filter(i => !tous.includes(i));
     if (manquants.length) {
       ko('window.EndoRadioCliches passe sous silence ' + manquants.join(', ') +
          ' : ces cliches existent dans RADIO_CASES mais aucun test ne les atteindrait');
@@ -1157,6 +1184,9 @@ async function valideEtLis(page){
 
   // Un cliche jamais tire est un cliche jamais verifie : on le nomme, comme le fait la suite
   // du choix therapeutique avec ses cas nommes.
+  // Un cliche VISIBLE et jamais tire est un cliche jamais verifie. Ceux qui attendent leur
+  // validation sont hors de ce compte — ils sont volontairement hors tirage, et la ligne
+  // ci-dessus les a nommes.
   const jamaisTires = attendus.filter(src => ![...vus].some(v => v.indexOf(src) !== -1));
   if (jamaisTires.length) {
     ko('cliches jamais tires en ' + GRAINES + ' graines, donc jamais verifies : ' + jamaisTires.join(', '));
@@ -2057,7 +2087,12 @@ async function valideEtLis(page){
   }
 
   await browser.close();
-  console.log('lecture-radio            Erreurs : ' + problemes.length + '  (' + vus.size + ' / ' + attendus.length + ' cliche(s) eprouve(s), ' + clichesAvecLeurre + ' avec leurre)');
+  // LA DERNIERE LIGNE DOIT DIRE LA VERITE, y compris sur ce qui n'a PAS ete eprouve : un
+  // cliche en attente de validation ne l'est pas, et un depouillement qui ne lit que cette
+  // ligne doit l'apprendre ici.
+  console.log('lecture-radio            Erreurs : ' + problemes.length + '  (' + vus.size + ' / ' + attendus.length + ' cliche(s) eprouve(s), ' + clichesAvecLeurre + ' avec leurre'
+    + (enAttente.length ? ' ; ' + enAttente.length + ' en attente de validation, non eprouve'
+       + (enAttente.length > 1 ? 's' : '') : '') + ')');
   problemes.forEach(p => console.log('  - ' + p));
   process.exit(problemes.length ? 1 : 0);
 })();

@@ -5940,7 +5940,22 @@
     {id:'racine_distale_26', label:'Racine distale de la dent 26',              color:'#bd6c87',
      familles:['numerotation']},
     {id:'pulpolithe',        label:'Pulpolithe',                                color:'#db2777',
-     note:'Nodule radio-opaque DANS la chambre pulpaire, de densité proche de celle de la dentine, la radioclarté de la chambre restant visible autour de lui. C\'est ce qui le sépare d\'une calcification diffuse, laquelle efface la chambre au lieu de l\'occuper.'}
+     note:'Nodule radio-opaque DANS la chambre pulpaire, de densité proche de celle de la dentine, la radioclarté de la chambre restant visible autour de lui. C\'est ce qui le sépare d\'une calcification diffuse, laquelle efface la chambre au lieu de l\'occuper.'},
+    // Vingt-et-unième cliché. Une couronne TOUT CÉRAMIQUE, qu'il s'agit de ne pas confondre
+    // avec la céramo-métallique : celle-ci montre deux densités dans une même coiffe, celle-là
+    // une seule. Bleu très clair choisi par recherche exhaustive — 70 d'écart avec ses voisines
+    // de légende, 33 avec la teinte la plus proche de tout le catalogue.
+    {id:'couronne_ceramique', label:'Couronne céramique (Emax)',                color:'#b0c8fc',
+     note:'Coiffe d\'une SEULE densité sur toute son épaisseur, modérément radio-opaque et sans chape métallique. C\'est cette densité uniforme qui la sépare de la céramo-métallique, où une chape très opaque se détache nettement du pourtour céramique.'},
+    // Deux molaires mandibulaires à numéroter, et elles sont symétriques : c'est tout
+    // l'exercice. La 46 est présente, la 36 est le leurre — rien sur un cliché ne les distingue
+    // sans savoir de quel côté il a été pris, et c'est précisément ce qu'il faut apprendre à
+    // ne pas affirmer. Les deux teintes sont donc choisies pour être très éloignées l'une de
+    // l'autre : confondre les pastilles reviendrait à rendre l'exercice illisible.
+    {id:'dent_46',           label:'Dent numéro 46',                            color:'#f878ec',
+     familles:['numerotation']},
+    {id:'dent_36',           label:'Dent numéro 36',                            color:'#f8c0a0',
+     familles:['numerotation']}
   ];
 
   // Certains repères ne décrivent pas un signe : ils demandent de SITUER quelque chose. Une
@@ -6729,6 +6744,53 @@
         // refaire — son tracé le corrige.
         racine_distale_26: {poly:[[210,200],[232,194],[254,202],[262,222],[258,244],[240,256],
                                   [220,252],[208,232],[206,214]]}
+      }
+    },
+    // -------------------------------------------------------------------------------------
+    // Vingt-et-unième cliché. Deux molaires mandibulaires traitées, dont l'une porte un screw
+    // post, et une lésion apicale.
+    //
+    // LA LÉGENDE VIENT DE L'ENSEIGNANTE, les contours NON. Elle a dicté les cinq repères
+    // présents et le leurre ; ce sont ses mots et c'est son corrigé. Les contours ci-dessous
+    // sont MES ÉBAUCHES, posées à vue : je ne distingue pas avec certitude laquelle des deux
+    // coiffes est la couronne céramique et laquelle porte l'amalgame, ni où s'arrête
+    // exactement la lacune apicale.
+    //
+    // D'où « valide:false » : AUCUN ÉTUDIANT NE VOIT CE CLICHÉ tant que l'enseignante n'a pas
+    // repris les contours dans l'atelier et ne les a pas publiés — c'est la publication qui
+    // vaut validation. Sans cette porte, une promotion entière serait notée sur mes
+    // suppositions, ce qui est déjà arrivé dans ce projet.
+    //
+    // LE LEURRE EST LE CŒUR DE CE CLICHÉ. La 36 et la 46 sont symétriques : rien sur un film
+    // ne les sépare sans savoir de quel côté il a été pris. Affirmer l'une quand c'est l'autre
+    // est l'erreur que ce cliché doit faire commettre, puis corriger.
+    {
+      id:'screw_post_lesion',
+      titre:'Rétro-alvéolaire — molaires mandibulaires traitées',
+      image:'radios/retro-alveolaire-21.png',
+      caption:'',
+      valide:false,
+      legende:['screw_post','amalgame','couronne_ceramique','lesion','dent_46','dent_36'],
+      cibles:['screw_post','amalgame','couronne_ceramique','lesion','dent_46'],
+      zones:{
+        // La colonne filetée dans la racine mésiale : c'est le seul repère que je pose avec
+        // quelque assurance, ses spires étant visibles sur le bord.
+        screw_post: {poly:[[106,104],[118,102],[124,112],[124,140],[120,164],[112,166],
+                           [106,150],[104,124]]},
+        // Masse radio-opaque de la dent de gauche.
+        amalgame: {poly:[[96,54],[128,50],[166,52],[176,64],[174,92],[150,102],[114,100],
+                         [96,82]]},
+        // Coiffe de la dent de droite, d'une densité plus uniforme que la précédente — c'est
+        // sur ce seul indice que je l'ai prise pour la céramique, et il est mince.
+        couronne_ceramique: {poly:[[192,56],[224,52],[262,56],[274,70],[272,100],[248,114],
+                                   [212,112],[192,92]]},
+        // Lacune apicale. Position la plus incertaine de toutes : je la pose sous les racines
+        // de la dent de gauche, là où le film s'assombrit, sans pouvoir affirmer ses limites.
+        lesion: {poly:[[84,180],[104,172],[126,176],[136,194],[132,216],[112,226],[90,220],
+                       [80,200]]},
+        // La dent entière, de la couronne à l'apex des deux racines.
+        dent_46: {poly:[[92,50],[130,44],[172,48],[182,66],[178,110],[166,160],[152,210],
+                        [136,236],[116,236],[102,200],[92,150],[88,100]]}
       }
     }
   ];
