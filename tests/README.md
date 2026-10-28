@@ -347,6 +347,13 @@ Un piège l'a retenue au départ : les écrans s'effacent en **fondu**, et mesur
 montre tous les deux à la fois. Le premier jet rendait des verdicts contradictoires pour cette
 seule raison. La suite attend donc la fin de la transition avant chaque mesure.
 
+Elle contrôle les **sous-onglets**, un par thème : leurs libellés, le fait qu'un seul soit
+choisi, et surtout qu'un seul thème s'affiche à la fois. Les vidéos des autres thèmes ne doivent
+pas rester à l'écran — une vidéo lancée continuerait de jouer derrière celle qu'on vient
+d'ouvrir. Le passage d'un onglet à l'autre ne pouvait pas être éprouvé avec un thème unique :
+le test en **ajoute un second à la volée**, vérifie que son onglet apparaît, bascule dessus, puis
+le retire.
+
 Elle contrôle enfin qu'une rubrique vide **le dit** — laissée muette, elle se lirait comme un
 chargement en échec — et que chaque forme de lien donne le bon lecteur : YouTube et Vimeo en
 cadre intégré, un fichier `.mp4` en lecteur natif, et un lien non reconnu en **lien cliquable**

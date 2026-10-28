@@ -288,6 +288,18 @@
   /* ---------- Vidéos explicatives ---------- */
   .videos-titre{margin:4px 0 6px; font-size:1.15rem; color:var(--logo-navy);}
   .videos-intro{margin:0 0 18px; color:var(--muted); font-size:0.92rem; line-height:1.55;}
+  .videos-onglets{display:flex; gap:8px; flex-wrap:wrap; margin:0 0 20px;}
+  .videos-onglet{
+    border:1.5px solid var(--border); background:#fff; color:var(--ink);
+    border-radius:999px; padding:8px 15px; font-family:inherit; font-size:0.86rem;
+    font-weight:700; cursor:pointer; line-height:1.3;
+  }
+  .videos-onglet:hover{background:var(--logo-blue-100);}
+  .videos-onglet[aria-selected="true"]{
+    background:var(--logo-navy); border-color:var(--logo-navy); color:#fff;
+  }
+  .videos-onglet .compte{font-weight:400; opacity:0.75; margin-left:5px;}
+
   .videos-theme{margin:0 0 26px;}
   .videos-theme h3{
     margin:0 0 4px; font-size:1rem; color:var(--logo-navy);
@@ -1642,6 +1654,10 @@
       <button class="btn-secondary back-hub-btn" type="button" data-back>← Revenir à l'accueil</button>
       <h2 class="videos-titre">Vidéos explicatives</h2>
       <p class="videos-intro" id="videos-intro"></p>
+      <!-- Les sous-onglets : un par thème. Avec un seul thème, l'onglet nomme simplement la
+           sous-partie ; dès qu'il y en a plusieurs, il sert à passer de l'une à l'autre sans
+           faire défiler toute la page. -->
+      <div class="videos-onglets" id="videos-onglets" role="tablist"></div>
       <div id="videos-liste"></div>
     </div>
 
@@ -4472,16 +4488,27 @@
     });
   }
 
+  // Le thème affiché. Un seul à la fois : empiler tous les thèmes sur une même page obligeait
+  // à faire défiler pour atteindre le dernier, et chaque lecteur chargé en pure perte.
+  var videosThemeActif = 0;
+
+  function themesVideos(){
+    return VIDEOS.filter(function(t){ return t && t.items && t.items.length; });
+  }
+
   function renderVideos(){
-    var liste = document.getElementById('videos-liste');
-    var intro = document.getElementById('videos-intro');
+    var liste   = document.getElementById('videos-liste');
+    var onglets = document.getElementById('videos-onglets');
+    var intro   = document.getElementById('videos-intro');
     if(!liste) return;
-    var themes = VIDEOS.filter(function(t){ return t && t.items && t.items.length; });
+    var themes  = themesVideos();
     var combien = themes.reduce(function(n, t){ return n + t.items.length; }, 0);
+
     if(!combien){
       intro.textContent = '';
+      onglets.innerHTML = '';
       // Une rubrique vide doit DIRE qu'elle est vide, et comment la remplir. Laissée muette,
-      // elle se lit comme une page qui n'a pas fini de charger.
+      // elle se lirait comme une page qui n'a pas fini de charger.
       liste.innerHTML = '<div class="videos-vide"><b>Aucune vidéo pour le moment.</b><br>' +
         'Cette rubrique est prête : il ne lui manque que les vidéos. Elles s\'ajoutent une par ' +
         'une dans le fichier <code>index.html</code>, à l\'endroit marqué « VIDEOS » — un lien ' +
@@ -4489,23 +4516,40 @@
         '</div>';
       return;
     }
-    // « 1 vidéo, de quelques minutes chacune » : l'accord ne tient pas au singulier.
+
+    if(videosThemeActif >= themes.length) videosThemeActif = 0;
+
     intro.textContent = combien > 1
       ? combien + ' vidéos, de quelques minutes chacune. Choisissez un thème.'
       : '1 vidéo, de quelques minutes.';
-    liste.innerHTML = themes.map(function(t){
-      return '<section class="videos-theme">' +
-        '<h3>' + escAttr(t.theme || '') + '</h3>' +
-        (t.note ? '<p class="videos-theme-note">' + escAttr(t.note) + '</p>' : '') +
-        '<div class="videos-grille">' + t.items.map(function(v){
-          return '<article class="video-carte">' +
-            '<div class="video-cadre">' + lecteurVideo(v.url) + '</div>' +
-            '<div class="video-pied"><b>' + escAttr(v.titre || '') + '</b>' +
-            (v.duree ? '<span class="video-duree">' + escAttr(v.duree) + '</span>' : '') +
-            '</div></article>';
-        }).join('') + '</div></section>';
+
+    onglets.innerHTML = themes.map(function(t, i){
+      return '<button type="button" class="videos-onglet" role="tab" data-theme="' + i + '" ' +
+        'aria-selected="' + (i === videosThemeActif ? 'true' : 'false') + '">' +
+        escAttr(t.theme || '') +
+        '<span class="compte">' + t.items.length + '</span></button>';
     }).join('');
+
+    var t = themes[videosThemeActif];
+    liste.innerHTML = '<section class="videos-theme">' +
+      (t.note ? '<p class="videos-theme-note">' + escAttr(t.note) + '</p>' : '') +
+      '<div class="videos-grille">' + t.items.map(function(v){
+        return '<article class="video-carte">' +
+          '<div class="video-cadre">' + lecteurVideo(v.url) + '</div>' +
+          '<div class="video-pied"><b>' + escAttr(v.titre || '') + '</b>' +
+          (v.duree ? '<span class="video-duree">' + escAttr(v.duree) + '</span>' : '') +
+          '</div></article>';
+      }).join('') + '</div></section>';
   }
+
+  // Changer d'onglet redessine la liste — ce qui RETIRE les lecteurs du thème quitté. Les
+  // laisser en place garderait une vidéo en train de jouer derrière celle qu'on vient d'ouvrir.
+  document.getElementById('videos-onglets').addEventListener('click', function(e){
+    var b = e.target.closest ? e.target.closest('[data-theme]') : null;
+    if(!b) return;
+    videosThemeActif = parseInt(b.getAttribute('data-theme'), 10) || 0;
+    renderVideos();
+  });
 
   // ---------- La porte d'entrée à deux boutons ----------
   // Réservée au compte enseignant tant que la rubrique vidéo se construit. Pour un étudiant,

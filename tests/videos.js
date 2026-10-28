@@ -112,20 +112,74 @@ const etat = p => p.evaluate(() => {
         }
         console.log('3. rubrique video : vide, et elle le dit');
       } else {
-        // Chaque theme et chaque titre doivent apparaitre, et chaque video avoir SON lecteur :
-        // un titre sans lecteur se lirait comme une video qui ne demarre pas.
-        items.forEach(t => {
-          if (texte.indexOf(t.theme) === -1) ko('le thème « ' + t.theme + ' » n\'apparait pas dans la rubrique');
-          t.items.forEach(v => {
-            if (texte.indexOf(v.titre) === -1) ko('la vidéo « ' + v.titre + ' » n\'apparait pas dans la rubrique');
-          });
-        });
-        const lecteurs = await p.$$eval('#videos-liste .video-cadre > *', es => es.length);
-        if (lecteurs !== combien) {
-          ko(lecteurs + ' lecteur(s) affiché(s) pour ' + combien + ' vidéo(s) déclarée(s)');
+        // UN SEUL THEME A LA FOIS. Les sous-onglets nomment les themes ; la liste ne montre
+        // que celui qui est choisi. Empiler tous les themes obligeait a faire defiler pour
+        // atteindre le dernier, et chargeait chaque lecteur en pure perte.
+        const onglets = await p.$$eval('#videos-onglets [data-theme]', bs => bs.map(b => ({
+          texte: (b.textContent || '').trim(),
+          choisi: b.getAttribute('aria-selected') === 'true'
+        })));
+        if (onglets.length !== items.length) {
+          ko(onglets.length + ' sous-onglet(s) pour ' + items.length + ' thème(s) déclaré(s)');
         }
-        console.log('3. rubrique video : ' + combien + ' vidéo(s), ' + items.length +
-                    ' thème(s), ' + lecteurs + ' lecteur(s) affiché(s)');
+        items.forEach((t, i) => {
+          if (onglets[i] && onglets[i].texte.indexOf(t.theme) === -1) {
+            ko('le sous-onglet ' + (i + 1) + ' ne porte pas le nom du thème « ' + t.theme + ' »');
+          }
+        });
+        if (onglets.filter(o => o.choisi).length !== 1) {
+          ko('il n\'y a pas exactement un sous-onglet choisi : ' +
+             onglets.filter(o => o.choisi).length);
+        }
+        // Le thème choisi, et LUI SEUL, est affiche.
+        const premier = items[0];
+        premier.items.forEach(v => {
+          if (texte.indexOf(v.titre) === -1) {
+            ko('la vidéo « ' + v.titre + ' » du thème ouvert n\'apparait pas');
+          }
+        });
+        items.slice(1).forEach(t => t.items.forEach(v => {
+          if (texte.indexOf(v.titre) !== -1) {
+            ko('la vidéo « ' + v.titre + ' » d\'un autre thème est affichée en même temps');
+          }
+        }));
+        const lecteurs = await p.$$eval('#videos-liste .video-cadre > *', es => es.length);
+        if (lecteurs !== premier.items.length) {
+          ko(lecteurs + ' lecteur(s) affiché(s) pour les ' + premier.items.length +
+             ' vidéo(s) du thème ouvert');
+        }
+        console.log('3. rubrique video : ' + items.length + ' sous-onglet(s), thème ouvert « ' +
+                    premier.theme + ' » avec ' + lecteurs + ' lecteur(s)');
+
+        // ---- Changer d'onglet ----
+        // Un second thème est ajoute a la volee : avec un seul, le passage d'un onglet a
+        // l'autre ne serait eprouve nulle part, et c'est justement ce que les onglets servent
+        // a faire.
+        await p.evaluate(() => {
+          window.EndoVideos().push({ theme:'Thème d\'essai', items:[
+            { titre:'Vidéo d\'essai', url:'https://youtu.be/essai123456' } ] });
+        });
+        await p.click('#mode-videos [data-back]'); await p.waitForTimeout(FONDU);
+        await p.click('#accueil-videos-btn');      await p.waitForTimeout(FONDU);
+        const combienOnglets = await p.$$eval('#videos-onglets [data-theme]', b => b.length);
+        if (combienOnglets !== items.length + 1) {
+          ko('un thème ajouté ne cree pas son sous-onglet (' + combienOnglets + ' au lieu de ' +
+             (items.length + 1) + ')');
+        } else {
+          await p.click('#videos-onglets [data-theme="' + items.length + '"]');
+          await p.waitForTimeout(300);
+          const apres = ((await p.textContent('#videos-liste')) || '').replace(/\s+/g, ' ');
+          if (apres.indexOf('Vidéo d\'essai') === -1) {
+            ko('cliquer un sous-onglet n\'affiche pas ses vidéos');
+          }
+          if (apres.indexOf(premier.items[0].titre) !== -1) {
+            ko('les vidéos du thème précédent restent affichées après changement d\'onglet — '
+               + 'une vidéo lancée continuerait de jouer derrière');
+          }
+          console.log('4. changement de sous-onglet : le thème suit');
+        }
+        // On retire le thème d'essai pour ne rien laisser derriere soi.
+        await p.evaluate(() => { window.EndoVideos().pop(); });
       }
     }
 
