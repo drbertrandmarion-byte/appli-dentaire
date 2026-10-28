@@ -285,6 +285,31 @@
     gap:14px;
     margin-top:16px;
   }
+  /* ---------- Vidéos explicatives ---------- */
+  .videos-titre{margin:4px 0 6px; font-size:1.15rem; color:var(--logo-navy);}
+  .videos-intro{margin:0 0 18px; color:var(--muted); font-size:0.92rem; line-height:1.55;}
+  .videos-theme{margin:0 0 26px;}
+  .videos-theme h3{
+    margin:0 0 4px; font-size:1rem; color:var(--logo-navy);
+    display:flex; align-items:baseline; gap:8px; flex-wrap:wrap;
+  }
+  .videos-theme-note{margin:0 0 12px; font-size:0.86rem; color:var(--muted);}
+  /* Une vidéo par ligne jusqu'à 520 px de large, deux au-delà : une vignette trop étroite rend
+     le texte d'une diapositive illisible, et c'est souvent lui qui porte l'explication. */
+  .videos-grille{display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr)); gap:16px;}
+  .video-carte{border:1px solid var(--border); border-radius:12px; overflow:hidden; background:#fff;}
+  .video-cadre{position:relative; width:100%; aspect-ratio:16 / 9; background:#0d0e0f;}
+  .video-cadre iframe, .video-cadre video{
+    position:absolute; inset:0; width:100%; height:100%; border:0; display:block;
+  }
+  .video-pied{padding:10px 12px;}
+  .video-pied b{display:block; font-size:0.94rem; line-height:1.4;}
+  .video-duree{font-size:0.8rem; color:var(--muted);}
+  .videos-vide{
+    border:1px dashed var(--border); border-radius:12px; padding:22px 18px;
+    color:var(--muted); font-size:0.9rem; line-height:1.6;
+  }
+
   .hub-card{
     flex:1 1 220px;
     background:var(--logo-blue-100);
@@ -1465,6 +1490,27 @@
       pas enregistrés. Rétablissez la connexion, puis rechargez la page.
     </p>
 
+    <!-- PORTE D'ENTRÉE, réservée au compte enseignant. Les étudiants ne la voient pas : pour
+         eux, l'application s'ouvre directement sur le choix des trois modes, exactement comme
+         avant. Elle part donc cachée, et seul EndoAccueilDouble la démasque — le même procédé
+         que le mode de lecture radiographique pendant sa mise au point. -->
+    <div id="accueil-choix" class="hidden">
+      <p class="hub-intro">Que voulez-vous faire ?</p>
+      <div class="hub-buttons">
+        <button class="hub-card" id="accueil-entrainement-btn" type="button">
+          <span class="hub-icon">🎯</span>
+          <span class="hub-title">M'entraîner</span>
+          <span class="hub-desc">Les trois modes d'entraînement : le diagnostic, le choix thérapeutique et la lecture radiographique.</span>
+        </button>
+        <button class="hub-card" id="accueil-videos-btn" type="button">
+          <span class="hub-icon">🎬</span>
+          <span class="hub-title">Les vidéos explicatives</span>
+          <span class="hub-desc">De courtes vidéos, quelques minutes chacune, classées par thème.</span>
+          <span class="hub-flag">Nouveau</span>
+        </button>
+      </div>
+    </div>
+
     <div id="hub-choice">
       <p class="hub-intro">Choisissez un type d'entraînement :</p>
       <div class="hub-buttons">
@@ -1588,6 +1634,15 @@
       <div class="mode-buttons">
         <button class="btn-primary" id="start-radio-btn">Commencer l'entraînement</button>
       </div>
+    </div>
+
+    <!-- Les vidéos explicatives. Panneau réservé au compte enseignant, comme la porte d'entrée
+         qui y mène : tant que la rubrique se construit, les étudiants n'en voient rien. -->
+    <div id="mode-videos" class="hidden">
+      <button class="btn-secondary back-hub-btn" type="button" data-back>← Revenir à l'accueil</button>
+      <h2 class="videos-titre">Vidéos explicatives</h2>
+      <p class="videos-intro" id="videos-intro"></p>
+      <div id="videos-liste"></div>
     </div>
 
   </div>
@@ -4342,19 +4397,155 @@
   document.getElementById('tx-quiz-restart-btn').addEventListener('click', function(){ startTxQuizSession(txQuizLength); });
   document.getElementById('tx-quiz-home-btn').addEventListener('click', goHome);
 
+  // ---------- Vidéos explicatives ----------
+  // LA LISTE EST ICI, et nulle part ailleurs. Pour ajouter une vidéo, il suffit d'ajouter une
+  // ligne dans le thème voulu — ou un thème si aucun ne convient. Rien d'autre n'est à toucher.
+  //
+  // « url » accepte trois formes, reconnues automatiquement :
+  //   - un lien YouTube     : https://www.youtube.com/watch?v=XXXX   ou  https://youtu.be/XXXX
+  //   - un lien Vimeo       : https://vimeo.com/123456789
+  //   - un fichier vidéo    : videos/ma-video.mp4  (déposé dans le dépôt, comme les radios)
+  //
+  // Exemple d'une entrée complète, à recopier :
+  //   { titre:'Reconnaître une pulpite irréversible', duree:'4 min',
+  //     url:'https://youtu.be/XXXXXXXXXXX' }
+  var VIDEOS = [
+    // { theme:'Le diagnostic', note:'Les tableaux cliniques, un par un.', items:[
+    //     { titre:'…', duree:'4 min', url:'…' }
+    //   ] },
+  ];
+
+  // Un lien devient un lecteur. On ne devine pas : chaque forme est reconnue explicitement, et
+  // ce qui n'est reconnu par aucune est AFFICHÉ COMME UN LIEN plutôt qu'ignoré — une vidéo qui
+  // disparaîtrait sans bruit se chercherait longtemps.
+  function lecteurVideo(url){
+    var u = String(url || '').trim();
+    if(!u) return '';
+    var yt = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+    if(yt){
+      return '<iframe src="https://www.youtube-nocookie.com/embed/' + escAttr(yt[1]) +
+             '" title="Vidéo" loading="lazy" allowfullscreen ' +
+             'allow="accelerometer; clipboard-write; encrypted-media; picture-in-picture"></iframe>';
+    }
+    var vm = u.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+    if(vm){
+      return '<iframe src="https://player.vimeo.com/video/' + escAttr(vm[1]) +
+             '" title="Vidéo" loading="lazy" allowfullscreen></iframe>';
+    }
+    if(/\.(mp4|webm|ogg|mov)(\?|$)/i.test(u)){
+      return '<video controls preload="metadata" src="' + escAttr(u) + '"></video>';
+    }
+    return '<a class="video-lien" href="' + escAttr(u) + '" target="_blank" rel="noopener">' +
+           'Ouvrir la vidéo' + '</a>';
+  }
+
+  // Exposee pour la suite de tests, comme la liste des cliches l'est pour la sienne : elle doit
+  // pouvoir eprouver la reconnaissance des liens sans recopier ici une regle qui pourrait
+  // diverger de celle-ci en silence. Rien de secret n'est revele — la fonction ne fait que
+  // choisir une balise d'apres la forme d'une adresse.
+  window.EndoVideoLecteur = function(url){ return lecteurVideo(url); };
+
+  function escAttr(v){
+    return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){
+      return { '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c];
+    });
+  }
+
+  function renderVideos(){
+    var liste = document.getElementById('videos-liste');
+    var intro = document.getElementById('videos-intro');
+    if(!liste) return;
+    var themes = VIDEOS.filter(function(t){ return t && t.items && t.items.length; });
+    var combien = themes.reduce(function(n, t){ return n + t.items.length; }, 0);
+    if(!combien){
+      intro.textContent = '';
+      // Une rubrique vide doit DIRE qu'elle est vide, et comment la remplir. Laissée muette,
+      // elle se lit comme une page qui n'a pas fini de charger.
+      liste.innerHTML = '<div class="videos-vide"><b>Aucune vidéo pour le moment.</b><br>' +
+        'Cette rubrique est prête : il ne lui manque que les vidéos. Elles s\'ajoutent une par ' +
+        'une dans le fichier <code>index.html</code>, à l\'endroit marqué « VIDEOS » — un lien ' +
+        'YouTube, un lien Vimeo ou un fichier déposé dans le dépôt font également l\'affaire.' +
+        '</div>';
+      return;
+    }
+    intro.textContent = combien + (combien > 1 ? ' vidéos' : ' vidéo') +
+      ', de quelques minutes chacune. Choisissez un thème.';
+    liste.innerHTML = themes.map(function(t){
+      return '<section class="videos-theme">' +
+        '<h3>' + escAttr(t.theme || '') + '</h3>' +
+        (t.note ? '<p class="videos-theme-note">' + escAttr(t.note) + '</p>' : '') +
+        '<div class="videos-grille">' + t.items.map(function(v){
+          return '<article class="video-carte">' +
+            '<div class="video-cadre">' + lecteurVideo(v.url) + '</div>' +
+            '<div class="video-pied"><b>' + escAttr(v.titre || '') + '</b>' +
+            (v.duree ? '<span class="video-duree">' + escAttr(v.duree) + '</span>' : '') +
+            '</div></article>';
+        }).join('') + '</div></section>';
+    }).join('');
+  }
+
+  // ---------- La porte d'entrée à deux boutons ----------
+  // Réservée au compte enseignant tant que la rubrique vidéo se construit. Pour un étudiant,
+  // « accueilDouble » reste faux : l'application s'ouvre directement sur les trois modes, et
+  // rien de ce qui suit ne se voit.
+  var accueilDouble = false;
+  var accueilChoix  = document.getElementById('accueil-choix');
+  var modeVideos    = document.getElementById('mode-videos');
+
+  window.EndoAccueilDouble = function(actif){
+    accueilDouble = !!actif;
+    showHub();
+  };
+
+  // « Accueil » veut dire deux choses selon le compte : la porte à deux boutons pour
+  // l'enseignante, le choix des trois modes pour un étudiant. Un seul endroit en décide.
   function showHub(){
     flushPendingFades();
-    showEl(hubChoice);
     hideModePanels();
+    if(accueilDouble){
+      showEl(accueilChoix);
+      hideEl(hubChoice);
+    } else {
+      hideEl(accueilChoix);
+      showEl(hubChoice);
+    }
     setBackTarget(null);
+  }
+
+  // Le choix des trois modes, atteint depuis la porte d'entrée. Pour un étudiant, c'est déjà
+  // l'accueil : il n'y a alors rien de plus à faire que ce que showHub fait.
+  function showEntrainement(){
+    flushPendingFades();
+    hideModePanels();
+    hideEl(accueilChoix);
+    showEl(hubChoice);
+    setBackTarget(accueilDouble ? showHub : null);
+  }
+
+  function showVideos(){
+    // UN BOUTON CACHÉ N'EST PAS UNE PORTE FERMÉE. Le bouton qui mène ici n'existe pas à l'écran
+    // pour un étudiant, mais il reste dans la page : un clic forcé l'ouvrait. La garde est donc
+    // posée ici, à l'entrée, et non sur l'affichage du bouton — c'est le défaut déjà rencontré
+    // quatre fois dans ce projet, et l'atelier de tracé se garde exactement de la même façon.
+    if(!accueilDouble) return;
+    flushPendingFades();
+    hideEl(accueilChoix);
+    hideEl(hubChoice);
+    hideModePanels();
+    renderVideos();
+    showEl(modeVideos);
+    setBackTarget(showHub);
   }
 
   function showMode(panel){
     flushPendingFades();
     hideEl(hubChoice);
+    hideEl(accueilChoix);
     hideModePanels();
     showEl(panel);
-    setBackTarget(showHub);
+    // Le retour ramène au choix des trois modes, et non à la porte d'entrée : on vient d'en
+    // choisir un, et remonter de deux crans d'un seul bouton se lit comme une sortie de route.
+    setBackTarget(showEntrainement);
   }
 
   // Un seul endroit où la liste des panneaux de mode est écrite : le jour où un quatrième
@@ -4363,6 +4554,7 @@
     hideEl(modeDiagnosticIntro);
     hideEl(modeTxIntro);
     hideEl(document.getElementById('mode-radio-intro'));
+    hideEl(document.getElementById('mode-videos'));
   }
 
   document.getElementById('start-single-btn').addEventListener('click', function(){ revisionWeights = null; startSingleSession(); });
@@ -8069,6 +8261,8 @@
     radioChargeCorrige();
     showMode(modeRadioIntro);
   });
+  document.getElementById('accueil-entrainement-btn').addEventListener('click', showEntrainement);
+  document.getElementById('accueil-videos-btn').addEventListener('click', showVideos);
   document.getElementById('start-radio-btn').addEventListener('click', radioRendAuHasard);
   document.getElementById('radio-submit-btn').addEventListener('click', submitRadio);
   document.getElementById('radio-next-btn').addEventListener('click', radioRendAuHasard);
@@ -8868,6 +9062,12 @@
     var accesRadio       = !offline;
     var accesEnseignante = !offline && isAdmin;
     if(window.EndoTeacherModes) window.EndoTeacherModes(accesRadio, accesEnseignante, accesEnseignante);
+    // La porte d'entrée à deux boutons, et la rubrique vidéo qu'elle ouvre, ne sont montrées
+    // qu'au compte enseignant : la rubrique se construit, et un étudiant ne doit pas même
+    // savoir qu'elle existe. Pour lui, l'application s'ouvre sur les trois modes, comme avant.
+    // Contrairement aux modes, elle reste accessible HORS LIGNE : elle ne dépend d'aucun
+    // corrigé du serveur, et n'enregistre rien.
+    if(window.EndoAccueilDouble) window.EndoAccueilDouble(isAdmin);
     // Les trois modes d'entraînement sont fermés hors ligne, l'enseignante comprise : sans
     // serveur, son atelier publierait dans le vide et son corrigé ne serait pas à jour.
     // hide/show de CE bloc, et non hideEl/showEl : les deux blocs de script sont des

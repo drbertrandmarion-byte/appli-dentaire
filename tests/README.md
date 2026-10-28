@@ -28,6 +28,7 @@ node tests/back-office.js
 node tests/confettis.js
 node tests/session-unique.js
 node tests/lecture-radio.js
+node tests/videos.js
 ```
 
 Résultats attendus :
@@ -46,7 +47,7 @@ Erreurs : 0
 Les autres suites se terminent par `Erreurs : 0` ou `Problèmes : 0`. `back-office.js`
 affiche en plus des tableaux à relire à l'œil — voir plus bas.
 
-## Les onze suites
+## Les douze suites
 
 | Fichier | Ce qu'il vérifie |
 |---|---|
@@ -60,6 +61,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 | `back-office.js` | Le back-office enseignant sur une base **simulée** : ventilation par promotion, cas joués et export Excel |
 | `confettis.js` | Que les confettis tombent sur un sans-faute, et **seulement** sur un sans-faute |
 | `session-unique.js` | Qu'un compte ne reste ouvert que sur un appareil, sans jamais bloquer la révision hors ligne |
+| `videos.js` | Que la porte d'accueil à deux boutons et la rubrique vidéo restent hors de portée des étudiants, et que les deux chemins mènent où ils disent |
 | `lecture-radio.js` | Que le troisième mode s'ouvre à tout compte connecté, que l'atelier de tracé et le choix du cliché restent hors de portée des étudiants, que chaque cliché déclaré soit réellement éprouvé, et que la marge de tolérance du pointage fonctionne dans les deux sens |
 
 `analyse-differentielle.js` parcourt les douze diagnostics et contrôle des invariants :
@@ -330,6 +332,29 @@ serait visible sans l'autre. Contrairement au bouton enseignant, dont l'appel ne
 l'authentification, il n'y a pas de fenêtre de clignotement à protéger : un contrôle en source
 n'attesterait ici de rien. C'est en examinant ce mutant équivalent qu'a été trouvé le vrai trou
 voisin, la copie non retirée au cliché suivant.
+
+`videos.js` couvre la **porte d'accueil à deux boutons** — « m'entraîner » et « les vidéos
+explicatives » — et la rubrique qu'elle ouvre. Les deux sont réservées au compte enseignant tant
+que la rubrique se construit : pour un étudiant, l'application s'ouvre directement sur le choix
+des trois modes, **exactement comme avant**, et c'est la première chose que la suite vérifie.
+
+Elle vérifie ensuite que **forcer le bouton ne l'ouvre pas** : un bouton caché n'est pas une porte
+fermée, défaut déjà rencontré quatre fois dans ce projet — et c'est une mutation de cette suite
+qui l'a trouvé ici aussi, sur le premier jet. La garde vit donc à l'entrée de la fonction, pas sur
+l'affichage du bouton.
+
+Un piège l'a retenue au départ : les écrans s'effacent en **fondu**, et mesurer trop tôt les
+montre tous les deux à la fois. Le premier jet rendait des verdicts contradictoires pour cette
+seule raison. La suite attend donc la fin de la transition avant chaque mesure.
+
+Elle contrôle enfin qu'une rubrique vide **le dit** — laissée muette, elle se lirait comme un
+chargement en échec — et que chaque forme de lien donne le bon lecteur : YouTube et Vimeo en
+cadre intégré, un fichier `.mp4` en lecteur natif, et un lien non reconnu en **lien cliquable**
+plutôt qu'en rien du tout. Cette reconnaissance est interrogée dans la page (`EndoVideoLecteur`)
+et non recopiée dans le test, qui pourrait sinon diverger d'elle sans que rien ne le signale.
+
+Ses mutations de contrôle : retirer la garde d'entrée, et ouvrir la porte à tous les comptes.
+Les deux sont signalées.
 
 `back-office.js` n'interroge **jamais la vraie base** : toutes les réponses Supabase sont
 interceptées et remplacées par un jeu d'essai. C'est délibéré — un test ne doit pas
