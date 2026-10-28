@@ -1802,7 +1802,14 @@ async function valideEtLis(page){
     });
     const cobaye = await p.evaluate(() => {
       if (!window.EndoRadioCas || !window.EndoRadioVisibles) return null;
-      const c = window.EndoRadioCas[window.EndoRadioCas.length - 1];
+      // Le cobaye doit etre un cliche ACTUELLEMENT VISIBLE. Le dernier declare ne fait plus
+      // l'affaire : depuis qu'un cliche en attente de validation ferme la liste, c'est lui
+      // qu'on prenait — et le devalider ne prouvait rien, puisqu'il etait deja invisible. Le
+      // compte ne bougeait pas, et la porte semblait fautive alors qu'elle faisait son office.
+      const visibles = new Set(window.EndoRadioVisibles());
+      const cas = window.EndoRadioCas.filter(c => visibles.has(c.id));
+      if (!cas.length) return null;
+      const c = cas[cas.length - 1];
       delete c.valide;                       // comme un cliche tout juste ajoute
       window.EndoRemplitChoix && window.EndoRemplitChoix();
       return c.id;
