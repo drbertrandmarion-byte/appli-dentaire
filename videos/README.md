@@ -1,7 +1,27 @@
 # Vidéos explicatives
 
-Les fichiers vidéo de la rubrique « Vidéos explicatives » se déposent ici, comme
-les radiographies dans `radios/`.
+Deux voies possibles : un **lien YouTube ou Vimeo**, ou un **fichier déposé ici**,
+comme les radiographies dans `radios/`.
+
+## La voie retenue : YouTube
+
+Plus simple, et sans aucune des limites décrites plus bas. Un seul réglage
+compte au moment de la mise en ligne sur YouTube :
+
+- **« Non répertoriée »** — c'est le bon choix. La vidéo n'apparaît pas dans les
+  recherches, mais elle s'affiche dans l'application.
+- **« Privée »** — à éviter : une vidéo privée REFUSE de s'afficher ailleurs que
+  sur YouTube. Le lecteur n'y montrerait qu'un message d'erreur.
+- « Publique » fonctionne aussi, mais rend la vidéo trouvable par tout le monde.
+
+Les vidéos sont intégrées via `youtube-nocookie.com` : YouTube ne dépose alors
+ses traceurs qu'au moment où l'étudiant lance la lecture.
+
+À savoir : une vidéo non répertoriée reste visible par quiconque obtient le lien.
+Un étudiant peut le transmettre. Si cela pose problème, Vimeo permet de
+restreindre la lecture à un site donné — mais c'est une offre payante.
+
+## L'autre voie : les fichiers
 
 ## Ce que l'application accepte
 

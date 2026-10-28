@@ -4421,7 +4421,11 @@
   function lecteurVideo(url){
     var u = String(url || '').trim();
     if(!u) return '';
-    var yt = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
+    // YouTube produit plusieurs formes d'adresse selon l'endroit d'ou on la copie : le lien
+    // « Partager » (youtu.be), la barre d'adresse (watch?v=), un direct (live/) ou un format
+    // court (shorts/). Les quatre mènent à la même vidéo, et une seule reconnue laisserait les
+    // autres tomber en simple lien — ce qui marche, mais n'affiche plus le lecteur.
+    var yt = u.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|live\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,})/);
     if(yt){
       return '<iframe src="https://www.youtube-nocookie.com/embed/' + escAttr(yt[1]) +
              '" title="Vidéo" loading="lazy" allowfullscreen ' +

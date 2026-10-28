@@ -127,6 +127,11 @@ const etat = p => p.evaluate(() => {
       const liens = {
         youtube: 'https://www.youtube.com/watch?v=abc123XYZ',
         youtuBe: 'https://youtu.be/abc123XYZ',
+        // Le lien « Partager » de YouTube colle un suffixe de suivi derriere l'identifiant.
+        partage: 'https://youtu.be/abc123XYZ?si=Ab12Cd34Ef',
+        // Et l'adresse d'un direct ou d'un format court mene a la meme video.
+        live:    'https://www.youtube.com/live/abc123XYZ',
+        shorts:  'https://www.youtube.com/shorts/abc123XYZ',
         vimeo:   'https://vimeo.com/987654321',
         fichier: 'videos/essai.mp4',
         inconnu: 'https://exemple.fr/une-page'
@@ -146,7 +151,8 @@ const etat = p => p.evaluate(() => {
     } else {
       // Un lien non reconnu doit rester ATTEIGNABLE — un lien cliquable — plutot que de
       // disparaitre : une video absente sans message se chercherait longtemps.
-      const attendu = { youtube:'IFRAME', youtuBe:'IFRAME', vimeo:'IFRAME', fichier:'VIDEO', inconnu:'A' };
+      const attendu = { youtube:'IFRAME', youtuBe:'IFRAME', partage:'IFRAME', live:'IFRAME',
+                        shorts:'IFRAME', vimeo:'IFRAME', fichier:'VIDEO', inconnu:'A' };
       Object.keys(attendu).forEach(k => {
         if (formes[k] !== attendu[k]) {
           ko('lecteur : un lien ' + k + ' donne « ' + formes[k] + ' » au lieu de « ' + attendu[k] + ' »');
