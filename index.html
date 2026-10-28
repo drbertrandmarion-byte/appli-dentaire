@@ -4413,10 +4413,14 @@
     { theme:'Dépose d\'ancrage radiculaire', items:[
         // L'adresse est réduite à l'essentiel : l'identifiant de la vidéo. Le suffixe que
         // YouTube accroche au lien « Partager » ne sert qu'à son propre suivi.
-        // Titre repris de la vidéo elle-même, « Comment déposer un screw post ? ». Elle avait
-        // d'abord été posée sous le nom « Dépose d'inlay-core à clavette » : les deux liens
-        // transmis portaient en réalité le MÊME identifiant, seul leur suffixe de suivi
-        // différant. La vidéo de l'inlay-core reste donc à venir.
+        // Chaque titre est confronté à celui que porte la vidéo sur YouTube avant d'être
+        // posé ici. Ce contrôle a servi dès la première : deux liens transmis portaient le
+        // MÊME identifiant, seul leur suffixe de suivi différant, et la vidéo du screw post
+        // s'apprêtait à être affichée sous le nom de celle de l'inlay-core.
+        // « Comment déposer un Inlay-core à clavette ? »
+        { titre:'Dépose d\'inlay-core à clavette',
+          url:'https://www.youtube.com/watch?v=uT3I2xd8UzI' },
+        // « Comment déposer un screw post ? »
         { titre:'Dépose de screw-post',
           url:'https://www.youtube.com/watch?v=bfi9RtfCfyI' }
       ] },
