@@ -95,12 +95,39 @@ const etat = p => p.evaluate(() => {
     e = await etat(p);
     if (!e.videos.vu) ko('le bouton « vidéos » n\'ouvre pas la rubrique');
     if (e.porte.vu) ko('la porte reste affichee sous la rubrique video : deux ecrans l\'un sur l\'autre');
+    // La rubrique est jugee sur ce que la page DECLARE, et non sur l'hypothese qu'elle est
+    // vide : cette hypothese a cesse d'etre vraie des la premiere video ajoutee, et le test
+    // reprochait alors au code d'afficher ce qu'on venait de lui demander d'afficher.
     const texte = ((await p.textContent('#videos-liste')) || '').replace(/\s+/g, ' ').trim();
-    if (!texte) ko('la rubrique video est vide ET muette : on la lirait comme un chargement en echec');
-    else if (!/Aucune vidéo/.test(texte)) {
-      ko('la rubrique video ne dit pas qu\'elle est vide — lu « ' + texte.slice(0, 80) + ' »');
+    const declare = await p.evaluate(() => (window.EndoVideos ? window.EndoVideos() : null));
+    if (!texte) ko('la rubrique video est muette : on la lirait comme un chargement en echec');
+    if (declare === null) {
+      ko('window.EndoVideos est introuvable : impossible de confronter le rendu a la liste declaree');
+    } else {
+      const items = declare.filter(t => t && t.items && t.items.length);
+      const combien = items.reduce((n, t) => n + t.items.length, 0);
+      if (!combien) {
+        if (!/Aucune vidéo/.test(texte)) {
+          ko('aucune video declaree, et la rubrique ne le dit pas — lu « ' + texte.slice(0, 80) + ' »');
+        }
+        console.log('3. rubrique video : vide, et elle le dit');
+      } else {
+        // Chaque theme et chaque titre doivent apparaitre, et chaque video avoir SON lecteur :
+        // un titre sans lecteur se lirait comme une video qui ne demarre pas.
+        items.forEach(t => {
+          if (texte.indexOf(t.theme) === -1) ko('le thème « ' + t.theme + ' » n\'apparait pas dans la rubrique');
+          t.items.forEach(v => {
+            if (texte.indexOf(v.titre) === -1) ko('la vidéo « ' + v.titre + ' » n\'apparait pas dans la rubrique');
+          });
+        });
+        const lecteurs = await p.$$eval('#videos-liste .video-cadre > *', es => es.length);
+        if (lecteurs !== combien) {
+          ko(lecteurs + ' lecteur(s) affiché(s) pour ' + combien + ' vidéo(s) déclarée(s)');
+        }
+        console.log('3. rubrique video : ' + combien + ' vidéo(s), ' + items.length +
+                    ' thème(s), ' + lecteurs + ' lecteur(s) affiché(s)');
+      }
     }
-    console.log('3. rubrique video : « ' + texte.slice(0, 60) + '… »');
 
     await p.click('#mode-videos [data-back]');
     await p.waitForTimeout(FONDU);

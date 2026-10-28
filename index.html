@@ -4410,9 +4410,14 @@
   //   { titre:'Reconnaître une pulpite irréversible', duree:'4 min',
   //     url:'https://youtu.be/XXXXXXXXXXX' }
   var VIDEOS = [
-    // { theme:'Le diagnostic', note:'Les tableaux cliniques, un par un.', items:[
-    //     { titre:'…', duree:'4 min', url:'…' }
-    //   ] },
+    { theme:'Dépose d\'ancrage radiculaire', items:[
+        // L'adresse est réduite à l'essentiel : l'identifiant de la vidéo. Le suffixe que
+        // YouTube accroche au lien « Partager » ne sert qu'à son propre suivi.
+        { titre:'Dépose d\'inlay-core à clavette',
+          url:'https://www.youtube.com/watch?v=bfi9RtfCfyI' }
+      ] },
+    // Pour ajouter une vidéo, recopier une ligne ci-dessus. Pour ajouter un thème, recopier
+    // le bloc entier. « duree » est facultatif : { titre:'…', duree:'4 min', url:'…' }
   ];
 
   // Un lien devient un lecteur. On ne devine pas : chaque forme est reconnue explicitement, et
@@ -4448,6 +4453,10 @@
   // diverger de celle-ci en silence. Rien de secret n'est revele — la fonction ne fait que
   // choisir une balise d'apres la forme d'une adresse.
   window.EndoVideoLecteur = function(url){ return lecteurVideo(url); };
+  // La liste declaree, pour que la suite compare le RENDU a ce qu'elle annonce plutot que de
+  // supposer la rubrique vide — ce qu'elle faisait, et qui a cesse d'etre vrai des la premiere
+  // video ajoutee.
+  window.EndoVideos = function(){ return VIDEOS; };
 
   function escAttr(v){
     return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){
@@ -4472,8 +4481,10 @@
         '</div>';
       return;
     }
-    intro.textContent = combien + (combien > 1 ? ' vidéos' : ' vidéo') +
-      ', de quelques minutes chacune. Choisissez un thème.';
+    // « 1 vidéo, de quelques minutes chacune » : l'accord ne tient pas au singulier.
+    intro.textContent = combien > 1
+      ? combien + ' vidéos, de quelques minutes chacune. Choisissez un thème.'
+      : '1 vidéo, de quelques minutes.';
     liste.innerHTML = themes.map(function(t){
       return '<section class="videos-theme">' +
         '<h3>' + escAttr(t.theme || '') + '</h3>' +
