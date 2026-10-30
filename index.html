@@ -3153,7 +3153,13 @@
         alreadyTreated: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois l'épisode infectieux contrôlé ?",
         rationaleKey: 'dejaTraiteeConservable',
-        axes: {coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
+        // AUCUN GESTE LOCAL À L'URGENCE. La dent est déjà traitée par endodontie, et la
+        // cellulite est au stade séreux : il n'y a ni collection à évacuer, ni restauration à
+        // reprendre. On ne dépose pas une résine, même infiltrée, tant que la dent est en
+        // phase infectieuse — rouvrir la voie coronaire n'apporte rien et expose davantage.
+        // Seuls un antalgique et une antibiothérapie sont prescrits ; le bain de bouche, qui
+        // ne se justifiait que par la plaie muqueuse du drainage, disparaît avec lui.
+        axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
         finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
@@ -3163,7 +3169,14 @@
         alreadyTreated: true,
         finalLine: "Quelle prise en charge choisissez-vous ?",
         rationaleKey: 'dejaTraiteeFracture',
-        axes: {coronaire:['reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']},
+        // ON NE DRAINE PAS UNE CELLULITE SÉREUSE : aucune collection n'est constituée, il n'y
+        // a rien à évacuer. La règle vaut pour tout ce diagnostic, et les cinq autres cas la
+        // suivaient déjà. Le bain de bouche s'en va avec le drainage, dont la plaie muqueuse
+        // était la seule justification.
+        // La reconstitution provisoire, elle, RESTE : la couronne est fracturée au ras de la
+        // gencive, le canal est ouvert sur le milieu buccal, et le fermer n'est pas reprendre
+        // une restauration en place.
+        axes: {coronaire:['reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
         finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
       {
@@ -3365,8 +3378,8 @@
     cellulite_sereuse: [
       {condition:"Limite supra- ou juxta-gingivale (dent conservable)", axes:{coronaire:['curetage', 'pulpectomie_urgence', 'reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']}, finalAxes:{geste:['endo_complet'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Limite infra-osseuse (extraction de la dent)", axes:{coronaire:['aucun'], chirurgical:['extraction', 'curetage_granulome'], medicamenteux:['antalgique', 'antibiotiques', 'bain_bouche']}, finalAxes:null},
-      {condition:"Dent déjà traitée, conservable", axes:{coronaire:['curetage', 'reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
-      {condition:"Dent déjà traitée, conservable, fracturée au ras du rebord gingival : rien à cureter", axes:{coronaire:['reconstitution_provisoire'], chirurgical:['drainage_muqueuse'], medicamenteux:['antibiotiques', 'antalgique', 'bain_bouche']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, conservable : aucun geste local au stade séreux", axes:{coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
+      {condition:"Dent déjà traitée, conservable, fracturée au ras du rebord gingival : rien à cureter", axes:{coronaire:['reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']}, finalAxes:{geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}},
       {condition:"Dent déjà traitée, non conservable", axes:{coronaire:['aucun'], chirurgical:['extraction', 'curetage_granulome'], medicamenteux:['antalgique', 'bain_bouche']}, finalAxes:null}
     ],
     cellulite_suppuree: [
@@ -3423,10 +3436,10 @@
       extraction: "Lorsque le délabrement atteint la limite infra-osseuse, la dent n'est plus conservable, même si ce n'est pas une urgence vraie compte tenu de la symptomatologie discrète et du drainage fistulaire déjà en place : l'extraction, à programmer, reste le seul geste utile — aucun traitement endodontique ne serait durable sur une dent non conservable. Un antalgique et un bain de bouche accompagnent l'extraction ; pas d'antibiothérapie, l'infection étant déjà drainée."
     }},
     cellulite_sereuse: { byKey: {
-      dejaTraiteeFracture: "La dent est déjà traitée par endodontie et sa couronne est fracturée au ras de la gencive : rien à cureter, mais une reconstitution provisoire étanche s'impose pour fermer la voie de recontamination. L'infection ayant diffusé dans les tissus mous, on y associe le drainage muqueux, une antibiothérapie, un antalgique et un bain de bouche. Le retraitement endodontique est programmé une fois l'épisode infectieux maîtrisé.",
+      dejaTraiteeFracture: "La dent est déjà traitée par endodontie et sa couronne est fracturée au ras de la gencive : rien à cureter, mais une reconstitution provisoire étanche s'impose pour fermer une voie de recontamination déjà ouverte sur le milieu buccal — fermer un canal exposé n'est pas reprendre une restauration en place. Le stade restant séreux, sans collection constituée, il n'y a rien à drainer : une antibiothérapie et un antalgique suffisent à contrôler la diffusion dans les tissus mous. Le retraitement endodontique est programmé une fois l'épisode infectieux maîtrisé.",
       conservable: "L'infection a diffusé dans les tissus mous mais reste au stade séreux, sans collection purulente constituée — il n'y a donc rien à drainer. Le geste d'urgence associe la pulpectomie, pour supprimer le foyer infectieux pulpaire à l'origine de la diffusion, à un antalgique et une antibiothérapie pour contrôler l'infection des tissus mous. Le traitement endodontique complet, avec un antalgique, est réalisé une fois l'épisode infectieux maîtrisé.",
       extraction: "Que ce soit un délabrement carieux atteignant la limite infra-osseuse ou une fracture du plancher pulpo-radiculaire avec une lésion englobant la furcation, la dent n'est plus conservable : on réalise l'extraction, associée à un antalgique et une antibiothérapie pour contrôler la diffusion infectieuse dans les tissus mous, ainsi qu'à un bain de bouche du fait de la plaie d'extraction. Le stade restant séreux, sans collection constituée, aucun drainage supplémentaire n'est nécessaire.",
-      dejaTraiteeConservable: "La dent est déjà traitée par endodontie : le canal n'est pas rouvert en urgence, mais un curetage carieux et une restauration transitoire étanche sont réalisés pour supprimer une éventuelle voie de recontamination coronaire en attendant le retraitement. L'infection a diffusé dans les tissus mous, d'où le drainage muqueux associé à une antibiothérapie et un antalgique, et un bain de bouche du fait de la plaie muqueuse ouverte. Le retraitement endodontique, avec un antalgique, est ensuite programmé une fois l'épisode infectieux maîtrisé.",
+      dejaTraiteeConservable: "La dent est déjà traitée par endodontie, et la cellulite reste au stade séreux : aucun geste local n'a sa place à l'urgence. Rien à drainer, faute de collection constituée. Rien à reprendre non plus sur la couronne : on ne dépose pas une restauration, même infiltrée, tant que la dent est en phase infectieuse — rouvrir la voie coronaire n'apporte rien et expose davantage. La prise en charge se limite donc à une antibiothérapie et un antalgique, le temps de contrôler la diffusion dans les tissus mous. Le retraitement endodontique, avec un antalgique, est programmé une fois l'épisode infectieux maîtrisé : c'est alors, et alors seulement, que la voie coronaire est rouverte.",
       dejaTraiteeExtraction: "La dent est déjà traitée par endodontie mais n'est plus conservable : aucun geste coronaire n'a de sens, et l'extraction devient le geste d'urgence, associée à un antalgique et un bain de bouche pour la plaie d'extraction ; l'infection restant localisée et évacuée par l'alvéole, une antibiothérapie n'est pas nécessaire."
     }},
     cellulite_suppuree: { byKey: {

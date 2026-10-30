@@ -97,13 +97,17 @@ CASES['Bernard'] = { title: 'Nécrose pulpaire', urgence: { coronaire: ['aucun']
 ['Inès'].forEach(n => {
   CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['aucun'], chirurgical: ['extraction', 'curetage_granulome'], medicamenteux: ['antalgique', 'antibiotiques', 'bain_bouche'] }, final: null };
 });
-// Dent déjà traitée avec reprise carieuse ou obturation réinfiltrée : on cure et on rescelle.
+// Dent deja traitee, cellulite au stade SEREUX : aucun geste local a l'urgence. Rien a drainer
+// faute de collection ; et on ne depose pas une restauration, meme infiltree, tant que la dent
+// est en phase infectieuse. Antibiotiques et antalgique seuls.
 ['Rémi'].forEach(n => {
-  CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['curetage', 'reconstitution_provisoire'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antibiotiques', 'antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
+  CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['aucun'], chirurgical: ['aucun'], medicamenteux: ['antalgique', 'antibiotiques'] }, final: { geste: ['retraitement'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
 });
-// Couronne fracturée juxta-gingivale : rien à cureter, seule l'étanchéité est à rétablir.
+// Couronne fracturee au ras : rien a cureter, mais le canal est ouvert sur le milieu buccal et
+// doit etre referme — fermer n'est pas reprendre une restauration en place. Toujours pas de
+// drainage : le stade est sereux.
 ['Brigitte'].forEach(n => {
-  CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['reconstitution_provisoire'], chirurgical: ['drainage_muqueuse'], medicamenteux: ['antibiotiques', 'antalgique', 'bain_bouche'] }, final: { geste: ['retraitement'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
+  CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['reconstitution_provisoire'], chirurgical: ['aucun'], medicamenteux: ['antibiotiques', 'antalgique'] }, final: { geste: ['retraitement'], coronaire: ['restauration_definitive'], medicamenteux: ['antalgique'] } };
 });
 ['Gilbert'].forEach(n => {
   CASES[n] = { title: 'Cellulite séreuse', urgence: { coronaire: ['aucun'], chirurgical: ['extraction', 'curetage_granulome'], medicamenteux: ['antalgique', 'bain_bouche'] }, final: null };
