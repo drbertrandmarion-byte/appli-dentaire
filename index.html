@@ -4933,10 +4933,6 @@
   var QUESTION_TARGET = 4;
   var QUESTION_ALERT  = 7;
 
-  // Rang de la question à partir de laquelle le diagnostic était déjà certain : on rejoue
-  // l'interrogatoire dans l'ordre où il a eu lieu, en éliminant à chaque réponse les tableaux
-  // devenus incompatibles. Renvoie null si les questions posées ne suffisaient pas à trancher.
-
   // Rappel affiché pendant la session. Il ne mentionne que la cible générale : donner ici le
   // minimum propre au cas en cours reviendrait à souffler la réponse.
   function renderNudge(){
@@ -5013,8 +5009,6 @@
     box.innerHTML = html;
     showEl(box);
   }
-
-  // Économie diagnostique : combien de signes suffisaient réellement à affirmer ce diagnostic.
 
   function submitGuess(){
     var guessId = diagnosisSelect.value;
@@ -6170,7 +6164,13 @@
     {id:'dent_46',           label:'Dent numéro 46',                            color:'#f878ec',
      familles:['numerotation']},
     {id:'dent_36',           label:'Dent numéro 36',                            color:'#f8c0a0',
-     familles:['numerotation']}
+     familles:['numerotation']},
+    // Vingt-deuxième cliché. Un tenon préfabriqué en acier, qu'il s'agit de ne pas prendre pour
+    // un ancrage coulé : c'est le leurre de ce cliché, qui propose l'inlay-core simple.
+    // Vert pâle choisi par recherche exhaustive — 47 d'écart avec la plus proche de ses
+    // voisines de légende, 32 avec la teinte la plus proche de tout le catalogue.
+    {id:'tenon_acier',       label:'Tenon acier',                               color:'#bce4b8',
+     note:'Tenon PRÉFABRIQUÉ, de diamètre régulier et aux bords parallèles, simplement scellé dans le canal. C\'est cette régularité industrielle qui le sépare de l\'inlay-core, dont le corps coulé épouse la forme de la chambre et s\'évase vers la couronne.'}
   ];
 
   // Certains repères ne décrivent pas un signe : ils demandent de SITUER quelque chose. Une
@@ -7006,6 +7006,50 @@
         // La dent entière, de la couronne à l'apex des deux racines.
         dent_46: {poly:[[92,50],[130,44],[172,48],[182,66],[178,110],[166,160],[152,210],
                         [136,236],[116,236],[102,200],[92,150],[88,100]]}
+      }
+    },
+    // -------------------------------------------------------------------------------------
+    // Vingt-deuxième cliché. Secteur antérieur maxillaire : une dent traitée portant un tenon
+    // acier, ses voisines restaurées, une lésion apicale, et le sinus au-dessus.
+    //
+    // MÊME RÈGLE QUE LE PRÉCÉDENT : la légende vient de l'enseignante, les contours sont MES
+    // ébauches. Je reconnais le tenon à ses bords parallèles et la lésion à sa radioclarté,
+    // mais je ne sais pas dire avec certitude laquelle des masses opaques est l'amalgame et
+    // laquelle est le composite, ni où s'arrête exactement le plancher sinusien.
+    // D'où « valide:false » : aucun étudiant ne voit ce cliché tant que l'enseignante n'a pas
+    // repris les contours dans l'atelier et ne les a pas publiés.
+    //
+    // LE LEURRE EST L'INLAY-CORE SIMPLE, et il porte tout l'exercice : un tenon préfabriqué et
+    // un ancrage coulé occupent la même place dans la même racine. Ce qui les sépare est la
+    // FORME — bords parallèles et diamètre constant d'un côté, corps coulé qui s'évase de
+    // l'autre. Le second leurre, la dent 24, joue sur le côté du cliché.
+    {
+      id:'tenon_acier_lesion',
+      titre:'Rétro-alvéolaire — secteur antérieur maxillaire',
+      image:'radios/retro-alveolaire-22.jpg',
+      caption:'',
+      valide:false,
+      legende:['amalgame','composite','tenon_acier','lesion','sinus',
+               'inlay_core_simple','dent_24'],
+      cibles:['amalgame','composite','tenon_acier','lesion','sinus'],
+      zones:{
+        // Le tenon : colonne claire aux bords parallèles, dans le canal de la dent centrale.
+        // C'est le repère que je pose avec le plus d'assurance.
+        tenon_acier: {poly:[[150,78],[160,74],[166,86],[168,120],[164,146],[154,150],
+                            [147,130],[146,100]]},
+        // Masse radio-opaque de gauche, à la limite des deux dents.
+        amalgame: {poly:[[108,112],[124,106],[134,114],[136,136],[130,150],[114,152],
+                         [104,140],[104,124]]},
+        // Masse radio-opaque de droite. Laquelle des deux est l'amalgame et laquelle le
+        // composite ? Je les distingue mal : à reprendre dans l'atelier.
+        composite: {poly:[[196,110],[214,106],[226,116],[228,138],[220,152],[202,152],
+                          [194,138],[193,122]]},
+        // Radioclarté apicale, au-dessus de la racine traitée.
+        lesion: {poly:[[122,36],[142,28],[158,34],[162,52],[154,68],[134,70],[120,58]]},
+        // Le plancher sinusien, en haut du cliché. Contour le plus incertain de tous : je lis
+        // une limite courbe sans pouvoir affirmer où elle commence ni où elle finit.
+        sinus: {poly:[[196,18],[240,14],[286,22],[310,40],[306,62],[272,70],[228,62],
+                      [200,44]]}
       }
     }
   ];
