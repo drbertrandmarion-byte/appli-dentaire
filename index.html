@@ -6019,6 +6019,18 @@
   // séparent cliniquement. En faire deux entrées obligerait l'étudiant à un choix indécidable.
   // La parodontite apicale débutante, elle, est bien une lecture radiographique distincte :
   // un simple élargissement ligamentaire, et non une lacune.
+  // Les trois tissus d'une dent naturelle, lus de l'extérieur vers l'intérieur. Définition
+  // commune à l'émail et à la chambre pulpaire : ces repères ne se reconnaissent pas isolément
+  // mais LES UNS PAR RAPPORT AUX AUTRES, par leur place dans une même échelle de densité.
+  // Déclarée une seule fois plutôt que recopiée quatre : une reformulation ultérieure ne doit
+  // pas laisser deux versions divergentes au catalogue.
+  var NOTE_TISSUS = 'Sur une dent naturelle, l\'ÉMAIL est la partie la plus coronaire et la plus '
+    + 'radio-opaque. La DENTINE, couche sous-jacente et majoritaire, présente une radio-opacité '
+    + 'moyenne — grise — et représente la plus grande partie de la dent. Enfin la CAVITÉ '
+    + 'PULPAIRE, ou chambre pulpaire, ne contenant que des tissus mous, apparaît comme une tache '
+    + 'radioclaire plus ou moins carrée, qui se prolonge dans les racines pour former les canaux '
+    + 'radiculaires.';
+
   var RADIO_REPERES = [
     {id:'couronne_cm',       label:'Couronne céramo-métallique',                color:'#f2b134',
      note:'La chape métallique est très opaque et nettement dessinée ; le pourtour céramique l\'est beaucoup moins. Ce sont ces DEUX densités dans une même coiffe qui la signent.'},
@@ -6111,11 +6123,14 @@
     // francs — ce sont deux réponses différentes, et les confondre serait l'erreur même que
     // le leurre cherche à provoquer.
     {id:'email_46',          label:'Émail de la dent 46',                       color:'#663060',
-     familles:['numerotation','tissus']},
+     familles:['numerotation','tissus'],
+     note:NOTE_TISSUS},
     {id:'chambre_pulpaire_45', label:'Chambre pulpaire de la dent 45',          color:'#5a5418',
-     familles:['numerotation','tissus']},
+     familles:['numerotation','tissus'],
+     note:NOTE_TISSUS},
     {id:'chambre_pulpaire_36', label:'Chambre pulpaire de la dent 36',          color:'#b4a860',
-     familles:['numerotation','tissus']},
+     familles:['numerotation','tissus'],
+     note:NOTE_TISSUS},
     {id:'foramen_mentonnier', label:'Foramen mentonnier',                       color:'#44403c',
      note:'Émergence du nerf alvéolaire inférieur, souvent à l\'aplomb de l\'apex des deuxièmes prémolaires mandibulaires : un rond concentrique radioclair.'},
     // Nommée par CE QU'ON VOIT, pas par le matériau supposé. « Gutta-percha » et « Traitement
@@ -6143,7 +6158,8 @@
     // n'est PAS une calcification diffuse : les deux se ressemblent et s'opposent, l'un
     // occupant la chambre, l'autre l'effaçant. La note le dit explicitement.
     {id:'email_25',          label:'Émail de la dent 25',                       color:'#ea580c',
-     familles:['numerotation','tissus']},
+     familles:['numerotation','tissus'],
+     note:NOTE_TISSUS},
     {id:'dent_28',           label:'Dent numéro 28',                            color:'#16a34a',
      familles:['numerotation']},
     // UNE COULEUR NE DÉSIGNE QU'UNE SEULE LÉGENDE. Six teintes servaient à quatorze repères :
