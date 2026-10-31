@@ -3153,12 +3153,14 @@
         alreadyTreated: true,
         finalLine: "Quel traitement définitif programmez-vous, une fois l'épisode infectieux contrôlé ?",
         rationaleKey: 'dejaTraiteeConservable',
-        // AUCUN GESTE LOCAL À L'URGENCE. La dent est déjà traitée par endodontie, et la
-        // cellulite est au stade séreux : il n'y a ni collection à évacuer, ni restauration à
-        // reprendre. On ne dépose pas une résine, même infiltrée, tant que la dent est en
-        // phase infectieuse — rouvrir la voie coronaire n'apporte rien et expose davantage.
-        // Seuls un antalgique et une antibiothérapie sont prescrits ; le bain de bouche, qui
-        // ne se justifiait que par la plaie muqueuse du drainage, disparaît avec lui.
+        // AUCUN GESTE LOCAL À L'URGENCE. La règle de l'enseignante : sur une dent déjà
+        // traitée on ne touche à rien, SAUF fracture ou carie supra-osseuse sans restauration
+        // préexistante. Ici une restauration est en place — fût-elle reprise par une carie —,
+        // et la cellulite est au stade séreux. On ne dépose donc pas une restauration, même
+        // infiltrée, tant que la dent est en phase infectieuse : rouvrir la voie coronaire
+        // n'apporte rien et expose davantage. Rien à drainer non plus, faute de collection.
+        // Antibiothérapie et antalgique seuls ; pas de bain de bouche, puisqu'il n'y a ni
+        // incision ni drainage.
         axes: {coronaire:['aucun'], chirurgical:['aucun'], medicamenteux:['antalgique', 'antibiotiques']},
         finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },
@@ -3171,11 +3173,14 @@
         rationaleKey: 'dejaTraiteeFracture',
         // ON NE DRAINE PAS UNE CELLULITE SÉREUSE : aucune collection n'est constituée, il n'y
         // a rien à évacuer. La règle vaut pour tout ce diagnostic, et les cinq autres cas la
-        // suivaient déjà. Le bain de bouche s'en va avec le drainage, dont la plaie muqueuse
-        // était la seule justification.
-        // La reconstitution provisoire, elle, RESTE : la couronne est fracturée au ras de la
-        // gencive, le canal est ouvert sur le milieu buccal, et le fermer n'est pas reprendre
-        // une restauration en place.
+        // suivaient déjà. Le bain de bouche s'en va avec le drainage : il suppose une plaie
+        // ouverte — incision, drainage ou alvéole d'extraction — et il n'y en a plus aucune.
+        //
+        // La reconstitution provisoire, elle, RESTE, et c'est la règle de l'enseignante qui le
+        // dit : sur une dent déjà traitée on ne touche à rien, SAUF fracture ou carie
+        // supra-osseuse sans restauration préexistante. C'est exactement ce cas — la couronne
+        // est fracturée au ras de la gencive et aucune restauration ne ferme le canal, ouvert
+        // sur le milieu buccal. Refermer n'est pas reprendre une restauration en place.
         axes: {coronaire:['reconstitution_provisoire'], chirurgical:['aucun'], medicamenteux:['antibiotiques', 'antalgique']},
         finalAxes: {geste:['retraitement'], coronaire:['restauration_definitive'], medicamenteux:['antalgique']}
       },

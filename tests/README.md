@@ -135,6 +135,18 @@ traitement endodontique, de sorte qu'un curetage y relèverait de la chirurgie a
 geste d'urgence. Cette seconde moitié n'est pas décorative : c'est elle qui couvre la parodontite
 apicale aiguë, dont le ligament est élargi sans lésion constituée.
 
+Elle contrôle aussi que le **bain de bouche** suppose une plaie ouverte — incision, drainage
+muqueux, fistule drainée ou alvéole d'extraction — et rien d'autre. Prescrit sans plaie, il
+devient un geste de confort qu'on apprend à poser partout. Ce contrôle est né d'une correction :
+deux cas de cellulite séreuse sur dent déjà traitée le prescrivaient alors que leur drainage
+venait d'être retiré.
+
+Il **vérifie sa propre couverture** avant de conclure. Le premier audit, écrit à la main pour
+cette vérification, ne lisait que 67 des 86 cas — son motif supposait que la ligne du corrigé se
+terminait toujours de la même façon — et annonçait « aucune anomalie » en toute bonne foi. Un
+détecteur muet rend le même verdict qu'un corrigé sain. La lecture compte donc les accolades au
+lieu de s'arrêter en fin de ligne, et un cas illisible est signalé comme une anomalie.
+
 Elle contrôle aussi les deux signes de la tuméfaction, qui ne disent pas la même chose : le **godet**
 se creuse dans un œdème d'infiltration (cellulite séreuse, cellulite diffuse), le **reflux** purulent
 signe une collection constituée (cellulite suppurée), et une collection sous tension ne prend pas le

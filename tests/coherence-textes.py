@@ -615,6 +615,63 @@ if declares != lignes:
 
 print("Lignes de récapitulatif auditées : %d" % lignes)
 
+# -----------------------------------------------------------------------------
+#  Le bain de bouche suppose une plaie ouverte
+# -----------------------------------------------------------------------------
+# Règle de l'enseignante : « pas de bain de bouche, car il n'y a pas d'incision ni de
+# drainage ». Il accompagne une plaie ouverte — le drainage muqueux, la fistule drainée,
+# l'alvéole d'extraction — et rien d'autre. Prescrit sans plaie, il devient un geste de confort
+# qu'on apprend à poser partout.
+#
+# Ce contrôle est né d'une correction : deux cas de cellulite séreuse sur dent déjà traitée
+# prescrivaient un bain de bouche alors que le drainage venait de leur être retiré.
+#
+# LA COUVERTURE EST VÉRIFIÉE AVANT DE CONCLURE. Un premier audit, écrit à la main, ne lisait
+# que 67 des 86 cas sans le dire — et concluait « aucune anomalie ». Un détecteur muet rend le
+# même verdict qu'un corrigé sain.
+def _axes_du_cas(chunk):
+    """Le contenu de « axes: { ... } », lu en comptant les accolades : certains cas ferment sur
+    la même ligne, d'autres non, et un motif de fin de ligne en manque dix-neuf."""
+    k = chunk.find('axes: {')
+    if k == -1:
+        return None
+    i = chunk.index('{', k)
+    prof = 0
+    for n in range(i, len(chunk)):
+        if chunk[n] == '{':
+            prof += 1
+        elif chunk[n] == '}':
+            prof -= 1
+            if prof == 0:
+                return chunk[i + 1:n]
+    return None
+
+_deb = s.index("  var TX_MULTISTEP_CASES")
+_fin = s.index("\n  };", _deb)
+_bloc = s[_deb:_fin]
+_pats = [m.start() for m in re.finditer(r'patientLine:', _bloc)]
+_cas = []
+for _n, _p in enumerate(_pats):
+    _suite = _pats[_n + 1] if _n + 1 < len(_pats) else len(_bloc)
+    _chunk = _bloc[_p:_suite]
+    _nom = re.search(r'patientLine: "([^,]{0,20})', _chunk)
+    _cas.append((_nom.group(1).strip() if _nom else '?', _axes_du_cas(_chunk)))
+
+_illisibles = [n for n, a in _cas if a is None]
+if _illisibles:
+    note('bain de bouche', '-', "corrigé illisible pour %d cas (%s) : l'audit ne prouverait rien"
+         % (len(_illisibles), ', '.join(_illisibles[:4])))
+
+PLAIE = ('drainage_muqueuse', 'drainage_fistulaire', 'extraction')
+for _nom, _axes in _cas:
+    if not _axes or 'bain_bouche' not in _axes:
+        continue
+    if not any(j in _axes for j in PLAIE):
+        note('bain de bouche', _nom,
+             "bain de bouche prescrit sans incision, drainage ni extraction")
+
+print("Cas audités pour le bain de bouche : %d" % len([1 for _, a in _cas if a]))
+
 print("Pathologies thérapeutiques auditées : %d" % len(vus))
 print("\nAnomalies : %d" % len(pbs))
 for p in pbs: print("  ! " + p)
