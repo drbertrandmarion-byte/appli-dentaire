@@ -619,9 +619,16 @@ print("Lignes de récapitulatif auditées : %d" % lignes)
 #  Le bain de bouche suppose une plaie ouverte
 # -----------------------------------------------------------------------------
 # Règle de l'enseignante : « pas de bain de bouche, car il n'y a pas d'incision ni de
-# drainage ». Il accompagne une plaie ouverte — le drainage muqueux, la fistule drainée,
-# l'alvéole d'extraction — et rien d'autre. Prescrit sans plaie, il devient un geste de confort
-# qu'on apprend à poser partout.
+# drainage ». Il accompagne une PLAIE OUVERTE, et rien d'autre. Prescrit sans plaie, il devient
+# un geste de confort qu'on apprend à poser partout.
+#
+# Trois situations en ouvrent une, et les trois comptent ici :
+#   - le drainage par voie muqueuse,
+#   - la fistule drainée,
+#   - l'ALVÉOLE D'EXTRACTION. L'enseignante a tranché ce point : « il faut aussi du bain de
+#     bouche, car cela crée une plaie ouverte où des bactéries peuvent venir se développer. »
+#     C'est une plaie au même titre qu'une incision, même si aucun geste de drainage n'a eu
+#     lieu — quatre cas en dépendent.
 #
 # Ce contrôle est né d'une correction : deux cas de cellulite séreuse sur dent déjà traitée
 # prescrivaient un bain de bouche alors que le drainage venait de leur être retiré.
