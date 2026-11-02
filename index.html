@@ -6203,6 +6203,16 @@
     // un ancrage coulé : c'est le leurre de ce cliché, qui propose l'inlay-core simple.
     // Vert pâle choisi par recherche exhaustive — 47 d'écart avec la plus proche de ses
     // voisines de légende, 32 avec la teinte la plus proche de tout le catalogue.
+    // Vingt-troisième cliché. Le tenon fibré, qu'on ne voit presque pas — c'est précisément ce
+    // qui le signe. Turquoise choisi par recherche exhaustive : 68 d'écart avec ses voisines de
+    // légende, 30 avec la teinte la plus proche du catalogue.
+    {id:'tenon_fibre',       label:'Tenon fibré',                               color:'#00f8bc',
+     note:'Tenon préfabriqué en fibres, PEU OU PAS radio-opaque : le canal qui le reçoit peut sembler vide ou mal obturé. C\'est souvent le liseré de colle, plus dense, qui trahit sa présence. C\'est là qu\'il se sépare du tenon acier et de l\'inlay-core, tous deux franchement opaques.'},
+    // Même famille que la racine distale de la 26, et sans définition comme elle : une racine
+    // se situe, elle ne se reconnaît pas. Bleu choisi par recherche exhaustive, 64 d'écart avec
+    // ses voisines de légende.
+    {id:'racine_distale_36', label:'Racine distale de la dent 36',              color:'#4c90fc',
+     familles:['numerotation']},
     {id:'tenon_acier',       label:'Tenon acier',                               color:'#bce4b8',
      note:'Tenon en acier préfabriqué, autrefois utilisé pour ancrer un composite ou un amalgame, aujourd\'hui plutôt pour retenir une couronne provisoire. Il n\'a AUCUNE partie coronaire : c\'est un simple ancrage, et la reconstitution vient ensuite se construire dessus. C\'est là qu\'il se sépare de l\'inlay-core, dont le corps coulé prolonge le tenon d\'un seul tenant et s\'évase pour former le moignon de la couronne. Sur le film, il se lit à son diamètre régulier et à ses bords parallèles, et il s\'arrête net à l\'entrée du canal.'}
   ];
@@ -7084,6 +7094,51 @@
         // une limite courbe sans pouvoir affirmer où elle commence ni où elle finit.
         sinus: {poly:[[196,18],[240,14],[286,22],[310,40],[306,62],[272,70],[228,62],
                       [200,44]]}
+      }
+    },
+    // -------------------------------------------------------------------------------------
+    // Vingt-troisième cliché. Secteur postérieur mandibulaire : deux dents traitées, l'une
+    // couronnée sur ancrage coulé, l'autre portant un tenon fibré sous une couronne provisoire.
+    //
+    // AUCUN LEURRE. L'enseignante n'en a pas déclaré : les sept repères figurent tous sur le
+    // cliché. C'est le deuxième cas de la série, après le vingtième. L'exercice y change de
+    // nature — il ne s'agit plus d'écarter, mais de tout trouver.
+    //
+    // MÊME RÈGLE QUE LES DEUX PRÉCÉDENTS : la légende vient de l'enseignante, les contours sont
+    // MES ébauches, et « valide:false » les tient hors de portée des étudiants jusqu'à ce
+    // qu'elle les reprenne dans l'atelier. Le tenon fibré est le plus incertain de tous : il
+    // est par nature peu visible, et je ne distingue pas avec certitude où il s'arrête.
+    {
+      id:'tenon_fibre_debris',
+      titre:'Rétro-alvéolaire — molaires mandibulaires traitées',
+      image:'radios/retro-alveolaire-23.png',
+      caption:'',
+      valide:false,
+      legende:['couronne_cm','inlay_core_simple','tenon_fibre','couronne_transitoire',
+               'racine_distale_36','debris','lesion'],
+      cibles:['couronne_cm','inlay_core_simple','tenon_fibre','couronne_transitoire',
+              'racine_distale_36','debris','lesion'],
+      zones:{
+        // Coiffe très opaque de la dent de gauche, et l'ancrage coulé qui descend dans sa
+        // racine : le tenon s'y lit nettement, bords parallèles et pointe effilée.
+        couronne_cm: {poly:[[24,18],[52,14],[72,26],[74,46],[62,62],[34,64],[20,48],[18,30]]},
+        inlay_core_simple: {poly:[[44,54],[60,52],[64,70],[60,112],[54,140],[46,142],
+                                  [40,114],[38,78]]},
+        // La coiffe de droite, moins dense : couronne provisoire.
+        couronne_transitoire: {poly:[[92,20],[140,16],[176,24],[180,46],[170,64],[120,68],
+                                     [94,54],[88,36]]},
+        // Le tenon fibré, sous cette couronne. Contour le plus incertain du cliché : il est
+        // par nature peu opaque, et sa limite inférieure se devine plus qu'elle ne se voit.
+        tenon_fibre: {poly:[[116,62],[132,60],[136,74],[133,100],[126,108],[118,100],
+                            [114,78]]},
+        // La racine distale de la 36 — celle de droite sur ce cliché.
+        racine_distale_36: {poly:[[150,78],[172,74],[184,92],[186,130],[176,166],[160,178],
+                                  [148,166],[144,124],[146,96]]},
+        // Fragment radiculaire isolé, dans l'os en arrière des racines.
+        debris: {poly:[[196,150],[212,144],[224,154],[222,172],[208,180],[196,172],[192,160]]},
+        // Radioclarté apicale, sous les racines de la dent de droite.
+        lesion: {poly:[[150,186],[176,180],[196,190],[198,212],[182,226],[156,224],
+                       [144,208]]}
       }
     }
   ];
