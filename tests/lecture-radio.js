@@ -1407,22 +1407,28 @@ async function valideEtLis(page){
     });
     if (atelier.vu || atelier.aire !== 0) ko('sous-choix : l\'etudiant qui choisit son cliche recoit aussi l\'atelier de trace');
 
-    // LE TIRAGE DOIT REFERMER LA LISTE, et c'est par CE chemin-la qu'il faut l'eprouver :
-    // revenir a l'ecran d'entree SANS quitter le mode. L'entree dans le mode, elle, remet deja
-    // les deux chemins a zero, si bien qu'un controle fait apres un passage par l'accueil ne
-    // voyait rien — la mutation qui retire la remise a zero du bouton « au hasard » a survecu a
-    // la premiere version de ce test pour cette seule raison. Sans cette garde, l'etudiant
-    // reviendrait au hasard en gardant la liste d'un choix sous les yeux, et croirait choisir.
+    // LE TIRAGE DOIT REFERMER LA LISTE, et il faut l'eprouver par LE BON CHEMIN. Deux boutons
+    // ramenent en arriere, et ils ne font pas la meme chose :
+    //   - « Retour a l'accueil » (#radio-home-btn) quitte le mode. Y revenir repasse par
+    //     #hub-radio-btn, qui remet deja les deux chemins a zero.
+    //   - LA FLECHE DE RETOUR (#back-nav-btn) ramene a l'ecran d'entree du mode SANS en sortir,
+    //     et ne remet rien a zero. C'est la que la remise a zero du bouton « au hasard » sert.
+    // La premiere version de ce controle empruntait le premier chemin : la mutation qui retire
+    // cette remise a zero a donc SURVECU, faute d'occasion de se montrer. Par la fleche, elle
+    // mord : l'etudiant reviendrait au tirage en gardant la liste de son choix sous les yeux.
     if (!await p.$eval('#radio-choix-wrap', e => !e.classList.contains('hidden'))) {
       ko('sous-choix : la liste de seance s\'est refermee toute seule apres un cliche choisi');
     }
-    await p.evaluate(() => { const e = document.getElementById('radio-home-btn'); if (e) e.click(); });
-    await p.waitForTimeout(420);
+    await p.click('#back-nav-btn');
+    await p.waitForTimeout(650);
+    if (!await p.$eval('#mode-radio-intro', e => !e.classList.contains('hidden'))) {
+      ko('sous-choix : la fleche de retour ne ramene pas a l\'ecran d\'entree du mode');
+    }
     await p.click('#start-radio-btn');
     await p.waitForTimeout(650);
     if (await p.$eval('#radio-choix-wrap', e => !e.classList.contains('hidden'))) {
-      ko('sous-choix : revenu au tirage sans quitter le mode, l\'etudiant garde la liste du '
-         + 'choix precedent sous les yeux');
+      ko('sous-choix : revenu au tirage par la fleche, l\'etudiant garde la liste du choix '
+         + 'precedent sous les yeux et croirait choisir');
     }
 
     // Revenir a l'ecran d'entree doit REPROPOSER les deux chemins : le sous-choix n'en est plus
