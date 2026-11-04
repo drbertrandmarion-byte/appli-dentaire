@@ -4569,9 +4569,9 @@
   });
 
   // ---------- La porte d'entrée à deux boutons ----------
-  // Réservée au compte enseignant tant que la rubrique vidéo se construit. Pour un étudiant,
-  // « accueilDouble » reste faux : l'application s'ouvre directement sur les trois modes, et
-  // rien de ce qui suit ne se voit.
+  // Réservée à l'enseignante, et aux comptes qu'elle nomme (voir MAILS_VIDEOS / NOMS_VIDEOS),
+  // tant que la rubrique vidéo se construit. Pour un étudiant, « accueilDouble » reste faux :
+  // l'application s'ouvre directement sur les trois modes, et rien de ce qui suit ne se voit.
   var accueilDouble = false;
   var accueilChoix  = document.getElementById('accueil-choix');
   var modeVideos    = document.getElementById('mode-videos');
@@ -9196,6 +9196,43 @@
     show(gate);
   }
 
+  // ---------- Les comptes qui voient la rubrique vidéo ----------
+  // L'enseignante la voit parce qu'elle est administratrice. Les comptes nommés ici la voient
+  // AUSSI, sans être administrateurs : ils n'ont donc ni le back-office, ni l'atelier de tracé,
+  // et ne peuvent pas toucher au corrigé sur lequel les étudiants sont notés.
+  //
+  // DEUX CLÉS, ET ELLES NE SE VALENT PAS :
+  //   - MAILS_VIDEOS, l'adresse de connexion. Le serveur la FIGE : le déclencheur
+  //     protect_profile_fields réécrit « new.email := old.email » à chaque mise à jour, donc
+  //     aucun compte ne peut se donner l'adresse d'un autre. C'est la clé sûre.
+  //   - NOMS_VIDEOS, le prénom et le nom. Le serveur ne les fige PAS : un compte peut se
+  //     renommer, et donc se glisser dans cette liste. La clé est faible, elle n'est là que
+  //     faute de connaître l'adresse. Ce qu'un compte y gagnerait reste petit — la rubrique, et
+  //     des liens YouTube que la page contient déjà pour tout le monde — mais dès que l'adresse
+  //     est connue, la ligne doit passer dans MAILS_VIDEOS et le nom en sortir.
+  var MAILS_VIDEOS = [];                      // ex. 'prenom.nom@exemple.fr'
+  var NOMS_VIDEOS  = ['Madeline Sanchez'];
+
+  // Même normalisation que le back-office : accents, casse, ponctuation et ordre des mots
+  // ignorés, pour que « SANCHEZ Madeline » et « madeline sanchez » soient une seule clé.
+  function cleNomVideos(texte){
+    var s = String(texte == null ? '' : texte);
+    if(s.normalize) s = s.normalize('NFD').replace(/[̀-ͯ]/g, '');
+    return s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
+            .split(' ').filter(function(m){ return m; }).sort().join(' ');
+  }
+  var CLES_VIDEOS  = NOMS_VIDEOS.map(cleNomVideos);
+  var MAILS_NORMES = MAILS_VIDEOS.map(function(m){ return String(m).trim().toLowerCase(); });
+
+  function accesVideos(){
+    if(isAdmin) return true;
+    if(!profile) return false;
+    var mail = String(profile.email == null ? '' : profile.email).trim().toLowerCase();
+    if(mail && MAILS_NORMES.indexOf(mail) !== -1) return true;
+    var cle = cleNomVideos((profile.prenom || '') + ' ' + (profile.nom || ''));
+    return !!cle && CLES_VIDEOS.indexOf(cle) !== -1;
+  }
+
   function enterApp(){
     hide(gate);
     show(menu);
@@ -9220,11 +9257,15 @@
     var accesEnseignante = !offline && isAdmin;
     if(window.EndoTeacherModes) window.EndoTeacherModes(accesRadio, accesEnseignante, accesEnseignante);
     // La porte d'entrée à deux boutons, et la rubrique vidéo qu'elle ouvre, ne sont montrées
-    // qu'au compte enseignant : la rubrique se construit, et un étudiant ne doit pas même
-    // savoir qu'elle existe. Pour lui, l'application s'ouvre sur les trois modes, comme avant.
-    // Contrairement aux modes, elle reste accessible HORS LIGNE : elle ne dépend d'aucun
-    // corrigé du serveur, et n'enregistre rien.
-    if(window.EndoAccueilDouble) window.EndoAccueilDouble(isAdmin);
+    // qu'à l'enseignante et aux comptes nommés plus haut : la rubrique se construit, et un
+    // étudiant ne doit pas même savoir qu'elle existe. Pour lui, l'application s'ouvre sur les
+    // trois modes, comme avant. Contrairement aux modes, elle reste accessible HORS LIGNE :
+    // elle ne dépend d'aucun corrigé du serveur, et n'enregistre rien.
+    //
+    // Cet accès-là NE DONNE QUE LA RUBRIQUE. Le back-office suit « isAdmin » quelques lignes
+    // plus haut, l'atelier de tracé le suit juste au-dessus : un compte nommé dans NOMS_VIDEOS
+    // n'obtient ni l'un ni l'autre, et une suite de tests l'exige.
+    if(window.EndoAccueilDouble) window.EndoAccueilDouble(accesVideos());
     // Les trois modes d'entraînement sont fermés hors ligne, l'enseignante comprise : sans
     // serveur, son atelier publierait dans le vide et son corrigé ne serait pas à jour.
     // hide/show de CE bloc, et non hideEl/showEl : les deux blocs de script sont des

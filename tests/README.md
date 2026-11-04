@@ -359,9 +359,10 @@ n'attesterait ici de rien. C'est en examinant ce mutant équivalent qu'a été t
 voisin, la copie non retirée au cliché suivant.
 
 `videos.js` couvre la **porte d'accueil à deux boutons** — « m'entraîner » et « les vidéos
-explicatives » — et la rubrique qu'elle ouvre. Les deux sont réservées au compte enseignant tant
-que la rubrique se construit : pour un étudiant, l'application s'ouvre directement sur le choix
-des trois modes, **exactement comme avant**, et c'est la première chose que la suite vérifie.
+explicatives » — et la rubrique qu'elle ouvre. Les deux sont réservées à l'enseignante et aux
+comptes qu'elle nomme, tant que la rubrique se construit : pour un étudiant, l'application s'ouvre
+directement sur le choix des trois modes, **exactement comme avant**, et c'est la première chose
+que la suite vérifie.
 
 Elle vérifie ensuite que **forcer le bouton ne l'ouvre pas** : un bouton caché n'est pas une porte
 fermée, défaut déjà rencontré quatre fois dans ce projet — et c'est une mutation de cette suite
@@ -384,6 +385,29 @@ chargement en échec — et que chaque forme de lien donne le bon lecteur : YouT
 cadre intégré, un fichier `.mp4` en lecteur natif, et un lien non reconnu en **lien cliquable**
 plutôt qu'en rien du tout. Cette reconnaissance est interrogée dans la page (`EndoVideoLecteur`)
 et non recopiée dans le test, qui pourrait sinon diverger d'elle sans que rien ne le signale.
+
+Deux derniers cas éprouvent non plus l'affichage mais la **décision** : qui obtient la porte selon
+le profil. Les cas précédents appellent `EndoAccueilDouble` eux-mêmes, et ne vérifient donc qu'une
+chose : qu'un booléen qu'ils viennent d'écrire est bien celui qu'ils ont écrit. La liste des
+comptes nommés (`NOMS_VIDEOS`, `MAILS_VIDEOS`) pouvait disparaître sans qu'un test bronche. Les
+deux derniers laissent donc `enterApp` décider seul, à partir du profil déposé dans le navigateur,
+et vérifient que le compte nommé reçoit la rubrique **et rien de plus** : ni le bouton du
+back-office, ni l'atelier de tracé, ni le choix du cliché. L'accès accordé ne doit pas déborder
+sur le corrigé qui note les étudiants.
+
+Ces deux cas ont corrigé un défaut de la suite elle-même. Les mutations qui vident la liste, ou
+qui rendent la décision à `isAdmin` seul, cachaient le bouton des vidéos ; le test cliquait
+dessus quand même, et **mourait sur un délai d'attente de trente secondes** en crachant une trace
+illisible, sans un mot sur ce qui n'allait pas. Une suite qui tombe en panne n'est pas une suite
+qui accuse. Le clic est désormais conditionné à la présence du bouton, et les quatre mutations
+— liste vidée, accès donné à tous, normalisation du nom retirée, décision rendue à `isAdmin` —
+rendent chacune une phrase lisible.
+
+Une mise en garde, enfin, que la page porte aussi en commentaire : le **nom** est une clé faible.
+Le serveur fige l'adresse de connexion (`protect_profile_fields` réécrit `new.email := old.email`)
+mais pas le prénom ni le nom, qu'un compte peut donc changer pour entrer dans la liste. Ce qu'il y
+gagnerait reste petit — la rubrique, et des liens YouTube que la page contient déjà pour tout le
+monde — mais dès qu'une adresse est connue, la ligne doit passer dans `MAILS_VIDEOS`.
 
 Ses mutations de contrôle : retirer la garde d'entrée, et ouvrir la porte à tous les comptes.
 Les deux sont signalées.

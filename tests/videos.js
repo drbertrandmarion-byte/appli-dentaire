@@ -42,6 +42,28 @@ async function ouvre(browser, admin){
   return p;
 }
 
+// Les cas 6 et 7 n'eprouvent plus l'AFFICHAGE mais la DECISION : qui obtient la porte selon le
+// profil. On laisse donc enterApp decider seul, sans l'appel de rattrapage ci-dessus — sinon la
+// suite se contenterait de verifier qu'un booleen qu'elle vient d'ecrire est bien celui qu'elle
+// a ecrit, et la liste des comptes nommes pourrait disparaitre sans qu'un test bronche.
+async function ouvreProfil(browser, profil){
+  const ctx = await browser.newContext({ viewport:{ width:1100, height:950 } });
+  ctx.route('**ujkpnlcbxzhwcftvxgcd.supabase.co**', r => r.abort('failed'));
+  await ctx.addInitScript(pr => {
+    localStorage.setItem('endodiag-session', JSON.stringify({
+      access_token:'test', refresh_token:'test', expires_at: Date.now() + 3600000,
+      user_id:'test-user', email: pr.email }));
+    localStorage.setItem('endodiag-profile', JSON.stringify(Object.assign({
+      id:'test-user', annee:'TCEO1', faculte:'UFR Odontologie Dijon', approved:true }, pr)));
+  }, profil);
+  const p = await ctx.newPage();
+  await p.goto(URL);
+  await p.evaluate(() => { const s = document.getElementById('splash-screen'); if (s) s.remove(); });
+  await p.waitForSelector('#auth-gate.hidden', { state:'attached', timeout:15000 });
+  await p.waitForTimeout(FONDU);
+  return p;
+}
+
 const etat = p => p.evaluate(() => {
   const lis = id => {
     const e = document.getElementById(id);
@@ -242,6 +264,84 @@ const etat = p => p.evaluate(() => {
       console.log('5. lecteurs reconnus :', JSON.stringify(formes));
     }
     await p.close();
+  }
+
+  // ---- 6. Le compte nomme obtient la rubrique, et RIEN DE PLUS ----
+  // L'enseignante a demande que la rubrique video s'ouvre a un compte precis, comme elle
+  // s'ouvre chez elle. Ce compte n'est pas administrateur : il ne doit donc recevoir que la
+  // porte d'accueil — ni le back-office, ni l'atelier de trace, qui modifie le corrige sur
+  // lequel les etudiants sont notes.
+  {
+    const nomme = await ouvreProfil(browser, {
+      email:'etudiant.nomme@example.com', prenom:'Madeline', nom:'Sanchez' });
+    const e = await etat(nomme);
+    const porteVue = !!(e.porte && e.porte.vu);
+    if (!porteVue) {
+      ko('le compte nomme dans NOMS_VIDEOS ne voit pas la porte d\'accueil : l\'acces demande '
+         + 'n\'est pas accorde');
+    }
+    if (porteVue && e.porte.aire === 0) {
+      ko('le compte nomme recoit une porte qui n\'occupe aucune place a l\'ecran');
+    }
+    // La rubrique doit vraiment s'ouvrir, pas seulement s'annoncer. On ne clique QUE si le
+    // bouton est la : sans cette garde, une regression sur l'acces faisait mourir la suite sur
+    // un delai d'attente de trente secondes, sans dire un mot de ce qui n'allait pas. Une suite
+    // qui tombe en panne n'est pas une suite qui accuse — les deux mutations qui ont eprouve ce
+    // cas rendaient toutes deux une trace d'erreur illisible avant cette correction.
+    if (porteVue) {
+      await nomme.click('#accueil-videos-btn');
+      await nomme.waitForTimeout(FONDU);
+      const apres = await etat(nomme);
+      if (!apres.videos || !apres.videos.vu) {
+        ko('le compte nomme voit le bouton mais la rubrique video ne s\'ouvre pas');
+      }
+    }
+    const deTrop = await nomme.evaluate(() => {
+      const ouvert = id => {
+        const el = document.getElementById(id);
+        return !!el && !el.classList.contains('hidden');
+      };
+      return { backoffice: ouvert('acct-admin-btn'), atelier: ouvert('radio-trace-btn'),
+               choixCliche: ouvert('radio-choix-wrap') };
+    });
+    if (deTrop.backoffice) ko('le compte nomme recoit le bouton du back-office : l\'acces accorde deborde');
+    if (deTrop.atelier)    ko('le compte nomme recoit l\'atelier de trace : il pourrait changer le corrige');
+    if (deTrop.choixCliche) ko('le compte nomme recoit le choix du cliche, reserve a l\'enseignante');
+    console.log('6. le compte nomme a la rubrique, sans le back-office ni l\'atelier');
+    await nomme.close();
+  }
+
+  // ---- 7. Et un etudiant ordinaire n'a toujours rien ----
+  // Le meme chemin, sans l'appel de rattrapage : si la liste se mettait a dire oui a tout le
+  // monde, le cas 1 ne le verrait pas, puisqu'il ecrit « faux » lui-meme.
+  {
+    const quelconque = await ouvreProfil(browser, {
+      email:'etudiant.quelconque@example.com', prenom:'Camille', nom:'Durand' });
+    const e = await etat(quelconque);
+    if (e.porte && e.porte.vu) {
+      ko('un etudiant ordinaire voit la porte d\'accueil : la liste des comptes nommes ne '
+         + 'filtre plus rien');
+    }
+    if (!e.modes || !e.modes.vu) {
+      ko('un etudiant ordinaire n\'ouvre plus sur le choix des trois modes');
+    }
+    // Et le nom s'eprouve a l'identique quelle que soit la casse ou l'ordre des mots : la
+    // normalisation est annoncee dans la page, on verifie qu'elle existe pour de bon.
+    await quelconque.evaluate(() => {
+      const pr = JSON.parse(localStorage.getItem('endodiag-profile'));
+      pr.prenom = 'SANCHEZ'; pr.nom = 'madeline';
+      localStorage.setItem('endodiag-profile', JSON.stringify(pr));
+    });
+    const inverse = await ouvreProfil(browser, {
+      email:'autre@example.com', prenom:'SANCHEZ', nom:'madeline' });
+    const ei = await etat(inverse);
+    if (!ei.porte || !ei.porte.vu) {
+      ko('le nom inverse et en majuscules n\'est pas reconnu : la normalisation annoncee dans '
+         + 'la page ne fait pas ce qu\'elle dit');
+    }
+    console.log('7. un etudiant ordinaire n\'a rien ; le nom est reconnu quel que soit son ordre');
+    await quelconque.close();
+    await inverse.close();
   }
 
   await browser.close();
