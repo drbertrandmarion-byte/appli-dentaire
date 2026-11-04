@@ -1407,6 +1407,24 @@ async function valideEtLis(page){
     });
     if (atelier.vu || atelier.aire !== 0) ko('sous-choix : l\'etudiant qui choisit son cliche recoit aussi l\'atelier de trace');
 
+    // LE TIRAGE DOIT REFERMER LA LISTE, et c'est par CE chemin-la qu'il faut l'eprouver :
+    // revenir a l'ecran d'entree SANS quitter le mode. L'entree dans le mode, elle, remet deja
+    // les deux chemins a zero, si bien qu'un controle fait apres un passage par l'accueil ne
+    // voyait rien — la mutation qui retire la remise a zero du bouton « au hasard » a survecu a
+    // la premiere version de ce test pour cette seule raison. Sans cette garde, l'etudiant
+    // reviendrait au hasard en gardant la liste d'un choix sous les yeux, et croirait choisir.
+    if (!await p.$eval('#radio-choix-wrap', e => !e.classList.contains('hidden'))) {
+      ko('sous-choix : la liste de seance s\'est refermee toute seule apres un cliche choisi');
+    }
+    await p.evaluate(() => { const e = document.getElementById('radio-home-btn'); if (e) e.click(); });
+    await p.waitForTimeout(420);
+    await p.click('#start-radio-btn');
+    await p.waitForTimeout(650);
+    if (await p.$eval('#radio-choix-wrap', e => !e.classList.contains('hidden'))) {
+      ko('sous-choix : revenu au tirage sans quitter le mode, l\'etudiant garde la liste du '
+         + 'choix precedent sous les yeux');
+    }
+
     // Revenir a l'ecran d'entree doit REPROPOSER les deux chemins : le sous-choix n'en est plus
     // un si le precedent est deja pris.
     await p.evaluate(() => { const e = document.getElementById('radio-home-btn'); if (e) e.click(); });
