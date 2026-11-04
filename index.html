@@ -264,6 +264,25 @@
     margin-top:16px;
   }
   .mode-buttons .btn-primary{flex:1 1 220px;}
+  /* Le second chemin du mode radiographique. Même largeur que le premier : deux boutons de
+     tailles différentes se liraient comme un bouton principal et un repentir. */
+  .mode-buttons .btn-secondary{flex:1 1 220px;}
+  .radio-pick-intro{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    align-items:flex-end;
+    gap:10px;
+    margin-top:12px;
+  }
+  .radio-pick-intro .btn-primary{flex:0 0 auto;}
+  .radio-pick-hint{
+    flex:1 1 100%;
+    margin:2px 0 0;
+    font-size:0.82rem;
+    color:var(--muted);
+    text-align:center;
+  }
   .mode-btn-group{display:flex; flex-direction:column; gap:4px; flex:1 1 220px;}
   .mode-btn-group .btn-primary{flex:1 1 auto; width:100%;}
   .score-stats{font-size:0.72rem; color:var(--muted); text-align:center;}
@@ -1643,8 +1662,23 @@
         laissez dans la légende celles qui n'y figurent pas. La correction montre ensuite les zones
         attendues, et explique comment se lit chacun des repères réellement présents.</p>
 
+      <!-- DEUX CHEMINS, et non plus un seul. Le tirage au hasard reste le premier proposé : il
+           fait travailler les clichés qu'on éviterait. Le second ouvre la liste, pour revenir
+           sur un cliché manqué — c'est l'enseignante qui l'a voulu ouvert aux étudiants. -->
       <div class="mode-buttons">
-        <button class="btn-primary" id="start-radio-btn">Commencer l'entraînement</button>
+        <button class="btn-primary" id="start-radio-btn">🎲 Cliché au hasard</button>
+        <button class="btn-secondary" id="start-radio-pick-btn">🗂️ Choisir le cliché</button>
+      </div>
+
+      <!-- La liste ne paraît qu'après le second bouton : laissée à l'écran d'emblée, elle
+           remplacerait le tirage pour tout le monde, alors qu'elle n'est qu'un second chemin. -->
+      <div class="radio-pick-intro hidden" id="radio-pick-intro">
+        <label class="radio-pick">Cliché à ouvrir
+          <select id="radio-choix-intro" class="radio-choix-liste"></select>
+        </label>
+        <button class="btn-primary" id="start-radio-pick-go">Ouvrir ce cliché</button>
+        <p class="radio-pick-hint">Revenir sur un cliché manqué est utile ; n'ouvrir que ceux
+          qu'on connaît déjà ne l'est pas. Le tirage au hasard reste le meilleur entraînement.</p>
       </div>
     </div>
 
@@ -1877,20 +1911,21 @@
 
     <div class="result-actions" id="radio-submit-row">
       <button class="btn-primary" id="radio-submit-btn">Valider ma lecture</button>
-      <!-- Part caché, et seul un compte enseignant le démasque. Le mode, lui, s'ouvre désormais
-           à tous : c'est cet atelier et le choix du cliché qui restent réservés. -->
+      <!-- Part caché, et seul un compte enseignant le démasque. Le mode s'ouvre à tous, et le
+           choix du cliché aussi depuis l'écran d'entrée : c'est cet atelier, qui modifie le
+           corrigé sur lequel tous sont notés, qui reste seul réservé. -->
       <button class="btn-secondary hidden" id="radio-trace-btn" type="button">✏️ Tracer les zones</button>
     </div>
 
-    <!-- Même porte que l'atelier. Tant que les clichés ne sont pas tous corrigés,
-         l'enseignante doit pouvoir ouvrir celui qu'elle veut sans attendre que le tirage le
-         propose : les trois portent le même titre, et chercher à l'aveugle coûtait du temps.
-         Les étudiants, eux, gardent le tirage au hasard. Cette rangée vit hors de
-         #radio-submit-row, qui disparaît à la validation : le choix doit rester atteignable
-         même une fois la correction affichée. -->
+    <!-- La liste pendant l'exercice. L'enseignante l'a en permanence : tant que les clichés ne
+         sont pas tous corrigés, elle doit ouvrir celui qu'elle veut sans attendre que le tirage
+         le propose, et chercher à l'aveugle coûtait du temps. L'étudiant l'obtient pour la
+         séance en cours s'il a pris le second bouton de l'écran d'entrée. Elle part donc cachée
+         dans les deux cas. Cette rangée vit hors de #radio-submit-row, qui disparaît à la
+         validation : le choix doit rester atteignable même une fois la correction affichée. -->
     <div class="result-actions radio-pick-row hidden" id="radio-choix-wrap">
       <label class="radio-pick">Cliché à ouvrir
-        <select id="radio-choix"></select>
+        <select id="radio-choix" class="radio-choix-liste" data-hasard></select>
       </label>
       <!-- Laissée sur « Tirage au hasard », la liste ne dit pas lequel est tombé. Cette ligne
            le dit, pour qu'on ne trace pas un cliché en croyant travailler sur un autre. -->
@@ -8133,6 +8168,20 @@
     return !!wrap && !wrap.classList.contains('hidden');
   }
 
+  // La liste pendant l'exercice vient de DEUX sources, et l'une n'annule pas l'autre :
+  //   - « permanente » : l'enseignante, qui l'a dès l'entrée et la garde (voir EndoTeacherModes) ;
+  //   - « demandée »   : l'étudiant qui a pris le second bouton de l'écran d'entrée.
+  // Un seul booléen n'aurait pas suffi : le rendu de l'enseignante l'aurait effacé dès qu'un
+  // étudiant l'aurait reposé, ou l'inverse.
+  var radioChoixPermanent = false;
+  var radioChoixDemande   = false;
+
+  function radioMajChoix(){
+    var wrap = document.getElementById('radio-choix-wrap');
+    if(!wrap) return;
+    ((radioChoixPermanent || radioChoixDemande) ? showEl : hideEl)(wrap);
+  }
+
   // Le choix vaut pour LE cliché qu'on ouvre, pas pour tous les suivants. Tant qu'il survivait
   // d'un tour à l'autre, « Nouveau cliché » rouvrait indéfiniment le même film et paraissait
   // sans effet : on remet donc la liste sur « Tirage au hasard » avant de relancer.
@@ -8416,11 +8465,46 @@
     // Le corrigé partagé est demandé dès l'entrée dans le mode, et une seule fois : le
     // chargement doit être fini avant qu'un cliché ne soit validé contre les contours.
     radioChargeCorrige();
+    // Chaque entrée dans le mode repart des deux chemins. Sans cette remise à zéro, un étudiant
+    // qui a choisi un cliché la fois précédente retrouverait la liste ouverte et le chemin déjà
+    // pris pour lui : le sous-choix ne serait plus un choix.
+    radioChoixDemande = false;
+    radioMajChoix();
+    hideEl(document.getElementById('radio-pick-intro'));
+    radioRemplitChoix();
     showMode(modeRadioIntro);
   });
   document.getElementById('accueil-entrainement-btn').addEventListener('click', showEntrainement);
   document.getElementById('accueil-videos-btn').addEventListener('click', showVideos);
-  document.getElementById('start-radio-btn').addEventListener('click', radioRendAuHasard);
+  // Premier chemin : le tirage. Il referme la liste si la séance précédente l'avait ouverte —
+  // sinon « au hasard » laisserait l'écran d'un choix à l'écran, et on croirait avoir choisi.
+  document.getElementById('start-radio-btn').addEventListener('click', function(){
+    radioChoixDemande = false;
+    radioMajChoix();
+    radioRendAuHasard();
+  });
+
+  // Second chemin : la liste paraît sur l'écran d'entrée. Rien ne démarre encore — l'étudiant
+  // doit encore dire QUEL cliché, et peut repartir sur le tirage sans rien avoir engagé.
+  document.getElementById('start-radio-pick-btn').addEventListener('click', function(){
+    radioRemplitChoix();
+    showEl(document.getElementById('radio-pick-intro'));
+  });
+
+  document.getElementById('start-radio-pick-go').addEventListener('click', function(){
+    var sel = document.getElementById('radio-choix-intro');
+    var id  = sel ? sel.value : '';
+    // L'ORDRE COMPTE. startRadioCase refuse un cliché demandé quand radioPeutChoisir() dit non,
+    // et radioPeutChoisir lit la liste de l'exercice à l'écran. Ouvrir cette liste APRÈS aurait
+    // lancé le cliché au hasard en paraissant obéir au choix.
+    radioChoixDemande = true;
+    radioMajChoix();
+    // Les deux listes doivent annoncer le même cliché : celle de l'exercice sert ensuite à
+    // changer d'avis, et elle dirait « Tirage au hasard » pendant qu'un cliché choisi est ouvert.
+    var enSeance = document.getElementById('radio-choix');
+    if(enSeance && id && enSeance.querySelector('option[value="' + id + '"]')) enSeance.value = id;
+    startRadioCase(id || undefined);
+  });
   document.getElementById('radio-submit-btn').addEventListener('click', submitRadio);
   document.getElementById('radio-next-btn').addEventListener('click', radioRendAuHasard);
   document.getElementById('radio-home-btn').addEventListener('click', goHome);
@@ -8450,19 +8534,33 @@
   // l'atelier n'y voit que les clichés validés, et ce qui est validé n'est connu qu'une fois
   // le serveur répondu. Sans ce second remplissage, la liste aurait offert d'ouvrir un cliché
   // que le tirage, lui, refuse de proposer.
-  function radioRemplitChoix(){
-    var sel = document.getElementById('radio-choix');
-    if(!sel) return;
-    var garde = sel.value;
-    var html = '<option value="">Tirage au hasard</option>';
+  // DEUX listes portent désormais ces clichés : celle de l'écran d'entrée, où l'étudiant choisit
+  // son chemin, et celle qui reste à portée pendant l'exercice. Elles sont remplies par la même
+  // fonction et à partir de la même source : recopiée, l'une aurait fini par proposer un cliché
+  // que l'autre ne connaît pas. Seule diffère l'entrée « Tirage au hasard », réservée à la
+  // seconde — sur l'écran d'entrée, c'est le premier bouton qui tire au sort.
+  function radioOptionsCliches(){
+    var html = '';
     radioClichesVisibles().forEach(function(c){
       var i = RADIO_CASES.indexOf(c);
       var fichier = (c.image || '').split('/').pop();
       html += '<option value="' + c.id + '">Cliché ' + (i + 1) + ' — ' + fichier +
               (c.valide === true || radioPublies[c.id] ? '' : ' — à valider') + '</option>';
     });
-    sel.innerHTML = html;
-    if(garde && sel.querySelector('option[value="' + garde + '"]')) sel.value = garde;
+    return html;
+  }
+
+  function radioRemplitChoix(){
+    var listes = document.querySelectorAll('.radio-choix-liste');
+    if(!listes.length) return;
+    var options = radioOptionsCliches();
+    for(var i = 0; i < listes.length; i++){
+      var sel   = listes[i];
+      var garde = sel.value;
+      sel.innerHTML = (sel.hasAttribute('data-hasard')
+                        ? '<option value="">Tirage au hasard</option>' : '') + options;
+      if(garde && sel.querySelector('option[value="' + garde + '"]')) sel.value = garde;
+    }
   }
 
   (function(){
@@ -8481,18 +8579,26 @@
   //   « mode »  : voir le mode de lecture — ouvert à tout compte connecté depuis que la partie
   //               est terminée.
   //   « trace » : ouvrir l'atelier, qui modifie le corrigé sur lequel les étudiants sont notés.
-  //   « choix » : choisir son cliché au lieu de le recevoir au tirage.
-  // Le choix du cliché a quitté la première porte le jour où le mode s'est ouvert à tous. Les
-  // deux allaient ensemble tant que seule l'enseignante entrait ici ; offerte aux étudiants, la
-  // liste remplacerait le tirage, et chacun réviserait le cliché qu'il connaît déjà — l'exercice
-  // n'apprend rien si l'on choisit d'avance ce qu'on va voir.
+  //   « choix » : avoir la liste des clichés EN PERMANENCE, dès l'entrée dans l'exercice.
+  //
+  // Cette troisième porte ne veut plus dire « avoir le droit de choisir ». L'enseignante a
+  // ouvert le choix aux étudiants : ils l'atteignent par le second bouton de l'écran d'entrée,
+  // qui ouvre la liste pour la séance en cours. La porte « choix » ne distingue plus que le
+  // confort de l'enseignante, qui corrige ses clichés et ne veut pas repasser par l'écran
+  // d'entrée à chaque fois.
+  //
+  // J'avais gardé cette liste fermée aux étudiants pour que le tirage ne soit pas remplacé par
+  // une révision de ce qu'on connaît déjà. L'enseignante tranche autrement, et c'est son
+  // cours : le tirage reste le premier bouton, et la liste porte l'avertissement.
+  //
   // Appelée avec moins d'arguments, la fonction ouvre tout, comme avant.
   window.EndoTeacherModes = function(mode, trace, choix){
     if(arguments.length < 2) trace = mode;
     if(arguments.length < 3) choix = trace;
     (mode  ? showEl : hideEl)(document.getElementById('hub-radio-btn'));
     (trace ? showEl : hideEl)(document.getElementById('radio-trace-btn'));
-    (choix ? showEl : hideEl)(document.getElementById('radio-choix-wrap'));
+    radioChoixPermanent = !!choix;
+    radioMajChoix();
     // L'enseignante voit TOUS les clichés, y compris ceux qu'elle n'a pas encore validés :
     // c'est dans l'atelier qu'elle les valide. La liste se refait donc quand la porte s'ouvre.
     radioRemplitChoix();

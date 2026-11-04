@@ -62,7 +62,7 @@ affiche en plus des tableaux à relire à l'œil — voir plus bas.
 | `confettis.js` | Que les confettis tombent sur un sans-faute, et **seulement** sur un sans-faute |
 | `session-unique.js` | Qu'un compte ne reste ouvert que sur un appareil, sans jamais bloquer la révision hors ligne |
 | `videos.js` | Que la porte d'accueil à deux boutons et la rubrique vidéo restent hors de portée des étudiants, et que les deux chemins mènent où ils disent |
-| `lecture-radio.js` | Que le troisième mode s'ouvre à tout compte connecté, que l'atelier de tracé et le choix du cliché restent hors de portée des étudiants, que chaque cliché déclaré soit réellement éprouvé, et que la marge de tolérance du pointage fonctionne dans les deux sens |
+| `lecture-radio.js` | Que le troisième mode s'ouvre à tout compte connecté, que l'atelier de tracé reste hors de portée des étudiants, que le sous-choix « hasard ou liste » de l'écran d'entrée obéisse réellement, que chaque cliché déclaré soit réellement éprouvé, et que la marge de tolérance du pointage fonctionne dans les deux sens |
 
 L'encadré **« Économie diagnostique »** a été retiré des résultats du mode diagnostic. Il
 annonçait le nombre minimal de questions qui auraient suffi — « 2 questions suffisaient à
@@ -239,12 +239,29 @@ et y laisser entrer un compte non validé. Toutes sont signalées.
 qu'on accordait compte par compte depuis le back-office n'est plus lu. Deux portes restent fermées,
 et ce sont elles que la suite surveille :
 
-- **L'atelier de tracé**, qui modifie le corrigé sur lequel tous les étudiants sont notés.
-- **Le choix du cliché**, qui remplacerait le tirage par une liste : on réviserait alors celui
-  qu'on connaît déjà. Il suivait la même porte que le mode tant que l'enseignante y entrait seule ;
-  ouvrir le mode à tous a obligé à l'en séparer, d'où **trois** portes dans `EndoTeacherModes`.
+- **L'atelier de tracé**, qui modifie le corrigé sur lequel tous les étudiants sont notés. C'est
+  aujourd'hui la seule porte réellement fermée.
+- **La liste permanente des clichés**, qui reste au confort de l'enseignante : elle corrige ses
+  clichés et ne veut pas repasser par l'écran d'entrée à chaque fois. D'où **trois** portes dans
+  `EndoTeacherModes`.
 
-Le test éprouve le cas ordinaire — un étudiant connecté a le mode, et ni l'atelier ni la liste —,
+**Le choix du cliché, lui, est ouvert aux étudiants** depuis que l'enseignante l'a demandé. L'écran
+d'entrée du mode propose deux chemins : « cliché au hasard » et « choisir le cliché ». J'avais gardé
+cette liste fermée pour que le tirage ne devienne pas une révision de ce qu'on connaît déjà ;
+l'enseignante a tranché autrement, et c'est son cours. Le tirage reste le premier bouton, et la
+liste porte l'avertissement. La section **2ter** éprouve ce sous-choix : les deux boutons sont là,
+la liste ne paraît qu'après le second, elle ne démarre rien toute seule, **chaque cliché qu'elle
+propose ouvre bien ce cliché-là**, les deux listes (entrée et séance) proposent exactement les
+mêmes, le retour à l'écran d'entrée repropose les deux chemins, et le tirage au hasard ne laisse
+pas la liste ouverte derrière lui.
+
+Le défaut que cette section guette est un défaut d'**ordre** : `startRadioCase` refuse un cliché
+demandé quand `radioPeutChoisir()` dit non, et `radioPeutChoisir` lit la liste de séance à l'écran.
+Ouvrir cette liste *après* le lancement rendait un tirage au hasard sous couvert d'obéissance — un
+choix qui paraît obéi sans l'être. La mutation qui inverse les deux lignes est au programme.
+
+Le test éprouve aussi le cas ordinaire — un étudiant connecté a le mode, et ni l'atelier ni la
+liste permanente avant d'avoir choisi ce chemin —,
 puis force chaque porte : un bouton caché n'est pas une porte fermée, et l'atelier doit refuser de
 s'ouvrir même appelé directement. Il vérifie aussi qu'**hors ligne le mode est fermé à tout le
 monde**, l'enseignante comprise : le corrigé du serveur n'y est pas chargé, et un étudiant serait
@@ -277,12 +294,13 @@ juge : si elle en oubliait un, la suite annoncerait « 2 / 2 » en toute bonne f
 **recoupée avec deux sources qu'elle ne contrôle pas** — les images déclarées dans `RADIO_CASES`,
 lues dans le source, et les fichiers réellement présents dans `radios/`. Les trois doivent coïncider.
 
-Le **choix du cliché**, réservé lui aussi à l'enseignante, est vérifié des deux côtés : chaque entrée
-de la liste doit ouvrir le cliché qu'elle nomme, le choix doit survivre à « Nouveau cliché » et
-rester atteignable après la validation, et la ligne « à l'écran » doit nommer le fichier affiché. Du
-côté étudiant, il ne suffit pas que la liste soit cachée : le test **force sa valeur** puis enchaîne
-une douzaine de clichés, et exige que le tirage reste un tirage. Un contrôle d'affichage seul
-laisserait passer une porte ouverte à qui inspecte le DOM.
+La **liste permanente de l'enseignante** est vérifiée des deux côtés : chaque entrée doit ouvrir le
+cliché qu'elle nomme, elle doit rester atteignable après la validation, « Nouveau cliché » doit
+rendre la main au tirage plutôt que rouvrir indéfiniment le même film, et la ligne « à l'écran »
+doit nommer le fichier affiché. Du côté étudiant, il ne suffit pas qu'une liste soit cachée : le
+test **force sa valeur** puis enchaîne une douzaine de clichés, et exige que le tirage reste un
+tirage tant que le chemin du choix n'a pas été pris. Un contrôle d'affichage seul laisserait passer
+une porte ouverte à qui inspecte le DOM.
 
 Que la liste parte **cachée dans le HTML** ne peut se vérifier que dans la source, et c'est une
 mutation qui l'a montré : `enterApp` appelle `EndoTeacherModes(false)` pour un étudiant et remet la
@@ -338,8 +356,11 @@ Ce que la suite ne peut pas juger : la **justesse clinique** du corrigé de chaq
 zones attendues sont lues dans l'application elle-même. C'est à l'enseignante de valider la liste des
 repères de chaque cas — l'encadré affiché en tête du mode l'annonce explicitement.
 
-Ses mutations de contrôle : ouvrir le choix du cliché aux étudiants, leur ouvrir l'atelier de
-tracé, revenir au drapeau `radio` accordé compte par compte, retirer l'appel dans `enterApp`,
+Ses mutations de contrôle : ouvrir la liste permanente aux étudiants, leur ouvrir l'atelier de
+tracé, lancer le cliché choisi avant d'avoir ouvert la liste de séance (le choix retombe alors sur
+un tirage, sans rien dire), ne plus remettre les deux chemins en entrant dans le mode, laisser le
+tirage au hasard derrière lui une liste ouverte, désaccorder les deux listes, revenir au drapeau
+`radio` accordé compte par compte, retirer l'appel dans `enterApp`,
 multiplier la tolérance par quatre, l'annuler, poser les points hors du cliché, retirer un cliché de
 la liste déclarée, ignorer le choix de l'enseignante, la montrer aux étudiants dans le HTML, obéir à
 la liste même cachée, la faire disparaître à la validation, vider la ligne « à l'écran », remettre

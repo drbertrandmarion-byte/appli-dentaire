@@ -1328,6 +1328,106 @@ async function valideEtLis(page){
     await p.close();
   }
 
+  // ---- 2ter. Le sous-choix de l'ecran d'entree : hasard ou liste ----
+  // L'enseignante a ouvert le choix du cliche aux etudiants, par un second bouton. Ce qui est
+  // en jeu : le premier bouton doit rester un VRAI tirage (sinon le mode se transforme en
+  // revision de ce qu'on connait deja pour tout le monde), et le second doit reellement ouvrir
+  // le cliche demande — un choix qui retombe sur un tirage paraitrait obei sans l'etre.
+  {
+    const p = await context.newPage();
+    await boot(p, 7);
+    // Un etudiant : le mode, mais ni l'atelier ni la liste permanente.
+    await p.evaluate(() => {
+      window.EndoAccount = Object.assign({}, window.EndoAccount, { isAdmin: false, accesRadio: true });
+      window.EndoTeacherModes(true, false, false);
+    });
+    await p.waitForTimeout(420);
+    await p.click('#hub-radio-btn');
+    await p.waitForTimeout(420);
+
+    const visible = id => p.$eval('#' + id, e => !e.classList.contains('hidden'));
+    if (!await visible('start-radio-btn'))      ko('sous-choix : le bouton du tirage au hasard manque a l\'ecran d\'entree');
+    if (!await visible('start-radio-pick-btn')) ko('sous-choix : le bouton « choisir le cliche » manque a l\'ecran d\'entree');
+    // La liste ne doit pas etre la AVANT qu'on la demande : offerte d'emblee, elle remplacerait
+    // le tirage au lieu de le completer.
+    if (await visible('radio-pick-intro')) ko('sous-choix : la liste est ouverte avant qu\'on ait choisi ce chemin');
+
+    // Le second bouton ouvre la liste, et ne demarre rien : on doit pouvoir se raviser.
+    await p.click('#start-radio-pick-btn');
+    await p.waitForTimeout(420);
+    if (!await visible('radio-pick-intro')) ko('sous-choix : « choisir le cliche » n\'ouvre pas la liste');
+    if (!await p.$eval('#mode-radio-intro', e => !e.classList.contains('hidden'))) {
+      ko('sous-choix : « choisir le cliche » demarre l\'exercice au lieu de laisser choisir');
+    }
+
+    // LES DEUX LISTES doivent proposer les memes cliches. Remplies separement, l'une aurait fini
+    // par offrir un cliche que l'autre ignore.
+    const lues = await p.evaluate(() => ({
+      entree: [...document.querySelectorAll('#radio-choix-intro option')].map(o => o.value),
+      seance: [...document.querySelectorAll('#radio-choix option')].map(o => o.value).filter(Boolean)
+    }));
+    if (lues.entree.join('|') !== lues.seance.join('|')) {
+      ko('sous-choix : les deux listes divergent — entree ' + lues.entree.length +
+         ' cliche(s), seance ' + lues.seance.length);
+    }
+    if (lues.entree.some(v => !v)) ko('sous-choix : la liste d\'entree propose « Tirage au hasard », qui est deja le premier bouton');
+    if (!lues.entree.length) ko('sous-choix : la liste d\'entree ne propose aucun cliche');
+
+    // LE CHOIX EST-IL OBEI ? On ouvre chaque cliche propose, et on verifie que c'est bien lui
+    // qui paraît. C'est le defaut que l'ordre des appels pouvait creer : ouvrir la liste de
+    // seance APRES le lancement aurait rendu un tirage au hasard sous couvert d'obeissance.
+    let desobei = 0;
+    for (const id of lues.entree) {
+      await p.evaluate(() => {
+        const e = document.getElementById('radio-home-btn');
+        if (e) e.click();
+      });
+      await p.waitForTimeout(420);
+      await p.click('#hub-radio-btn');       await p.waitForTimeout(400);
+      await p.click('#start-radio-pick-btn'); await p.waitForTimeout(300);
+      await p.selectOption('#radio-choix-intro', id);
+      await p.click('#start-radio-pick-go');  await p.waitForTimeout(650);
+      const vue = await p.getAttribute('#radio-film img', 'src');
+      const attendu = await p.evaluate(x => (window.EndoRadioCas.find(c => c.id === x) || {}).image, id);
+      if (vue !== attendu) {
+        desobei++;
+        if (desobei < 3) ko('sous-choix : « ' + id + ' » ouvre ' + vue + ' au lieu de ' + attendu);
+      }
+      // Et la liste de seance doit annoncer CE cliche, pas « Tirage au hasard » : sinon elle
+      // dit le contraire de ce qui est a l'ecran.
+      const dit = await p.$eval('#radio-choix', s => s.value);
+      if (dit !== id && desobei < 3) ko('sous-choix : la liste de seance montre « ' + dit + ' » alors que ' + id + ' est ouvert');
+    }
+    if (desobei) ko('sous-choix : ' + desobei + ' cliche(s) sur ' + lues.entree.length + ' n\'obeissent pas au choix');
+
+    // L'atelier reste ferme : ouvrir le choix ne doit rien ouvrir d'autre.
+    const atelier = await p.evaluate(() => {
+      const t = document.getElementById('radio-trace-btn');
+      return { vu: !t.classList.contains('hidden'), aire: (r => r.width * r.height)(t.getBoundingClientRect()) };
+    });
+    if (atelier.vu || atelier.aire !== 0) ko('sous-choix : l\'etudiant qui choisit son cliche recoit aussi l\'atelier de trace');
+
+    // Revenir a l'ecran d'entree doit REPROPOSER les deux chemins : le sous-choix n'en est plus
+    // un si le precedent est deja pris.
+    await p.evaluate(() => { const e = document.getElementById('radio-home-btn'); if (e) e.click(); });
+    await p.waitForTimeout(400);
+    await p.click('#hub-radio-btn');
+    await p.waitForTimeout(420);
+    if (await visible('radio-pick-intro')) ko('sous-choix : la liste reste ouverte au retour, le chemin est deja pris pour l\'etudiant');
+    if (await p.$eval('#radio-choix-wrap', e => !e.classList.contains('hidden'))) {
+      ko('sous-choix : la liste de seance reste ouverte au retour alors que le chemin n\'est pas repris');
+    }
+
+    // Et le tirage au hasard, lui, ne doit PAS ouvrir la liste de seance.
+    await p.click('#start-radio-btn');
+    await p.waitForTimeout(650);
+    if (await p.$eval('#radio-choix-wrap', e => !e.classList.contains('hidden'))) {
+      ko('sous-choix : le tirage au hasard ouvre quand meme la liste des cliches');
+    }
+    console.log('2ter. sous-choix : ' + lues.entree.length + ' cliche(s) proposes, tous obeis');
+    await p.close();
+  }
+
   // ---- 3quinquies. Le corrige partage : ce que l'enseignante retrace vaut pour tous ----
   // Les contours declares dans le code ne sont qu'un point de depart ; ceux qu'elle retrace
   // font foi et doivent valoir pour TOUTES les sessions. Trois choses a prouver : le corrige
