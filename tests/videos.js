@@ -266,19 +266,40 @@ const etat = p => p.evaluate(() => {
     await p.close();
   }
 
-  // ---- 6. Le compte nomme obtient la rubrique, et RIEN DE PLUS ----
+  // ---- 6. Le compte designe obtient la rubrique, et RIEN DE PLUS ----
   // L'enseignante a demande que la rubrique video s'ouvre a un compte precis, comme elle
   // s'ouvre chez elle. Ce compte n'est pas administrateur : il ne doit donc recevoir que la
   // porte d'accueil — ni le back-office, ni l'atelier de trace, qui modifie le corrige sur
   // lequel les etudiants sont notes.
+  //
+  // L'adresse est lue DANS LA PAGE plutot que recopiee ici : recopiee, elle pourrait rester
+  // juste dans le test longtemps apres avoir ete retiree de l'application.
   {
+    const adresse = await (async () => {
+      const p = await ouvre(browser, false);
+      const m = await p.evaluate(() => {
+        const t = document.documentElement.innerHTML.match(/var MAILS_VIDEOS = \[([^\]]*)\]/);
+        if (!t) return null;
+        const l = t[1].match(/'([^']+)'/g);
+        return l ? l.map(x => x.slice(1, -1)) : [];
+      });
+      await p.close();
+      return m;
+    })();
+    if (adresse === null) {
+      ko('la liste MAILS_VIDEOS est introuvable dans la page : l\'acces accorde n\'est eprouve nulle part');
+    } else if (!adresse.length) {
+      ko('la liste MAILS_VIDEOS est vide : le compte a qui la rubrique a ete ouverte n\'y est plus');
+    } else {
+      console.log('   adresse(s) ayant acces a la rubrique :', adresse.join(', '));
+    }
     const nomme = await ouvreProfil(browser, {
-      email:'etudiant.nomme@example.com', prenom:'Madeline', nom:'Sanchez' });
+      email: (adresse && adresse[0]) || 'aucune@example.com', prenom:'Madeline', nom:'Sanchez' });
     const e = await etat(nomme);
     const porteVue = !!(e.porte && e.porte.vu);
     if (!porteVue) {
-      ko('le compte nomme dans NOMS_VIDEOS ne voit pas la porte d\'accueil : l\'acces demande '
-         + 'n\'est pas accorde');
+      ko('le compte designe dans MAILS_VIDEOS ne voit pas la porte d\'accueil : l\'acces '
+         + 'demande n\'est pas accorde');
     }
     if (porteVue && e.porte.aire === 0) {
       ko('le compte nomme recoit une porte qui n\'occupe aucune place a l\'ecran');
@@ -306,42 +327,47 @@ const etat = p => p.evaluate(() => {
     });
     if (deTrop.backoffice) ko('le compte nomme recoit le bouton du back-office : l\'acces accorde deborde');
     if (deTrop.atelier)    ko('le compte nomme recoit l\'atelier de trace : il pourrait changer le corrige');
-    if (deTrop.choixCliche) ko('le compte nomme recoit le choix du cliche, reserve a l\'enseignante');
-    console.log('6. le compte nomme a la rubrique, sans le back-office ni l\'atelier');
+    if (deTrop.choixCliche) ko('le compte designe recoit le choix du cliche, reserve a l\'enseignante');
+    console.log('6. le compte designe a la rubrique, sans le back-office ni l\'atelier');
     await nomme.close();
-  }
 
-  // ---- 7. Et un etudiant ordinaire n'a toujours rien ----
-  // Le meme chemin, sans l'appel de rattrapage : si la liste se mettait a dire oui a tout le
-  // monde, le cas 1 ne le verrait pas, puisqu'il ecrit « faux » lui-meme.
-  {
-    const quelconque = await ouvreProfil(browser, {
-      email:'etudiant.quelconque@example.com', prenom:'Camille', nom:'Durand' });
-    const e = await etat(quelconque);
-    if (e.porte && e.porte.vu) {
-      ko('un etudiant ordinaire voit la porte d\'accueil : la liste des comptes nommes ne '
-         + 'filtre plus rien');
-    }
-    if (!e.modes || !e.modes.vu) {
-      ko('un etudiant ordinaire n\'ouvre plus sur le choix des trois modes');
-    }
-    // Et le nom s'eprouve a l'identique quelle que soit la casse ou l'ordre des mots : la
-    // normalisation est annoncee dans la page, on verifie qu'elle existe pour de bon.
-    await quelconque.evaluate(() => {
-      const pr = JSON.parse(localStorage.getItem('endodiag-profile'));
-      pr.prenom = 'SANCHEZ'; pr.nom = 'madeline';
-      localStorage.setItem('endodiag-profile', JSON.stringify(pr));
-    });
-    const inverse = await ouvreProfil(browser, {
-      email:'autre@example.com', prenom:'SANCHEZ', nom:'madeline' });
-    const ei = await etat(inverse);
-    if (!ei.porte || !ei.porte.vu) {
-      ko('le nom inverse et en majuscules n\'est pas reconnu : la normalisation annoncee dans '
+    // La meme adresse en majuscules et entouree d'espaces reste la meme adresse.
+    const casse = await ouvreProfil(browser, {
+      email: ' ' + ((adresse && adresse[0]) || 'aucune@example.com').toUpperCase() + ' ',
+      prenom:'Madeline', nom:'Sanchez' });
+    const ec = await etat(casse);
+    if (!ec.porte || !ec.porte.vu) {
+      ko('la meme adresse en majuscules n\'est pas reconnue : la normalisation annoncee dans '
          + 'la page ne fait pas ce qu\'elle dit');
     }
-    console.log('7. un etudiant ordinaire n\'a rien ; le nom est reconnu quel que soit son ordre');
+    await casse.close();
+  }
+
+  // ---- 7. Le NOM ne donne rien : seule l'adresse ouvre ----
+  // Le premier jet acceptait aussi le prenom et le nom, faute de connaitre l'adresse. Le serveur
+  // ne fige PAS le nom : un compte pouvait se renommer « Madeline Sanchez » et entrer. La clé du
+  // nom a ete retiree, et ce cas monte la garde pour qu'elle ne revienne pas — c'est le trou
+  // lui-meme qu'il reproduit, avec le bon nom et une autre adresse.
+  {
+    const usurpateur = await ouvreProfil(browser, {
+      email:'etudiant.quelconque@example.com', prenom:'Madeline', nom:'Sanchez' });
+    const e = await etat(usurpateur);
+    if (e.porte && e.porte.vu) {
+      ko('un compte qui porte le bon NOM mais une autre adresse obtient la rubrique : la cle '
+         + 'faible du nom est revenue, et n\'importe quel compte peut se renommer pour entrer');
+    }
+    if (!e.modes || !e.modes.vu) {
+      ko('ce compte n\'ouvre plus sur le choix des trois modes');
+    }
+    const quelconque = await ouvreProfil(browser, {
+      email:'camille.durand@example.com', prenom:'Camille', nom:'Durand' });
+    const eq = await etat(quelconque);
+    if (eq.porte && eq.porte.vu) {
+      ko('un etudiant ordinaire voit la porte d\'accueil : la liste des adresses ne filtre plus rien');
+    }
+    console.log('7. le bon nom avec une autre adresse n\'ouvre rien ; un etudiant ordinaire non plus');
+    await usurpateur.close();
     await quelconque.close();
-    await inverse.close();
   }
 
   await browser.close();

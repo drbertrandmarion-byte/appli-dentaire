@@ -389,25 +389,34 @@ et non recopiée dans le test, qui pourrait sinon diverger d'elle sans que rien 
 Deux derniers cas éprouvent non plus l'affichage mais la **décision** : qui obtient la porte selon
 le profil. Les cas précédents appellent `EndoAccueilDouble` eux-mêmes, et ne vérifient donc qu'une
 chose : qu'un booléen qu'ils viennent d'écrire est bien celui qu'ils ont écrit. La liste des
-comptes nommés (`NOMS_VIDEOS`, `MAILS_VIDEOS`) pouvait disparaître sans qu'un test bronche. Les
-deux derniers laissent donc `enterApp` décider seul, à partir du profil déposé dans le navigateur,
-et vérifient que le compte nommé reçoit la rubrique **et rien de plus** : ni le bouton du
-back-office, ni l'atelier de tracé, ni le choix du cliché. L'accès accordé ne doit pas déborder
-sur le corrigé qui note les étudiants.
+comptes autorisés (`MAILS_VIDEOS`) pouvait disparaître sans qu'un test bronche. Les deux derniers
+laissent donc `enterApp` décider seul, à partir du profil déposé dans le navigateur, et vérifient
+que le compte désigné reçoit la rubrique **et rien de plus** : ni le bouton du back-office, ni
+l'atelier de tracé, ni le choix du cliché. L'accès accordé ne doit pas déborder sur le corrigé qui
+note les étudiants. L'adresse autorisée est **lue dans la page**, non recopiée dans le test : une
+adresse recopiée resterait juste dans le test longtemps après avoir été retirée de l'application.
 
-Ces deux cas ont corrigé un défaut de la suite elle-même. Les mutations qui vident la liste, ou
-qui rendent la décision à `isAdmin` seul, cachaient le bouton des vidéos ; le test cliquait
-dessus quand même, et **mourait sur un délai d'attente de trente secondes** en crachant une trace
+**La clé est l'adresse, et elle seule.** Le premier jet acceptait aussi le prénom et le nom, faute
+de connaître l'adresse du compte à ouvrir. Le serveur fige l'adresse de connexion
+(`protect_profile_fields` réécrit `new.email := old.email`) mais **pas** le prénom ni le nom : un
+compte pouvait donc se renommer pour entrer dans la liste. La clé du nom a été retirée dès
+l'adresse connue, et le cas 7 reproduit le trou lui-même — le bon nom, une autre adresse — pour
+qu'elle ne revienne pas.
+
+Ces cas ont corrigé un défaut de la suite elle-même. Les mutations qui vident la liste, ou qui
+rendent la décision à `isAdmin` seul, cachaient le bouton des vidéos ; le test cliquait dessus
+quand même, et **mourait sur un délai d'attente de trente secondes** en crachant une trace
 illisible, sans un mot sur ce qui n'allait pas. Une suite qui tombe en panne n'est pas une suite
-qui accuse. Le clic est désormais conditionné à la présence du bouton, et les quatre mutations
-— liste vidée, accès donné à tous, normalisation du nom retirée, décision rendue à `isAdmin` —
-rendent chacune une phrase lisible.
+qui accuse. Le clic est désormais conditionné à la présence du bouton, et cinq mutations rendent
+chacune une phrase lisible : liste vidée, accès donné à tous, clé du nom remise, normalisation de
+l'adresse lue retirée, décision rendue à `isAdmin`.
 
-Une mise en garde, enfin, que la page porte aussi en commentaire : le **nom** est une clé faible.
-Le serveur fige l'adresse de connexion (`protect_profile_fields` réécrit `new.email := old.email`)
-mais pas le prénom ni le nom, qu'un compte peut donc changer pour entrer dans la liste. Ce qu'il y
-gagnerait reste petit — la rubrique, et des liens YouTube que la page contient déjà pour tout le
-monde — mais dès qu'une adresse est connue, la ligne doit passer dans `MAILS_VIDEOS`.
+Une sixième a **survécu**, et c'est un mutant équivalent : retirer la normalisation du **côté
+liste** (`MAILS_VIDEOS.map(...)`) ne change rien tant que les adresses y sont écrites en
+minuscules, ce qui est le cas aujourd'hui. Elle n'est pas inutile pour autant — elle sert le jour
+où une adresse sera collée avec des majuscules — mais aucun test ne peut l'attester sans salir la
+vraie liste, et la gonfler d'une fausse entrée pour la seule commodité du test coûterait plus
+qu'elle ne rapporte. C'est écrit ici plutôt que laissé à la prochaine lecture.
 
 Ses mutations de contrôle : retirer la garde d'entrée, et ouvrir la porte à tous les comptes.
 Les deux sont signalées.

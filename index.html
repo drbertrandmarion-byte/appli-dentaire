@@ -4569,8 +4569,8 @@
   });
 
   // ---------- La porte d'entrée à deux boutons ----------
-  // Réservée à l'enseignante, et aux comptes qu'elle nomme (voir MAILS_VIDEOS / NOMS_VIDEOS),
-  // tant que la rubrique vidéo se construit. Pour un étudiant, « accueilDouble » reste faux :
+  // Réservée à l'enseignante, et aux comptes qu'elle désigne (voir MAILS_VIDEOS), tant que la
+  // rubrique vidéo se construit. Pour un étudiant, « accueilDouble » reste faux :
   // l'application s'ouvre directement sur les trois modes, et rien de ce qui suit ne se voit.
   var accueilDouble = false;
   var accueilChoix  = document.getElementById('accueil-choix');
@@ -9201,36 +9201,24 @@
   // AUSSI, sans être administrateurs : ils n'ont donc ni le back-office, ni l'atelier de tracé,
   // et ne peuvent pas toucher au corrigé sur lequel les étudiants sont notés.
   //
-  // DEUX CLÉS, ET ELLES NE SE VALENT PAS :
-  //   - MAILS_VIDEOS, l'adresse de connexion. Le serveur la FIGE : le déclencheur
-  //     protect_profile_fields réécrit « new.email := old.email » à chaque mise à jour, donc
-  //     aucun compte ne peut se donner l'adresse d'un autre. C'est la clé sûre.
-  //   - NOMS_VIDEOS, le prénom et le nom. Le serveur ne les fige PAS : un compte peut se
-  //     renommer, et donc se glisser dans cette liste. La clé est faible, elle n'est là que
-  //     faute de connaître l'adresse. Ce qu'un compte y gagnerait reste petit — la rubrique, et
-  //     des liens YouTube que la page contient déjà pour tout le monde — mais dès que l'adresse
-  //     est connue, la ligne doit passer dans MAILS_VIDEOS et le nom en sortir.
-  var MAILS_VIDEOS = [];                      // ex. 'prenom.nom@exemple.fr'
-  var NOMS_VIDEOS  = ['Madeline Sanchez'];
+  // LA CLÉ EST L'ADRESSE DE CONNEXION, ET ELLE SEULE. Le serveur la FIGE : le déclencheur
+  // protect_profile_fields réécrit « new.email := old.email » à chaque mise à jour, donc aucun
+  // compte ne peut se donner l'adresse d'un autre pour entrer dans cette liste.
+  //
+  // Le premier jet acceptait aussi le prénom et le nom, faute de connaître l'adresse. Cette
+  // clé-là était faible — le serveur ne fige PAS le nom, un compte pouvait se renommer et se
+  // glisser ici — et elle a été retirée dès l'adresse connue. Ne pas la remettre : pour ouvrir
+  // la rubrique à quelqu'un, il faut son adresse, pas son nom.
+  var MAILS_VIDEOS = ['madeline.sanchez1604@aol.com'];
 
-  // Même normalisation que le back-office : accents, casse, ponctuation et ordre des mots
-  // ignorés, pour que « SANCHEZ Madeline » et « madeline sanchez » soient une seule clé.
-  function cleNomVideos(texte){
-    var s = String(texte == null ? '' : texte);
-    if(s.normalize) s = s.normalize('NFD').replace(/[̀-ͯ]/g, '');
-    return s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim()
-            .split(' ').filter(function(m){ return m; }).sort().join(' ');
-  }
-  var CLES_VIDEOS  = NOMS_VIDEOS.map(cleNomVideos);
+  // Casse et espaces ignorés : une adresse reste la même écrite en majuscules.
   var MAILS_NORMES = MAILS_VIDEOS.map(function(m){ return String(m).trim().toLowerCase(); });
 
   function accesVideos(){
     if(isAdmin) return true;
     if(!profile) return false;
     var mail = String(profile.email == null ? '' : profile.email).trim().toLowerCase();
-    if(mail && MAILS_NORMES.indexOf(mail) !== -1) return true;
-    var cle = cleNomVideos((profile.prenom || '') + ' ' + (profile.nom || ''));
-    return !!cle && CLES_VIDEOS.indexOf(cle) !== -1;
+    return !!mail && MAILS_NORMES.indexOf(mail) !== -1;
   }
 
   function enterApp(){
@@ -9263,7 +9251,7 @@
     // elle ne dépend d'aucun corrigé du serveur, et n'enregistre rien.
     //
     // Cet accès-là NE DONNE QUE LA RUBRIQUE. Le back-office suit « isAdmin » quelques lignes
-    // plus haut, l'atelier de tracé le suit juste au-dessus : un compte nommé dans NOMS_VIDEOS
+    // plus haut, l'atelier de tracé le suit juste au-dessus : un compte listé dans MAILS_VIDEOS
     // n'obtient ni l'un ni l'autre, et une suite de tests l'exige.
     if(window.EndoAccueilDouble) window.EndoAccueilDouble(accesVideos());
     // Les trois modes d'entraînement sont fermés hors ligne, l'enseignante comprise : sans
