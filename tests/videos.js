@@ -202,6 +202,36 @@ const etat = p => p.evaluate(() => {
         }
         // On retire le thème d'essai pour ne rien laisser derriere soi.
         await p.evaluate(() => { window.EndoVideos().pop(); });
+
+        // ---- CHAQUE theme declare, et pas seulement le premier ----
+        // Les controles ci-dessus n'ouvrent a fond que le theme ouvert par defaut ; un second
+        // theme reellement declare pouvait donc etre vide, mal nomme ou sans lecteur sans que
+        // rien ne le dise. On ouvre chacun et on verifie ce qu'il montre : ses propres videos,
+        // autant de lecteurs que de videos, et aucune video d'un autre theme.
+        await p.click('#mode-videos [data-back]'); await p.waitForTimeout(FONDU);
+        await p.click('#accueil-videos-btn');      await p.waitForTimeout(FONDU);
+        for (let i = 0; i < items.length; i++) {
+          await p.click('#videos-onglets [data-theme="' + i + '"]');
+          await p.waitForTimeout(300);
+          const lu = ((await p.textContent('#videos-liste')) || '').replace(/\s+/g, ' ');
+          const n  = await p.$$eval('#videos-liste .video-cadre > *', es => es.length);
+          items[i].items.forEach(v => {
+            if (lu.indexOf(v.titre) === -1) {
+              ko('thème « ' + items[i].theme + ' » : la vidéo « ' + v.titre + ' » n\'apparait pas quand on l\'ouvre');
+            }
+          });
+          items.forEach((t, j) => { if (j !== i) t.items.forEach(v => {
+            if (lu.indexOf(v.titre) !== -1) {
+              ko('thème « ' + items[i].theme + ' » : la vidéo « ' + v.titre + ' » d\'un autre thème s\'y affiche');
+            }
+          }); });
+          if (n !== items[i].items.length) {
+            ko('thème « ' + items[i].theme + ' » : ' + n + ' lecteur(s) pour ' +
+               items[i].items.length + ' vidéo(s)');
+          }
+        }
+        console.log('4bis. chaque thème ouvre ses propres vidéos : ' +
+                    items.map(t => t.theme + ' (' + t.items.length + ')').join(', '));
       }
     }
 
