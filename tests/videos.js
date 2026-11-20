@@ -232,6 +232,26 @@ const etat = p => p.evaluate(() => {
         }
         console.log('4bis. chaque thème ouvre ses propres vidéos : ' +
                     items.map(t => t.theme + ' (' + t.items.length + ')').join(', '));
+
+        // ---- Rien en double : ni un nom de theme, ni une adresse, ni un titre ----
+        // La liste s'etend en RECOPIANT un bloc — le commentaire du code le dit en toutes
+        // lettres. Le copier-coller a deja frappe ce projet une fois : deux liens transmis
+        // portaient le meme identifiant de video, seul leur suffixe de suivi differant, et la
+        // seconde allait s'afficher sous le nom de la premiere. Ces trois controles ne coutent
+        // rien et attrapent la recopie oubliee : deux onglets du meme nom (indiscernables a
+        // l'ecran), deux fois la meme video, deux titres identiques.
+        const doublons = (liste, quoi) => {
+          const vus = new Set(), deuxFois = new Set();
+          liste.forEach(x => { if (vus.has(x)) deuxFois.add(x); else vus.add(x); });
+          deuxFois.forEach(x => ko('deux fois le même ' + quoi + ' dans la liste des vidéos : « ' + x + ' »'));
+          return deuxFois.size;
+        };
+        const toutes = items.reduce((a, t) => a.concat(t.items), []);
+        const n = doublons(items.map(t => (t.theme || '').trim().toLowerCase()), 'nom de thème')
+                + doublons(toutes.map(v => (v.url || '').trim()), 'lien de vidéo')
+                + doublons(toutes.map(v => (v.titre || '').trim().toLowerCase()), 'titre de vidéo');
+        if (!n) console.log('4ter. aucun doublon : ' + items.length + ' thème(s), ' +
+                            toutes.length + ' vidéo(s), toutes distinctes');
       }
     }
 
